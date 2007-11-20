@@ -36,7 +36,7 @@
 		<mkdir dir="${lib}" />
 
 		<!-- Put everything in ${tmp} into the ibisRunner.jar file -->
-		<jar jarfile="${lib}/ibisRunner.jar" basedir="${tmp}" />
+		<jar jarfile="${lib}/ibisdeploy.jar" basedir="${tmp}" />
 
 		<delete dir="${tmp}" />
 	</target>

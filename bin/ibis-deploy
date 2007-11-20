@@ -26,4 +26,4 @@ add_to_gat_classpath () {
 
 add_to_gat_classpath $GAT_LOCATION/lib
 
-java -cp lib/ibisRunner.jar:$CLASSPATH:$GAT_CLASSPATH -Dlog4j.configuration=file:log4j.properties -Dgat.adaptor.path=$GAT_LOCATION/lib/adaptors ibisRunner.SatinRunner $*
+java -cp lib/ibisdeploy.jar:$CLASSPATH:$GAT_CLASSPATH -Dlog4j.configuration=file:log4j.properties -Dgat.adaptor.path=$GAT_LOCATION/lib/adaptors ibisdeploy.IbisDeploy $*

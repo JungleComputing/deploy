@@ -60,7 +60,7 @@ public class Job {
 
         res +=
                 " total machines in run: " + totalMachines + " for a total of "
-                        + totalCPUs + " CPUs";
+                        + totalCPUs + " CPUs\n";
 
         return res;
     }
