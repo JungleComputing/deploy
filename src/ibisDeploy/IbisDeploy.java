@@ -1,4 +1,4 @@
-package ibisRunner;
+package ibisDeploy;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -10,7 +10,7 @@ import org.gridlab.gat.io.*;
 import org.gridlab.gat.monitoring.*;
 import org.gridlab.gat.resources.*;
 
-public class SatinRunner implements MetricListener {
+public class IbisDeploy implements MetricListener {
 	String gatLocation;
 
 	String ibisHome;
@@ -30,7 +30,7 @@ public class SatinRunner implements MetricListener {
 		if (args.length == 2) {
 			time = Integer.parseInt(args[1]);
 		}
-		new SatinRunner().start(args[0], time);
+		new IbisDeploy().start(args[0], time);
 	}
 
 	public void start(String runFile, int runTime) {
@@ -221,7 +221,7 @@ public class SatinRunner implements MetricListener {
 		sd.addAttribute("java.classpath", classpath);
 		sd.addAttribute("java.flags", app.getJavaFlagsAsString());
 
-		HashMap<String, String> environment = new HashMap<String, String>();
+		HashMap<String, Object> environment = new HashMap<String, Object>();
 		environment.put("ibis.server.address", ibisServer);
 		// environment.put("ibis.registry.central.ping.interval", "6000");
 
@@ -239,7 +239,7 @@ public class SatinRunner implements MetricListener {
 
 		sd.setEnvironment(environment);
 
-		Hashtable<String, String> hardwareAttributes = new Hashtable<String, String>();
+		Hashtable<String, Object> hardwareAttributes = new Hashtable<String, Object>();
 		hardwareAttributes.put("machine.node", cluster.getHostname());
 
 		ResourceDescription rd = new HardwareResourceDescription(

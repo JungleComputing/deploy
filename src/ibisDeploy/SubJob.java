@@ -1,4 +1,4 @@
-package ibisRunner;
+package ibisDeploy;
 
 public class SubJob {
     private String clusterName;
