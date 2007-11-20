@@ -1,7 +1,7 @@
 /*
  * Created on Mar 8, 2006 by rob
  */
-package ibisDeploy;
+package ibisdeploy;
 
 import java.util.ArrayList;
 

@@ -1,4 +1,4 @@
-package ibisDeploy;
+package ibisdeploy;
 
 import java.io.File;
 import java.util.ArrayList;

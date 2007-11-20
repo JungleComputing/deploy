@@ -1,4 +1,4 @@
-package ibisDeploy;
+package ibisdeploy;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
