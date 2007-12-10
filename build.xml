@@ -12,10 +12,14 @@
 	<property name="lib" location="lib" />
 	<property name="doc" location="doc" />
 	<property name="log" location="log" />
+	<property name="external" location="external" />
 	<property name="java.debug.value" value="true" />
 
 	<path id="external_jars">
 		<fileset file="${gat}" />
+		<fileset dir="${external}">
+			<include name="*.jar" />
+		</fileset>
 	</path>
 
 	<target name="init">
@@ -35,8 +39,14 @@
 		<!-- Create the distribution directory -->
 		<mkdir dir="${lib}" />
 
-		<!-- Put everything in ${tmp} into the ibisRunner.jar file -->
-		<jar jarfile="${lib}/ibisdeploy.jar" basedir="${tmp}" />
+		<!-- Put everything in ${tmp} into the ibis-deploy.jar file -->
+		<jar jarfile="${lib}/ibis-deploy.jar" basedir="${tmp}" />
+		
+		<copy todir="${lib}">
+			<fileset dir="${external}">
+				<include name="*.jar"/>
+			</fileset>
+		</copy>
 
 		<delete dir="${tmp}" />
 	</target>

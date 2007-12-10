@@ -24,6 +24,22 @@ add_to_gat_classpath () {
 	done
 }
 
+add_to_ibis_classpath() {
+	DIRLIB=${1}/*.jar
+	for j in ${DIRLIB}
+	do
+		if [ "$j" != "$DIRLIB}" ] ; then
+			if [ -z "$IBIS_CLASSPATH" ] ; then
+                IBIS_CLASSPATH=$j
+			else
+		IBIS_CLASSPATH="$j":$IBIS_CLASSPATH
+			fi
+		fi
+	done
+}
+
 add_to_gat_classpath $GAT_LOCATION/lib
 
-java -cp lib/ibisdeploy.jar:$CLASSPATH:$GAT_CLASSPATH -Dlog4j.configuration=file:log4j.properties -Dgat.adaptor.path=$GAT_LOCATION/lib/adaptors ibisdeploy.IbisDeploy $*
+add_to_ibis_classpath $IBIS_HOME/lib
+
+java -cp lib/ibis-deploy.jar:$CLASSPATH:$IBIS_CLASSPATH:$GAT_CLASSPATH -Dlog4j.configuration=file:log4j.properties -Dgat.adaptor.path=$GAT_LOCATION/lib/adaptors ibisdeploy.IbisDeploy $*

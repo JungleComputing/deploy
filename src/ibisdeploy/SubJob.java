@@ -1,15 +1,17 @@
 package ibisdeploy;
 
 public class SubJob {
-    private String clusterName;
+    private String clusterName, gridName;
 
     private int machineCount = 0;
 
     private int CPUsPerMachine = 0;
 
     private int subJobNr = 0;
-    
-    public SubJob(String clusterName, int machineCount, int cpusPerMachine, int subJobNr) {
+
+    public SubJob(String gridName, String clusterName, int machineCount,
+            int cpusPerMachine, int subJobNr) {
+        this.gridName = gridName;
         this.clusterName = clusterName;
         this.machineCount = machineCount;
         CPUsPerMachine = cpusPerMachine;
@@ -19,7 +21,7 @@ public class SubJob {
     public int getSubJobNr() {
         return subJobNr;
     }
-    
+
     public String getClusterName() {
         return clusterName;
     }
@@ -33,8 +35,13 @@ public class SubJob {
     }
 
     public String toString() {
-        return "SubJob " + subJobNr + ": " + clusterName + " " + machineCount + " machines, with "
-                + CPUsPerMachine + " CPUs/machine, for a total of "
+        return "SubJob " + subJobNr + ": " + clusterName + " " + machineCount
+                + " machines, with " + CPUsPerMachine
+                + " CPUs/machine, for a total of "
                 + (machineCount * CPUsPerMachine) + " CPUs";
+    }
+
+    public String getGridName() {
+        return gridName;
     }
 }

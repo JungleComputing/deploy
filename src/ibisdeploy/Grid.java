@@ -3,6 +3,11 @@
  */
 package ibisdeploy;
 
+import ibis.smartsockets.util.TypedProperties;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class Grid {
@@ -13,13 +18,17 @@ public class Grid {
     public Grid(String gridName) {
         this.gridName = gridName;
     }
+    
+    public String getGridName() {
+        return gridName;
+    }
 
     public void addCluster(Cluster a) {
         clusters.add(a);
     }
 
-    public ArrayList<Cluster> getClusters() {
-        return clusters;
+    public Cluster[] getClusters() {
+        return clusters.toArray(new Cluster[clusters.size()]);
     }
 
     public Cluster getCluster(String name) {
@@ -50,31 +59,40 @@ public class Grid {
         return res;
     }
 
-    public static Grid loadGrid(String filename) {
-        System.err.print("loading grid: " + filename);
-        Input in = new Input(filename);
-        String gridName = in.readString();
-        in.readln();
-        Grid g = new Grid(gridName);
-        while (!in.eof()) {
-            // VU fs0.das2.cs.vu.nl ssh 64 2
-            String friendly = in.readWord();
-            String machine = in.readWord();
-            String broker = in.readWord();
-            String files = in.readWord();
-            int machineCount = in.readInt();
-            int CPUsPerMachine = in.readInt();
-            String javaHome = in.readWord();
-            in.readln();
-
-            Cluster r =
-                    new Cluster(friendly, machine, broker, files, machineCount,
-                            CPUsPerMachine, javaHome);
-            g.addCluster(r);
+    public static Grid[] loadGrid(String filename) throws FileNotFoundException,
+            IOException {
+        System.err.println("loading grid: " + filename + " ...");
+        TypedProperties gridprops = new TypedProperties();
+        gridprops.load(new FileInputStream(filename));
+        String[] gridNames = gridprops.getStringList("ibis.deploy.grids");
+        Grid[] grids = new Grid[gridNames.length];
+        int i = 0;
+        for (String gridName : gridNames) {
+            grids[i] = new Grid(gridName);
+            String[] clusterNames = gridprops.getStringList("ibis.deploy."
+                    + gridName + ".clusters");
+            for (String clusterName : clusterNames) {
+                String headnode = gridprops.getProperty("ibis.deploy."
+                        + gridName + "." + clusterName + ".headnode");
+                String resourceBrokersAdaptors = gridprops
+                        .getProperty("ibis.deploy." + gridName + "."
+                                + clusterName + ".ResourceBrokerAdaptor");
+                String fileAdaptors = gridprops.getProperty("ibis.deploy."
+                        + gridName + "." + clusterName + ".FileAdaptor");
+                int nodes = gridprops.getIntProperty("ibis.deploy." + gridName
+                        + "." + clusterName + ".nodes");
+                int multicore = gridprops.getIntProperty("ibis.deploy."
+                        + gridName + "." + clusterName + ".multicore");
+                String javaPath = gridprops.getProperty("ibis.deploy."
+                        + gridName + "." + clusterName + ".javapath");
+                grids[i].addCluster(new Cluster(clusterName, headnode,
+                        resourceBrokersAdaptors, fileAdaptors, nodes,
+                        multicore, javaPath));
+            }
+            i++;
         }
-
-        System.err.println(" DONE");
-        return g;
+        System.err.println("loading grid: " + filename + " DONE");
+        return grids;
     }
 
     public String toString() {
@@ -83,9 +101,8 @@ public class Grid {
             res += "    " + clusters.get(i) + "\n";
         }
 
-        res +=
-                "total machine count: " + getTotalMachineCount()
-                        + " total CPU count: " + getTotalCPUCount();
+        res += "total machine count: " + getTotalMachineCount()
+                + " total CPU count: " + getTotalCPUCount();
         return res;
     }
 }

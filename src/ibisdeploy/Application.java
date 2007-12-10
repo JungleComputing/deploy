@@ -3,6 +3,11 @@
  */
 package ibisdeploy;
 
+import ibis.smartsockets.util.TypedProperties;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class Application {
@@ -13,17 +18,23 @@ public class Application {
     private String[] arguments;
 
     private String directoryName;
+    private String classpath;
 
     private String[] preStaged;
     private String[] postStaged;
     
-    public Application(String command, String[] javaFlags, String[] parameters, String name, String[] preStaged, String[] postStaged) {
+    public Application(String command, String[] javaFlags, String[] parameters, String name, String[] preStaged, String[] postStaged, String classpath) {
         this.executable = command;
         this.javaFlags = javaFlags;
         this.arguments = parameters;
         directoryName = name;
         this.preStaged = preStaged;
         this.postStaged = postStaged;
+        this.classpath = classpath;
+    }
+    
+    public String getClasspath() {
+        return classpath;
     }
 
     public String getExecutable() {
@@ -55,23 +66,19 @@ public class Application {
         return result;
     }
     
-    public static Application loadApplication(String filename) {
-        System.err.print("loading application: " + filename);
-        Input in = new Input(filename);
-
-        String name = in.readString();
-        in.readln();
-
-        String command = in.readString();
-        in.readln();
-
-        String[] javaFlags = readStringArray(in); 
-        String[] parameters = readStringArray(in); 
-        String[] preStaged = readStringArray(in);
-        String[] postStaged = readStringArray(in);
-        
-        System.err.println(" DONE");
-        return new Application(command, javaFlags, parameters, name, preStaged, postStaged);
+    public static Application loadApplication(String filename) throws FileNotFoundException, IOException {
+        System.err.println("loading application: " + filename + " ...");
+        TypedProperties appprops = new TypedProperties();
+        appprops.load(new FileInputStream(filename));
+        String name = appprops.getProperty("ibis.deploy.application.name");
+        String command = appprops.getProperty("ibis.deploy.application.java.class");
+        String[] javaFlags = appprops.getStringList("ibis.deploy.application.java.flags", " ");
+        String[] parameters = appprops.getStringList("ibis.deploy.application.parameters", " ");
+        String[] preStaged = appprops.getStringList("ibis.deploy.application.files.prestage");
+        String[] postStaged = appprops.getStringList("ibis.deploy.application.files.poststage");
+        String classpath = appprops.getProperty("ibis.deploy.application.java.classpath");
+        System.err.println("loading application: " + filename + " DONE");
+        return new Application(command, javaFlags, parameters, name, preStaged, postStaged, classpath);
         
     }
     
