@@ -52,6 +52,7 @@ public class IbisDeploy implements MetricListener {
         if (args.length < 1 || args.length > 2) {
             System.err
                     .println("usage: ibis-deploy <runFile> [runTime in seconds]");
+            System.exit(1);
         }
 
         int time = -1;
