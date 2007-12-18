@@ -30,4 +30,4 @@ add_to_classpath () {
 
 add_to_classpath $IBIS_DEPLOY/lib
 
-java -cp $CLASSPATH -Dlog4j.configuration=file:$IBIS_DEPLOY/log4j.properties -Dgat.adaptor.path=$IBIS_DEPLOY/lib/gat/adaptors ibisdeploy.IbisDeploy $*
+java -cp $CLASSPATH -Dlog4j.configuration=file:$IBIS_DEPLOY/log4j.properties -Dgat.adaptor.path=$IBIS_DEPLOY/lib/gat/adaptors ibis.deploy.IbisDeploy $*

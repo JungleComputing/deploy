@@ -1,4 +1,4 @@
-package ibisdeploy;
+package ibis.deploy;
 
 import java.io.*;
 

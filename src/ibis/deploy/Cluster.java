@@ -1,7 +1,7 @@
 /*
  * Created on Mar 6, 2006
  */
-package ibisdeploy;
+package ibis.deploy;
 
 public class Cluster {
     private String friendlyName;

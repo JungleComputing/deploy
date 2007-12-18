@@ -1,22 +1,31 @@
-package ibisdeploy;
+package ibis.deploy;
 
 import java.util.ArrayList;
+
+import javax.print.attribute.standard.JobName;
 
 public class Job {
     private ArrayList<SubJob> subJobs = new ArrayList<SubJob>();
 
-    private int jobNr;
+    private String name;
+    
+    private Application app;
 
-    public Job(int jobNr) {
-        this.jobNr = jobNr;
+    public Job(String name, Application app) {
+        this.name = name;
+        this.app = app;
+    }
+    
+    public Application getApplication() {
+        return app;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public void addSubJob(SubJob j) {
         subJobs.add(j);
-    }
-
-    public int getJobNr() {
-        return jobNr;
     }
 
     public int numberOfSubJobs() {
@@ -40,7 +49,7 @@ public class Job {
         int totalCPUs = 0;
         for (int j = 0; j < subJobs.size(); j++) {
             SubJob subJob = subJobs.get(j);
-            totalCPUs += subJob.getMachineCount() * subJob.getCPUsPerMachine();
+            totalCPUs += subJob.getMachineCount() * subJob.getCoresPerMachine();
         }
 
         return totalCPUs;
@@ -51,17 +60,14 @@ public class Job {
         int totalMachines = 0;
         int totalCPUs = 0;
         for (int j = 0; j < subJobs.size(); j++) {
-            res += "Job " + jobNr + ": ";
+            res += "Job " + name + ": ";
             SubJob subJob = subJobs.get(j);
             res += subJob + "\n";
             totalMachines += subJob.getMachineCount();
-            totalCPUs += subJob.getMachineCount() * subJob.getCPUsPerMachine();
+            totalCPUs += subJob.getMachineCount() * subJob.getCoresPerMachine();
         }
-
-        res +=
-                " total machines in run: " + totalMachines + " for a total of "
-                        + totalCPUs + " CPUs\n";
-
+        res += " total machines in run: " + totalMachines + " for a total of "
+                + totalCPUs + " CPUs\n";
         return res;
     }
 }
