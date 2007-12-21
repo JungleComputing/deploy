@@ -1,6 +1,7 @@
 package ibis.deploy;
 
 import ibis.server.Server;
+import ibis.server.ServerProperties;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -16,6 +17,7 @@ import java.util.Set;
 import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 
+import org.apache.log4j.Logger;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -36,6 +38,8 @@ import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.security.CertificateSecurityContext;
 
 public class IbisDeploy implements MetricListener {
+    
+    private static Logger logger = Logger.getLogger(IbisDeploy.class);
 
     String gatLocation;
 
@@ -215,12 +219,13 @@ public class IbisDeploy implements MetricListener {
             while (jobs[i].getState() != org.gridlab.gat.resources.Job.STOPPED
                     && jobs[i].getState() != org.gridlab.gat.resources.Job.SUBMISSION_ERROR) {
                 try {
-                    wait();
+                    System.err.println("Waiting for job: " + jobs[i]);
+                    wait(1000);
                 } catch (InterruptedException e) {
                 }
             }
         }
-
+        System.err.println("Ending server ...");
         server.end(true);
         System.err.println("Stopping hubs ...");
         for (org.gridlab.gat.resources.Job hubJob : hubJobs) {
@@ -233,10 +238,13 @@ public class IbisDeploy implements MetricListener {
         // start up a server at the submitting machine
         Properties properties = new Properties();
         // let the server automatically find a free port
-        properties.put("ibis.server.port", "0");
+        properties.put(ServerProperties.PORT, "0");
+        properties.put(ServerProperties.IMPLEMENTATION_PATH, ibisHome + File.separator + "lib");
+        
         Server server = null;
         try {
             server = new Server(properties);
+            System.out.println("started ibis server: " + server);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);

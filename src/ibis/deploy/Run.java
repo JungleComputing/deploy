@@ -1,6 +1,6 @@
 package ibis.deploy;
 
-import ibis.smartsockets.util.TypedProperties;
+import ibis.util.TypedProperties;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
