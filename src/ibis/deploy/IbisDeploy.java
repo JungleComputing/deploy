@@ -1,7 +1,6 @@
 package ibis.deploy;
 
 import ibis.server.Server;
-import ibis.smartsockets.direct.DirectSocketAddress;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -145,15 +144,12 @@ public class IbisDeploy implements MetricListener {
             GATObjectCreationException, URISyntaxException {
         org.gridlab.gat.resources.Job[] jobs = new org.gridlab.gat.resources.Job[job
                 .numberOfSubJobs()];
-        String poolID = "ibis-deploy-" + job.getName();
+        String poolID = "ibis-deploy-" + job.getName() + "-" + Math.random();
         // start an ibisserver and a hub on the submitting machine
         Server server = startServer();
         System.err.println("Local server started! (" + server.getLocalAddress()
                 + ")");
         String knownHubs = server.getLocalAddress();
-        for (DirectSocketAddress address : server.getHubs()) {
-            knownHubs += "," + address;
-        }
         System.out.println("known hubs: " + knownHubs);
         // start a hub on the other nodes
         ArrayList<org.gridlab.gat.resources.Job> hubJobs = new ArrayList<org.gridlab.gat.resources.Job>();
@@ -309,16 +305,16 @@ public class IbisDeploy implements MetricListener {
         Cluster cluster = grid.getCluster(subJob.getClusterName());
 
         Preferences preferences = new Preferences();
+        System.out.println("ACCESS TYPE: " + cluster.getAccessType());
         preferences.put("ResourceBroker.adaptor.name", cluster.getAccessType());
         preferences.put("File.adaptor.name", cluster.getFileAccessType());
+        preferences.put("ResourceBroker.jobmanagerContact", "fs0.das3.cs.vu.nl/jobmanager-sge");
         File outFile = GAT.createFile(context, preferences, new URI("any:///"
-                + run.getRunFileName() + "." + job.getName() + "."
-                + subJob.getName() + "." + job.getApplication().getName()
-                + ".stdout"));
+                + job.getName() + "." + subJob.getName() + "."
+                + job.getApplication().getName() + ".stdout"));
         File errFile = GAT.createFile(context, preferences, new URI("any:///"
-                + run.getRunFileName() + "." + job.getName() + "."
-                + subJob.getName() + "." + job.getApplication().getName()
-                + ".stderr"));
+                + job.getName() + "." + subJob.getName() + "."
+                + job.getApplication().getName() + ".stderr"));
 
         SoftwareDescription sd = new SoftwareDescription();
         sd.setLocation(new URI("any://" + cluster.getHostname() + "/"
@@ -331,8 +327,10 @@ public class IbisDeploy implements MetricListener {
             classpath += ":lib/" + jars[i];
         }
         // add executable jar to the classpath
-        classpath += app.getClasspath();
-
+        if (app.getClasspath() != null && !app.getClasspath().equals("")) {
+            classpath += ":" + app.getClasspath();
+        }
+        
         Map<String, Object> env = sd.getEnvironment();
         String[] envArguments = null;
         if (env != null && !env.isEmpty()) {

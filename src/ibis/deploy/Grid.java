@@ -64,11 +64,12 @@ public class Grid {
         System.err.println("loading grid: " + filename + " ...");
         TypedProperties gridprops = new TypedProperties();
         gridprops.load(new FileInputStream(filename));
-        Grid grid = new Grid(filename);
+        String gridName = gridprops.getProperty("name");
+        Grid grid = new Grid(gridName);
         String[] clusterNames = gridprops.getStringList("clusters");
         for (String clusterName : clusterNames) {
             String headnode = gridprops.getProperty(clusterName + ".headnode");
-            String resourceBrokersAdaptors = gridprops.getProperty(clusterName
+            String resourceBrokerAdaptors = gridprops.getProperty(clusterName
                     + ".ResourceBrokerAdaptor");
             String fileAdaptors = gridprops.getProperty(clusterName
                     + ".FileAdaptor");
@@ -77,7 +78,7 @@ public class Grid {
                     .getIntProperty(clusterName + ".multicore");
             String javaPath = gridprops.getProperty(clusterName + ".javapath");
             grid.addCluster(new Cluster(clusterName, headnode,
-                    resourceBrokersAdaptors, fileAdaptors, nodes, multicore,
+                    resourceBrokerAdaptors, fileAdaptors, nodes, multicore,
                     javaPath));
         }
         System.err.println("loading grid: " + filename + " DONE");

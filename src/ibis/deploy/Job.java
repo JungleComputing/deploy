@@ -2,8 +2,6 @@ package ibis.deploy;
 
 import java.util.ArrayList;
 
-import javax.print.attribute.standard.JobName;
-
 public class Job {
     private ArrayList<SubJob> subJobs = new ArrayList<SubJob>();
 

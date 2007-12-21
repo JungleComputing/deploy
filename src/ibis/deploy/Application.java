@@ -53,7 +53,7 @@ public class Application {
     }
 
     public String[] getParameters() {
-        return (String[]) parameters.clone();
+        return parameters;
     }
 
     public static HashSet<Application> loadApplications(String filename)

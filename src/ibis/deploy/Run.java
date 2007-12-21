@@ -79,10 +79,10 @@ public class Run {
 
             String[] javaFlags = runprops.getStringList(application + ".flags",
                     " ");
-            if (javaFlags == null || javaFlags.equals("")) {
+            if (javaFlags == null) {
                 javaFlags = runprops.getStringList("flags", " ");
             }
-            if (!(javaFlags == null || javaFlags.equals(""))) {
+            if (javaFlags != null && javaFlags.length > 0) {
                 app.setJavaFlags(javaFlags);
             }
 
@@ -91,7 +91,7 @@ public class Run {
             if (parameters == null) {
                 parameters = runprops.getStringList("parameters", " ");
             }
-            if (!(parameters == null || parameters.equals(""))) {
+            if (parameters != null && parameters.length > 0) {
                 app.setParameters(parameters);
             }
 
@@ -100,7 +100,7 @@ public class Run {
             if (preStaged == null) {
                 preStaged = runprops.getStringList("prestage");
             }
-            if (!(preStaged == null)) {
+            if (preStaged != null && preStaged.length > 0) {
                 app.setPreStaged(preStaged);
             }
 
@@ -109,7 +109,7 @@ public class Run {
             if (postStaged == null) {
                 postStaged = runprops.getStringList("poststage");
             }
-            if (!(postStaged == null)) {
+            if (postStaged != null && postStaged.length > 0) {
                 app.setPostStaged(postStaged);
             }
 
@@ -117,7 +117,7 @@ public class Run {
             if (classpath == null || classpath.equals("")) {
                 classpath = runprops.getProperty("classpath");
             }
-            if (!(classpath == null)) {
+            if (!(classpath == null || classpath.equals(""))) {
                 app.setClasspath(classpath);
             }
 
