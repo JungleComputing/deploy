@@ -240,6 +240,8 @@ public class IbisDeploy implements MetricListener {
         // let the server automatically find a free port
         properties.put(ServerProperties.PORT, "0");
         properties.put(ServerProperties.IMPLEMENTATION_PATH, ibisHome + File.separator + "lib");
+        properties.put(ServerProperties.PRINT_EVENTS, "true");
+        properties.put(ServerProperties.PRINT_ERRORS, "true");
         
         Server server = null;
         try {
@@ -288,8 +290,6 @@ public class IbisDeploy implements MetricListener {
                 + "/lib"));
         sd.addPreStagedFile(GAT.createFile(context, preferences, ibisHome + "/"
                 + "log4j.properties"));
-        sd.addPreStagedFile(GAT.createFile(context, preferences, ibisHome + "/"
-                + "smartsockets.properties"));
         sd.setStderr(GAT.createFile(context, "hub@" + cluster.getFriendlyName()
                 + ".err"));
         sd.setStdout(GAT.createFile(context, "hub@" + cluster.getFriendlyName()
