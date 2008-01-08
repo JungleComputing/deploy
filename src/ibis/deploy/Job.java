@@ -1,19 +1,20 @@
 package ibis.deploy;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class Job {
     private ArrayList<SubJob> subJobs = new ArrayList<SubJob>();
 
     private String name;
-    
+
     private Application app;
 
     public Job(String name, Application app) {
         this.name = name;
         this.app = app;
     }
-    
+
     public Application getApplication() {
         return app;
     }
@@ -67,5 +68,21 @@ public class Job {
         res += " total machines in run: " + totalMachines + " for a total of "
                 + totalCPUs + " CPUs\n";
         return res;
+    }
+
+    public Cluster[] getHubClusters(Grid[] grids) {
+        HashSet<Cluster> hubClusters = new HashSet<Cluster>();
+        for (int i = 0; i < numberOfSubJobs(); i++) {
+            for (Grid grid: grids) {
+                if (grid.getGridName().equalsIgnoreCase(get(i).getGridName())) {
+                    for (Cluster cluster: grid.getClusters()) {
+                        if (cluster.getFriendlyName().equals(get(i).getClusterName())) {
+                            hubClusters.add(cluster);
+                        }
+                    }
+                }
+            }
+        }
+        return hubClusters.toArray(new Cluster[hubClusters.size()]);
     }
 }

@@ -10,7 +10,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashSet;
 
+import org.apache.log4j.Logger;
+
 public class Application {
+    private static Logger logger = Logger.getLogger(Application.class);
     private String main;
 
     private String[] javaFlags;
@@ -58,7 +61,7 @@ public class Application {
 
     public static HashSet<Application> loadApplications(String filename)
             throws FileNotFoundException, IOException {
-        System.err.println("loading applications: " + filename + " ...");
+        logger.info("loading applications: " + filename + " ...");
         HashSet<Application> result = new HashSet<Application>();
         TypedProperties applicationProps = new TypedProperties();
         applicationProps.load(new FileInputStream(filename));
@@ -100,7 +103,7 @@ public class Application {
             result.add(new Application(app, main, javaFlags, parameters,
                     preStaged, postStaged, classpath));
         }
-        System.err.println("loading application: " + filename + " DONE");
+        logger.info("loading application: " + filename + " DONE");
         return result;
     }
 
@@ -167,13 +170,13 @@ public class Application {
 
     public void setParameters(String[] parameters) {
         this.parameters = parameters;
-        
+
     }
 
     public void setPreStaged(String[] preStaged) {
         this.preStaged = preStaged;
     }
-    
+
     public void setPostStaged(String[] postStaged) {
         this.postStaged = postStaged;
     }

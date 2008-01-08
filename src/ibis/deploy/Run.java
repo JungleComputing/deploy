@@ -8,12 +8,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import org.apache.log4j.Logger;
+
 public class Run {
+    
+    private static Logger logger = Logger.getLogger(Run.class);
+        
     private Grid[] grids;
 
     private Application[] apps;
 
-    private HashSet<Cluster> hubClusters = new HashSet<Cluster>();
 
     private ArrayList<Job> jobs = new ArrayList<Job>();
 
@@ -21,7 +25,7 @@ public class Run {
 
     public static Run loadRun(String filename) throws FileNotFoundException,
             IOException {
-        System.err.println("loading run: " + filename + " ...");
+        logger.info("loading run: " + filename + " ...");
         Run run = new Run();
         run.runFileName = filename;
 
@@ -30,7 +34,7 @@ public class Run {
 
         String[] gridFiles = runprops.getStringList("grid.files");
         if (gridFiles == null || gridFiles.equals("")) {
-            System.err.println("Property grid.files in " + filename
+            logger.warn("Property grid.files in " + filename
                     + " not set!");
             System.exit(1);
         }
@@ -42,7 +46,7 @@ public class Run {
 
         String[] appFiles = runprops.getStringList("application.files");
         if (appFiles == null || appFiles.equals("")) {
-            System.err.println("Property application.files in " + filename
+            logger.warn("Property application.files in " + filename
                     + " not set!");
             System.exit(1);
         }
@@ -62,7 +66,7 @@ public class Run {
             Application app = run.getApplication(application);
 
             if (app == null) {
-                System.err.println("Application not found! (" + application
+                logger.warn("Application not found! (" + application
                         + ")");
                 System.exit(1);
             }
@@ -194,7 +198,7 @@ public class Run {
             }
             run.jobs.add(job);
         }
-        System.err.println("loading run: " + filename + " DONE");
+        logger.info("loading run: " + filename + " DONE");
         return run;
     }
 
@@ -247,13 +251,4 @@ public class Run {
         return runFileName;
     }
 
-    public Cluster[] getHubClusters() {
-        for (Job job : jobs) {
-            for (int i = 0; i < job.numberOfSubJobs(); i++) {
-                hubClusters.add(getCluster(getGrid(job.get(i).getGridName()),
-                        job.get(i).getClusterName()));
-            }
-        }
-        return hubClusters.toArray(new Cluster[hubClusters.size()]);
-    }
 }

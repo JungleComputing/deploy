@@ -10,7 +10,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import org.apache.log4j.Logger;
+
 public class Grid {
+    private static Logger logger = Logger.getLogger(Grid.class);
+    
     private ArrayList<Cluster> clusters = new ArrayList<Cluster>();
 
     private String gridName;
@@ -61,7 +65,7 @@ public class Grid {
 
     public static Grid loadGrid(String filename) throws FileNotFoundException,
             IOException {
-        System.err.println("loading grid: " + filename + " ...");
+        logger.info("loading grid: " + filename + " ...");
         TypedProperties gridprops = new TypedProperties();
         gridprops.load(new FileInputStream(filename));
         String gridName = gridprops.getProperty("name");
@@ -81,7 +85,7 @@ public class Grid {
                     resourceBrokerAdaptors, fileAdaptors, nodes, multicore,
                     javaPath));
         }
-        System.err.println("loading grid: " + filename + " DONE");
+        logger.info("loading grid: " + filename + " DONE");
         return grid;
     }
 

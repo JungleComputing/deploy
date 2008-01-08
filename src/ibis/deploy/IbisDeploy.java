@@ -38,7 +38,7 @@ import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.security.CertificateSecurityContext;
 
 public class IbisDeploy implements MetricListener {
-    
+
     private static Logger logger = Logger.getLogger(IbisDeploy.class);
 
     String gatLocation;
@@ -68,17 +68,17 @@ public class IbisDeploy implements MetricListener {
     public void start(String runFile, int runTime) {
         gatLocation = System.getenv("GAT_LOCATION");
         if (gatLocation == null) {
-            System.err.println("please set your GAT_LOCATION");
+            logger.warn("please set your GAT_LOCATION");
             System.exit(1);
         }
-        System.err.println("using JavaGAT at: " + gatLocation);
+        logger.info("using JavaGAT at: " + gatLocation);
 
         ibisHome = System.getenv("IBIS_HOME");
         if (ibisHome == null) {
-            System.err.println("please set your IBIS_HOME");
+            logger.warn("please set your IBIS_HOME");
             System.exit(1);
         }
-        System.err.println("using Ibis at: " + ibisHome);
+        logger.info("using Ibis at: " + ibisHome);
 
         // satinHome = System.getenv("SATIN_HOME");
         // if (satinHome == null) {
@@ -105,9 +105,11 @@ public class IbisDeploy implements MetricListener {
             System.exit(1);
         }
 
-        System.err.println(run);
+        logger.info(run);
 
         GATContext context = new GATContext();
+
+        // START OF GLOBUS SPECIFIC CODE
         String passphrase = null;
         JPasswordField pwd = new JPasswordField();
         Object[] message = { "grid-proxy-init\nPlease enter your passphrase.",
@@ -124,6 +126,7 @@ public class IbisDeploy implements MetricListener {
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
+        // END OF GLOBUS SPECIFIC CODE
 
         context.addPreference("ignoreHiddenFiles", "true");
         context.addPreference("ftp.connection.passive", "false");
@@ -132,7 +135,7 @@ public class IbisDeploy implements MetricListener {
 
         for (int i = 0; i < requested.size(); i++) {
             try {
-                submitJob(run, context, requested.get(i), runTime);
+                submitJob(run, new GATContext(), requested.get(i), runTime);
             } catch (Exception e) {
                 e.printStackTrace();
                 GAT.end();
@@ -149,25 +152,25 @@ public class IbisDeploy implements MetricListener {
         org.gridlab.gat.resources.Job[] jobs = new org.gridlab.gat.resources.Job[job
                 .numberOfSubJobs()];
         String poolID = "ibis-deploy-" + job.getName() + "-" + Math.random();
+        logger.debug("poolID: " + poolID);
         // start an ibisserver and a hub on the submitting machine
         Server server = startServer();
-        System.err.println("Local server started! (" + server.getLocalAddress()
-                + ")");
+        logger.info("Local server started! (" + server.getLocalAddress() + ")");
         String knownHubs = server.getLocalAddress();
-        System.out.println("known hubs: " + knownHubs);
+        logger.info("known hubs: " + knownHubs);
         // start a hub on the other nodes
         ArrayList<org.gridlab.gat.resources.Job> hubJobs = new ArrayList<org.gridlab.gat.resources.Job>();
-        Cluster[] clusters = run.getHubClusters();
+        Cluster[] clusters = job.getHubClusters(run.getGrids());
         for (Cluster cluster : clusters) {
             String hubAddressFileName = ".ibis-deploy-hubaddress-"
                     + Math.random();
             hubJobs.add(startHub(cluster, knownHubs,
-                    "../" + hubAddressFileName, context));
-            System.err.println("Hub started at: " + cluster.getHostname());
+                    "../" + hubAddressFileName, new GATContext()));
+            logger.info("Hub started at: " + cluster.getHostname());
             File hubAddressFile = GAT.createFile(context, "ssh://"
                     + cluster.getHostname() + "/" + hubAddressFileName);
             while (!hubAddressFile.exists()) {
-                System.err.println("waiting for " + hubAddressFile.toString()
+                logger.debug("waiting for " + hubAddressFile.toString()
                         + " to appear.");
                 try {
                     Thread.sleep(1000);
@@ -189,7 +192,7 @@ public class IbisDeploy implements MetricListener {
 
         }
 
-        server.addHubs(knownHubs.split(","));
+        // now add the security context
         context.addSecurityContext(securityContext);
 
         // if both server and hubs are up and running, start the real subjobs
@@ -198,18 +201,21 @@ public class IbisDeploy implements MetricListener {
                 jobs[i] = submitSubJob(run, context, job, job.get(i), poolID,
                         server.getLocalAddress(), knownHubs, runTime);
             } catch (GATInvocationException e) {
-                System.err.println("submission of job " + job.get(i)
-                        + " failed: " + e);
+                logger
+                        .info("submission of job " + job.get(i) + " failed: "
+                                + e);
                 e.printStackTrace();
                 throw e;
             } catch (GATObjectCreationException e) {
-                System.err.println("submission of job " + job.get(i)
-                        + " failed: " + e);
+                logger
+                        .info("submission of job " + job.get(i) + " failed: "
+                                + e);
                 e.printStackTrace();
                 throw e;
             } catch (URISyntaxException e) {
-                System.err.println("submission of job " + job.get(i)
-                        + " failed: " + e);
+                logger
+                        .info("submission of job " + job.get(i) + " failed: "
+                                + e);
                 e.printStackTrace();
                 throw e;
             }
@@ -219,19 +225,23 @@ public class IbisDeploy implements MetricListener {
             while (jobs[i].getState() != org.gridlab.gat.resources.Job.STOPPED
                     && jobs[i].getState() != org.gridlab.gat.resources.Job.SUBMISSION_ERROR) {
                 try {
-                    System.err.println("Waiting for job: " + jobs[i]);
+                    logger.debug("Waiting for job: "
+                            + jobs[i]
+                            + " ("
+                            + org.gridlab.gat.resources.Job
+                                    .getStateString(jobs[i].getState()) + ")");
                     wait(1000);
                 } catch (InterruptedException e) {
                 }
             }
         }
-        System.err.println("Ending server ...");
+        logger.info("Ending server ...");
         server.end(true);
-        System.err.println("Stopping hubs ...");
+        logger.info("Stopping hubs ...");
         for (org.gridlab.gat.resources.Job hubJob : hubJobs) {
             hubJob.stop();
         }
-        System.err.println("Stopping hubs DONE");
+        logger.info("Stopping hubs DONE");
     }
 
     private Server startServer() {
@@ -239,14 +249,16 @@ public class IbisDeploy implements MetricListener {
         Properties properties = new Properties();
         // let the server automatically find a free port
         properties.put(ServerProperties.PORT, "0");
-        properties.put(ServerProperties.IMPLEMENTATION_PATH, ibisHome + File.separator + "lib");
-        properties.put(ServerProperties.PRINT_EVENTS, "true");
-        properties.put(ServerProperties.PRINT_ERRORS, "true");
-        
+        properties.put(ServerProperties.IMPLEMENTATION_PATH, ibisHome
+                + File.separator + "lib");
+        //properties.put(ServerProperties.PRINT_EVENTS, "true");
+        //properties.put(ServerProperties.PRINT_ERRORS, "true");
+        //properties.put(ServerProperties.PRINT_STATS, "true");
+
         Server server = null;
         try {
             server = new Server(properties);
-            System.out.println("started ibis server: " + server);
+            logger.info("started ibis server: " + server);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
@@ -305,18 +317,21 @@ public class IbisDeploy implements MetricListener {
             throws GATInvocationException, GATObjectCreationException,
             URISyntaxException {
 
-        System.err.println("submit of job " + job.getName() + " subJob "
-                + subJob.getName());
+        logger.info("submission of job '" + job.getName() + "', sub-job '"
+                + subJob.getName() + "'");
 
         Application app = job.getApplication();
         Grid grid = run.getGrid(subJob.getGridName());
         Cluster cluster = grid.getCluster(subJob.getClusterName());
 
         Preferences preferences = new Preferences();
-        System.out.println("ACCESS TYPE: " + cluster.getAccessType());
-        preferences.put("ResourceBroker.adaptor.name", cluster.getAccessType());
+        preferences.put("ResourceBroker.adaptor.name", "!commandlineSsh,"
+                + cluster.getAccessType());
         preferences.put("File.adaptor.name", cluster.getFileAccessType());
-        preferences.put("ResourceBroker.jobmanagerContact", "fs0.das3.cs.vu.nl/jobmanager-sge");
+        preferences.put("ResourceBroker.jobmanagerContact", cluster
+                .getHostname()
+                + "/jobmanager-sge");
+
         File outFile = GAT.createFile(context, preferences, new URI("any:///"
                 + job.getName() + "." + subJob.getName() + "."
                 + job.getApplication().getName() + ".stdout"));
@@ -338,7 +353,7 @@ public class IbisDeploy implements MetricListener {
         if (app.getClasspath() != null && !app.getClasspath().equals("")) {
             classpath += ":" + app.getClasspath();
         }
-        
+
         Map<String, Object> env = sd.getEnvironment();
         String[] envArguments = null;
         if (env != null && !env.isEmpty()) {
@@ -436,9 +451,7 @@ public class IbisDeploy implements MetricListener {
                 hardwareAttributes);
 
         JobDescription jd = new JobDescription(sd, rd);
-        context.addPreference("ResourceBroker.jobmanagerContact", cluster
-                .getHostname()
-                + "/jobmanager-sge");
+        context.addPreferences(preferences);
         ResourceBroker broker = GAT.createResourceBroker(context, preferences);
         org.gridlab.gat.resources.Job j = broker.submitJob(jd);
         MetricDefinition md = j.getMetricDefinitionByName("job.status");
@@ -453,11 +466,11 @@ public class IbisDeploy implements MetricListener {
         org.gridlab.gat.resources.Job j = (org.gridlab.gat.resources.Job) val
                 .getSource();
 
-        String machine = (String) j.getJobDescription()
-                .getResourceDescription().getResourceAttribute("machine.node");
-
-        System.err.println("Job status of " + machine + " changed to : "
-                + state);
+        try {
+            logger.info("Job status of " + j.getJobID() + " changed to : " + state);
+        } catch (GATInvocationException e) {
+            e.printStackTrace();
+        }
         notifyAll();
     }
 }

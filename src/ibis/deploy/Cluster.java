@@ -3,7 +3,11 @@
  */
 package ibis.deploy;
 
+import org.apache.log4j.Logger;
+
 public class Cluster {
+    private static Logger logger = Logger.getLogger(Cluster.class);
+
     private String friendlyName;
 
     private String hostname;
@@ -17,13 +21,16 @@ public class Cluster {
     private String javaHome;
 
     private String fileAccessType;
-    
+
     /**
-     * @param accessType the resource manager to use
-     * @param hostname the hostname to contact
+     * @param accessType
+     *                the resource manager to use
+     * @param hostname
+     *                the hostname to contact
      */
-    public Cluster(String friendlyName, String hostname, String accessType, String fileAccessType,
-            int machineCount, int CPUsPerMachine, String javaHome) {
+    public Cluster(String friendlyName, String hostname, String accessType,
+            String fileAccessType, int machineCount, int CPUsPerMachine,
+            String javaHome) {
         this.friendlyName = friendlyName;
         this.accessType = accessType;
         this.fileAccessType = fileAccessType;
@@ -66,7 +73,7 @@ public class Cluster {
         return javaHome;
     }
 
-	public String getFileAccessType() {
-		return fileAccessType;
-	}
+    public String getFileAccessType() {
+        return fileAccessType;
+    }
 }
