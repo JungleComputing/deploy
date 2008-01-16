@@ -11,13 +11,12 @@ import java.util.HashSet;
 import org.apache.log4j.Logger;
 
 public class Run {
-    
+
     private static Logger logger = Logger.getLogger(Run.class);
-        
+
     private Grid[] grids;
 
     private Application[] apps;
-
 
     private ArrayList<Job> jobs = new ArrayList<Job>();
 
@@ -34,8 +33,7 @@ public class Run {
 
         String[] gridFiles = runprops.getStringList("grid.files");
         if (gridFiles == null || gridFiles.equals("")) {
-            logger.warn("Property grid.files in " + filename
-                    + " not set!");
+            logger.warn("Property grid.files in " + filename + " not set!");
             System.exit(1);
         }
 
@@ -59,71 +57,8 @@ public class Run {
 
         String[] jobNames = runprops.getStringList("jobs");
         for (String jobName : jobNames) {
-            String application = runprops.getProperty(jobName + ".application");
-            if (application == null || application.equals("")) {
-                application = runprops.getProperty("application");
-            }
-            Application app = run.getApplication(application);
 
-            if (app == null) {
-                logger.warn("Application not found! (" + application
-                        + ")");
-                System.exit(1);
-            }
-            
-            Job job = new Job(jobName, app);
-
-            String main = runprops.getProperty(application + ".main");
-            if (main == null || main.equals("")) {
-                main = runprops.getProperty("main");
-            }
-            if (!(main == null || main.equals(""))) {
-                app.setMain(main);
-            }
-
-            String[] javaFlags = runprops.getStringList(application + ".flags",
-                    " ");
-            if (javaFlags == null) {
-                javaFlags = runprops.getStringList("flags", " ");
-            }
-            if (javaFlags != null && javaFlags.length > 0) {
-                app.setJavaFlags(javaFlags);
-            }
-
-            String[] parameters = runprops.getStringList(application
-                    + ".parameters", " ");
-            if (parameters == null) {
-                parameters = runprops.getStringList("parameters", " ");
-            }
-            if (parameters != null && parameters.length > 0) {
-                app.setParameters(parameters);
-            }
-
-            String[] preStaged = runprops.getStringList(application
-                    + ".prestage");
-            if (preStaged == null) {
-                preStaged = runprops.getStringList("prestage");
-            }
-            if (preStaged != null && preStaged.length > 0) {
-                app.setPreStaged(preStaged);
-            }
-
-            String[] postStaged = runprops.getStringList(application
-                    + ".poststage");
-            if (postStaged == null) {
-                postStaged = runprops.getStringList("poststage");
-            }
-            if (postStaged != null && postStaged.length > 0) {
-                app.setPostStaged(postStaged);
-            }
-
-            String classpath = runprops.getProperty(application + ".classpath");
-            if (classpath == null || classpath.equals("")) {
-                classpath = runprops.getProperty("classpath");
-            }
-            if (!(classpath == null || classpath.equals(""))) {
-                app.setClasspath(classpath);
-            }
+            Job job = new Job(jobName);
 
             String[] subjobs = runprops.getStringList(jobName + ".subjobs");
             for (String subjob : subjobs) {
@@ -193,8 +128,76 @@ public class Run {
                         }
                     }
                 }
+
+                String application = runprops.getProperty(jobName + "."
+                        + subjob + ".application");
+                if (application == null || application.equals("")) {
+                    application = runprops.getProperty(jobName + ".application");
+                    if (application == null || application.equals("")) {
+                        application = runprops.getProperty("application");
+                    }
+                }
+                Application app = run.getApplication(application);
+
+                if (app == null) {
+                    logger.warn("Application not found! (" + application + ")");
+                    System.exit(1);
+                }
+                
+                String main = runprops.getProperty(application + ".main");
+                if (main == null || main.equals("")) {
+                    main = runprops.getProperty("main");
+                }
+                if (!(main == null || main.equals(""))) {
+                    app.setMain(main);
+                }
+
+                String[] javaFlags = runprops.getStringList(application + ".flags",
+                        " ");
+                if (javaFlags == null) {
+                    javaFlags = runprops.getStringList("flags", " ");
+                }
+                if (javaFlags != null && javaFlags.length > 0) {
+                    app.setJavaFlags(javaFlags);
+                }
+
+                String[] parameters = runprops.getStringList(application
+                        + ".parameters", " ");
+                if (parameters == null) {
+                    parameters = runprops.getStringList("parameters", " ");
+                }
+                if (parameters != null && parameters.length > 0) {
+                    app.setParameters(parameters);
+                }
+
+                String[] preStaged = runprops.getStringList(application
+                        + ".prestage");
+                if (preStaged == null) {
+                    preStaged = runprops.getStringList("prestage");
+                }
+                if (preStaged != null && preStaged.length > 0) {
+                    app.setPreStaged(preStaged);
+                }
+
+                String[] postStaged = runprops.getStringList(application
+                        + ".poststage");
+                if (postStaged == null) {
+                    postStaged = runprops.getStringList("poststage");
+                }
+                if (postStaged != null && postStaged.length > 0) {
+                    app.setPostStaged(postStaged);
+                }
+
+                String classpath = runprops.getProperty(application + ".classpath");
+                if (classpath == null || classpath.equals("")) {
+                    classpath = runprops.getProperty("classpath");
+                }
+                if (!(classpath == null || classpath.equals(""))) {
+                    app.setClasspath(classpath);
+                }
+
                 job.addSubJob(new SubJob(subjob, grid, cluster, nodes,
-                        multicore));
+                        multicore, app));
             }
             run.jobs.add(job);
         }

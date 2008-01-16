@@ -8,15 +8,8 @@ public class Job {
 
     private String name;
 
-    private Application app;
-
-    public Job(String name, Application app) {
+    public Job(String name) {
         this.name = name;
-        this.app = app;
-    }
-
-    public Application getApplication() {
-        return app;
     }
 
     public String getName() {
