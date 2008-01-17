@@ -260,10 +260,9 @@ public class IbisDeploy implements MetricListener {
         // ResourceBroker to reach the headnode, because other brokers may
         // submit the job to a worker node.
         Preferences preferences = new Preferences();
-        preferences.put("Resourcebroker.adaptor.name", "CommandlineSsh");
+        preferences.put("Resourcebroker.adaptor.name", "CommandlineSsh, Local");
         preferences.put("File.adaptor.name", cluster.getFileAccessType());
         Hashtable<String, Object> hardwareAttributes = new Hashtable<String, Object>();
-        hardwareAttributes.put("machine.node", cluster.getHostname());
 
         ResourceDescription rd = new HardwareResourceDescription(
                 hardwareAttributes);
@@ -292,7 +291,7 @@ public class IbisDeploy implements MetricListener {
         ResourceBroker broker = null;
         try {
             broker = GAT.createResourceBroker(context, preferences, new URI(
-                    "ssh://" + cluster.getHostname() + "/"));
+                    "any://" + cluster.getHostname() + "/"));
         } catch (URISyntaxException e) {
             // should not happen
         }
@@ -325,6 +324,7 @@ public class IbisDeploy implements MetricListener {
                 + subJob.getApplication().getName() + ".stderr"));
 
         SoftwareDescription sd = new SoftwareDescription();
+        sd.setAttributes(subJob.getAttributes());
         sd.setExecutable(cluster.getJavaHome() + "/bin/java");
         // add ibis/lib jars to the classpath
         String classpath = ".";
@@ -423,13 +423,11 @@ public class IbisDeploy implements MetricListener {
         sd.addAttribute("hostCount", machineCount);
 
         if (runTime < 0) {
-            sd.addAttribute("maxWallTime", "600");
+            sd.addAttribute("maxWallTime", "20");
         } else {
             sd.addAttribute("maxWallTime", "" + runTime);
         }
         
-        sd.addAttribute("sandbox.delete", "false");
-
         Hashtable<String, Object> hardwareAttributes = new Hashtable<String, Object>();
         hardwareAttributes.put("machine.node", cluster.getHostname());
 

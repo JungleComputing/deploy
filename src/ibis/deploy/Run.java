@@ -21,6 +21,8 @@ public class Run {
     private ArrayList<Job> jobs = new ArrayList<Job>();
 
     private String runFileName;
+    
+    
 
     public static Run loadRun(String filename) throws FileNotFoundException,
             IOException {
@@ -128,6 +130,12 @@ public class Run {
                         }
                     }
                 }
+                
+                String[] attrs = runprops.getStringList(jobName + "." + subjobs + ".gat.attributes");
+                if (attrs == null) {
+                    attrs = runprops.getStringList(jobName +  ".gat.attributes");
+                }
+                
 
                 String application = runprops.getProperty(jobName + "."
                         + subjob + ".application");
@@ -197,7 +205,7 @@ public class Run {
                 }
 
                 job.addSubJob(new SubJob(subjob, grid, cluster, nodes,
-                        multicore, app));
+                        multicore, app, attrs));
             }
             run.jobs.add(job);
         }
