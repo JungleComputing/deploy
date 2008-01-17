@@ -80,20 +80,6 @@ public class IbisDeploy implements MetricListener {
         }
         logger.info("using Ibis at: " + ibisHome);
 
-        // satinHome = System.getenv("SATIN_HOME");
-        // if (satinHome == null) {
-        // System.err.println("please set your SATIN_HOME");
-        // // System.exit(1);
-        // }
-        // System.err.println("using Satin at: " + satinHome);
-
-        // ibisAppsHome = System.getenv("IBIS_APPS_HOME");
-        // if (ibisAppsHome == null) {
-        // System.err.println("please set your IBIS_APPS_HOME");
-        // // System.exit(1);
-        // }
-        // System.err.println("using Ibis applications at: " + ibisAppsHome);
-
         Run run = null;
         try {
             run = Run.loadRun(runFile);
@@ -330,10 +316,7 @@ public class IbisDeploy implements MetricListener {
         preferences.put("ResourceBroker.adaptor.name", "!commandlineSsh,"
                 + cluster.getAccessType());
         preferences.put("File.adaptor.name", cluster.getFileAccessType());
-        preferences.put("ResourceBroker.jobmanagerContact", cluster
-                .getHostname()
-                + "/jobmanager-sge");
-
+  
         File outFile = GAT.createFile(context, preferences, new URI("any:///"
                 + job.getName() + "." + subJob.getName() + "."
                 + subJob.getApplication().getName() + ".stdout"));
@@ -384,12 +367,12 @@ public class IbisDeploy implements MetricListener {
         int pos = 0;
         if (javaFlags != null) {
             for (int i = 0; i < javaFlags.length; i++) {
-                arguments[i] = javaFlags[pos++];
+                arguments[pos++] = javaFlags[i];
             }
         }
         arguments[pos++] = "-classpath";
         arguments[pos++] = classpath;
-        arguments[pos++] = "-Dlog4j.configuration=file:./log4j.properties";
+        arguments[pos++] = "-Dlog4j.configuration=file:log4j.properties";
         arguments[pos++] = "-Dibis.server.address=" + server;
         arguments[pos++] = "-Dibis.server.hub.addresses=" + hubAddresses;
         arguments[pos++] = "-Dibis.pool.name=" + poolID;
@@ -456,7 +439,7 @@ public class IbisDeploy implements MetricListener {
         JobDescription jd = new JobDescription(sd, rd);
         context.addPreferences(preferences);
         ResourceBroker broker = GAT.createResourceBroker(context, preferences,
-                new URI("ssh://" + cluster.getHostname() + "/"));
+                new URI("any://" + cluster.getHostname() + "/jobmanager-sge"));
         org.gridlab.gat.resources.Job j = broker.submitJob(jd);
         MetricDefinition md = j.getMetricDefinitionByName("job.status");
         Metric m = md.createMetric(null);
