@@ -90,7 +90,7 @@ public class Run {
                     cluster = runprops.getProperty("cluster");
                 }
 
-                int nodes;
+                int nodes = 1;
                 String nodesString;
                 try {
                     nodesString = runprops.getProperty(jobName + "." + subjob
@@ -102,6 +102,9 @@ public class Run {
                         nodes = runprops.getIntProperty(jobName + "." + subjob
                                 + ".nodes");
                     }
+                    if (nodesString == null) {
+                        throw new NumberFormatException();
+                    }
                 } catch (NumberFormatException e) {
                     try {
                         nodesString = runprops.getProperty(jobName + ".nodes");
@@ -111,16 +114,25 @@ public class Run {
                         } else {
                             nodes = runprops.getIntProperty(jobName + ".nodes");
                         }
+                        if (nodesString == null) {
+                            throw new NumberFormatException();
+                        }
                     } catch (NumberFormatException e1) {
                         try {
-                            nodes = runprops.getIntProperty("nodes");
+                            nodesString = runprops.getProperty("nodes");
+                            if (nodesString != null && nodesString.equals("max")) {
+                                nodes = run.getGrid(grid).getCluster(cluster)
+                                        .getMachineCount();
+                            } else {
+                                nodes = runprops.getIntProperty("nodes");
+                            }
                         } catch (NumberFormatException e2) {
                             nodes = -1;
                         }
                     }
                 }
 
-                int multicore;
+                int multicore = 1;
                 String multicoreString;
                 try {
                     multicoreString = runprops.getProperty(jobName + "."
@@ -131,6 +143,9 @@ public class Run {
                     } else {
                         multicore = runprops.getIntProperty(jobName + "."
                                 + subjob + ".multicore");
+                    }
+                    if (multicoreString == null) {
+                        throw new NumberFormatException();
                     }
                 } catch (NumberFormatException e) {
                     try {
@@ -143,9 +158,20 @@ public class Run {
                             multicore = runprops.getIntProperty(jobName
                                     + ".multicore");
                         }
+                        if (multicoreString == null) {
+                            throw new NumberFormatException();
+                        }
                     } catch (NumberFormatException e1) {
                         try {
-                            multicore = runprops.getIntProperty("multicore");
+                            multicoreString = runprops.getProperty("multicore");
+                            if (multicoreString != null
+                                    && multicoreString.equals("max")) {
+                                multicore = run.getGrid(grid).getCluster(
+                                        cluster).getCPUsPerMachine();
+                            } else {
+                                multicore = runprops
+                                        .getIntProperty("multicore");
+                            }
                         } catch (NumberFormatException e2) {
                             multicore = -1;
                         }
@@ -153,9 +179,9 @@ public class Run {
                 }
 
                 String[] attrs = runprops.getStringList(jobName + "." + subjobs
-                        + ".gat.attributes");
+                        + ".gat.attributes", " ");
                 if (attrs.length == 0) {
-                    attrs = runprops.getStringList(jobName + ".gat.attributes");
+                    attrs = runprops.getStringList(jobName + ".gat.attributes", " ");
                 }
 
                 String application = runprops.getProperty(jobName + "."

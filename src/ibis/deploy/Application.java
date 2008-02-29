@@ -91,9 +91,9 @@ public class Application {
             }
 
             String[] postStaged = applicationProps.getStringList(app
-                    + ".poststage");
+                    + ".poststage", " ");
             if (postStaged.length == 0) {
-                postStaged = applicationProps.getStringList("poststage");
+                postStaged = applicationProps.getStringList("poststage", " ");
             }
 
             String classpath = applicationProps.getProperty(app + ".classpath");

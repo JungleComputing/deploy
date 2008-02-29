@@ -339,18 +339,8 @@ public class IbisDeploy implements MetricListener {
         Cluster cluster = grid.getCluster(subJob.getClusterName());
 
         Preferences preferences = new Preferences();
-        System.out.println("cluster accesstype: " + cluster.getAccessType());
-        System.out.println("current context accesstype: "
-                + context.getPreferences().get("resourcebroker.adaptor.name"));
-        System.out.println("current new accesstype: "
-                + preferences.get("resourcebroker.adaptor.name"));
         preferences.put("ResourceBroker.adaptor.name", cluster.getAccessType());
         preferences.put("File.adaptor.name", cluster.getFileAccessType());
-        System.out.println("cluster accesstype: " + cluster.getAccessType());
-        System.out.println("current context accesstype: "
-                + context.getPreferences().get("resourcebroker.adaptor.name"));
-        System.out.println("current new accesstype: "
-                + preferences.get("resourcebroker.adaptor.name"));
 
         File outFile = GAT.createFile(context, preferences, new URI("any:///"
                 + job.getName() + "." + subJob.getName() + "."
@@ -453,9 +443,12 @@ public class IbisDeploy implements MetricListener {
         }
         logger.info("after adding prestage files!");
         for (String filename : app.getPostStaged()) {
-            sd
-                    .addPostStagedFile(GAT.createFile(context, preferences,
-                            filename));
+            sd.addPostStagedFile(
+                    GAT.createFile(context, preferences, filename), GAT
+                            .createFile(context, preferences, job.getName()
+                                    + "." + subJob.getName() + "." + filename));
+            logger.info("added poststage file '" + filename + "' -> '"
+                    + job.getName() + "." + subJob.getName() + "." + filename + "'");
         }
         int machineCount = subJob.getMachineCount();
         if (machineCount == 0)
