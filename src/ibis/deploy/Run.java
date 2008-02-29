@@ -12,6 +12,9 @@ import org.apache.log4j.Logger;
 
 public class Run {
 
+    private static final int DEFAULT_RETRY_ATTEMPTS = 3;
+    private static final int DEFAULT_RETRY_INTERVAL = 60; // sec
+
     private static Logger logger = Logger.getLogger(Run.class);
 
     private Grid[] grids;
@@ -21,8 +24,8 @@ public class Run {
     private ArrayList<Job> jobs = new ArrayList<Job>();
 
     private String runFileName;
-    
-    
+
+    private int retryAttempts, retryInterval;
 
     public static Run loadRun(String filename) throws FileNotFoundException,
             IOException {
@@ -34,7 +37,7 @@ public class Run {
         runprops.load(new FileInputStream(filename));
 
         String[] gridFiles = runprops.getStringList("grid.files");
-        if (gridFiles == null || gridFiles.equals("")) {
+        if (gridFiles.length == 0) {
             logger.warn("Property grid.files in " + filename + " not set!");
             System.exit(1);
         }
@@ -45,11 +48,16 @@ public class Run {
         }
 
         String[] appFiles = runprops.getStringList("application.files");
-        if (appFiles == null || appFiles.equals("")) {
+        if (appFiles.length == 0) {
             logger.warn("Property application.files in " + filename
                     + " not set!");
             System.exit(1);
         }
+
+        run.retryAttempts = runprops.getIntProperty("retry",
+                DEFAULT_RETRY_ATTEMPTS);
+        run.retryInterval = runprops.getIntProperty("retry.interval",
+                DEFAULT_RETRY_INTERVAL);
 
         HashSet<Application> appSet = new HashSet<Application>();
         for (int i = 0; i < appFiles.length; i++) {
@@ -83,12 +91,26 @@ public class Run {
                 }
 
                 int nodes;
+                String nodesString;
                 try {
-                    nodes = runprops.getIntProperty(jobName + "." + subjob
+                    nodesString = runprops.getProperty(jobName + "." + subjob
                             + ".nodes");
+                    if (nodesString != null && nodesString.equals("max")) {
+                        nodes = run.getGrid(grid).getCluster(cluster)
+                                .getMachineCount();
+                    } else {
+                        nodes = runprops.getIntProperty(jobName + "." + subjob
+                                + ".nodes");
+                    }
                 } catch (NumberFormatException e) {
                     try {
-                        nodes = runprops.getIntProperty(jobName + ".nodes");
+                        nodesString = runprops.getProperty(jobName + ".nodes");
+                        if (nodesString != null && nodesString.equals("max")) {
+                            nodes = run.getGrid(grid).getCluster(cluster)
+                                    .getMachineCount();
+                        } else {
+                            nodes = runprops.getIntProperty(jobName + ".nodes");
+                        }
                     } catch (NumberFormatException e1) {
                         try {
                             nodes = runprops.getIntProperty("nodes");
@@ -99,13 +121,28 @@ public class Run {
                 }
 
                 int multicore;
+                String multicoreString;
                 try {
-                    multicore = runprops.getIntProperty(jobName + "." + subjob
-                            + ".multicore");
+                    multicoreString = runprops.getProperty(jobName + "."
+                            + subjob + ".multicore");
+                    if (multicoreString != null && multicoreString.equals("max")) {
+                        multicore = run.getGrid(grid).getCluster(cluster)
+                                .getCPUsPerMachine();
+                    } else {
+                        multicore = runprops.getIntProperty(jobName + "."
+                                + subjob + ".multicore");
+                    }
                 } catch (NumberFormatException e) {
                     try {
-                        multicore = runprops.getIntProperty(jobName
+                        multicoreString = runprops.getProperty(jobName
                                 + ".multicore");
+                        if (multicoreString != null && multicoreString.equals("max")) {
+                            multicore = run.getGrid(grid).getCluster(cluster)
+                                    .getCPUsPerMachine();
+                        } else {
+                            multicore = runprops.getIntProperty(jobName
+                                    + ".multicore");
+                        }
                     } catch (NumberFormatException e1) {
                         try {
                             multicore = runprops.getIntProperty("multicore");
@@ -115,32 +152,17 @@ public class Run {
                     }
                 }
 
-                int cores;
-                try {
-                    cores = runprops.getIntProperty(jobName + "." + subjob
-                            + ".cores");
-                } catch (NumberFormatException e) {
-                    try {
-                        cores = runprops.getIntProperty(jobName + ".cores");
-                    } catch (NumberFormatException e1) {
-                        try {
-                            cores = runprops.getIntProperty("cores");
-                        } catch (NumberFormatException e2) {
-                            cores = -1;
-                        }
-                    }
+                String[] attrs = runprops.getStringList(jobName + "." + subjobs
+                        + ".gat.attributes");
+                if (attrs.length == 0) {
+                    attrs = runprops.getStringList(jobName + ".gat.attributes");
                 }
-                
-                String[] attrs = runprops.getStringList(jobName + "." + subjobs + ".gat.attributes");
-                if (attrs == null) {
-                    attrs = runprops.getStringList(jobName +  ".gat.attributes");
-                }
-                
 
                 String application = runprops.getProperty(jobName + "."
                         + subjob + ".application");
                 if (application == null || application.equals("")) {
-                    application = runprops.getProperty(jobName + ".application");
+                    application = runprops
+                            .getProperty(jobName + ".application");
                     if (application == null || application.equals("")) {
                         application = runprops.getProperty("application");
                     }
@@ -151,7 +173,7 @@ public class Run {
                     logger.warn("Application not found! (" + application + ")");
                     System.exit(1);
                 }
-                
+
                 String main = runprops.getProperty(application + ".main");
                 if (main == null || main.equals("")) {
                     main = runprops.getProperty("main");
@@ -160,43 +182,44 @@ public class Run {
                     app.setMain(main);
                 }
 
-                String[] javaFlags = runprops.getStringList(application + ".flags",
-                        " ");
-                if (javaFlags == null) {
+                String[] javaFlags = runprops.getStringList(application
+                        + ".flags", " ");
+                if (javaFlags.length == 0) {
                     javaFlags = runprops.getStringList("flags", " ");
                 }
-                if (javaFlags != null && javaFlags.length > 0) {
+                if (javaFlags.length > 0) {
                     app.setJavaFlags(javaFlags);
                 }
 
                 String[] parameters = runprops.getStringList(application
                         + ".parameters", " ");
-                if (parameters == null) {
+                if (parameters.length == 0) {
                     parameters = runprops.getStringList("parameters", " ");
                 }
-                if (parameters != null && parameters.length > 0) {
+                if (parameters.length > 0) {
                     app.setParameters(parameters);
                 }
 
                 String[] preStaged = runprops.getStringList(application
                         + ".prestage");
-                if (preStaged == null) {
+                if (preStaged.length == 0) {
                     preStaged = runprops.getStringList("prestage");
                 }
-                if (preStaged != null && preStaged.length > 0) {
+                if (preStaged.length > 0) {
                     app.setPreStaged(preStaged);
                 }
 
                 String[] postStaged = runprops.getStringList(application
                         + ".poststage");
-                if (postStaged == null) {
+                if (postStaged.length == 0) {
                     postStaged = runprops.getStringList("poststage");
                 }
-                if (postStaged != null && postStaged.length > 0) {
+                if (postStaged.length > 0) {
                     app.setPostStaged(postStaged);
                 }
 
-                String classpath = runprops.getProperty(application + ".classpath");
+                String classpath = runprops.getProperty(application
+                        + ".classpath");
                 if (classpath == null || classpath.equals("")) {
                     classpath = runprops.getProperty("classpath");
                 }
@@ -260,6 +283,14 @@ public class Run {
 
     public String getRunFileName() {
         return runFileName;
+    }
+
+    public int getRetryAttempts() {
+        return retryAttempts;
+    }
+
+    public int getRetryInterval() {
+        return retryInterval;
     }
 
 }

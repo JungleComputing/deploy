@@ -3,10 +3,9 @@
  */
 package ibis.deploy;
 
-import org.apache.log4j.Logger;
 
 public class Cluster {
-    private static Logger logger = Logger.getLogger(Cluster.class);
+//    private static Logger logger = Logger.getLogger(Cluster.class);
 
     private String friendlyName;
 

@@ -74,25 +74,25 @@ public class Application {
 
             String[] javaFlags = applicationProps.getStringList(app + ".flags",
                     " ");
-            if (javaFlags == null) {
+            if (javaFlags.length == 0) {
                 javaFlags = applicationProps.getStringList("flags", " ");
             }
 
             String[] parameters = applicationProps.getStringList(app
                     + ".parameters", " ");
-            if (parameters == null) {
+            if (parameters.length == 0) {
                 parameters = applicationProps.getStringList("parameters", " ");
             }
 
             String[] preStaged = applicationProps.getStringList(app
-                    + ".prestage");
-            if (preStaged == null) {
-                preStaged = applicationProps.getStringList("prestage");
+                    + ".prestage",  " ");
+            if (preStaged.length == 0) {
+                preStaged = applicationProps.getStringList("prestage", " ");
             }
 
             String[] postStaged = applicationProps.getStringList(app
                     + ".poststage");
-            if (postStaged == null) {
+            if (postStaged.length == 0) {
                 postStaged = applicationProps.getStringList("poststage");
             }
 
