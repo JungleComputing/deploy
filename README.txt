@@ -1,4 +1,4 @@
-PREREQUISITES FOR GENESEQUENCING
+README FOR GENESEQUENCING
 
 - you have to submit from a headnode (for the moment)
 - $GAT_LOCATION is set to an up to date JavaGAT (can be $IBIS_DEPLOY_HOME/lib) 
@@ -20,3 +20,7 @@ PREREQUISITES FOR GENESEQUENCING
 - don't forget to set the runtime as the default runtime per job is 20 min.
 - the default number of retries is 3, the default timeout between retries is 120 sec., these values can be changed in the run.properties
 - the output of ibis-deploy can be controlled using the log4j.properties file
+- the output of the jobs is put in the submission dir with a name: <jobname>.<subjobname>.<input filename>.gz
+- if only the stderr and stdout are available, your job was probably terminated because the runtime was exceeded.
+- at the moment the wide area runs are *not* run at the Leiden cluster, because the globus certificate is expired, if Leiden is up and running uncomment the code in run.properties
+- the total number of nodes in das2.properties and das3.properties is set to roughly 90% of the real number of nodes (uncomment if you want the real number of nodes)
