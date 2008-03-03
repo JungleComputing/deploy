@@ -5,11 +5,6 @@ if [ -z "$IBIS_DEPLOY_HOME" ] ; then
 	exit 1;
 fi
 
-if [ -z "$IBIS_HOME" ] ; then
-        echo IBIS_HOME variable not set
-	exit 1;
-fi
-
 # ---- do not touch anything below this line ----
 
 add_to_classpath () {
@@ -28,6 +23,7 @@ add_to_classpath () {
 	done
 }
 
+add_to_classpath $GAT_LOCATION/lib
 add_to_classpath $IBIS_DEPLOY_HOME/lib
 
-java -cp $CLASSPATH:$IBIS_DEPLOY_CLASSPATH -Dlog4j.configuration=file:$IBIS_DEPLOY_HOME/log4j.properties -Dgat.adaptor.path=$IBIS_DEPLOY_HOME/lib/adaptors ibis.deploy.IbisDeploy $*
+java -cp $CLASSPATH:$IBIS_DEPLOY_CLASSPATH -Dlog4j.configuration=file:$IBIS_DEPLOY_HOME/log4j.properties -Dgat.adaptor.path=$GAT_LOCATION/lib/adaptors ibis.deploy.IbisDeploy $*
