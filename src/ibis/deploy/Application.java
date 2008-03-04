@@ -65,12 +65,7 @@ public class Application {
         HashSet<Application> result = new HashSet<Application>();
         TypedProperties applicationProps = new TypedProperties();
         applicationProps.load(new FileInputStream(filename));
-        applicationProps.list(System.out);
         applicationProps.expandSystemVariables();
-        applicationProps.list(System.out);
-        if (applicationProps != null) {
-            System.exit(0);
-        }
         String[] apps = applicationProps.getStringList("applications");
         for (String app : apps) {
             String main = applicationProps.getProperty(app + ".main");
