@@ -68,6 +68,7 @@ public class Grid {
         logger.info("loading grid: " + filename + " ...");
         TypedProperties gridprops = new TypedProperties();
         gridprops.load(new FileInputStream(filename));
+        gridprops.expandSystemVariables();
         String gridName = gridprops.getProperty("name");
         Grid grid = new Grid(gridName);
         String[] clusterNames = gridprops.getStringList("clusters");

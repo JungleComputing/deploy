@@ -35,6 +35,7 @@ public class Run {
 
         TypedProperties runprops = new TypedProperties();
         runprops.load(new FileInputStream(filename));
+        runprops.expandSystemVariables();
 
         String[] gridFiles = runprops.getStringList("grid.files");
         if (gridFiles.length == 0) {
