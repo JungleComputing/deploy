@@ -35,7 +35,7 @@ public class IbisDeploy implements MetricListener {
 
     private static Logger logger = Logger.getLogger(IbisDeploy.class);
 
-    String gatLocation;
+//    String gatLocation;
 
     String ibisHome;
 
@@ -59,14 +59,14 @@ public class IbisDeploy implements MetricListener {
     }
 
     public void start(String runFile, int runTime) {
-        gatLocation = System.getenv("GAT_LOCATION");
-        if (gatLocation == null) {
-            logger.warn("please set your GAT_LOCATION");
-            System.exit(1);
-        }
-        if (logger.isInfoEnabled()) {
-            logger.info("using JavaGAT at: " + gatLocation);
-        }
+//        gatLocation = System.getenv("GAT_LOCATION");
+//        if (gatLocation == null) {
+//            logger.warn("please set your GAT_LOCATION");
+//            System.exit(1);
+//        }
+//        if (logger.isInfoEnabled()) {
+//            logger.info("using JavaGAT at: " + gatLocation);
+//        }
 
         ibisHome = System.getenv("IBIS_HOME");
         if (ibisHome == null) {
