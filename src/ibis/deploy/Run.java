@@ -7,6 +7,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 
@@ -104,6 +106,14 @@ public class Run {
                     if (nodesString != null && nodesString.equals("max")) {
                         nodes = run.getGrid(grid).getCluster(cluster)
                                 .getMachineCount();
+                    } else if (nodesString != null && nodesString.matches("\\d+?\\s*?%")) {
+                        Pattern pattern = Pattern.compile("\\d*+");
+                        Matcher matcher = pattern.matcher(nodesString);
+                        if (matcher.find()) {
+                            int percentage = Integer.parseInt(matcher.group());
+                            nodes = (int) ((run.getGrid(grid).getCluster(cluster)
+                            .getMachineCount() * percentage) / 100.0);
+                        }
                     } else {
                         nodes = runprops.getIntProperty(jobName + "." + subjob
                                 + ".nodes");
@@ -117,6 +127,14 @@ public class Run {
                         if (nodesString != null && nodesString.equals("max")) {
                             nodes = run.getGrid(grid).getCluster(cluster)
                                     .getMachineCount();
+                        } else if (nodesString != null && nodesString.matches("\\d+?\\s*?%")) {
+                            Pattern pattern = Pattern.compile("\\d*+");
+                            Matcher matcher = pattern.matcher(nodesString);
+                            if (matcher.find()) {
+                                int percentage = Integer.parseInt(matcher.group());
+                                nodes = (int) ((run.getGrid(grid).getCluster(cluster)
+                                .getMachineCount() * percentage) / 100.0);
+                            }
                         } else {
                             nodes = runprops.getIntProperty(jobName + ".nodes");
                         }
@@ -129,6 +147,14 @@ public class Run {
                             if (nodesString != null && nodesString.equals("max")) {
                                 nodes = run.getGrid(grid).getCluster(cluster)
                                         .getMachineCount();
+                            } else if (nodesString != null && nodesString.matches("\\d+?\\s*?%")) {
+                                Pattern pattern = Pattern.compile("\\d*+");
+                                Matcher matcher = pattern.matcher(nodesString);
+                                if (matcher.find()) {
+                                    int percentage = Integer.parseInt(matcher.group());
+                                    nodes = (int) ((run.getGrid(grid).getCluster(cluster)
+                                    .getMachineCount() * percentage) / 100.0);
+                                }
                             } else {
                                 nodes = runprops.getIntProperty("nodes");
                             }
