@@ -137,7 +137,8 @@ public class IbisDeploy implements MetricListener {
         }
 
         // start an ibis server and a hub on the submitting machine
-        Server server = startServer();
+        Server server = startServer(run.getServerEvents(), run
+                .getServerErrors(), run.getServerStats());
         if (logger.isDebugEnabled()) {
             logger.debug("Local server started! (" + server.getLocalAddress()
                     + ")");
@@ -259,7 +260,7 @@ public class IbisDeploy implements MetricListener {
         }
     }
 
-    private Server startServer() {
+    private Server startServer(boolean events, boolean errors, boolean stats) {
         // start up a server at the submitting machine
         Properties properties = new Properties();
         // let the server automatically find a free port
@@ -267,6 +268,9 @@ public class IbisDeploy implements MetricListener {
         properties.put(ServerProperties.IMPLEMENTATION_PATH, ibisHome
                 + File.separator + "lib");
         properties.put("ibis.registry.central.statistics", "true");
+        properties.put(ServerProperties.PRINT_EVENTS, "" + events);
+        properties.put(ServerProperties.PRINT_ERRORS, "" + errors);
+        properties.put(ServerProperties.PRINT_STATS, "" + stats);
 
         Server server = null;
         try {

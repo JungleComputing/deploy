@@ -26,6 +26,7 @@ public class Run {
     private String runFileName;
 
     private int retryAttempts, retryInterval;
+    private boolean serverStats, serverEvents, serverErrors;
 
     public static Run loadRun(String filename) throws FileNotFoundException,
             IOException {
@@ -59,6 +60,10 @@ public class Run {
                 DEFAULT_RETRY_ATTEMPTS);
         run.retryInterval = runprops.getIntProperty("retry.interval",
                 DEFAULT_RETRY_INTERVAL);
+        
+        run.serverStats = runprops.getBooleanProperty("server.stats", false);
+        run.serverErrors = runprops.getBooleanProperty("server.errors", false);
+        run.serverEvents = runprops.getBooleanProperty("server.events", false);
 
         HashSet<Application> appSet = new HashSet<Application>();
         for (int i = 0; i < appFiles.length; i++) {
@@ -318,6 +323,18 @@ public class Run {
 
     public int getRetryInterval() {
         return retryInterval;
+    }
+
+    public boolean getServerStats() {
+        return serverStats;
+    }
+
+    public boolean getServerEvents() {
+        return serverEvents;
+    }
+
+    public boolean getServerErrors() {
+        return serverErrors;
     }
 
 }
