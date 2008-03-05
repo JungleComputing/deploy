@@ -35,7 +35,7 @@ public class IbisDeploy implements MetricListener {
 
     private static Logger logger = Logger.getLogger(IbisDeploy.class);
 
-//    String gatLocation;
+    // String gatLocation;
 
     String ibisHome;
 
@@ -44,29 +44,25 @@ public class IbisDeploy implements MetricListener {
     String satinHome;
 
     public static void main(String[] args) {
-        if (args.length < 1 || args.length > 2) {
+        if (args.length != 1) {
             System.err
-                    .println("usage: ibis-deploy <runFile> [runTime in seconds]");
+                    .println("usage: ibis-deploy <runFile>");
             System.exit(1);
         }
 
-        int time = -1;
-        if (args.length == 2) {
-            time = Integer.parseInt(args[1]);
-        }
-        new IbisDeploy().start(args[0], time);
+        new IbisDeploy().start(args[0]);
         System.exit(1);
     }
 
-    public void start(String runFile, int runTime) {
-//        gatLocation = System.getenv("GAT_LOCATION");
-//        if (gatLocation == null) {
-//            logger.warn("please set your GAT_LOCATION");
-//            System.exit(1);
-//        }
-//        if (logger.isInfoEnabled()) {
-//            logger.info("using JavaGAT at: " + gatLocation);
-//        }
+    public void start(String runFile) {
+        // gatLocation = System.getenv("GAT_LOCATION");
+        // if (gatLocation == null) {
+        // logger.warn("please set your GAT_LOCATION");
+        // System.exit(1);
+        // }
+        // if (logger.isInfoEnabled()) {
+        // logger.info("using JavaGAT at: " + gatLocation);
+        // }
 
         ibisHome = System.getenv("IBIS_HOME");
         if (ibisHome == null) {
@@ -107,7 +103,7 @@ public class IbisDeploy implements MetricListener {
                             + requested.get(i).getName() + "'");
                 }
                 try {
-                    submitJob(run, new GATContext(), requested.get(i), runTime);
+                    submitJob(run, new GATContext(), requested.get(i));
                     break;
                 } catch (Exception e) {
                     if (logger.isInfoEnabled()) {
@@ -128,8 +124,8 @@ public class IbisDeploy implements MetricListener {
         GAT.end();
     }
 
-    public synchronized void submitJob(Run run, GATContext context, Job job,
-            int runTime) throws Exception {
+    public synchronized void submitJob(Run run, GATContext context, Job job)
+            throws Exception {
         // create a new pool id for this job
         String poolID = "ibis-deploy-" + job.getName() + "-" + Math.random();
         if (logger.isDebugEnabled()) {
@@ -212,7 +208,7 @@ public class IbisDeploy implements MetricListener {
                             + "'");
                 }
                 jobs[i] = submitSubJob(run, context, job, job.get(i), poolID,
-                        server.getLocalAddress(), knownHubs, runTime);
+                        server.getLocalAddress(), knownHubs);
             } catch (Exception e) {
                 if (logger.isInfoEnabled()) {
                     logger.info("submission failed: " + e);
@@ -333,7 +329,7 @@ public class IbisDeploy implements MetricListener {
 
     private org.gridlab.gat.resources.Job submitSubJob(Run run,
             GATContext context, Job job, SubJob subJob, String poolID,
-            String server, String hubAddresses, int runTime)
+            String server, String hubAddresses)
             throws GATInvocationException, GATObjectCreationException,
             URISyntaxException {
 
@@ -452,7 +448,8 @@ public class IbisDeploy implements MetricListener {
                             .createFile(context, preferences, job.getName()
                                     + "." + subJob.getName() + "." + filename));
             logger.info("added poststage file '" + filename + "' -> '"
-                    + job.getName() + "." + subJob.getName() + "." + filename + "'");
+                    + job.getName() + "." + subJob.getName() + "." + filename
+                    + "'");
         }
         int machineCount = subJob.getMachineCount();
         if (machineCount == 0)
@@ -462,12 +459,7 @@ public class IbisDeploy implements MetricListener {
             CPUsPerMachine = cluster.getCPUsPerMachine();
         sd.addAttribute("count", machineCount * CPUsPerMachine);
         sd.addAttribute("host.count", machineCount);
-
-        if (runTime < 0) {
-            sd.addAttribute("walltime.max", "20");
-        } else {
-            sd.addAttribute("walltime.max", "" + runTime);
-        }
+        sd.addAttribute("walltime.max", subJob.getRuntime());
 
         Hashtable<String, Object> hardwareAttributes = new Hashtable<String, Object>();
         hardwareAttributes.put("machine.node", cluster.getHostname());

@@ -209,6 +209,52 @@ public class Run {
                         }
                     }
                 }
+                
+                int runtime = 20;
+                String runtimeString;
+                try {
+                    runtimeString = runprops.getProperty(jobName + "."
+                            + subjob + ".runtime");
+                    if (runtimeString != null && runtimeString.equals("max")) {
+                        runtime = run.getGrid(grid).getCluster(cluster)
+                                .getCPUsPerMachine();
+                    } else {
+                        runtime = runprops.getIntProperty(jobName + "."
+                                + subjob + ".runtime");
+                    }
+                    if (runtimeString == null) {
+                        throw new NumberFormatException();
+                    }
+                } catch (NumberFormatException e) {
+                    try {
+                        runtimeString = runprops.getProperty(jobName
+                                + ".runtime");
+                        if (runtimeString != null && runtimeString.equals("max")) {
+                            runtime = run.getGrid(grid).getCluster(cluster)
+                                    .getCPUsPerMachine();
+                        } else {
+                            runtime = runprops.getIntProperty(jobName
+                                    + ".runtime");
+                        }
+                        if (runtimeString == null) {
+                            throw new NumberFormatException();
+                        }
+                    } catch (NumberFormatException e1) {
+                        try {
+                            runtimeString = runprops.getProperty("runtime");
+                            if (runtimeString != null
+                                    && runtimeString.equals("max")) {
+                                runtime = run.getGrid(grid).getCluster(
+                                        cluster).getCPUsPerMachine();
+                            } else {
+                                runtime = runprops
+                                        .getIntProperty("runtime");
+                            }
+                        } catch (NumberFormatException e2) {
+                            runtime = -1;
+                        }
+                    }
+                }
 
                 String[] attrs = runprops.getStringList(jobName + "." + subjobs
                         + ".gat.attributes", " ");
@@ -286,7 +332,7 @@ public class Run {
                 }
 
                 job.addSubJob(new SubJob(subjob, grid, cluster, nodes,
-                        multicore, app, attrs));
+                        multicore, app, runtime, attrs));
             }
             run.jobs.add(job);
         }
