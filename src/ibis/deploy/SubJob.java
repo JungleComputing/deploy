@@ -64,7 +64,7 @@ public class SubJob {
         return attributes;
     }
 
-    public int getRuntime() {
-        return runtime ;
+    public long getRuntime() {
+        return (long) runtime ;
     }
 }
