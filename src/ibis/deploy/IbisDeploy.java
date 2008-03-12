@@ -88,12 +88,6 @@ public class IbisDeploy implements MetricListener {
             logger.info(run);
         }
 
-        GATContext context = new GATContext();
-
-        context.addPreference("file.hiddenfiles.ignore", "true");
-        context.addPreference("ignoreHiddenFiles", "true");
-        context.addPreference("ftp.connection.passive", "false");
-
         ArrayList<Job> requested = run.getRequestedResources();
 
         for (int i = 0; i < requested.size(); i++) {
@@ -341,6 +335,8 @@ public class IbisDeploy implements MetricListener {
         Preferences preferences = new Preferences();
         preferences.put("ResourceBroker.adaptor.name", cluster.getAccessType());
         preferences.put("File.adaptor.name", cluster.getFileAccessType());
+        preferences.put("file.hiddenfiles.ignore", "true");
+        preferences.put("ftp.connection.passive", "false");
         Set<String> preferenceKeys = subJob.getPreferences().keySet();
         for (String key : preferenceKeys) {
             preferences.put(key, subJob.getPreferences().get(key));
