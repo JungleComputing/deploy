@@ -341,7 +341,11 @@ public class IbisDeploy implements MetricListener {
         Preferences preferences = new Preferences();
         preferences.put("ResourceBroker.adaptor.name", cluster.getAccessType());
         preferences.put("File.adaptor.name", cluster.getFileAccessType());
-
+        Set<String> preferenceKeys = subJob.getPreferences().keySet();
+        for (String key : preferenceKeys) {
+            preferences.put(key, subJob.getPreferences().get(key));
+        }
+        
         File outFile = GAT.createFile(context, preferences, new URI("any:///"
                 + job.getName() + "." + subJob.getName() + "."
                 + subJob.getApplication().getName() + ".stdout"));
