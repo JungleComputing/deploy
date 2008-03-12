@@ -124,7 +124,7 @@ public class IbisDeploy implements MetricListener {
         GAT.end();
     }
 
-    public synchronized void submitJob(Run run, GATContext context, Job job)
+    public void submitJob(Run run, GATContext context, Job job)
             throws Exception {
         // create a new pool id for this job
         String poolID = "ibis-deploy-" + job.getName() + "-" + Math.random();
@@ -236,7 +236,7 @@ public class IbisDeploy implements MetricListener {
                             + " ("
                             + org.gridlab.gat.resources.Job
                                     .getStateString(jobs[i].getState()) + ")");
-                    wait(1000);
+                    Thread.sleep(1000);
                 } catch (InterruptedException e) {
                 }
             }
