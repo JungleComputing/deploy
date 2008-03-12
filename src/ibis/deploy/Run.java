@@ -210,7 +210,7 @@ public class Run {
                     }
                 }
                 
-                int runtime = 20;
+                long runtime = 20;
                 String runtimeString;
                 try {
                     runtimeString = runprops.getProperty(jobName + "."

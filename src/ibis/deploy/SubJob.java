@@ -11,10 +11,10 @@ public class SubJob {
     
     private HashMap<String, Object> attributes = new HashMap<String, Object>();
 
-    private int runtime;
+    private long runtime;
 
     public SubJob(String name, String grid, String cluster, int nodes,
-            int multicore, Application application, int runtime, String[] attrs) {
+            int multicore, Application application, long runtime, String[] attrs) {
         this.name = name;
         this.gridName = grid;
         this.clusterName = cluster;
@@ -64,7 +64,8 @@ public class SubJob {
         return attributes;
     }
 
+
     public long getRuntime() {
-        return (long) runtime ;
+        return runtime ;
     }
 }
