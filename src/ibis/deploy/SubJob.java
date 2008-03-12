@@ -10,11 +10,12 @@ public class SubJob {
     private Application application;
     
     private HashMap<String, Object> attributes = new HashMap<String, Object>();
+    private HashMap<String, Object> preferences = new HashMap<String, Object>();
 
     private long runtime;
 
     public SubJob(String name, String grid, String cluster, int nodes,
-            int multicore, Application application, long runtime, String[] attrs) {
+            int multicore, Application application, long runtime, String[] attrs, String[] prefs) {
         this.name = name;
         this.gridName = grid;
         this.clusterName = cluster;
@@ -25,6 +26,11 @@ public class SubJob {
         if (attrs != null) {
             for (int i = 0; i < attrs.length; i+=2 ) {
                 attributes.put(attrs[i], attrs[i+1]);
+            }
+        }
+        if (prefs != null) {
+            for (int i = 0; i < prefs.length; i+=2 ) {
+                preferences.put(prefs[i], prefs[i+1]);
             }
         }
     }
@@ -62,6 +68,10 @@ public class SubJob {
     
     public HashMap<String, Object> getAttributes() {
         return attributes;
+    }
+    
+    public HashMap<String, Object> getPreferences() {
+        return preferences;
     }
 
 

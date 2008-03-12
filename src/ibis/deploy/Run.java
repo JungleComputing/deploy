@@ -261,6 +261,12 @@ public class Run {
                 if (attrs.length == 0) {
                     attrs = runprops.getStringList(jobName + ".gat.attributes", " ");
                 }
+                
+                String[] prefs = runprops.getStringList(jobName + "." + subjobs
+                        + ".gat.preferences", " ");
+                if (attrs.length == 0) {
+                    attrs = runprops.getStringList(jobName + ".gat.preferences", " ");
+                }
 
                 String application = runprops.getProperty(jobName + "."
                         + subjob + ".application");
@@ -332,7 +338,7 @@ public class Run {
                 }
 
                 job.addSubJob(new SubJob(subjob, grid, cluster, nodes,
-                        multicore, app, runtime, attrs));
+                        multicore, app, runtime, attrs, prefs));
             }
             run.jobs.add(job);
         }
