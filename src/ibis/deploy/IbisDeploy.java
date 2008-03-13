@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Properties;
@@ -45,8 +46,7 @@ public class IbisDeploy implements MetricListener {
 
     public static void main(String[] args) {
         if (args.length != 1) {
-            System.err
-                    .println("usage: ibis-deploy <runFile>");
+            System.err.println("usage: ibis-deploy <runFile>");
             System.exit(1);
         }
 
@@ -133,10 +133,8 @@ public class IbisDeploy implements MetricListener {
             logger.debug("Local server started! (" + server.getLocalAddress()
                     + ")");
         }
-        String knownHubs = server.getLocalAddress();
-        if (logger.isDebugEnabled()) {
-            logger.debug("Known hubs: " + knownHubs);
-        }
+        Map<String, String> hubMap = new HashMap<String, String>();
+        hubMap.put("localhost", server.getLocalAddress());
 
         // start a hub on the other nodes
         ArrayList<org.gridlab.gat.resources.Job> hubJobs = new ArrayList<org.gridlab.gat.resources.Job>();
@@ -151,7 +149,7 @@ public class IbisDeploy implements MetricListener {
                 String hubAddressFileName = ".ibis-deploy-hubaddress-"
                         + Math.random();
                 // now start the hub
-                hubJobs.add(startHub(cluster, knownHubs, "../"
+                hubJobs.add(startHub(cluster, hubMap, "../"
                         + hubAddressFileName, new GATContext()));
                 if (logger.isDebugEnabled()) {
                     logger.debug("Hub started at: " + cluster.getHostname());
@@ -179,7 +177,7 @@ public class IbisDeploy implements MetricListener {
                         new InputStreamReader(in));
                 try {
                     String hubAddress = reader.readLine();
-                    knownHubs += "," + hubAddress;
+                    hubMap.put(cluster.getHostname(), hubAddress);
                     server.addHubs(hubAddress);
                 } catch (IOException e) {
                     if (logger.isDebugEnabled()) {
@@ -202,7 +200,7 @@ public class IbisDeploy implements MetricListener {
                             + "'");
                 }
                 jobs[i] = submitSubJob(run, context, job, job.get(i), poolID,
-                        server.getLocalAddress(), knownHubs);
+                        server.getLocalAddress(), hubMap);
             } catch (Exception e) {
                 if (logger.isInfoEnabled()) {
                     logger.info("submission failed: " + e);
@@ -274,7 +272,7 @@ public class IbisDeploy implements MetricListener {
     }
 
     private org.gridlab.gat.resources.Job startHub(Cluster cluster,
-            String hubs, String hubAddressFile, GATContext context)
+            Map<String, String> hubMap, String hubAddressFile, GATContext context)
             throws GATObjectCreationException, GATInvocationException {
         // start up a hub on the headnode of all clusters. Use the ssh
         // ResourceBroker to reach the headnode, because other brokers may
@@ -298,9 +296,10 @@ public class IbisDeploy implements MetricListener {
         for (int i = 0; i < jars.length; i++) {
             classpath += ":lib/" + jars[i];
         }
+        // set the server hub as first hub!
         sd.setArguments(new String[] { "-classpath", classpath,
                 "-Dlog4j.configuration=file:./log4j.properties",
-                "ibis.server.Server", "--hub-only", "--hub-addresses", hubs,
+                "ibis.server.Server", "--hub-only", "--hub-addresses", getHubAddressesString(hubMap, "localhost"),
                 "--port", "0", "--hub-address-file", hubAddressFile });
         sd.addPreStagedFile(GAT.createFile(context, preferences, ibisHome
                 + "/lib"));
@@ -323,9 +322,8 @@ public class IbisDeploy implements MetricListener {
 
     private org.gridlab.gat.resources.Job submitSubJob(Run run,
             GATContext context, Job job, SubJob subJob, String poolID,
-            String server, String hubAddresses)
-            throws GATInvocationException, GATObjectCreationException,
-            URISyntaxException {
+            String server, Map<String, String> hubMap) throws GATInvocationException,
+            GATObjectCreationException, URISyntaxException {
 
         // retrieve the application of this job and the grid where it should run
         Application app = subJob.getApplication();
@@ -341,7 +339,7 @@ public class IbisDeploy implements MetricListener {
         for (String key : preferenceKeys) {
             preferences.put(key, subJob.getPreferences().get(key));
         }
-        
+
         File outFile = GAT.createFile(context, preferences, new URI("any:///"
                 + job.getName() + "." + subJob.getName() + "."
                 + subJob.getApplication().getName() + ".stdout"));
@@ -401,7 +399,8 @@ public class IbisDeploy implements MetricListener {
         arguments[pos++] = classpath;
         arguments[pos++] = "-Dlog4j.configuration=file:log4j.properties";
         arguments[pos++] = "-Dibis.server.address=" + server;
-        arguments[pos++] = "-Dibis.server.hub.addresses=" + hubAddresses;
+        arguments[pos++] = "-Dibis.server.hub.addresses="
+                + getHubAddressesString(hubMap, cluster.getHostname());
         arguments[pos++] = "-Dibis.pool.name=" + poolID;
         arguments[pos++] = "-Dibis.pool.size=" + job.getTotalCPUCount();
         arguments[pos++] = "-Dibis.location.postfix=" + subJob.getClusterName();
@@ -474,6 +473,23 @@ public class IbisDeploy implements MetricListener {
         org.gridlab.gat.resources.Job j = broker.submitJob(jd, this,
                 "job.status");
         return j;
+    }
+
+    private String getHubAddressesString(Map<String, String> hubMap,
+            String hostname) {
+        String first = hubMap.get(hostname);
+        if (first == null) {
+            first = hubMap.get("localhost");
+        }
+        String result = first;
+        Set<String> others = hubMap.keySet();
+        for (String other : others) {
+            if (hubMap.get(other).equals(first)) {
+                continue;
+            }
+            result += "," + other;
+        }
+        return result;
     }
 
     public synchronized void processMetricEvent(MetricValue val) {
