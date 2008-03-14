@@ -62,7 +62,7 @@ public class Run {
                 DEFAULT_RETRY_ATTEMPTS);
         run.retryInterval = runprops.getIntProperty("retry.interval",
                 DEFAULT_RETRY_INTERVAL);
-        
+
         run.serverStats = runprops.getBooleanProperty("server.stats", false);
         run.serverErrors = runprops.getBooleanProperty("server.errors", false);
         run.serverEvents = runprops.getBooleanProperty("server.events", false);
@@ -106,13 +106,14 @@ public class Run {
                     if (nodesString != null && nodesString.equals("max")) {
                         nodes = run.getGrid(grid).getCluster(cluster)
                                 .getMachineCount();
-                    } else if (nodesString != null && nodesString.matches("\\d+?\\s*?%")) {
+                    } else if (nodesString != null
+                            && nodesString.matches("\\d+?\\s*?%")) {
                         Pattern pattern = Pattern.compile("\\d*+");
                         Matcher matcher = pattern.matcher(nodesString);
                         if (matcher.find()) {
                             int percentage = Integer.parseInt(matcher.group());
-                            nodes = (int) ((run.getGrid(grid).getCluster(cluster)
-                            .getMachineCount() * percentage) / 100.0);
+                            nodes = (int) ((run.getGrid(grid).getCluster(
+                                    cluster).getMachineCount() * percentage) / 100.0);
                         }
                     } else {
                         nodes = runprops.getIntProperty(jobName + "." + subjob
@@ -127,13 +128,15 @@ public class Run {
                         if (nodesString != null && nodesString.equals("max")) {
                             nodes = run.getGrid(grid).getCluster(cluster)
                                     .getMachineCount();
-                        } else if (nodesString != null && nodesString.matches("\\d+?\\s*?%")) {
+                        } else if (nodesString != null
+                                && nodesString.matches("\\d+?\\s*?%")) {
                             Pattern pattern = Pattern.compile("\\d*+");
                             Matcher matcher = pattern.matcher(nodesString);
                             if (matcher.find()) {
-                                int percentage = Integer.parseInt(matcher.group());
-                                nodes = (int) ((run.getGrid(grid).getCluster(cluster)
-                                .getMachineCount() * percentage) / 100.0);
+                                int percentage = Integer.parseInt(matcher
+                                        .group());
+                                nodes = (int) ((run.getGrid(grid).getCluster(
+                                        cluster).getMachineCount() * percentage) / 100.0);
                             }
                         } else {
                             nodes = runprops.getIntProperty(jobName + ".nodes");
@@ -144,16 +147,20 @@ public class Run {
                     } catch (NumberFormatException e1) {
                         try {
                             nodesString = runprops.getProperty("nodes");
-                            if (nodesString != null && nodesString.equals("max")) {
+                            if (nodesString != null
+                                    && nodesString.equals("max")) {
                                 nodes = run.getGrid(grid).getCluster(cluster)
                                         .getMachineCount();
-                            } else if (nodesString != null && nodesString.matches("\\d+?\\s*?%")) {
+                            } else if (nodesString != null
+                                    && nodesString.matches("\\d+?\\s*?%")) {
                                 Pattern pattern = Pattern.compile("\\d*+");
                                 Matcher matcher = pattern.matcher(nodesString);
                                 if (matcher.find()) {
-                                    int percentage = Integer.parseInt(matcher.group());
-                                    nodes = (int) ((run.getGrid(grid).getCluster(cluster)
-                                    .getMachineCount() * percentage) / 100.0);
+                                    int percentage = Integer.parseInt(matcher
+                                            .group());
+                                    nodes = (int) ((run.getGrid(grid)
+                                            .getCluster(cluster)
+                                            .getMachineCount() * percentage) / 100.0);
                                 }
                             } else {
                                 nodes = runprops.getIntProperty("nodes");
@@ -169,7 +176,8 @@ public class Run {
                 try {
                     multicoreString = runprops.getProperty(jobName + "."
                             + subjob + ".multicore");
-                    if (multicoreString != null && multicoreString.equals("max")) {
+                    if (multicoreString != null
+                            && multicoreString.equals("max")) {
                         multicore = run.getGrid(grid).getCluster(cluster)
                                 .getCPUsPerMachine();
                     } else {
@@ -183,7 +191,8 @@ public class Run {
                     try {
                         multicoreString = runprops.getProperty(jobName
                                 + ".multicore");
-                        if (multicoreString != null && multicoreString.equals("max")) {
+                        if (multicoreString != null
+                                && multicoreString.equals("max")) {
                             multicore = run.getGrid(grid).getCluster(cluster)
                                     .getCPUsPerMachine();
                         } else {
@@ -209,12 +218,12 @@ public class Run {
                         }
                     }
                 }
-                
+
                 long runtime = 20;
                 String runtimeString;
                 try {
-                    runtimeString = runprops.getProperty(jobName + "."
-                            + subjob + ".runtime");
+                    runtimeString = runprops.getProperty(jobName + "." + subjob
+                            + ".runtime");
                     if (runtimeString != null && runtimeString.equals("max")) {
                         runtime = run.getGrid(grid).getCluster(cluster)
                                 .getCPUsPerMachine();
@@ -229,7 +238,8 @@ public class Run {
                     try {
                         runtimeString = runprops.getProperty(jobName
                                 + ".runtime");
-                        if (runtimeString != null && runtimeString.equals("max")) {
+                        if (runtimeString != null
+                                && runtimeString.equals("max")) {
                             runtime = run.getGrid(grid).getCluster(cluster)
                                     .getCPUsPerMachine();
                         } else {
@@ -244,11 +254,10 @@ public class Run {
                             runtimeString = runprops.getProperty("runtime");
                             if (runtimeString != null
                                     && runtimeString.equals("max")) {
-                                runtime = run.getGrid(grid).getCluster(
-                                        cluster).getCPUsPerMachine();
+                                runtime = run.getGrid(grid).getCluster(cluster)
+                                        .getCPUsPerMachine();
                             } else {
-                                runtime = runprops
-                                        .getIntProperty("runtime");
+                                runtime = runprops.getIntProperty("runtime");
                             }
                         } catch (NumberFormatException e2) {
                             runtime = -1;
@@ -259,13 +268,15 @@ public class Run {
                 String[] attrs = runprops.getStringList(jobName + "." + subjobs
                         + ".gat.attributes", " ");
                 if (attrs.length == 0) {
-                    attrs = runprops.getStringList(jobName + ".gat.attributes", " ");
+                    attrs = runprops.getStringList(jobName + ".gat.attributes",
+                            " ");
                 }
-                
+
                 String[] prefs = runprops.getStringList(jobName + "." + subjobs
                         + ".gat.preferences", " ");
                 if (attrs.length == 0) {
-                    attrs = runprops.getStringList(jobName + ".gat.preferences", " ");
+                    attrs = runprops.getStringList(
+                            jobName + ".gat.preferences", " ");
                 }
 
                 String application = runprops.getProperty(jobName + "."
@@ -337,8 +348,36 @@ public class Run {
                     app.setClasspath(classpath);
                 }
 
-                job.addSubJob(new SubJob(subjob, grid, cluster, nodes,
-                        multicore, app, runtime, attrs, prefs));
+                int subjobchunksize = 0;
+                try {
+                    subjobchunksize = runprops.getIntProperty(jobName + "." + subjob
+                            + ".subjobchunksize");
+                } catch (NumberFormatException e) {
+                    try {
+                        subjobchunksize = runprops.getIntProperty(jobName
+                                + ".subjobchunksize");
+                    } catch (NumberFormatException e1) {
+                        try {
+                            subjobchunksize = runprops.getIntProperty("subjobchunksize");
+                        } catch (NumberFormatException e2) {
+                            subjobchunksize = 0;
+                        }
+                    }
+                }
+                if (subjobchunksize > 0) {
+                    for (int i = 0; i < subjobchunksize; i++) {
+                        int chunknodes = nodes / subjobchunksize;
+                        if (i == 0) {
+                            chunknodes += nodes % subjobchunksize;
+                        }
+                        job.addSubJob(new SubJob(subjob, grid, cluster,
+                                chunknodes, multicore, app, runtime, attrs,
+                                prefs));
+                    }
+                } else {
+                    job.addSubJob(new SubJob(subjob, grid, cluster, nodes,
+                            multicore, app, runtime, attrs, prefs));
+                }
             }
             run.jobs.add(job);
         }
