@@ -11,6 +11,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -120,6 +121,8 @@ public class IbisDeploy implements MetricListener {
 
     public void submitJob(Run run, GATContext context, Job job)
             throws Exception {
+        Map<String, String> hubMap = new HashMap<String, String>();
+
         // create a new pool id for this job
         String poolID = "ibis-deploy-" + job.getName() + "-" + Math.random();
         if (logger.isDebugEnabled()) {
@@ -133,119 +136,239 @@ public class IbisDeploy implements MetricListener {
             logger.debug("Local server started! (" + server.getLocalAddress()
                     + ")");
         }
-        Map<String, String> hubMap = new HashMap<String, String>();
         hubMap.put("localhost", server.getLocalAddress());
 
         // start a hub on the other nodes
-        ArrayList<org.gridlab.gat.resources.Job> hubJobs = new ArrayList<org.gridlab.gat.resources.Job>();
+        List<org.gridlab.gat.resources.Job> hubJobs = null;
+        try {
+            hubJobs = startHubs(job
+                    .getHubClusters(run.getGrids()), hubMap);
+        } catch (Exception e) {
+            // stop the server
+            if (logger.isDebugEnabled()) {
+                logger.debug("Stopping server ...");
+            }
+            server.end(true);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Stopping server DONE");
+            }
+            throw e;
+        }
 
-        Cluster[] clusters = job.getHubClusters(run.getGrids());
-        for (Cluster cluster : clusters) {
-            // if this cluster refers to the localhost don't start a hub, the
-            // server is already on this machine!
-            if (!(new org.gridlab.gat.URI(cluster.getHostname()))
-                    .refersToLocalHost()) {
-                // in this file name the hub will put its address
-                String hubAddressFileName = ".ibis-deploy-hubaddress-"
-                        + Math.random();
-                // now start the hub
-                hubJobs.add(startHub(cluster, hubMap, "../"
-                        + hubAddressFileName, new GATContext()));
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Hub started at: " + cluster.getHostname());
-                }
+        // add the hub addresses to the server
+        addHubAddressesToServer(hubMap, server);
 
-                // the hub is started, and now we wait... for the file with its
-                // address to appear.
-                File hubAddressFile = GAT.createFile(context, "any://"
-                        + cluster.getHostname() + "/" + hubAddressFileName);
-                while (!hubAddressFile.exists()) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("waiting for " + hubAddressFile.toString()
-                                + " to appear.");
-                    }
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        // ignore
-                    }
-                }
-                // the file exists, let's read the address from the file!
-                FileInputStream in = GAT.createFileInputStream(context,
-                        hubAddressFile);
-                BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(in));
+        // start the subjobs
+        Exception subjobSubmissionException = null;
+        List<org.gridlab.gat.resources.Job> subjobs = null;
+        try {
+            subjobs = startSubJobs(job, hubMap, poolID, run, server);
+        } catch (Exception e) {
+            subjobSubmissionException = e;
+        }
+
+        // wait until the first subjob is done
+        boolean runningSubJobs = false;
+        int timeout = 20 * 1000;
+        if (subjobSubmissionException == null) {
+            waitForSubJobs(subjobs);
+
+            // then timeout so that all subjobs can finish
+            try {
+                Thread.sleep(timeout);
+            } catch (InterruptedException e) {
+                // ignore
+            }
+
+            // check whether there are still running subjobs after the timeout
+            runningSubJobs = !cancelGatJobs(subjobs);
+        }
+
+        // stop the server
+        if (logger.isDebugEnabled()) {
+            logger.debug("Stopping server ...");
+        }
+        server.end(true);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Stopping server DONE");
+        }
+
+        // stop the hubs
+        if (logger.isDebugEnabled()) {
+            logger.debug("Stopping hubs ...");
+        }
+        boolean runningHubJobs = !cancelGatJobs(hubJobs);
+        if (logger.isDebugEnabled()) {
+            logger.info("Stopping hubs DONE");
+        }
+
+        // if something went wrong during the submission throw the exception.
+        if (subjobSubmissionException != null) {
+            throw subjobSubmissionException;
+        }
+        // if there were running subjobs after the timeout throw an exception,
+        // so that the job will be retried
+        if (runningSubJobs) {
+            throw new Exception(
+                    "There were still non stopped jobs after "
+                            + timeout
+                            + "ms after the first job finished. There were running hubs: "
+                            + runningHubJobs);
+        }
+    }
+
+    private boolean cancelGatJobs(List<org.gridlab.gat.resources.Job> jobs) {
+        boolean noRunningJobs = true;
+        for (int i = 0; i < jobs.size(); i++) {
+            if (jobs.get(i).getState() != org.gridlab.gat.resources.Job.STOPPED
+                    && jobs.get(i).getState() != org.gridlab.gat.resources.Job.SUBMISSION_ERROR) {
+                noRunningJobs = false;
                 try {
-                    String hubAddress = reader.readLine();
-                    hubMap.put(cluster.getHostname(), hubAddress);
-                    server.addHubs(hubAddress);
-                } catch (IOException e) {
+                    jobs.get(i).stop();
+                } catch (GATInvocationException e) {
                     if (logger.isDebugEnabled()) {
-                        logger
-                                .debug("Exception caught while reading the hub address file: "
-                                        + e);
+                        logger.debug("Failed to cancel job: " + jobs.get(i));
                     }
                 }
             }
         }
+        return noRunningJobs;
+    }
 
-        org.gridlab.gat.resources.Job[] jobs = new org.gridlab.gat.resources.Job[job
-                .numberOfSubJobs()];
+    private void waitForSubJobs(List<org.gridlab.gat.resources.Job> subJobs) {
+        while (true) {
+            for (int i = 0; i < subJobs.size(); i++) {
+                if (subJobs.get(i).getState() == org.gridlab.gat.resources.Job.STOPPED
+                        || subJobs.get(i).getState() == org.gridlab.gat.resources.Job.SUBMISSION_ERROR) {
+                    return;
+                }
+            }
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                // ignore
+            }
+        }
+    }
 
-        // if both server and hubs are up and running, start the real subjobs
+    private List<org.gridlab.gat.resources.Job> startSubJobs(Job job,
+            Map<String, String> hubMap, String poolID, Run run, Server server)
+            throws Exception {
+        List<org.gridlab.gat.resources.Job> result = new ArrayList<org.gridlab.gat.resources.Job>();
         for (int i = 0; i < job.numberOfSubJobs(); i++) {
             try {
                 if (logger.isInfoEnabled()) {
                     logger.info("submitting subjob '" + job.get(i).getName()
                             + "'");
                 }
-                jobs[i] = submitSubJob(run, context, job, job.get(i), poolID,
-                        server.getLocalAddress(), hubMap);
+                result.add(submitSubJob(run, job, job.get(i), poolID, server
+                        .getLocalAddress(), hubMap));
             } catch (Exception e) {
                 if (logger.isInfoEnabled()) {
-                    logger.info("submission failed: " + e);
-                    e.printStackTrace();
+                    logger.info("submission of subjob '" + job.get(i).getName()
+                            + "' failed, cancelling already submitted subjobs");
                 }
                 // submission failed, cancel all already submitted jobs that are
                 // not stopped yet!
-                for (int j = 0; j < i - 1; j++) {
-                    if (jobs[j].getState() != org.gridlab.gat.resources.Job.STOPPED
-                            && jobs[j].getState() != org.gridlab.gat.resources.Job.SUBMISSION_ERROR) {
-                        jobs[j].stop();
+                while (result.size() != 0) {
+                    try {
+                        result.remove(0).stop();
+                    } catch (GATInvocationException e1) {
+                        // ignore
                     }
                 }
                 throw e;
             }
-
         }
-        // wait for all submitted jobs to be finished;
-        for (int i = 0; i < job.numberOfSubJobs(); i++) {
-            while (jobs[i].getState() != org.gridlab.gat.resources.Job.STOPPED
-                    && jobs[i].getState() != org.gridlab.gat.resources.Job.SUBMISSION_ERROR) {
-                try {
-                    logger.debug("Waiting for job: "
-                            + jobs[i]
-                            + " ("
-                            + org.gridlab.gat.resources.Job
-                                    .getStateString(jobs[i].getState()) + ")");
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
+        return result;
+    }
+
+    private void addHubAddressesToServer(Map<String, String> hubMap,
+            Server server) {
+        Set<String> keys = hubMap.keySet();
+        for (String key : keys) {
+            server.addHubs(hubMap.get(key));
+        }
+    }
+
+    private List<org.gridlab.gat.resources.Job> startHubs(Cluster[] clusters,
+            Map<String, String> hubMap) throws Exception {
+        List<org.gridlab.gat.resources.Job> hubJobs = new ArrayList<org.gridlab.gat.resources.Job>();
+        for (Cluster cluster : clusters) {
+            // if this cluster refers to the localhost don't start a hub, the
+            // server is already on this machine!
+            try {
+                if (!(new org.gridlab.gat.URI(cluster.getHostname()))
+                        .refersToLocalHost()) {
+                    // in this file name the hub will put its address
+                    String hubAddressFileName = ".ibis-deploy-hubaddress-"
+                            + Math.random();
+                    // now start the hub
+                    try {
+                        hubJobs.add(startHub(cluster, hubMap, "../"
+                                + hubAddressFileName, new GATContext()));
+                    } catch (Exception e) {
+                        cancelGatJobs(hubJobs);
+                        throw e;
+                    }
+                    if (logger.isDebugEnabled()) {
+                        logger
+                                .debug("Hub started at: "
+                                        + cluster.getHostname());
+                    }
+
+                    // the hub is started, and now we wait... for the file with
+                    // its address to appear.
+                    File hubAddressFile = null;
+                    try {
+                        hubAddressFile = GAT.createFile(new GATContext(),
+                                "any://" + cluster.getHostname() + "/"
+                                        + hubAddressFileName);
+                    } catch (GATObjectCreationException e) {
+                        cancelGatJobs(hubJobs);
+                        throw e;
+                    }
+                    while (!hubAddressFile.exists()) {
+                        if (logger.isDebugEnabled()) {
+                            logger
+                                    .debug("waiting for "
+                                            + hubAddressFile.toString()
+                                            + " to appear.");
+                        }
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            // ignore
+                        }
+                    }
+                    // the file exists, let's read the address from the file!
+                    FileInputStream in = null;
+                    try {
+                        in = GAT.createFileInputStream(new GATContext(),
+                                hubAddressFile);
+                    } catch (GATObjectCreationException e) {
+                        cancelGatJobs(hubJobs);
+                        throw e;
+                    }
+                    BufferedReader reader = new BufferedReader(
+                            new InputStreamReader(in));
+                    try {
+                        String hubAddress = reader.readLine();
+                        hubMap.put(cluster.getHostname(), hubAddress);
+                    } catch (IOException e) {
+                        if (logger.isDebugEnabled()) {
+                            logger
+                                    .debug("Exception caught while reading the hub address file: "
+                                            + e);
+                        }
+                    }
                 }
+            } catch (URISyntaxException e) {
+                cancelGatJobs(hubJobs);
+                throw e;
             }
         }
-        if (logger.isDebugEnabled()) {
-            logger.debug("Ending server ...");
-        }
-        server.end(true);
-        if (logger.isDebugEnabled()) {
-            logger.debug("Stopping hubs ...");
-        }
-        for (org.gridlab.gat.resources.Job hubJob : hubJobs) {
-            hubJob.stop();
-        }
-        if (logger.isDebugEnabled()) {
-            logger.info("Stopping hubs DONE");
-        }
+        return hubJobs;
     }
 
     private Server startServer(boolean events, boolean errors, boolean stats) {
@@ -272,8 +395,9 @@ public class IbisDeploy implements MetricListener {
     }
 
     private org.gridlab.gat.resources.Job startHub(Cluster cluster,
-            Map<String, String> hubMap, String hubAddressFile, GATContext context)
-            throws GATObjectCreationException, GATInvocationException {
+            Map<String, String> hubMap, String hubAddressFile,
+            GATContext context) throws GATObjectCreationException,
+            GATInvocationException {
         // start up a hub on the headnode of all clusters. Use the ssh
         // ResourceBroker to reach the headnode, because other brokers may
         // submit the job to a worker node.
@@ -299,8 +423,9 @@ public class IbisDeploy implements MetricListener {
         // set the server hub as first hub!
         sd.setArguments(new String[] { "-classpath", classpath,
                 "-Dlog4j.configuration=file:./log4j.properties",
-                "ibis.server.Server", "--hub-only", "--hub-addresses", getHubAddressesString(hubMap, "localhost"),
-                "--port", "0", "--hub-address-file", hubAddressFile });
+                "ibis.server.Server", "--hub-only", "--hub-addresses",
+                getHubAddressesString(hubMap, "localhost"), "--port", "0",
+                "--hub-address-file", hubAddressFile });
         sd.addPreStagedFile(GAT.createFile(context, preferences, ibisHome
                 + "/lib"));
         sd.addPreStagedFile(GAT.createFile(context, preferences, ibisHome + "/"
@@ -320,9 +445,9 @@ public class IbisDeploy implements MetricListener {
         return broker.submitJob(jd);
     }
 
-    private org.gridlab.gat.resources.Job submitSubJob(Run run,
-            GATContext context, Job job, SubJob subJob, String poolID,
-            String server, Map<String, String> hubMap) throws GATInvocationException,
+    private org.gridlab.gat.resources.Job submitSubJob(Run run, Job job,
+            SubJob subJob, String poolID, String server,
+            Map<String, String> hubMap) throws GATInvocationException,
             GATObjectCreationException, URISyntaxException {
 
         // retrieve the application of this job and the grid where it should run
@@ -330,6 +455,7 @@ public class IbisDeploy implements MetricListener {
         Grid grid = run.getGrid(subJob.getGridName());
         Cluster cluster = grid.getCluster(subJob.getClusterName());
 
+        GATContext context = new GATContext();
         Preferences preferences = new Preferences();
         preferences.put("ResourceBroker.adaptor.name", cluster.getAccessType());
         preferences.put("File.adaptor.name", cluster.getFileAccessType());
