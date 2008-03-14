@@ -141,8 +141,7 @@ public class IbisDeploy implements MetricListener {
         // start a hub on the other nodes
         List<org.gridlab.gat.resources.Job> hubJobs = null;
         try {
-            hubJobs = startHubs(job
-                    .getHubClusters(run.getGrids()), hubMap);
+            hubJobs = startHubs(job.getHubClusters(run.getGrids()), hubMap);
         } catch (Exception e) {
             // stop the server
             if (logger.isDebugEnabled()) {
@@ -221,7 +220,8 @@ public class IbisDeploy implements MetricListener {
         boolean noRunningJobs = true;
         for (int i = 0; i < jobs.size(); i++) {
             if (jobs.get(i).getState() != org.gridlab.gat.resources.Job.STOPPED
-                    && jobs.get(i).getState() != org.gridlab.gat.resources.Job.SUBMISSION_ERROR) {
+                    && jobs.get(i).getState() != org.gridlab.gat.resources.Job.SUBMISSION_ERROR
+                    && jobs.get(i).getState() != org.gridlab.gat.resources.Job.POST_STAGING) {
                 noRunningJobs = false;
                 try {
                     jobs.get(i).stop();
