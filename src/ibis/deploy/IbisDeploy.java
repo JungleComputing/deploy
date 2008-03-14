@@ -299,7 +299,7 @@ public class IbisDeploy implements MetricListener {
             // server is already on this machine!
             try {
                 if (!(new org.gridlab.gat.URI(cluster.getHostname()))
-                        .refersToLocalHost()) {
+                        .refersToLocalHost() || hubMap.containsKey(cluster.getHostname())) {
                     // in this file name the hub will put its address
                     String hubAddressFileName = ".ibis-deploy-hubaddress-"
                             + Math.random();
