@@ -624,8 +624,8 @@ public class IbisDeploy implements MetricListener {
                 .getSource();
 
         try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Job status of " + j.getJobID() + " changed to : "
+            if (logger.isInfoEnabled()) {
+                logger.info("Job status of " + j.getJobID() + " changed to : "
                         + state);
             }
         } catch (GATInvocationException e) {
