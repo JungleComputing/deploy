@@ -28,6 +28,7 @@ import org.gridlab.gat.io.FileInputStream;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.resources.HardwareResourceDescription;
+import org.gridlab.gat.resources.JavaSoftwareDescription;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.ResourceDescription;
@@ -412,7 +413,7 @@ public class IbisDeploy implements MetricListener {
                 hardwareAttributes);
 
         // TODO make this a JavaSoftwareDescription!
-        SoftwareDescription sd = new SoftwareDescription();
+        JavaSoftwareDescription sd = new JavaSoftwareDescription();
         sd.setExecutable(cluster.getJavaHome() + "/bin/java");
         String classpath = ".";
         java.io.File tmp = new java.io.File(ibisHome + "/lib");
@@ -421,11 +422,12 @@ public class IbisDeploy implements MetricListener {
             classpath += ":lib/" + jars[i];
         }
         // set the server hub as first hub!
-        sd.setArguments(new String[] { "-classpath", classpath,
-                "-Dlog4j.configuration=file:./log4j.properties",
-                "ibis.server.Server", "--hub-only", "--hub-addresses",
+        sd.setMain("ibis.server.Server");
+        sd.setJavaArguments(new String[]{"--hub-only", "--hub-addresses",
                 getHubAddressesString(hubMap, "localhost"), "--port", "0",
                 "--hub-address-file", hubAddressFile });
+        sd.setOptions(new String[]{"-classpath", classpath,
+                "-Dlog4j.configuration=file:./log4j.properties"});
         sd.addPreStagedFile(GAT.createFile(context, preferences, ibisHome
                 + "/lib"));
         sd.addPreStagedFile(GAT.createFile(context, preferences, ibisHome + "/"
