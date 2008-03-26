@@ -8,7 +8,9 @@ import ibis.util.TypedProperties;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -51,6 +53,18 @@ public class Application {
         return classpath;
     }
 
+    public Map<String, String> getJavaSystemProperties() {
+        Map<String, String> result = new HashMap<String, String>();
+        for (String flag : javaFlags) {
+            if (flag.startsWith("-D")) {
+                int equalsPosition = flag.indexOf('=');
+                result.put(flag.substring(0, equalsPosition), flag
+                        .substring(equalsPosition + 1));
+            }
+        }
+        return result;
+    }
+
     public String getExecutable() {
         return main;
     }
@@ -86,7 +100,7 @@ public class Application {
             }
 
             String[] preStaged = applicationProps.getStringList(app
-                    + ".prestage",  " ");
+                    + ".prestage", " ");
             if (preStaged.length == 0) {
                 preStaged = applicationProps.getStringList("prestage", " ");
             }

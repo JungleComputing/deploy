@@ -32,7 +32,6 @@ import org.gridlab.gat.resources.JavaSoftwareDescription;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.ResourceDescription;
-import org.gridlab.gat.resources.SoftwareDescription;
 
 public class IbisDeploy implements MetricListener {
 
@@ -300,7 +299,8 @@ public class IbisDeploy implements MetricListener {
             // server is already on this machine!
             try {
                 if (!(new org.gridlab.gat.URI(cluster.getHostname()))
-                        .refersToLocalHost() || hubMap.containsKey(cluster.getHostname())) {
+                        .refersToLocalHost()
+                        || hubMap.containsKey(cluster.getHostname())) {
                     // in this file name the hub will put its address
                     String hubAddressFileName = ".ibis-deploy-hubaddress-"
                             + Math.random();
@@ -423,11 +423,11 @@ public class IbisDeploy implements MetricListener {
         }
         // set the server hub as first hub!
         sd.setJavaMain("ibis.server.Server");
-        sd.setJavaArguments(new String[]{"--hub-only", "--hub-addresses",
+        sd.setJavaArguments(new String[] { "--hub-only", "--hub-addresses",
                 getHubAddressesString(hubMap, "localhost"), "--port", "0",
                 "--hub-address-file", hubAddressFile });
-        sd.setJavaOptions(new String[]{"-classpath", classpath,
-                "-Dlog4j.configuration=file:./log4j.properties"});
+        sd.setJavaOptions(new String[] { "-classpath", classpath,
+                "-Dlog4j.configuration=file:./log4j.properties" });
         sd.addPreStagedFile(GAT.createFile(context, preferences, ibisHome
                 + "/lib"));
         sd.addPreStagedFile(GAT.createFile(context, preferences, ibisHome + "/"
@@ -476,7 +476,7 @@ public class IbisDeploy implements MetricListener {
                 + subJob.getApplication().getName() + ".stderr"));
 
         // TODO Change this to a JavaSoftwareDescription!
-        SoftwareDescription sd = new SoftwareDescription();
+        JavaSoftwareDescription sd = new JavaSoftwareDescription();
         sd.setAttributes(subJob.getAttributes());
         sd.setExecutable(cluster.getJavaHome() + "/bin/java");
         // add ibis/lib jars to the classpath
@@ -490,68 +490,22 @@ public class IbisDeploy implements MetricListener {
         if (app.getClasspath() != null && !app.getClasspath().equals("")) {
             classpath += ":" + app.getClasspath();
         }
+        sd.setJavaClassPath(classpath);
 
-        Map<String, Object> env = sd.getEnvironment();
-        String[] envArguments = null;
-        if (env != null && !env.isEmpty()) {
-            envArguments = new String[sd.getEnvironment().size()];
-            Set<String> s = env.keySet();
-            Object[] keys = (Object[]) s.toArray();
-            for (int i = 0; i < keys.length; i++) {
-                String val = (String) env.get(keys[i]);
-                envArguments[i] = "-D" + keys[i] + "=" + val;
-            }
-        }
-        String[] javaFlags = app.getJavaFlags();
-        String[] appArguments = app.getParameters();
-        int argumentsSize = 10;
-        // fixed number of arguments (classpath(2), ibis(6), log4j(1) and java
-        // main class(1))
-        if (javaFlags != null) {
-            argumentsSize += javaFlags.length;
-        }
-        if (envArguments != null) {
-            argumentsSize += envArguments.length;
-        }
-        if (appArguments != null) {
-            argumentsSize += appArguments.length;
-        }
-        String[] arguments = new String[argumentsSize];
-        int pos = 0;
-        if (javaFlags != null) {
-            for (int i = 0; i < javaFlags.length; i++) {
-                arguments[pos++] = javaFlags[i];
-            }
-        }
-        arguments[pos++] = "-classpath";
-        arguments[pos++] = classpath;
-        arguments[pos++] = "-Dlog4j.configuration=file:log4j.properties";
-        arguments[pos++] = "-Dibis.server.address=" + server;
-        arguments[pos++] = "-Dibis.server.hub.addresses="
-                + getHubAddressesString(hubMap, cluster.getHostname());
-        arguments[pos++] = "-Dibis.pool.name=" + poolID;
-        arguments[pos++] = "-Dibis.pool.size=" + job.getTotalCPUCount();
-        arguments[pos++] = "-Dibis.location.postfix=" + subJob.getClusterName();
-        arguments[pos++] = "-Dibis.location.automatic=true";
-
-        // add Satin arguments? or let the user do it?
-        // environment.put("satin.closed", "true");
-        // environment.put("satin.alg", "RS");
-        // environment.put("satin.detailedStats", "true");
-        // environment.put("satin.closeConnections", "false");
-
-        if (envArguments != null) {
-            for (int i = 0; i < envArguments.length; i++) {
-                arguments[pos++] = envArguments[i];
-            }
-        }
-        arguments[pos++] = app.getExecutable();
-        if (appArguments != null) {
-            for (int i = 0; i < appArguments.length; i++) {
-                arguments[pos++] = appArguments[i];
-            }
-        }
-        sd.setArguments(arguments);
+        Map<String, String> systemProperties = new HashMap<String, String>();
+        systemProperties.put("log4j.configuration", "file:log4j.properties");
+        systemProperties.putAll(app.getJavaSystemProperties());
+        systemProperties.put("ibis.server.address", server);
+        systemProperties.put("ibis.server.hub.addresses",
+                getHubAddressesString(hubMap, cluster.getHostname()));
+        systemProperties.put("ibis.pool.name", poolID);
+        systemProperties.put("ibis.pool.size", "" + job.getTotalCPUCount());
+        systemProperties.put("ibis.location.postfix", subJob.getClusterName());
+        systemProperties.put("ibis.location.automatic", "true");
+        sd.setJavaSystemProperties(systemProperties);
+        sd.setJavaOptions(app.getJavaFlags());
+        sd.setJavaMain(app.getExecutable());
+        sd.setJavaArguments(app.getParameters());
         sd.addPreStagedFile(GAT.createFile(context, preferences, ibisHome
                 + "/lib"));
         String cwd = System.getProperty("user.dir");
