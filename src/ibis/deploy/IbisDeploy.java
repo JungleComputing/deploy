@@ -422,11 +422,11 @@ public class IbisDeploy implements MetricListener {
             classpath += ":lib/" + jars[i];
         }
         // set the server hub as first hub!
-        sd.setMain("ibis.server.Server");
+        sd.setJavaMain("ibis.server.Server");
         sd.setJavaArguments(new String[]{"--hub-only", "--hub-addresses",
                 getHubAddressesString(hubMap, "localhost"), "--port", "0",
                 "--hub-address-file", hubAddressFile });
-        sd.setOptions(new String[]{"-classpath", classpath,
+        sd.setJavaOptions(new String[]{"-classpath", classpath,
                 "-Dlog4j.configuration=file:./log4j.properties"});
         sd.addPreStagedFile(GAT.createFile(context, preferences, ibisHome
                 + "/lib"));
