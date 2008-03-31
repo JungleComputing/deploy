@@ -14,444 +14,450 @@ import org.apache.log4j.Logger;
 
 public class Run {
 
-    private static final int DEFAULT_RETRY_ATTEMPTS = 3;
-    private static final int DEFAULT_RETRY_INTERVAL = 60; // sec
+	private static final int DEFAULT_RETRY_ATTEMPTS = 3;
 
-    private static Logger logger = Logger.getLogger(Run.class);
+	private static final int DEFAULT_RETRY_INTERVAL = 60; // sec
 
-    private Grid[] grids;
+	private static Logger logger = Logger.getLogger(Run.class);
 
-    private Application[] apps;
+	private Grid[] grids;
 
-    private ArrayList<Job> jobs = new ArrayList<Job>();
+	private Application[] apps;
 
-    private String runFileName;
+	private ArrayList<Job> jobs = new ArrayList<Job>();
 
-    private int retryAttempts, retryInterval;
-    private boolean serverStats, serverEvents, serverErrors;
+	private String runFileName;
 
-    public static Run loadRun(String filename) throws FileNotFoundException,
-            IOException {
-        logger.info("loading run: " + filename + " ...");
-        Run run = new Run();
-        run.runFileName = filename;
+	private int retryAttempts, retryInterval;
 
-        TypedProperties runprops = new TypedProperties();
-        runprops.load(new FileInputStream(filename));
-        runprops.expandSystemVariables();
+	private boolean serverStats, serverEvents, serverErrors;
 
-        String[] gridFiles = runprops.getStringList("grid.files");
-        if (gridFiles.length == 0) {
-            logger.warn("Property grid.files in " + filename + " not set!");
-            System.exit(1);
-        }
+	public static Run loadRun(String filename) throws FileNotFoundException,
+			IOException {
+		logger.info("loading run: " + filename + " ...");
+		Run run = new Run();
+		run.runFileName = filename;
 
-        run.grids = new Grid[gridFiles.length];
-        for (int i = 0; i < gridFiles.length; i++) {
-            run.grids[i] = Grid.loadGrid(gridFiles[i]);
-        }
+		TypedProperties runprops = new TypedProperties();
+		runprops.load(new FileInputStream(filename));
+		runprops.expandSystemVariables();
 
-        String[] appFiles = runprops.getStringList("application.files");
-        if (appFiles.length == 0) {
-            logger.warn("Property application.files in " + filename
-                    + " not set!");
-            System.exit(1);
-        }
+		String[] gridFiles = runprops.getStringList("grid.files");
+		if (gridFiles.length == 0) {
+			logger.warn("Property grid.files in " + filename + " not set!");
+			System.exit(1);
+		}
 
-        run.retryAttempts = runprops.getIntProperty("retry",
-                DEFAULT_RETRY_ATTEMPTS);
-        run.retryInterval = runprops.getIntProperty("retry.interval",
-                DEFAULT_RETRY_INTERVAL);
+		run.grids = new Grid[gridFiles.length];
+		for (int i = 0; i < gridFiles.length; i++) {
+			run.grids[i] = Grid.loadGrid(gridFiles[i]);
+		}
 
-        run.serverStats = runprops.getBooleanProperty("server.stats", false);
-        run.serverErrors = runprops.getBooleanProperty("server.errors", false);
-        run.serverEvents = runprops.getBooleanProperty("server.events", false);
+		String[] appFiles = runprops.getStringList("application.files");
+		if (appFiles.length == 0) {
+			logger.warn("Property application.files in " + filename
+					+ " not set!");
+			System.exit(1);
+		}
 
-        HashSet<Application> appSet = new HashSet<Application>();
-        for (int i = 0; i < appFiles.length; i++) {
-            appSet.addAll(Application.loadApplications(appFiles[i]));
-        }
-        run.apps = appSet.toArray(new Application[appSet.size()]);
+		run.retryAttempts = runprops.getIntProperty("retry",
+				DEFAULT_RETRY_ATTEMPTS);
+		run.retryInterval = runprops.getIntProperty("retry.interval",
+				DEFAULT_RETRY_INTERVAL);
 
-        String[] jobNames = runprops.getStringList("jobs");
-        for (String jobName : jobNames) {
+		run.serverStats = runprops.getBooleanProperty("server.stats", false);
+		run.serverErrors = runprops.getBooleanProperty("server.errors", false);
+		run.serverEvents = runprops.getBooleanProperty("server.events", false);
 
-            Job job = new Job(jobName);
+		HashSet<Application> appSet = new HashSet<Application>();
+		for (int i = 0; i < appFiles.length; i++) {
+			appSet.addAll(Application.loadApplications(appFiles[i]));
+		}
+		run.apps = appSet.toArray(new Application[appSet.size()]);
 
-            String[] subjobs = runprops.getStringList(jobName + ".subjobs");
-            for (String subjob : subjobs) {
-                String grid = runprops.getProperty(jobName + "." + subjob
-                        + ".grid");
-                if (grid == null || grid.equals("")) {
-                    grid = runprops.getProperty(jobName + ".grid");
-                }
-                if (grid == null || grid.equals("")) {
-                    grid = runprops.getProperty("grid");
-                }
+		String[] jobNames = runprops.getStringList("jobs");
+		for (String jobName : jobNames) {
 
-                String cluster = runprops.getProperty(jobName + "." + subjob
-                        + ".cluster");
-                if (cluster == null || cluster.equals("")) {
-                    cluster = runprops.getProperty(jobName + ".cluster");
-                }
-                if (cluster == null || cluster.equals("")) {
-                    cluster = runprops.getProperty("cluster");
-                }
+			Job job = new Job(jobName);
 
-                int nodes = 1;
-                String nodesString;
-                try {
-                    nodesString = runprops.getProperty(jobName + "." + subjob
-                            + ".nodes");
-                    if (nodesString != null && nodesString.equals("max")) {
-                        nodes = run.getGrid(grid).getCluster(cluster)
-                                .getMachineCount();
-                    } else if (nodesString != null
-                            && nodesString.matches("\\d+?\\s*?%")) {
-                        Pattern pattern = Pattern.compile("\\d*+");
-                        Matcher matcher = pattern.matcher(nodesString);
-                        if (matcher.find()) {
-                            int percentage = Integer.parseInt(matcher.group());
-                            nodes = (int) ((run.getGrid(grid).getCluster(
-                                    cluster).getMachineCount() * percentage) / 100.0);
-                        }
-                    } else {
-                        nodes = runprops.getIntProperty(jobName + "." + subjob
-                                + ".nodes");
-                    }
-                    if (nodesString == null) {
-                        throw new NumberFormatException();
-                    }
-                } catch (NumberFormatException e) {
-                    try {
-                        nodesString = runprops.getProperty(jobName + ".nodes");
-                        if (nodesString != null && nodesString.equals("max")) {
-                            nodes = run.getGrid(grid).getCluster(cluster)
-                                    .getMachineCount();
-                        } else if (nodesString != null
-                                && nodesString.matches("\\d+?\\s*?%")) {
-                            Pattern pattern = Pattern.compile("\\d*+");
-                            Matcher matcher = pattern.matcher(nodesString);
-                            if (matcher.find()) {
-                                int percentage = Integer.parseInt(matcher
-                                        .group());
-                                nodes = (int) ((run.getGrid(grid).getCluster(
-                                        cluster).getMachineCount() * percentage) / 100.0);
-                            }
-                        } else {
-                            nodes = runprops.getIntProperty(jobName + ".nodes");
-                        }
-                        if (nodesString == null) {
-                            throw new NumberFormatException();
-                        }
-                    } catch (NumberFormatException e1) {
-                        try {
-                            nodesString = runprops.getProperty("nodes");
-                            if (nodesString != null
-                                    && nodesString.equals("max")) {
-                                nodes = run.getGrid(grid).getCluster(cluster)
-                                        .getMachineCount();
-                            } else if (nodesString != null
-                                    && nodesString.matches("\\d+?\\s*?%")) {
-                                Pattern pattern = Pattern.compile("\\d*+");
-                                Matcher matcher = pattern.matcher(nodesString);
-                                if (matcher.find()) {
-                                    int percentage = Integer.parseInt(matcher
-                                            .group());
-                                    nodes = (int) ((run.getGrid(grid)
-                                            .getCluster(cluster)
-                                            .getMachineCount() * percentage) / 100.0);
-                                }
-                            } else {
-                                nodes = runprops.getIntProperty("nodes");
-                            }
-                        } catch (NumberFormatException e2) {
-                            nodes = -1;
-                        }
-                    }
-                }
+			String[] subjobs = runprops.getStringList(jobName + ".subjobs");
+			for (String subjob : subjobs) {
+				String grid = runprops.getProperty(jobName + "." + subjob
+						+ ".grid");
+				if (grid == null || grid.equals("")) {
+					grid = runprops.getProperty(jobName + ".grid");
+				}
+				if (grid == null || grid.equals("")) {
+					grid = runprops.getProperty("grid");
+				}
 
-                int multicore = 1;
-                String multicoreString;
-                try {
-                    multicoreString = runprops.getProperty(jobName + "."
-                            + subjob + ".multicore");
-                    if (multicoreString != null
-                            && multicoreString.equals("max")) {
-                        multicore = run.getGrid(grid).getCluster(cluster)
-                                .getCPUsPerMachine();
-                    } else {
-                        multicore = runprops.getIntProperty(jobName + "."
-                                + subjob + ".multicore");
-                    }
-                    if (multicoreString == null) {
-                        throw new NumberFormatException();
-                    }
-                } catch (NumberFormatException e) {
-                    try {
-                        multicoreString = runprops.getProperty(jobName
-                                + ".multicore");
-                        if (multicoreString != null
-                                && multicoreString.equals("max")) {
-                            multicore = run.getGrid(grid).getCluster(cluster)
-                                    .getCPUsPerMachine();
-                        } else {
-                            multicore = runprops.getIntProperty(jobName
-                                    + ".multicore");
-                        }
-                        if (multicoreString == null) {
-                            throw new NumberFormatException();
-                        }
-                    } catch (NumberFormatException e1) {
-                        try {
-                            multicoreString = runprops.getProperty("multicore");
-                            if (multicoreString != null
-                                    && multicoreString.equals("max")) {
-                                multicore = run.getGrid(grid).getCluster(
-                                        cluster).getCPUsPerMachine();
-                            } else {
-                                multicore = runprops
-                                        .getIntProperty("multicore");
-                            }
-                        } catch (NumberFormatException e2) {
-                            multicore = -1;
-                        }
-                    }
-                }
+				String cluster = runprops.getProperty(jobName + "." + subjob
+						+ ".cluster");
+				if (cluster == null || cluster.equals("")) {
+					cluster = runprops.getProperty(jobName + ".cluster");
+				}
+				if (cluster == null || cluster.equals("")) {
+					cluster = runprops.getProperty("cluster");
+				}
 
-                long runtime = 20;
-                String runtimeString;
-                try {
-                    runtimeString = runprops.getProperty(jobName + "." + subjob
-                            + ".runtime");
-                    if (runtimeString != null && runtimeString.equals("max")) {
-                        runtime = run.getGrid(grid).getCluster(cluster)
-                                .getCPUsPerMachine();
-                    } else {
-                        runtime = runprops.getIntProperty(jobName + "."
-                                + subjob + ".runtime");
-                    }
-                    if (runtimeString == null) {
-                        throw new NumberFormatException();
-                    }
-                } catch (NumberFormatException e) {
-                    try {
-                        runtimeString = runprops.getProperty(jobName
-                                + ".runtime");
-                        if (runtimeString != null
-                                && runtimeString.equals("max")) {
-                            runtime = run.getGrid(grid).getCluster(cluster)
-                                    .getCPUsPerMachine();
-                        } else {
-                            runtime = runprops.getIntProperty(jobName
-                                    + ".runtime");
-                        }
-                        if (runtimeString == null) {
-                            throw new NumberFormatException();
-                        }
-                    } catch (NumberFormatException e1) {
-                        try {
-                            runtimeString = runprops.getProperty("runtime");
-                            if (runtimeString != null
-                                    && runtimeString.equals("max")) {
-                                runtime = run.getGrid(grid).getCluster(cluster)
-                                        .getCPUsPerMachine();
-                            } else {
-                                runtime = runprops.getIntProperty("runtime");
-                            }
-                        } catch (NumberFormatException e2) {
-                            runtime = -1;
-                        }
-                    }
-                }
+				int nodes = 1;
+				String nodesString;
+				try {
+					nodesString = runprops.getProperty(jobName + "." + subjob
+							+ ".nodes");
+					if (nodesString != null && nodesString.equals("max")) {
+						nodes = run.getGrid(grid).getCluster(cluster)
+								.getMachineCount();
+					} else if (nodesString != null
+							&& nodesString.matches("\\d+?\\s*?%")) {
+						Pattern pattern = Pattern.compile("\\d*+");
+						Matcher matcher = pattern.matcher(nodesString);
+						if (matcher.find()) {
+							int percentage = Integer.parseInt(matcher.group());
+							nodes = (int) ((run.getGrid(grid).getCluster(
+									cluster).getMachineCount() * percentage) / 100.0);
+						}
+					} else {
+						nodes = runprops.getIntProperty(jobName + "." + subjob
+								+ ".nodes");
+					}
+					if (nodesString == null) {
+						throw new NumberFormatException();
+					}
+				} catch (NumberFormatException e) {
+					try {
+						nodesString = runprops.getProperty(jobName + ".nodes");
+						if (nodesString != null && nodesString.equals("max")) {
+							nodes = run.getGrid(grid).getCluster(cluster)
+									.getMachineCount();
+						} else if (nodesString != null
+								&& nodesString.matches("\\d+?\\s*?%")) {
+							Pattern pattern = Pattern.compile("\\d*+");
+							Matcher matcher = pattern.matcher(nodesString);
+							if (matcher.find()) {
+								int percentage = Integer.parseInt(matcher
+										.group());
+								nodes = (int) ((run.getGrid(grid).getCluster(
+										cluster).getMachineCount() * percentage) / 100.0);
+							}
+						} else {
+							nodes = runprops.getIntProperty(jobName + ".nodes");
+						}
+						if (nodesString == null) {
+							throw new NumberFormatException();
+						}
+					} catch (NumberFormatException e1) {
+						try {
+							nodesString = runprops.getProperty("nodes");
+							if (nodesString != null
+									&& nodesString.equals("max")) {
+								nodes = run.getGrid(grid).getCluster(cluster)
+										.getMachineCount();
+							} else if (nodesString != null
+									&& nodesString.matches("\\d+?\\s*?%")) {
+								Pattern pattern = Pattern.compile("\\d*+");
+								Matcher matcher = pattern.matcher(nodesString);
+								if (matcher.find()) {
+									int percentage = Integer.parseInt(matcher
+											.group());
+									nodes = (int) ((run.getGrid(grid)
+											.getCluster(cluster)
+											.getMachineCount() * percentage) / 100.0);
+								}
+							} else {
+								nodes = runprops.getIntProperty("nodes");
+							}
+						} catch (NumberFormatException e2) {
+							nodes = -1;
+						}
+					}
+				}
 
-                String[] attrs = runprops.getStringList(jobName + "." + subjobs
-                        + ".gat.attributes", " ");
-                if (attrs.length == 0) {
-                    attrs = runprops.getStringList(jobName + ".gat.attributes",
-                            " ");
-                }
+				int multicore = 1;
+				String multicoreString;
+				try {
+					multicoreString = runprops.getProperty(jobName + "."
+							+ subjob + ".multicore");
+					if (multicoreString != null
+							&& multicoreString.equals("max")) {
+						multicore = run.getGrid(grid).getCluster(cluster)
+								.getCPUsPerMachine();
+					} else {
+						multicore = runprops.getIntProperty(jobName + "."
+								+ subjob + ".multicore");
+					}
+					if (multicoreString == null) {
+						throw new NumberFormatException();
+					}
+				} catch (NumberFormatException e) {
+					try {
+						multicoreString = runprops.getProperty(jobName
+								+ ".multicore");
+						if (multicoreString != null
+								&& multicoreString.equals("max")) {
+							multicore = run.getGrid(grid).getCluster(cluster)
+									.getCPUsPerMachine();
+						} else {
+							multicore = runprops.getIntProperty(jobName
+									+ ".multicore");
+						}
+						if (multicoreString == null) {
+							throw new NumberFormatException();
+						}
+					} catch (NumberFormatException e1) {
+						try {
+							multicoreString = runprops.getProperty("multicore");
+							if (multicoreString != null
+									&& multicoreString.equals("max")) {
+								multicore = run.getGrid(grid).getCluster(
+										cluster).getCPUsPerMachine();
+							} else {
+								multicore = runprops
+										.getIntProperty("multicore");
+							}
+						} catch (NumberFormatException e2) {
+							multicore = -1;
+						}
+					}
+				}
 
-                String[] prefs = runprops.getStringList(jobName + "." + subjobs
-                        + ".gat.preferences", " ");
-                if (attrs.length == 0) {
-                    attrs = runprops.getStringList(
-                            jobName + ".gat.preferences", " ");
-                }
+				long runtime = 20;
+				String runtimeString;
+				try {
+					runtimeString = runprops.getProperty(jobName + "." + subjob
+							+ ".runtime");
+					if (runtimeString != null && runtimeString.equals("max")) {
+						runtime = run.getGrid(grid).getCluster(cluster)
+								.getCPUsPerMachine();
+					} else {
+						runtime = runprops.getIntProperty(jobName + "."
+								+ subjob + ".runtime");
+					}
+					if (runtimeString == null) {
+						throw new NumberFormatException();
+					}
+				} catch (NumberFormatException e) {
+					try {
+						runtimeString = runprops.getProperty(jobName
+								+ ".runtime");
+						if (runtimeString != null
+								&& runtimeString.equals("max")) {
+							runtime = run.getGrid(grid).getCluster(cluster)
+									.getCPUsPerMachine();
+						} else {
+							runtime = runprops.getIntProperty(jobName
+									+ ".runtime");
+						}
+						if (runtimeString == null) {
+							throw new NumberFormatException();
+						}
+					} catch (NumberFormatException e1) {
+						try {
+							runtimeString = runprops.getProperty("runtime");
+							if (runtimeString != null
+									&& runtimeString.equals("max")) {
+								runtime = run.getGrid(grid).getCluster(cluster)
+										.getCPUsPerMachine();
+							} else {
+								runtime = runprops.getIntProperty("runtime");
+							}
+						} catch (NumberFormatException e2) {
+							runtime = -1;
+						}
+					}
+				}
 
-                String application = runprops.getProperty(jobName + "."
-                        + subjob + ".application");
-                if (application == null || application.equals("")) {
-                    application = runprops
-                            .getProperty(jobName + ".application");
-                    if (application == null || application.equals("")) {
-                        application = runprops.getProperty("application");
-                    }
-                }
-                Application app = run.getApplication(application);
+				String[] attrs = runprops.getStringList(jobName + "." + subjobs
+						+ ".gat.attributes", " ");
+				if (attrs.length == 0) {
+					attrs = runprops.getStringList(jobName + ".gat.attributes",
+							" ");
+				}
 
-                if (app == null) {
-                    logger.warn("Application not found! (" + application + ")");
-                    System.exit(1);
-                }
+				String[] prefs = runprops.getStringList(jobName + "." + subjobs
+						+ ".gat.preferences", " ");
+				if (attrs.length == 0) {
+					attrs = runprops.getStringList(
+							jobName + ".gat.preferences", " ");
+				}
 
-                String main = runprops.getProperty(application + ".main");
-                if (main == null || main.equals("")) {
-                    main = runprops.getProperty("main");
-                }
-                if (!(main == null || main.equals(""))) {
-                    app.setMain(main);
-                }
+				String application = runprops.getProperty(jobName + "."
+						+ subjob + ".application");
+				if (application == null || application.equals("")) {
+					application = runprops
+							.getProperty(jobName + ".application");
+					if (application == null || application.equals("")) {
+						application = runprops.getProperty("application");
+					}
+				}
+				Application app = run.getApplication(application);
 
-                String[] javaFlags = runprops.getStringList(application
-                        + ".flags", " ");
-                if (javaFlags.length == 0) {
-                    javaFlags = runprops.getStringList("flags", " ");
-                }
-                if (javaFlags.length > 0) {
-                    app.setJavaFlags(javaFlags);
-                }
+				if (app == null) {
+					logger.warn("Application not found! (" + application + ")");
+					System.exit(1);
+				}
 
-                String[] parameters = runprops.getStringList(application
-                        + ".parameters", " ");
-                if (parameters.length == 0) {
-                    parameters = runprops.getStringList("parameters", " ");
-                }
-                if (parameters.length > 0) {
-                    app.setParameters(parameters);
-                }
+				String main = runprops.getProperty(application + ".main");
+				if (main == null || main.equals("")) {
+					main = runprops.getProperty("main");
+				}
+				if (!(main == null || main.equals(""))) {
+					app.setMain(main);
+				}
 
-                String[] preStaged = runprops.getStringList(application
-                        + ".prestage");
-                if (preStaged.length == 0) {
-                    preStaged = runprops.getStringList("prestage");
-                }
-                if (preStaged.length > 0) {
-                    app.setPreStaged(preStaged);
-                }
+				String[] javaFlags = runprops.getStringList(application
+						+ ".flags", " ");
+				if (javaFlags.length == 0) {
+					javaFlags = runprops.getStringList("flags", " ");
+				}
+				if (javaFlags.length > 0) {
+					app.setJavaFlags(javaFlags);
+				}
 
-                String[] postStaged = runprops.getStringList(application
-                        + ".poststage");
-                if (postStaged.length == 0) {
-                    postStaged = runprops.getStringList("poststage");
-                }
-                if (postStaged.length > 0) {
-                    app.setPostStaged(postStaged);
-                }
+				String[] parameters = runprops.getStringList(application
+						+ ".parameters", " ");
+				if (parameters.length == 0) {
+					parameters = runprops.getStringList("parameters", " ");
+				}
+				if (parameters.length > 0) {
+					app.setParameters(parameters);
+				}
 
-                String classpath = runprops.getProperty(application
-                        + ".classpath");
-                if (classpath == null || classpath.equals("")) {
-                    classpath = runprops.getProperty("classpath");
-                }
-                if (!(classpath == null || classpath.equals(""))) {
-                    app.setClasspath(classpath);
-                }
+				String[] preStaged = runprops.getStringList(application
+						+ ".prestage");
+				if (preStaged.length == 0) {
+					preStaged = runprops.getStringList("prestage");
+				}
+				if (preStaged.length > 0) {
+					app.setPreStaged(preStaged);
+				}
 
-                int subjobchunksize = 0;
-                try {
-                    subjobchunksize = runprops.getIntProperty(jobName + "." + subjob
-                            + ".subjobchunksize");
-                } catch (NumberFormatException e) {
-                    try {
-                        subjobchunksize = runprops.getIntProperty(jobName
-                                + ".subjobchunksize");
-                    } catch (NumberFormatException e1) {
-                        try {
-                            subjobchunksize = runprops.getIntProperty("subjobchunksize");
-                        } catch (NumberFormatException e2) {
-                            subjobchunksize = 0;
-                        }
-                    }
-                }
-                if (subjobchunksize > 0) {
-                    for (int i = 0; i < subjobchunksize; i++) {
-                        int chunknodes = nodes / subjobchunksize;
-                        if (i == 0) {
-                            chunknodes += nodes % subjobchunksize;
-                        }
-                        job.addSubJob(new SubJob(subjob, grid, cluster,
-                                chunknodes, multicore, app, runtime, attrs,
-                                prefs));
-                    }
-                } else {
-                    job.addSubJob(new SubJob(subjob, grid, cluster, nodes,
-                            multicore, app, runtime, attrs, prefs));
-                }
-            }
-            run.jobs.add(job);
-        }
-        logger.info("loading run: " + filename + " DONE");
-        return run;
-    }
+				String[] postStaged = runprops.getStringList(application
+						+ ".poststage");
+				if (postStaged.length == 0) {
+					postStaged = runprops.getStringList("poststage");
+				}
+				if (postStaged.length > 0) {
+					app.setPostStaged(postStaged);
+				}
 
-    private Application getApplication(String name) {
-        for (Application app : apps) {
-            if (app.getName().equals(name)) {
-                return (Application) app.clone();
-            }
-        }
-        return null;
-    }
+				String classpath = runprops.getProperty(application
+						+ ".classpath");
+				if (classpath == null || classpath.equals("")) {
+					classpath = runprops.getProperty("classpath");
+				}
+				if (!(classpath == null || classpath.equals(""))) {
+					app.setClasspath(classpath);
+				}
 
-    public Grid getGrid(String gridName) {
-        for (Grid grid : grids) {
-            if (grid.getGridName().equals(gridName)) {
-                return grid;
-            }
-        }
-        return null;
-    }
+				int subjobchunksize = 0;
+				try {
+					subjobchunksize = runprops.getIntProperty(jobName + "."
+							+ subjob + ".subjobchunksize");
+				} catch (NumberFormatException e) {
+					try {
+						subjobchunksize = runprops.getIntProperty(jobName
+								+ ".subjobchunksize");
+					} catch (NumberFormatException e1) {
+						try {
+							subjobchunksize = runprops
+									.getIntProperty("subjobchunksize");
+						} catch (NumberFormatException e2) {
+							subjobchunksize = 0;
+						}
+					}
+				}
+				if (subjobchunksize > 0) {
+					// subjobchunksize is the size of the chunks, not the number
+					// of chunks.
+					for (int i = 0; i < nodes / subjobchunksize; i++) {
+						job.addSubJob(new SubJob(subjob, grid, cluster,
+								subjobchunksize, multicore, app, runtime,
+								attrs, prefs));
+					}
+					if (nodes % subjobchunksize != 0) {
+						job.addSubJob(new SubJob(subjob, grid, cluster,
+								nodes % subjobchunksize, multicore, app, runtime,
+								attrs, prefs));
+					}
+				} else {
+					job.addSubJob(new SubJob(subjob, grid, cluster, nodes,
+							multicore, app, runtime, attrs, prefs));
+				}
+			}
+			run.jobs.add(job);
+		}
+		logger.info("loading run: " + filename + " DONE");
+		return run;
+	}
 
-    public Cluster getCluster(Grid grid, String clusterName) {
-        return grid.getCluster(clusterName);
-    }
+	private Application getApplication(String name) {
+		for (Application app : apps) {
+			if (app.getName().equals(name)) {
+				return (Application) app.clone();
+			}
+		}
+		return null;
+	}
 
-    public Grid[] getGrids() {
-        return grids;
-    }
+	public Grid getGrid(String gridName) {
+		for (Grid grid : grids) {
+			if (grid.getGridName().equals(gridName)) {
+				return grid;
+			}
+		}
+		return null;
+	}
 
-    public ArrayList<Job> getRequestedResources() {
-        return jobs;
-    }
+	public Cluster getCluster(Grid grid, String clusterName) {
+		return grid.getCluster(clusterName);
+	}
 
-    public String toString() {
-        String res = "Run: " + "app" + "\n";
-        for (Grid grid : grids) {
-            res += grid + "\n";
-        }
+	public Grid[] getGrids() {
+		return grids;
+	}
 
-        res += "requests:\n";
-        for (int i = 0; i < jobs.size(); i++) {
-            Job r = jobs.get(i);
-            res += r;
-        }
+	public ArrayList<Job> getRequestedResources() {
+		return jobs;
+	}
 
-        return res;
-    }
+	public String toString() {
+		String res = "Run: " + "app" + "\n";
+		for (Grid grid : grids) {
+			res += grid + "\n";
+		}
 
-    public String getRunFileName() {
-        return runFileName;
-    }
+		res += "requests:\n";
+		for (int i = 0; i < jobs.size(); i++) {
+			Job r = jobs.get(i);
+			res += r;
+		}
 
-    public int getRetryAttempts() {
-        return retryAttempts;
-    }
+		return res;
+	}
 
-    public int getRetryInterval() {
-        return retryInterval;
-    }
+	public String getRunFileName() {
+		return runFileName;
+	}
 
-    public boolean getServerStats() {
-        return serverStats;
-    }
+	public int getRetryAttempts() {
+		return retryAttempts;
+	}
 
-    public boolean getServerEvents() {
-        return serverEvents;
-    }
+	public int getRetryInterval() {
+		return retryInterval;
+	}
 
-    public boolean getServerErrors() {
-        return serverErrors;
-    }
+	public boolean getServerStats() {
+		return serverStats;
+	}
+
+	public boolean getServerEvents() {
+		return serverEvents;
+	}
+
+	public boolean getServerErrors() {
+		return serverErrors;
+	}
 
 }
