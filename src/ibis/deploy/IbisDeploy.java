@@ -25,8 +25,8 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.FileInputStream;
+import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.MetricListener;
-import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.JavaSoftwareDescription;
 import org.gridlab.gat.resources.JobDescription;
@@ -574,7 +574,7 @@ public class IbisDeploy implements MetricListener {
         return result;
     }
 
-    public synchronized void processMetricEvent(MetricValue val) {
+    public synchronized void processMetricEvent(MetricEvent val) {
         String state = (String) val.getValue();
         org.gridlab.gat.resources.Job j = (org.gridlab.gat.resources.Job) val
                 .getSource();
