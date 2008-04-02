@@ -266,7 +266,8 @@ public class IbisDeploy implements MetricListener {
             } catch (Exception e) {
                 if (logger.isInfoEnabled()) {
                     logger.info("submission of subjob '" + job.get(i).getName()
-                            + "' failed, cancelling already submitted subjobs", e);
+                            + "' failed, cancelling already submitted subjobs",
+                            e);
                 }
                 // submission failed, cancel all already submitted jobs that are
                 // not stopped yet!
@@ -298,18 +299,11 @@ public class IbisDeploy implements MetricListener {
             // if this cluster refers to the localhost don't start a hub, the
             // server is already on this machine!
             try {
-            	boolean isLocalhost = new org.gridlab.gat.URI(cluster.getHostname())
-                .refersToLocalHost();
-            	
-            	logger.debug(cluster.getHostname() + " is localhost: " + isLocalhost);
+                boolean isLocalhost = new org.gridlab.gat.URI("any://"
+                        + cluster.getHostname()).refersToLocalHost();
 
-            	// Dirty hack :)
-            	//      	if(cluster.getHostname().equals("zorilla.cs.vu.nl")) {
-            	//         			isLocalhost = false;
-            	//         	}
-            	
                 if (!(isLocalhost || hubMap.containsKey(cluster.getHostname()))) {
-                	
+
                     // in this file name the hub will put its address
                     String hubAddressFileName = ".ibis-deploy-hubaddress-"
                             + Math.random();
