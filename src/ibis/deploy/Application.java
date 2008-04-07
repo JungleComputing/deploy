@@ -58,7 +58,7 @@ public class Application {
         for (String flag : javaFlags) {
             if (flag.startsWith("-D")) {
                 int equalsPosition = flag.indexOf('=');
-                result.put(flag.substring(0, equalsPosition), flag
+                result.put(flag.substring(2, equalsPosition), flag
                         .substring(equalsPosition + 1));
             }
         }
