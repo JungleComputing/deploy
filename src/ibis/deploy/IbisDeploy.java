@@ -55,8 +55,8 @@ public class IbisDeploy implements MetricListener {
         new IbisDeploy().start(args[0]);
         long end = System.currentTimeMillis();
         double time = (end - start) / 1000;
-        System.err.printf("Ibis deploy took %.2f seconds", time);
-        System.exit(1);
+        System.err.printf("Ibis deploy took %.2f seconds\n", time);
+        System.exit(0);
     }
 
     public void start(String runFile) {
