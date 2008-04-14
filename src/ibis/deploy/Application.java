@@ -5,198 +5,158 @@ package ibis.deploy;
 
 import ibis.util.TypedProperties;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
 public class Application {
-    private static Logger logger = Logger.getLogger(Application.class);
-    private String main;
+	private static Logger logger = Logger.getLogger(Application.class);
 
-    private String[] javaFlags;
+	private String name;
 
-    private String[] parameters;
+	private String javaMain;
 
-    private String name;
-    private String classpath;
+	private String[] javaOptions;
 
-    private String[] preStaged;
-    private String[] postStaged;
+	private String[] javaSystemProperties;
 
-    public Application(String name, String main, String[] javaFlags,
-            String[] parameters, String[] preStaged, String[] postStaged,
-            String classpath) {
-        this.name = name;
-        this.main = main;
-        this.javaFlags = javaFlags;
-        this.parameters = parameters;
-        this.preStaged = preStaged;
-        this.postStaged = postStaged;
-        this.classpath = classpath;
-    }
+	private String[] javaArguments;
 
-    public Object clone() {
-        return new Application(name, main, javaFlags, parameters, preStaged,
-                postStaged, classpath);
-    }
+	private String javaClassPath;
 
-    public String getName() {
-        return name;
-    }
+	private String[] preStageSet;
 
-    public String getClasspath() {
-        return classpath;
-    }
+	private String[] postStageSet;
 
-    public Map<String, String> getJavaSystemProperties() {
-        Map<String, String> result = new HashMap<String, String>();
-        for (String flag : javaFlags) {
-            if (flag.startsWith("-D")) {
-                int equalsPosition = flag.indexOf('=');
-                result.put(flag.substring(2, equalsPosition), flag
-                        .substring(equalsPosition + 1));
-            }
-        }
-        return result;
-    }
+	public Application(String name, String javaMain, String[] javaOptions,
+			String[] javaSystemProperties, String[] javaArguments,
+			String javaClassPath, String[] preStageSet, String[] postStageSet) {
+		this.name = name;
+		this.javaMain = javaMain;
+		this.javaOptions = javaOptions;
+		this.javaSystemProperties = javaSystemProperties;
+		this.javaArguments = javaArguments;
+		this.javaClassPath = javaClassPath;
+		this.preStageSet = preStageSet;
+		this.postStageSet = postStageSet;
+	}
 
-    public String getExecutable() {
-        return main;
-    }
+	// public Object clone() {
+	// return new Application(name, main, javaFlags, parameters, preStaged,
+	// postStaged, classpath);
+	// }
 
-    public String[] getParameters() {
-        return parameters;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public static HashSet<Application> loadApplications(String filename)
-            throws FileNotFoundException, IOException {
-        logger.info("loading applications: " + filename + " ...");
-        HashSet<Application> result = new HashSet<Application>();
-        TypedProperties applicationProps = new TypedProperties();
-        applicationProps.load(new FileInputStream(filename));
-        applicationProps.expandSystemVariables();
-        String[] apps = applicationProps.getStringList("applications");
-        for (String app : apps) {
-            String main = applicationProps.getProperty(app + ".main");
-            if (main == null || main.equals("")) {
-                main = applicationProps.getProperty("main");
-            }
+	public static Set<Application> load(TypedProperties applicationProps) {
+		if (logger.isInfoEnabled()) {
+			logger.info("loading applications");
+		}
+		HashSet<Application> result = new HashSet<Application>();
+		String[] apps = applicationProps.getStringList("applications");
+		for (String app : apps) {
+			String javaMain = TypedPropertiesUtility.getHierarchicalProperty(
+					applicationProps, app, "java.main", null);
+			if (javaMain == null) {
+				return null;
+			}
+			String[] javaOptions = TypedPropertiesUtility
+					.getHierarchicalStringList(applicationProps, app,
+							"java.options", null, " ");
+			String[] javaSystemProperties = TypedPropertiesUtility
+					.getHierarchicalStringList(applicationProps, app,
+							"java.system.properties", null, " ");
+			String[] javaArguments = TypedPropertiesUtility
+					.getHierarchicalStringList(applicationProps, app,
+							"java.arguments", null, " ");
+			String javaClassPath = TypedPropertiesUtility
+					.getHierarchicalProperty(applicationProps, app,
+							"java.classpath", "");
+			String[] preStageSet = TypedPropertiesUtility
+					.getHierarchicalStringList(applicationProps, app,
+							"prestage", null, " ");
+			String[] postStageSet = TypedPropertiesUtility
+					.getHierarchicalStringList(applicationProps, app,
+							"poststage", null, " ");
+			result.add(new Application(app, javaMain, javaOptions,
+					javaSystemProperties, javaArguments, javaClassPath,
+					preStageSet, postStageSet));
+		}
+		return result;
+	}
 
-            String[] javaFlags = applicationProps.getStringList(app + ".flags",
-                    " ");
-            if (javaFlags.length == 0) {
-                javaFlags = applicationProps.getStringList("flags", " ");
-            }
+	public String[] getJavaArguments() {
+		return javaArguments;
+	}
 
-            String[] parameters = applicationProps.getStringList(app
-                    + ".parameters", " ");
-            if (parameters.length == 0) {
-                parameters = applicationProps.getStringList("parameters", " ");
-            }
+	public String getJavaClassPath() {
+		return javaClassPath;
+	}
 
-            String[] preStaged = applicationProps.getStringList(app
-                    + ".prestage", " ");
-            if (preStaged.length == 0) {
-                preStaged = applicationProps.getStringList("prestage", " ");
-            }
+	public String getJavaMain() {
+		return javaMain;
+	}
 
-            String[] postStaged = applicationProps.getStringList(app
-                    + ".poststage", " ");
-            if (postStaged.length == 0) {
-                postStaged = applicationProps.getStringList("poststage", " ");
-            }
+	public String[] getJavaOptions() {
+		return javaOptions;
+	}
 
-            String classpath = applicationProps.getProperty(app + ".classpath");
-            if (classpath == null || classpath.equals("")) {
-                classpath = applicationProps.getProperty("classpath");
-            }
-            result.add(new Application(app, main, javaFlags, parameters,
-                    preStaged, postStaged, classpath));
-        }
-        logger.info("loading application: " + filename + " DONE");
-        return result;
-    }
+	public Map<String, String> getJavaSystemProperties() {
+		if (javaSystemProperties == null) {
+			return null;
+		}
+		Map<String, String> result = new HashMap<String, String>();
+		for (String systemProperty : javaSystemProperties) {
+			if (systemProperty.contains("=")) {
+				result.put(systemProperty.substring(0, systemProperty
+						.indexOf("=")), systemProperty.substring(systemProperty
+						.indexOf("=") + 1));
+			}
+		}
+		return result;
+	}
 
-    public String toString() {
-        String res = "Application " + name + "\n";
-        res += "   executable: " + main + "\n";
-        res += "   parameters:";
-        for (int i = 0; i < parameters.length; i++) {
-            res += " " + parameters[i];
-        }
-        res += "\n";
+	public String[] getPostStageSet() {
+		return postStageSet;
+	}
 
-        res += "   java flags:";
-        for (int i = 0; i < javaFlags.length; i++) {
-            res += " " + javaFlags[i];
-        }
-        res += "\n";
+	public String[] getPreStageSet() {
+		return preStageSet;
+	}
 
-        res += "   pre staged:";
-        for (int i = 0; i < preStaged.length; i++) {
-            res += " " + preStaged[i];
-        }
-        res += "\n";
+	// public String toString() {
+	// String res = "Application " + name + "\n";
+	// res += " main: " + javaMain + "\n";
+	// res += " arguments:";
+	// for (int i = 0; i < javaArguments.length; i++) {
+	// res += " " + javaArguments[i];
+	// }
+	// res += "\n";
+	//
+	// res += " java flags:";
+	// for (int i = 0; i < javaFlags.length; i++) {
+	// res += " " + javaFlags[i];
+	// }
+	// res += "\n";
+	//
+	// res += " pre staged:";
+	// for (int i = 0; i < preStaged.length; i++) {
+	// res += " " + preStaged[i];
+	// }
+	// res += "\n";
+	//
+	// res += " post staged:";
+	// for (int i = 0; i < postStaged.length; i++) {
+	// res += " " + postStaged[i];
+	// }
+	// res += "\n";
+	//
+	// return res;
+	// }
 
-        res += "   post staged:";
-        for (int i = 0; i < postStaged.length; i++) {
-            res += " " + postStaged[i];
-        }
-        res += "\n";
-
-        return res;
-    }
-
-    public String[] getPreStaged() {
-        return preStaged;
-    }
-
-    public String[] getPostStaged() {
-        return postStaged;
-    }
-
-    public String[] getJavaFlags() {
-        return javaFlags;
-    }
-
-    public String getJavaFlagsAsString() {
-        String res = "";
-        for (int i = 0; i < javaFlags.length; i++) {
-            res += javaFlags[i];
-            if (i != javaFlags.length - 1) {
-                res += " ";
-            }
-        }
-        return res;
-    }
-
-    public void setMain(String main) {
-        this.main = main;
-    }
-
-    public void setJavaFlags(String[] javaFlags) {
-        this.javaFlags = javaFlags;
-    }
-
-    public void setParameters(String[] parameters) {
-        this.parameters = parameters;
-
-    }
-
-    public void setPreStaged(String[] preStaged) {
-        this.preStaged = preStaged;
-    }
-
-    public void setPostStaged(String[] postStaged) {
-        this.postStaged = postStaged;
-    }
-
-    public void setClasspath(String classpath) {
-        this.classpath = classpath;
-    }
 }

@@ -5,99 +5,103 @@ package ibis.deploy;
 
 import ibis.util.TypedProperties;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
 
 public class Grid {
-    private static Logger logger = Logger.getLogger(Grid.class);
-    
-    private ArrayList<Cluster> clusters = new ArrayList<Cluster>();
+	private static Logger logger = Logger.getLogger(Grid.class);
 
-    private String gridName;
+	private ArrayList<Cluster> clusters = new ArrayList<Cluster>();
 
-    public Grid(String gridName) {
-        this.gridName = gridName;
-    }
+	private String gridName;
 
-    public String getGridName() {
-        return gridName;
-    }
+	public Grid(String gridName) {
+		this.gridName = gridName;
+	}
 
-    public void addCluster(Cluster a) {
-        clusters.add(a);
-    }
+	public String getGridName() {
+		return gridName;
+	}
 
-    public Cluster[] getClusters() {
-        return clusters.toArray(new Cluster[clusters.size()]);
-    }
+	public void addCluster(Cluster a) {
+		clusters.add(a);
+	}
 
-    public Cluster getCluster(String name) {
-        for (int i = 0; i < clusters.size(); i++) {
-            if (clusters.get(i).getFriendlyName().equals(name)) {
-                return clusters.get(i);
-            }
-        }
+	public Cluster[] getClusters() {
+		return clusters.toArray(new Cluster[clusters.size()]);
+	}
 
-        return null;
-    }
+	public Cluster getCluster(String clusterName) {
+		if (clusters == null) {
+			return null;
+		}
+		for (Cluster cluster : clusters) {
+			if (cluster.getName().equalsIgnoreCase(clusterName)) {
+				return cluster;
+			}
+		}
+		return null;
+	}
 
-    public int getTotalMachineCount() {
-        int res = 0;
-        for (int i = 0; i < clusters.size(); i++) {
-            Cluster c = (Cluster) clusters.get(i);
-            res += c.getMachineCount();
-        }
-        return res;
-    }
+	// public Cluster getCluster(String name) {
+	// for (int i = 0; i < clusters.size(); i++) {
+	// if (clusters.get(i).getFriendlyName().equals(name)) {
+	// return clusters.get(i);
+	// }
+	// }
+	//
+	// return null;
+	// }
 
-    public int getTotalCPUCount() {
-        int res = 0;
-        for (int i = 0; i < clusters.size(); i++) {
-            Cluster c = (Cluster) clusters.get(i);
-            res += c.getMachineCount() * c.getCPUsPerMachine();
-        }
-        return res;
-    }
+	public int getTotalMachineCount() {
+		int res = 0;
+		for (int i = 0; i < clusters.size(); i++) {
+			Cluster c = (Cluster) clusters.get(i);
+			res += c.getNodes();
+		}
+		return res;
+	}
 
-    public static Grid loadGrid(String filename) throws FileNotFoundException,
-            IOException {
-        logger.info("loading grid: " + filename + " ...");
-        TypedProperties gridprops = new TypedProperties();
-        gridprops.load(new FileInputStream(filename));
-        gridprops.expandSystemVariables();
-        String gridName = gridprops.getProperty("name");
-        Grid grid = new Grid(gridName);
-        String[] clusterNames = gridprops.getStringList("clusters");
-        for (String clusterName : clusterNames) {
-            String headnode = gridprops.getProperty(clusterName + ".headnode");
-            String resourceBrokerAdaptors = gridprops.getProperty(clusterName
-                    + ".ResourceBrokerAdaptor");
-            String fileAdaptors = gridprops.getProperty(clusterName
-                    + ".FileAdaptor");
-            int nodes = gridprops.getIntProperty(clusterName + ".nodes");
-            int multicore = gridprops
-                    .getIntProperty(clusterName + ".multicore");
-            String javaPath = gridprops.getProperty(clusterName + ".javapath");
-            grid.addCluster(new Cluster(clusterName, headnode,
-                    resourceBrokerAdaptors, fileAdaptors, nodes, multicore,
-                    javaPath));
-        }
-        logger.info("loading grid: " + filename + " DONE");
-        return grid;
-    }
+	public int getTotalCPUCount() {
+		int res = 0;
+		for (int i = 0; i < clusters.size(); i++) {
+			Cluster c = (Cluster) clusters.get(i);
+			res += c.getNodes() * c.getMulticore();
+		}
+		return res;
+	}
 
-    public String toString() {
-        String res = "grid " + gridName + " resources:\n";
-        for (int i = 0; i < clusters.size(); i++) {
-            res += "    " + clusters.get(i) + "\n";
-        }
+	public static Grid load(TypedProperties gridprops) {
+		if (logger.isInfoEnabled()) {
+			logger.info("loading grid");
+		}
+		String gridName = gridprops.getProperty("name");
+		Grid grid = new Grid(gridName);
+		String[] clusterNames = TypedPropertiesUtility
+				.getHierarchicalStringList(gridprops, gridName, "clusters",
+						null, ",");
+		if (clusterNames == null) {
+			return null;
+		}
+		for (String clusterName : clusterNames) {
+			try {
+				grid.addCluster(Cluster.load(gridprops, gridName, clusterName));
+			} catch (Exception e) {
+				// TODO: something useful
+			}
+		}
+		return grid;
+	}
 
-        res += "total machine count: " + getTotalMachineCount()
-                + " total CPU count: " + getTotalCPUCount();
-        return res;
-    }
+	public String toString() {
+		String res = "grid " + gridName + " resources:\n";
+		for (int i = 0; i < clusters.size(); i++) {
+			res += "    " + clusters.get(i) + "\n";
+		}
+
+		res += "total machine count: " + getTotalMachineCount()
+				+ " total CPU count: " + getTotalCPUCount();
+		return res;
+	}
 }

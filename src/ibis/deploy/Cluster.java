@@ -3,76 +3,166 @@
  */
 package ibis.deploy;
 
+import ibis.util.TypedProperties;
+
+import java.net.URISyntaxException;
+
+import org.apache.log4j.Logger;
+import org.gridlab.gat.URI;
 
 public class Cluster {
-//    private static Logger logger = Logger.getLogger(Cluster.class);
+	private static Logger logger = Logger.getLogger(Cluster.class);
 
-    private String friendlyName;
+	private String name;
 
-    private String hostname;
+	private URI jobBroker;
 
-    private String accessType;
+	private URI deployBroker;
 
-    private int machineCount;
+	private String accessType;
 
-    private int CPUsPerMachine;
+	private int nodes;
 
-    private String javaHome;
+	private int multicore;
 
-    private String fileAccessType;
+	private String javapath;
 
-    /**
-     * @param accessType
-     *                the resource manager to use
-     * @param hostname
-     *                the hostname to contact
-     */
-    public Cluster(String friendlyName, String hostname, String accessType,
-            String fileAccessType, int machineCount, int CPUsPerMachine,
-            String javaHome) {
-        this.friendlyName = friendlyName;
-        this.accessType = accessType;
-        this.fileAccessType = fileAccessType;
-        this.hostname = hostname;
-        this.machineCount = machineCount;
-        this.CPUsPerMachine = CPUsPerMachine;
-        this.javaHome = javaHome;
-    }
+	private String fileAccessType;
 
-    public int getCPUsPerMachine() {
-        return CPUsPerMachine;
-    }
+	/**
+	 * Creates a new Cluster which can be identified in a {@link Grid} by its
+	 * <code>clusterName</code>.
+	 * 
+	 * @param clusterName
+	 *            the name of this Cluster
+	 */
+	public Cluster(String clusterName) {
+		this.name = clusterName;
+	}
 
-    public int getMachineCount() {
-        return machineCount;
-    }
+	/**
+	 * Creates a new Cluster which can be identified in a {@link Grid} by its
+	 * <code>clusterName</code>. This Cluster has a broker that can be used
+	 * for deployment at the specified {@link URI}.
+	 * 
+	 * @param clusterName
+	 * @param deployBroker
+	 */
+	public Cluster(String clusterName, URI deployBroker) {
+		this.name = clusterName;
+		this.deployBroker = deployBroker;
+	}
 
-    public String getAccessType() {
-        return accessType;
-    }
+	/**
+	 * Gets the JavaGAT resource broker adaptors which may be used for this
+	 * cluster in the order and format as described for the JavaGAT Preference "<code>resourcebroker.adaptor.name</code>".
+	 * 
+	 * @return the {@link String} containing the JavaGAT resource broker
+	 *         adaptors.
+	 */
+	public String getAccessType() {
+		return accessType;
+	}
 
-    public String getHostname() {
-        return hostname;
-    }
+	public String toString() {
+		return "Cluster " + name + " job contact = " + jobBroker
+				+ ", deploy contact = " + deployBroker + " with " + accessType
+				+ " nodes = " + nodes + " multicore = " + multicore;
+	}
 
-    public String toString() {
-        return "Cluster " + friendlyName + " contact = " + hostname + " with "
-                + accessType + " machineCount = " + machineCount
-                + " CPUs/machine = " + CPUsPerMachine;
-    }
+	/**
+	 * Gets the java path of this cluster. If the executable <code>java</code>
+	 * is located at <code>/usr/local/jdk-1.5/bin/java</code>, then the java
+	 * path will be: <code>/usr/local/jdk-1.5/</code>
+	 * 
+	 * @return the java path
+	 */
+	public String getJavaPath() {
+		return javapath;
+	}
 
-    public String getFriendlyName() {
-        return friendlyName;
-    }
+	public String getFileAccessType() {
+		return fileAccessType;
+	}
 
-    /**
-     * @return the javaHome
-     */
-    public String getJavaHome() {
-        return javaHome;
-    }
+	public URI getDeployBroker() {
+		return deployBroker;
+	}
 
-    public String getFileAccessType() {
-        return fileAccessType;
-    }
+	public URI getJobBroker() {
+		return jobBroker;
+	}
+
+	public URI getBroker(boolean isDeployBroker) {
+		if (isDeployBroker) {
+			return deployBroker;
+		} else {
+			return jobBroker;
+		}
+	}
+
+	public static Cluster load(TypedProperties properties, String gridName,
+			String clusterName) throws URISyntaxException {
+		if (logger.isInfoEnabled()) {
+			logger.info("loading cluster " + clusterName);
+		}
+		Cluster cluster = new Cluster(clusterName);
+		String fullName = gridName + "." + clusterName;
+		cluster.fileAccessType = TypedPropertiesUtility
+				.getHierarchicalProperty(properties, fullName, "file.adaptors",
+						"");
+		cluster.accessType = TypedPropertiesUtility.getHierarchicalProperty(
+				properties, fullName, "resourcebroker.adaptors", "");
+		cluster.nodes = TypedPropertiesUtility.getHierarchicalInt(properties,
+				fullName, "nodes", 0);
+		cluster.multicore = TypedPropertiesUtility.getHierarchicalInt(
+				properties, fullName, "multicore", 0);
+		cluster.javapath = TypedPropertiesUtility.getHierarchicalProperty(
+				properties, fullName, "javapath", null);
+		String jobBroker = TypedPropertiesUtility.getHierarchicalProperty(
+				properties, fullName, "job.broker", null);
+		String deployBroker = TypedPropertiesUtility.getHierarchicalProperty(
+				properties, fullName, "deploy.broker", null);
+		if (deployBroker == null) {
+			return null;
+		}
+		if (jobBroker == null) {
+			jobBroker = deployBroker;
+		}
+		cluster.jobBroker = new URI(jobBroker);
+		cluster.deployBroker = new URI(deployBroker);
+		return cluster;
+	}
+
+	public int getMulticore() {
+		return multicore;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public int getNodes() {
+		return nodes;
+	}
+
+	public void setDeployBroker(URI deployBroker) {
+		this.deployBroker = deployBroker;
+	}
+
+	public void setJobBroker(URI jobBroker) {
+		this.jobBroker = jobBroker;
+	}
+
+	public void setAccessType(String accessType) {
+		this.accessType = accessType;
+	}
+
+	public void setFileAccessType(String fileAccessType) {
+		this.fileAccessType = fileAccessType;
+	}
+
+	public void setJavapath(String javapath) {
+		this.javapath = javapath;
+	}
 }

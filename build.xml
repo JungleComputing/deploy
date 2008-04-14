@@ -18,7 +18,7 @@
 
     <target name="build-external-gat"
             description="Build with external GAT"
-            depends="clean,copy-external-gat,compile,javadoc" />
+            depends="clean,copy-external-gat,compile" />
 
     <property name="src" location="src" />
     <property name="tmp" location="tmp" />
