@@ -32,14 +32,22 @@ public class Job {
 
     private boolean closedWorld;
 
+    /**
+     * Create a {@link Job} with the name <code>name</code>
+     * 
+     * @param name
+     *            the name of the {@link Job}
+     */
     public Job(String name) {
         this.name = name;
     }
 
-    protected SubJob getSubJob(int index) {
-        return subjobs.get(index);
-    }
-
+    /**
+     * Adds a {@link SubJob} to this {@link Job}
+     * 
+     * @param subjob
+     *            the {@link SubJob} to be added
+     */
     public void addSubJob(SubJob subjob) {
         subjob.setParent(this);
         subjobs.add(subjob);
@@ -57,7 +65,7 @@ public class Job {
         }
     }
 
-    public URI[] getHubURIs() {
+    protected URI[] getHubURIs() {
         URI[] result = new URI[subjobs.size()];
         int i = 0;
         for (SubJob subjob : subjobs) {
@@ -66,10 +74,20 @@ public class Job {
         return result;
     }
 
+    /**
+     * Gets the name of the Job
+     * 
+     * @return the name of the Job
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Gets the ibis poolID of the Job
+     * 
+     * @return the ibis poolID of the Job
+     */
     public String getPoolID() {
         if (poolID != null) {
             return poolID;
@@ -84,6 +102,11 @@ public class Job {
         return null;
     }
 
+    /**
+     * Gets the total number of cores used by this Job
+     * 
+     * @return the total number of cores used by this Job
+     */
     public int getTotalCores() {
         int totalCPUs = 0;
         for (int j = 0; j < subjobs.size(); j++) {
@@ -94,6 +117,11 @@ public class Job {
         return totalCPUs;
     }
 
+    /**
+     * Gets the total number of nodes used by this Job
+     * 
+     * @return the total number of nodes used by this Job
+     */
     public int getTotalNodes() {
         int totalMachines = 0;
         for (int j = 0; j < subjobs.size(); j++) {
@@ -103,14 +131,20 @@ public class Job {
         return totalMachines;
     }
 
+    /**
+     * Gets the number of {@link SubJob}s of this Job
+     * 
+     * @return the number of {@link SubJob}s of this Job
+     */
     public int numberOfSubJobs() {
         return subjobs.size();
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
+    /**
+     * Sets the poolID of this Job
+     * 
+     * @param poolID
+     */
     public void setPoolID(String poolID) {
         this.poolID = poolID;
     }
@@ -183,18 +217,30 @@ public class Job {
         }
     }
 
-    public int getRetryAttempts() {
+    protected int getRetryAttempts() {
         return retryAttempts;
     }
 
-    public int getRetryInterval() {
+    protected int getRetryInterval() {
         return retryInterval;
     }
 
+    /**
+     * Gets a {@link List} of the {@link SubJob}s of this Job.
+     * 
+     * @return a {@link List} of the {@link SubJob}s of this Job.
+     */
     public List<SubJob> getSubJobs() {
         return subjobs;
     }
 
+    /**
+     * Gets the status of this Job. The status is a Map containing all the
+     * possible states as keys and the number of sub jobs that are in the
+     * particular state as value.
+     * 
+     * @return the status of this Job
+     */
     public Map<String, Integer> getStatus() {
         Map<String, Integer> result = new HashMap<String, Integer>();
         result.put(org.gridlab.gat.resources.Job
@@ -228,14 +274,35 @@ public class Job {
         return result;
     }
 
+    /**
+     * Returns whether this Job is a closed world job or an open world job.
+     * 
+     * @return <code>true</code> if the Job is closed world,
+     *         <code>false</code> otherwise
+     */
     public boolean isClosedWorld() {
         return closedWorld;
     }
 
+    /**
+     * Sets whether this Job is a closed world job or not
+     * 
+     * @param closedWorld
+     *            <code>true</code> if the Job is closed world,
+     *            <code>false</code> otherwise
+     */
     public void setClosedWorld(boolean closedWorld) {
         this.closedWorld = closedWorld;
     }
 
+    /**
+     * Gets the size of the pool
+     * 
+     * @return the size of the pool
+     * @throws Exception
+     *             if one of the {@link SubJob#getPoolSize()} throws an
+     *             exception
+     */
     public int getPoolSize() throws Exception {
         int result = 0;
         for (SubJob subjob : subjobs) {
@@ -248,7 +315,7 @@ public class Job {
         this.deployer = deployer;
     }
 
-    public Application getFirstApplication() {
+    protected Application getFirstApplication() {
         if (subjobs != null && subjobs.size() > 0) {
             return subjobs.get(0).getApplication();
         }

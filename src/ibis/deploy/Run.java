@@ -8,7 +8,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-public class Run {
+class Run {
 
     private static Logger logger = Logger.getLogger(Run.class);
 

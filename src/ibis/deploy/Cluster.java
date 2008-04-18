@@ -162,15 +162,15 @@ public class Cluster {
      * cluster
      * <TR> </TABLE>
      * <p>
-     * The properties are hierarchical, an example of this is shown below:
-     * <p>
-     * applications=app1,app2,app3<br />
-     * app1.main=MyMain<br />
-     * app2.main=OtherMain<br />
-     * app3.main=AnotherMain<br />
-     * options=-server<br />
-     * app3.options=-client<br />
-     * <p>
+     * 
+     * @param properties
+     *            the properties where to load the cluster from
+     * @param gridName
+     *            the name of the grid that will be prefixed to this cluster
+     *            properties
+     * @param clusterName
+     *            the name of the cluster, which is also prefixed to this
+     *            cluster properties
      */
     public static Cluster load(TypedProperties properties, String gridName,
             String clusterName) throws URISyntaxException {
@@ -268,10 +268,9 @@ public class Cluster {
      * Sets the file access type for this cluster. A string containing a comma
      * separated list of gat adaptors that may be used for file operations.
      * 
-     * @param accessType
+     * @param fileAccessType
      *            A string containing a comma separated list of gat adaptors
      *            that may be used for file operations.
-     * @param fileAccessType
      */
     public void setFileAccessType(String fileAccessType) {
         this.fileAccessType = fileAccessType;

@@ -175,26 +175,28 @@ public class SubJob implements MetricListener {
     private String status = org.gridlab.gat.resources.Job
             .getStateString(org.gridlab.gat.resources.Job.INITIAL);
 
+    /**
+     * Create a {@link SubJob} with the name <code>subjobName</code>
+     * 
+     * @param subjobName
+     *            the name of the {@link SubJob}
+     */
     public SubJob(String subjobName) {
         this.name = subjobName;
     }
 
-    // public Object clone(SubJob subjob) {
-    // SubJob clone = new SubJob(subjob.name);
-    // clone.nodes = subjob.nodes;
-    // clone.application = subjob.application;
-    // clone.attributes = subjob.attributes;
-    // clone.preferences = subjob.preferences;
-    // clone.runtime = subjob.runtime;
-    // clone.multicore = subjob.multicore;
-    // return clone;
-    // }
-
+    /**
+     * Gets the {@link Application} that will be run by deploying this
+     * {@link SubJob}
+     * 
+     * @return the {@link Application} that will be run by deploying this
+     *         {@link SubJob}
+     */
     public Application getApplication() {
         return application;
     }
 
-    public HashMap<String, Object> getAttributes() {
+    protected HashMap<String, Object> getAttributes() {
         if (attributes == null) {
             return null;
         }
@@ -208,34 +210,66 @@ public class SubJob implements MetricListener {
         return result;
     }
 
+    /**
+     * Gets the {@link Cluster} where the {@link SubJob} will run if deployed
+     * 
+     * @return the {@link Cluster} where the {@link SubJob} will run if deployed
+     */
     public Cluster getCluster() {
         return cluster;
     }
 
+    /**
+     * Gets the {@link Grid} where the {@link SubJob} will run if deployed
+     * 
+     * @return the {@link Grid} where the {@link SubJob} will run if deployed
+     */
     public Grid getGrid() {
         return grid;
     }
 
-    public URI getHubURI() {
+    protected URI getHubURI() {
         return hubURI;
     }
 
-    public int getMulticore() {
+    protected int getMulticore() {
         return multicore;
     }
 
+    /**
+     * Gets the name of this Grid
+     * 
+     * @return the name of this Grid
+     */
     public String getName() {
         return name;
     }
 
-    public int getNodes() {
+    protected int getNodes() {
         return nodes;
     }
 
+    /**
+     * Gets the poolID of this {@link SubJob}
+     * 
+     * @return the poolID of this {@link SubJob}
+     */
     public String getPoolID() {
         return poolID;
     }
 
+    /**
+     * Gets the pool size of this {@link SubJob}
+     * 
+     * @return the pool size of this {@link SubJob}
+     * @throws Exception
+     *             if the number of nodes and the number of cores and the number
+     *             of executables are set, but are inconsistent (nodes *
+     *             multicore != executables) or the number of executables is
+     *             smaller than the number of nodes or only the number of cores
+     *             is specified
+     * 
+     */
     public int getPoolSize() throws Exception {
         if (!closedWorld) {
             return -1;
@@ -265,7 +299,7 @@ public class SubJob implements MetricListener {
         }
     }
 
-    public HashMap<String, Object> getPreferences() {
+    protected HashMap<String, Object> getPreferences() {
         if (preferences == null) {
             return null;
         }
@@ -279,22 +313,38 @@ public class SubJob implements MetricListener {
         return result;
     }
 
-    public long getRuntime() {
+    protected long getRuntime() {
         return runtime;
     }
 
+    /**
+     * Gets the status of this SubJob
+     * 
+     * @return the String indicating the status of this {@link SubJob}
+     */
     public String getStatus() {
         return status;
     }
 
-    public boolean isClosedWorld() {
+    protected boolean isClosedWorld() {
         return closedWorld;
     }
 
+    /**
+     * Set this {@link SubJob} to run in a closed world ibis
+     * 
+     * @param closedWorld
+     */
     public void setClosedWorld(boolean closedWorld) {
         this.closedWorld = closedWorld;
     }
 
+    /**
+     * Sets the poolID for this {@link SubJob}
+     * 
+     * @param poolID
+     *            the poolID to be used
+     */
     public void setPoolID(String poolID) {
         this.poolID = poolID;
     }
@@ -306,72 +356,146 @@ public class SubJob implements MetricListener {
                 + (nodes * multicore) + " cores";
     }
 
+    /**
+     * Sets the {@link Application} for this {@link SubJob}
+     * 
+     * @param application
+     *            the {@link Application} to be used.
+     */
     public void setApplication(Application application) {
         this.application = application;
     }
 
+    /**
+     * Sets the gat attributes for this {@link SubJob}
+     * 
+     * @param attributes
+     *            the attributes to be used.
+     */
     public void setAttributes(String... attributes) {
         this.attributes = attributes;
     }
 
+    /**
+     * Sets the {@link Cluster} for this {@link SubJob}
+     * 
+     * @param cluster
+     *            the cluster where the {@link SubJob} should run on.
+     */
     public void setCluster(Cluster cluster) {
         this.cluster = cluster;
     }
 
+    /**
+     * Sets the total number of executables for this {@link SubJob}
+     * 
+     * @param executables
+     *            teh total number of executables
+     */
     public void setExecutables(int executables) {
         this.executables = executables;
     }
 
+    /**
+     * Sets the {@link Grid} for this {@link SubJob}
+     * 
+     * @param grid
+     *            the {@link Grid} for this {@link SubJob}
+     */
     public void setGrid(Grid grid) {
         this.grid = grid;
     }
 
+    /**
+     * Sets the URI of the hub that should be deployed for this {@link SubJob}
+     * 
+     * @param hubURI
+     *            the URI of the hub
+     */
     public void setHubURI(URI hubURI) {
         this.hubURI = hubURI;
     }
 
+    /**
+     * Sets the number of cores for this {@link SubJob}.
+     * 
+     * @param multicore
+     *            the number of cores for this {@link SubJob}
+     */
     public void setMulticore(int multicore) {
         this.multicore = multicore;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
+    /**
+     * Sets the number of nodes for this {@link SubJob}
+     * 
+     * @param nodes
+     *            the number of nodes for this {@link SubJob}
+     */
     public void setNodes(int nodes) {
         this.nodes = nodes;
     }
 
+    /**
+     * Sets the javagat preferences for this {@link SubJob}
+     * 
+     * @param preferences
+     *            the javagat preferences for this {@link SubJob}
+     */
     public void setPreferences(String... preferences) {
         this.preferences = preferences;
     }
 
+    /**
+     * Sets the runtime for this {@link SubJob}
+     * 
+     * @param runtime
+     *            the runtime in minutes
+     */
     public void setRuntime(long runtime) {
         this.runtime = runtime;
     }
 
-    public String[] getArguments() {
+    protected String[] getArguments() {
         return arguments;
     }
 
-    public String getExecutable() {
+    protected String getExecutable() {
         return executable;
     }
 
-    public boolean hasExecutable() {
+    protected boolean hasExecutable() {
         return executable != null;
     }
 
-    public void setArguments(String... arguments) {
+    /**
+     * Sets the additional arguments for the wrapper executable that should be
+     * run
+     * 
+     * @param arguments
+     *            the additional arguments for the wrapper executable that
+     *            should be run
+     */
+    public void setWrapperArguments(String... arguments) {
         this.arguments = arguments;
     }
 
-    public void setExecutable(String executable) {
+    /**
+     * Sets the wrapper executable
+     * 
+     * @param executable
+     *            the wrapper executable
+     */
+    public void setWrapperExecutable(String executable) {
         this.executable = executable;
     }
 
+    /**
+     * <b>DO NOT USE. For internal use only</b>
+     */
     public void processMetricEvent(MetricEvent event) {
         status = (String) event.getValue();
+        ((org.gridlab.gat.resources.Job) (event.getSource())).getState();
         if (status.equals(org.gridlab.gat.resources.Job
                 .getStateString(org.gridlab.gat.resources.Job.STOPPED))
                 || status

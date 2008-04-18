@@ -36,8 +36,8 @@ public class SleepTest {
             vuSubjob.setCluster(das3.getCluster("VU"));
             vuSubjob.setNodes(Integer.parseInt(args[1]));
             vuSubjob.setMulticore(Integer.parseInt(args[2]));
-            vuSubjob.setExecutable("/bin/sh");
-            vuSubjob.setArguments("sleep/my-script.sh");
+            vuSubjob.setWrapperExecutable("/bin/sh");
+            vuSubjob.setWrapperArguments("sleep/my-script.sh");
             job.addSubJob(vuSubjob);
             SubJob uvaSubjob = new SubJob("UvA");
             uvaSubjob.setApplication(application);

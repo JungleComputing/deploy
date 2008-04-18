@@ -223,7 +223,7 @@ public class Deployer implements MetricListener {
      * Then the hubs are started and finally the sub job is started. The server
      * and hubs will live as long as the sub job lives.
      * 
-     * @param job
+     * @param subjob
      *            the job to be deployed
      * @throws Exception
      *             if the deployment fails

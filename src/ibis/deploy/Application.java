@@ -40,7 +40,7 @@ public class Application {
      *            the java options for this application
      * @param javaSystemProperties
      *            the java system properties for this application as an array
-     *            {"key1", "value1", "key2", "value2", ..., "keyn", "valuen"}
+     *            {"key1=value1", "key2=value2", ..., "keyn=valuen"}
      * @param javaArguments
      *            the java arguments for this application
      * @param preStageSet
@@ -167,7 +167,7 @@ public class Application {
     }
 
     /**
-     * gets the java arguments.
+     * Gets the java arguments
      * 
      * @return the java arguments.
      */
