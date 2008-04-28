@@ -3,22 +3,32 @@ package ibis.deploy;
 import ibis.util.TypedProperties;
 
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
+import org.gridlab.gat.GAT;
+import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
+import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.MetricListener;
+import org.gridlab.gat.resources.JavaSoftwareDescription;
+import org.gridlab.gat.resources.JobDescription;
+import org.gridlab.gat.resources.ResourceBroker;
+import org.gridlab.gat.resources.SoftwareDescription;
 
 public class SubJob implements MetricListener {
     private static Logger logger = Logger.getLogger(SubJob.class);
 
     private static final int DEFAULT_RUNTIME = 20; // minutes
-
-    private Deployer deployer;
 
     private Job parent;
 
@@ -196,7 +206,7 @@ public class SubJob implements MetricListener {
         return application;
     }
 
-    protected HashMap<String, Object> getAttributes() {
+    private HashMap<String, Object> getAttributes() {
         if (attributes == null) {
             return null;
         }
@@ -226,10 +236,6 @@ public class SubJob implements MetricListener {
      */
     public Grid getGrid() {
         return grid;
-    }
-
-    protected URI getHubURI() {
-        return hubURI;
     }
 
     protected int getMulticore() {
@@ -501,10 +507,12 @@ public class SubJob implements MetricListener {
                 || status
                         .equals(org.gridlab.gat.resources.Job
                                 .getStateString(org.gridlab.gat.resources.Job.SUBMISSION_ERROR))) {
-            if (parent == null) {
-                deployer.end(name);
-            } else {
+
+            try {
                 parent.inform();
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
         }
     }
@@ -513,7 +521,135 @@ public class SubJob implements MetricListener {
         this.parent = parent;
     }
 
-    protected void setDeployer(Deployer deployer) {
-        this.deployer = deployer;
+    public void submit(String poolID, int poolSize, String serverAddress,
+            String[] hubAddresses) throws GATObjectCreationException,
+            URISyntaxException, GATInvocationException {
+        if (logger.isInfoEnabled()) {
+            logger.info("submitting sub job");
+        }
+        Preferences preferences = new Preferences();
+        preferences.put("ResourceBroker.adaptor.name", cluster.getAccessType());
+        preferences.put("File.adaptor.name", cluster.getFileAccessType());
+        Map<String, Object> additionalPreferences = getPreferences();
+        if (additionalPreferences != null) {
+            Set<String> preferenceKeys = additionalPreferences.keySet();
+            for (String key : preferenceKeys) {
+                preferences.put(key, additionalPreferences.get(key));
+            }
+        }
+        File outFile = GAT.createFile(preferences, new URI(getName() + "."
+                + application.getName() + ".stdout"));
+        File errFile = GAT.createFile(preferences, new URI(getName() + "."
+                + application.getName() + ".stderr"));
+
+        JavaSoftwareDescription sd = new JavaSoftwareDescription();
+        Map<String, Object> additionalAttributes = getAttributes();
+        if (additionalAttributes != null) {
+            sd.setAttributes(getAttributes());
+        }
+        sd.setExecutable(cluster.getJavaPath() + "/bin/java");
+
+        sd.setJavaClassPath(application.getJavaClassPath(application
+                .getPreStageSet(), true));
+
+        Map<String, String> systemProperties = new HashMap<String, String>();
+        systemProperties.put("log4j.configuration", "file:"
+                + application.getLog4jPropertiesLocation());
+        if (application.getJavaSystemProperties() != null) {
+            systemProperties.putAll(application.getJavaSystemProperties());
+        }
+        systemProperties.put("ibis.server.address", serverAddress);
+
+        String hubAddressesString = "";
+        for (int i = 0; i < hubAddresses.length; i++) {
+            hubAddressesString += hubAddresses[i];
+            if (i != hubAddresses.length - 1) {
+                hubAddressesString += ",";
+            }
+        }
+
+        systemProperties.put("ibis.server.hub.addresses", hubAddressesString);
+        systemProperties.put("ibis.pool.name", poolID);
+        if (isClosedWorld()) {
+            systemProperties.put("ibis.pool.size", "" + poolSize);
+        }
+        // systemProperties.put("ibis.location.postfix",
+        // subJob.getClusterName());
+        systemProperties.put("ibis.location.automatic", "true");
+        sd.setJavaSystemProperties(systemProperties);
+        sd.setJavaOptions(application.getJavaOptions());
+        sd.setJavaMain(application.getJavaMain());
+        sd.setJavaArguments(application.getJavaArguments());
+        sd.setStderr(errFile);
+        sd.setStdout(outFile);
+        if (application.getPreStageSet() != null) {
+            for (String filename : application.getPreStageSet()) {
+                sd.addPreStagedFile(GAT.createFile(preferences, filename));
+            }
+        }
+        if (application.getPostStageSet() != null) {
+            for (String filename : application.getPostStageSet()) {
+                sd.addPostStagedFile(GAT.createFile(preferences, filename), GAT
+                        .createFile(preferences, getName() + "." + filename));
+            }
+        }
+        int nodes = getNodes();
+        int multicore = getMulticore();
+        sd.addAttribute("count", nodes * multicore);
+        sd.addAttribute("host.count", nodes);
+        sd.addAttribute("walltime.max", getRuntime());
+        JobDescription jd = null;
+        if (!hasExecutable()) {
+            jd = new JobDescription(sd);
+        } else {
+            SoftwareDescription nonJava = new SoftwareDescription();
+            if (sd.getAttributes() != null) {
+                nonJava.setAttributes(sd.getAttributes());
+            }
+            if (sd.getEnvironment() != null) {
+                nonJava.setEnvironment(sd.getEnvironment());
+            }
+            if (application.getPreStageSet() != null) {
+                for (String filename : application.getPreStageSet()) {
+                    nonJava.addPreStagedFile(GAT.createFile(preferences,
+                            filename));
+                }
+            }
+            if (application.getPostStageSet() != null) {
+                for (String filename : application.getPostStageSet()) {
+                    nonJava.addPostStagedFile(GAT.createFile(preferences,
+                            filename), GAT.createFile(preferences, getName()
+                            + "." + filename));
+                }
+            }
+            nonJava.setStderr(errFile);
+            nonJava.setStdout(outFile);
+            nonJava.setExecutable(getExecutable());
+            List<String> argumentList = new ArrayList<String>();
+            if (getArguments() != null) {
+                for (String arg : getArguments()) {
+                    argumentList.add(arg);
+                }
+            }
+            argumentList.add("" + getNodes());
+            argumentList.add("" + getMulticore());
+            // argumentList.add("" + subjob.getRuntime());
+            argumentList.add(sd.getExecutable());
+            if (sd.getArguments() != null) {
+                for (String arg : sd.getArguments()) {
+                    argumentList.add(arg);
+                }
+            }
+            nonJava.setArguments(argumentList.toArray(new String[argumentList
+                    .size()]));
+            jd = new JobDescription(nonJava);
+        }
+
+        ResourceBroker broker = GAT.createResourceBroker(preferences, cluster
+                .getJobBroker());
+        logger.debug("submission of subjob '" + name
+                + "' with job description:\n" + jd);
+        broker.submitJob(jd, this, "job.status");
+
     }
 }

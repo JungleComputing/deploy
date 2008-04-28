@@ -1,36 +1,44 @@
 package ibis.deploy;
 
+import ibis.server.remote.RemoteClient;
 import ibis.util.TypedProperties;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.gridlab.gat.GAT;
+import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
+import org.gridlab.gat.monitoring.MetricEvent;
+import org.gridlab.gat.monitoring.MetricListener;
+import org.gridlab.gat.resources.JavaSoftwareDescription;
+import org.gridlab.gat.resources.JobDescription;
+import org.gridlab.gat.resources.ResourceBroker;
 
-public class Job {
+public class Job implements MetricListener {
     private static Logger logger = Logger.getLogger(Job.class);
 
-    private static final int DEFAULT_RETRY_ATTEMPTS = 3; // times
-
-    private static final int DEFAULT_RETRY_INTERVAL = 60; // seconds
-
     private List<SubJob> subjobs = new ArrayList<SubJob>();
-
-    private Deployer deployer;
 
     private String name;
 
     private String poolID;
 
-    private int retryAttempts;
-
-    private int retryInterval;
-
     private boolean closedWorld;
+
+    private Hashtable<URI, org.gridlab.gat.resources.Job> deployJobs = new Hashtable<URI, org.gridlab.gat.resources.Job>();
+
+    private Hashtable<URI, RemoteClient> deployClients = new Hashtable<URI, RemoteClient>();
+
+    private URI serverURI;
 
     /**
      * Create a {@link Job} with the name <code>name</code>
@@ -53,7 +61,7 @@ public class Job {
         subjobs.add(subjob);
     }
 
-    protected void inform() {
+    protected void inform() throws Exception {
         if (subjobs.size() == getStatus().get(
                 org.gridlab.gat.resources.Job
                         .getStateString(org.gridlab.gat.resources.Job.STOPPED))
@@ -61,17 +69,8 @@ public class Job {
                         .get(
                                 org.gridlab.gat.resources.Job
                                         .getStateString(org.gridlab.gat.resources.Job.SUBMISSION_ERROR))) {
-            deployer.end(name);
+            stop();
         }
-    }
-
-    protected URI[] getHubURIs() {
-        URI[] result = new URI[subjobs.size()];
-        int i = 0;
-        for (SubJob subjob : subjobs) {
-            result[i++] = subjob.getHubURI();
-        }
-        return result;
     }
 
     /**
@@ -171,10 +170,6 @@ public class Job {
             logger.info("loading job");
         }
         Job job = new Job(jobName);
-        job.retryAttempts = TypedPropertiesUtility.getHierarchicalInt(runprops,
-                jobName, "retry.attempts", DEFAULT_RETRY_ATTEMPTS);
-        job.retryInterval = TypedPropertiesUtility.getHierarchicalInt(runprops,
-                jobName, "retry.interval", DEFAULT_RETRY_INTERVAL);
 
         String[] subjobNames = TypedPropertiesUtility
                 .getHierarchicalStringList(runprops, jobName, "subjobs", null,
@@ -215,14 +210,6 @@ public class Job {
             }
             return job;
         }
-    }
-
-    protected int getRetryAttempts() {
-        return retryAttempts;
-    }
-
-    protected int getRetryInterval() {
-        return retryInterval;
     }
 
     /**
@@ -266,8 +253,6 @@ public class Job {
                 .getStateString(org.gridlab.gat.resources.Job.UNKNOWN), 0);
         for (SubJob subjob : subjobs) {
             String subjobState = subjob.getStatus();
-            logger.debug("subjob '" + subjob.getName() + "' is in state '"
-                    + subjobState + "'");
             int othersInSameState = result.get(subjobState);
             result.put(subjobState, (othersInSameState + 1));
         }
@@ -311,15 +296,205 @@ public class Job {
         return result;
     }
 
-    protected void setDeployer(Deployer deployer) {
-        this.deployer = deployer;
-    }
-
-    protected Application getFirstApplication() {
+    private Application getFirstApplication() {
         if (subjobs != null && subjobs.size() > 0) {
             return subjobs.get(0).getApplication();
         }
         return null;
     }
 
+    private void startServer(Cluster serverCluster, boolean hubOnly)
+            throws Exception {
+        if (logger.isInfoEnabled()) {
+            logger.info("start server (hub only is " + hubOnly + ")");
+        }
+        if (deployClients.containsKey(serverCluster.getDeployBroker())) {
+            if (logger.isInfoEnabled()) {
+                logger.info("already a hub available at: '"
+                        + serverCluster.getDeployBroker() + "'");
+            }
+            return;
+        }
+        Application application = getFirstApplication();
+        if (application == null) {
+            // TODO do something (exception oid)
+        }
+        Preferences serverPreferences = new Preferences();
+        if (serverCluster.getFileAccessType() != null) {
+            serverPreferences.put("file.adaptor.name", serverCluster
+                    .getFileAccessType());
+        }
+        if (serverCluster.getAccessType() != null) {
+            serverPreferences.put("resourcebroker.adaptor.name", serverCluster
+                    .getAccessType());
+        }
+        JavaSoftwareDescription sd = new JavaSoftwareDescription();
+        sd.setExecutable(serverCluster.getJavaPath() + "/bin/java");
+
+        sd.setJavaMain("ibis.server.Server");
+        if (hubOnly) {
+            sd.setJavaArguments(new String[] { "--hub-only", "--remote",
+                    "--port", "0" });
+        } else {
+            sd.setJavaArguments(new String[] { "--remote", "--port", "0" });
+        }
+        sd.setJavaOptions(new String[] {
+                "-classpath",
+                application.getJavaClassPath(
+                        application.getServerPreStageSet(), false),
+                "-Dlog4j.configuration=file:./log4j.properties" });
+        if (application.getServerPreStageSet() != null) {
+            for (String filename : application.getServerPreStageSet()) {
+                sd
+                        .addPreStagedFile(GAT.createFile(serverPreferences,
+                                filename));
+            }
+        }
+        RemoteClient ibisServer = new RemoteClient();
+        sd.setStderr(GAT.createFile(serverPreferences, serverCluster.getName()
+                + ".err"));
+        // if (hubOnly) {
+        // sd.setStdout(GAT.createFile(serverPreferences, serverCluster
+        // .getName()
+        // + ".out"));
+        // } else {
+        sd.setStdout(ibisServer.getOutputStream());
+        // }
+        sd.setStdin(ibisServer.getInputStream());
+        JobDescription jd = new JobDescription(sd);
+        if (logger.isDebugEnabled()) {
+            logger.debug("starting server at '"
+                    + serverCluster.getDeployBroker() + "'");
+        }
+        ResourceBroker broker = GAT.createResourceBroker(serverPreferences,
+                serverCluster.getDeployBroker());
+        deployJobs.put(serverCluster.getDeployBroker(), broker.submitJob(jd,
+                this, "job.status"));
+        deployClients.put(serverCluster.getDeployBroker(), ibisServer);
+    }
+
+    protected void initIbis(Cluster serverCluster) throws Exception {
+        // first register the server uri, it can be used to retrieve the server
+        // address later on.
+        serverURI = serverCluster.getDeployBroker();
+
+        // start the server ...
+        startServer(serverCluster, false);
+        // ... and the hubs ...
+        for (SubJob subjob : subjobs) {
+            startServer(subjob.getCluster(), true);
+        }
+        // ... then wait until everyone is up and running ...
+        Collection<org.gridlab.gat.resources.Job> jobs = deployJobs.values();
+        for (org.gridlab.gat.resources.Job job : jobs) {
+            logger.debug("waiting until job '" + job.getJobID()
+                    + "' is in state RUNNING");
+            while (job.getState() != org.gridlab.gat.resources.Job.RUNNING) {
+                Thread.sleep(1000);
+            }
+        }
+        // ... and update the server and the hubs.
+        Set<URI> uris = deployClients.keySet();
+        for (URI uri : uris) {
+            logger.debug("adding hub addresses '" + getHubAddresses(uri, false)
+                    + "' to hub @ '" + uri + "'");
+            deployClients.get(uri).addHubs(getHubAddresses(uri, false));
+        }
+    }
+
+    protected void initHub(Cluster hubCluster) throws Exception {
+        // first store the hubs known so far...
+        String[] knownHubs = getHubAddresses(null, false);
+        // then start the new hub
+        startServer(hubCluster, true);
+        // and wait until it's running
+        while (deployJobs.get(hubCluster.getDeployBroker()).getState() != org.gridlab.gat.resources.Job.RUNNING) {
+            Thread.sleep(1000);
+        }
+        // then retrieve its address
+        String hubAddress = deployClients.get(hubCluster.getDeployBroker())
+                .getLocalAddress();
+        // and update all already running hubs
+        Collection<RemoteClient> clients = deployClients.values();
+        for (RemoteClient client : clients) {
+            client.addHubs(hubAddress);
+        }
+        // finally add the known hubs to the new hub
+        deployClients.get(hubCluster.getDeployBroker()).addHubs(knownHubs);
+    }
+
+    private String[] getHubAddresses(URI first, boolean excludeServer)
+            throws IOException {
+        ArrayList<String> result = new ArrayList<String>();
+        Set<URI> uris = deployClients.keySet();
+        for (URI uri : uris) {
+            logger.info("getting addresses for uri : " + uri);
+            if (excludeServer && uri.equals(serverURI)) {
+                continue;
+            }
+            if (uri.equals(first)) {
+                result.add(0, deployClients.get(uri).getLocalAddress());
+            } else {
+                result.add(deployClients.get(uri).getLocalAddress());
+            }
+            logger.info("last after adding address for uri: " + uri + " = "
+                    + result.get(result.size() - 1));
+        }
+        logger.info("getHubAddresses done!");
+        return result.toArray(new String[result.size()]);
+    }
+
+    public void stop() throws Exception {
+        Collection<RemoteClient> clients = deployClients.values();
+        for (RemoteClient client : clients) {
+            client.end(2000);
+        }
+        Collection<org.gridlab.gat.resources.Job> jobs = deployJobs.values();
+        for (org.gridlab.gat.resources.Job job : jobs) {
+            if (job.getState() == org.gridlab.gat.resources.Job.RUNNING) {
+                job.stop();
+            }
+        }
+    }
+
+    public void processMetricEvent(MetricEvent arg0) {
+        if (logger.isInfoEnabled()) {
+            try {
+                logger.info("received a state change for server/hub '"
+                        + ((org.gridlab.gat.resources.Job) arg0.getSource())
+                                .getJobID() + "': " + arg0.getValue());
+            } catch (GATInvocationException e) {
+                // ignore
+            }
+        }
+    }
+
+    private String generatePoolID() {
+        if (logger.isInfoEnabled()) {
+            logger.info("generate pool id");
+        }
+        return "pool-id-" + Math.random();
+    }
+
+    protected void submit() throws Exception {
+        if (poolID == null) {
+            poolID = generatePoolID();
+        }
+        logger.debug("submitting new job with pool id '" + poolID
+                + "', subjobs.size=" + subjobs.size());
+        for (SubJob subjob : subjobs) {
+            String serverAddress = deployClients.get(serverURI)
+                    .getLocalAddress();
+            String[] hubAddresses = getHubAddresses(subjob.getCluster()
+                    .getDeployBroker(), true);
+            subjob.submit(poolID, getPoolSize(), serverAddress, hubAddresses);
+        }
+    }
+
+    protected void singleSubmit(SubJob subjob) throws Exception {
+        String serverAddress = deployClients.get(serverURI).getLocalAddress();
+        String[] hubAddresses = getHubAddresses(subjob.getCluster()
+                .getDeployBroker(), true);
+        subjob.submit(poolID, getPoolSize(), serverAddress, hubAddresses);
+    }
 }

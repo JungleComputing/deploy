@@ -180,29 +180,47 @@ public class Application {
         if (preStageSet != null) {
             for (String filename : preStageSet) {
 
-                files += getFiles(new java.io.File(filename), "", ".jar");
-                files += getFiles(new java.io.File(filename), "", ".properties");
+                files += getFiles(new java.io.File(filename), "", ".jar", true);
+                files += getFiles(new java.io.File(filename), "",
+                        ".properties", true);
             }
         }
         return files.split(":");
     }
 
-    protected String getJavaClassPath(String[] filenames) {
+    protected String getJavaClassPath(String[] filenames,
+            boolean recursivePrefix) {
         String classpath = "";
         if (filenames != null) {
             for (String filename : filenames) {
-                classpath += getFiles(new java.io.File(filename), "", ".jar");
+                classpath += getFiles(new java.io.File(filename), "", ".jar",
+                        recursivePrefix);
             }
         }
         return classpath;
     }
 
-    private String getFiles(java.io.File file, String prefix, String postfix) {
+    protected String getLog4jPropertiesLocation() {
+        String files = "";
+        for (String filename : preStageSet) {
+
+            files += getFiles(new java.io.File(filename), "", "log4j.properties",
+                    true);
+        }
+        return files.split(":")[0];
+    }
+
+    private String getFiles(java.io.File file, String prefix, String postfix,
+            boolean recursivePrefix) {
         String result = "";
         if (file.isDirectory()) {
             for (java.io.File childfile : file.listFiles()) {
-                result += getFiles(childfile, prefix + file.getName() + "/",
-                        postfix);
+                String resolvedPrefix = "";
+                if (recursivePrefix) {
+                    resolvedPrefix = prefix + file.getName() + "/";
+                }
+                result += getFiles(childfile, resolvedPrefix, postfix,
+                        recursivePrefix);
             }
         } else if (file.getName().endsWith(postfix)) {
             result += prefix + file.getName() + ":";
