@@ -329,7 +329,11 @@ public class Job implements MetricListener {
                     .getAccessType());
         }
         JavaSoftwareDescription sd = new JavaSoftwareDescription();
-        sd.setExecutable(serverCluster.getJavaPath() + "/bin/java");
+        if (serverCluster.isWindows()) {
+            sd.setExecutable(serverCluster.getJavaPath() + "\\bin\\java");
+        } else {
+            sd.setExecutable(serverCluster.getJavaPath() + "/bin/java");
+        }
 
         sd.setJavaMain("ibis.server.Server");
         if (hubOnly) {
@@ -341,8 +345,8 @@ public class Job implements MetricListener {
         sd.setJavaOptions(new String[] {
                 "-classpath",
                 application.getJavaClassPath(
-                        application.getServerPreStageSet(), false),
-                "-Dlog4j.configuration=file:./log4j.properties" });
+                        application.getServerPreStageSet(), false, serverCluster.isWindows()),
+                "-Dlog4j.configuration=file:log4j.properties" });
         if (application.getServerPreStageSet() != null) {
             for (String filename : application.getServerPreStageSet()) {
                 sd
@@ -353,13 +357,8 @@ public class Job implements MetricListener {
         RemoteClient ibisServer = new RemoteClient();
         sd.setStderr(GAT.createFile(serverPreferences, serverCluster.getName()
                 + ".err"));
-        // if (hubOnly) {
-        // sd.setStdout(GAT.createFile(serverPreferences, serverCluster
-        // .getName()
-        // + ".out"));
-        // } else {
+
         sd.setStdout(ibisServer.getOutputStream());
-        // }
         sd.setStdin(ibisServer.getInputStream());
         JobDescription jd = new JobDescription(sd);
         if (logger.isDebugEnabled()) {

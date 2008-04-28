@@ -189,13 +189,17 @@ public class Application {
     }
 
     protected String getJavaClassPath(String[] filenames,
-            boolean recursivePrefix) {
+            boolean recursivePrefix, boolean toWindows) {
         String classpath = "";
         if (filenames != null) {
             for (String filename : filenames) {
                 classpath += getFiles(new java.io.File(filename), "", ".jar",
                         recursivePrefix);
             }
+        }
+        if (toWindows) {
+            classpath = classpath.replace('/', '\\');
+            classpath = classpath.replace(':', ';');
         }
         return classpath;
     }
@@ -217,7 +221,7 @@ public class Application {
             for (java.io.File childfile : file.listFiles()) {
                 String resolvedPrefix = "";
                 if (recursivePrefix) {
-                    resolvedPrefix = prefix + file.getName() + "/";
+                    resolvedPrefix = prefix + file.getName() + java.io.File.separator;
                 }
                 result += getFiles(childfile, resolvedPrefix, postfix,
                         recursivePrefix);

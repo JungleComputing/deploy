@@ -29,6 +29,8 @@ public class Cluster {
 
     private String fileAccessType;
 
+    private boolean isWindows;
+
     /**
      * Creates a new Cluster which can be identified in a {@link Grid} by its
      * <code>clusterName</code>.
@@ -190,6 +192,8 @@ public class Cluster {
                 properties, fullName, "multicore", 0);
         cluster.javapath = TypedPropertiesUtility.getHierarchicalProperty(
                 properties, fullName, "javapath", null);
+        cluster.isWindows = TypedPropertiesUtility.getHierarchicalBoolean(
+                properties, fullName, "is.windows", false);
         String jobBroker = TypedPropertiesUtility.getHierarchicalProperty(
                 properties, fullName, "job.broker", null);
         String deployBroker = TypedPropertiesUtility.getHierarchicalProperty(
@@ -284,5 +288,20 @@ public class Cluster {
      */
     public void setJavapath(String javapath) {
         this.javapath = javapath;
+    }
+
+    /**
+     * Sets the cluster type to Windows or non-Windows.
+     * 
+     * @param isWindows
+     *            <code>true</code> if cluster is Windows, <code>false</code>
+     *            otherwise
+     */
+    public void setWindows(boolean isWindows) {
+        this.isWindows = isWindows;
+    }
+
+    protected boolean isWindows() {
+        return isWindows;
     }
 }

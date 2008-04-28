@@ -550,7 +550,7 @@ public class SubJob implements MetricListener {
         sd.setExecutable(cluster.getJavaPath() + "/bin/java");
 
         sd.setJavaClassPath(application.getJavaClassPath(application
-                .getPreStageSet(), true));
+                .getPreStageSet(), true, cluster.isWindows()));
 
         Map<String, String> systemProperties = new HashMap<String, String>();
         systemProperties.put("log4j.configuration", "file:"
