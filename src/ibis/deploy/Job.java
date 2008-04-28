@@ -334,6 +334,9 @@ public class Job implements MetricListener {
         } else {
             sd.setExecutable(serverCluster.getJavaPath() + "/bin/java");
         }
+        if (logger.isInfoEnabled()) {
+            logger.info("executable: " + sd.getExecutable());
+        }
 
         sd.setJavaMain("ibis.server.Server");
         if (hubOnly) {
@@ -345,8 +348,12 @@ public class Job implements MetricListener {
         sd.setJavaOptions(new String[] {
                 "-classpath",
                 application.getJavaClassPath(
-                        application.getServerPreStageSet(), false, serverCluster.isWindows()),
+                        application.getServerPreStageSet(), false,
+                        serverCluster.isWindows()),
                 "-Dlog4j.configuration=file:log4j.properties" });
+        if (logger.isInfoEnabled()) {
+            logger.info("arguments: " + sd.getArguments());
+        }
         if (application.getServerPreStageSet() != null) {
             for (String filename : application.getServerPreStageSet()) {
                 sd
