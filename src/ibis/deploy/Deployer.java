@@ -36,6 +36,9 @@ public class Deployer {
         cluster.setAccessType("local");
         cluster.setFileAccessType("local");
         cluster.setJavapath(System.getProperty("java.home"));
+        if (System.getProperty("os.name").contains("Windows")) {
+            cluster.setWindows(true);
+        }
         this.serverCluster = cluster;
     }
 
