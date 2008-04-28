@@ -208,8 +208,8 @@ public class Application {
         String files = "";
         for (String filename : preStageSet) {
 
-            files += getFiles(new java.io.File(filename), "", "log4j.properties",
-                    true);
+            files += getFiles(new java.io.File(filename), "",
+                    "log4j.properties", true);
         }
         return files.split(":")[0];
     }
@@ -221,7 +221,8 @@ public class Application {
             for (java.io.File childfile : file.listFiles()) {
                 String resolvedPrefix = "";
                 if (recursivePrefix) {
-                    resolvedPrefix = prefix + file.getName() + java.io.File.separator;
+                    resolvedPrefix = prefix + file.getName()
+                            + "/";
                 }
                 result += getFiles(childfile, resolvedPrefix, postfix,
                         recursivePrefix);

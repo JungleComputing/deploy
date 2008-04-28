@@ -5,6 +5,7 @@ import ibis.util.TypedProperties;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -352,7 +353,8 @@ public class Job implements MetricListener {
                         serverCluster.isWindows()),
                 "-Dlog4j.configuration=file:log4j.properties" });
         if (logger.isInfoEnabled()) {
-            logger.info("arguments: " + sd.getArguments());
+            logger.info("arguments: "
+                    + Arrays.deepToString(sd.getArguments()));
         }
         if (application.getServerPreStageSet() != null) {
             for (String filename : application.getServerPreStageSet()) {
