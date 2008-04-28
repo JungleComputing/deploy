@@ -396,7 +396,7 @@ public class SubJob implements MetricListener {
      * Sets the total number of executables for this {@link SubJob}
      * 
      * @param executables
-     *            teh total number of executables
+     *            the total number of executables
      */
     public void setExecutables(int executables) {
         this.executables = executables;
@@ -547,7 +547,11 @@ public class SubJob implements MetricListener {
         if (additionalAttributes != null) {
             sd.setAttributes(getAttributes());
         }
-        sd.setExecutable(cluster.getJavaPath() + "/bin/java");
+        if (cluster.isWindows()) {
+            sd.setExecutable(cluster.getJavaPath() + "\\bin\\java");
+        } else {
+            sd.setExecutable(cluster.getJavaPath() + "/bin/java");
+        }
 
         sd.setJavaClassPath(application.getJavaClassPath(application
                 .getPreStageSet(), true, cluster.isWindows()));
