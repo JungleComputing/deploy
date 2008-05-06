@@ -113,9 +113,12 @@ public class SubJob implements MetricListener {
             }
         }
         try {
-            subjob.hubURI = new URI(TypedPropertiesUtility
-                    .getHierarchicalProperty(runprops, subjobName, "hub.uri",
-                            null));
+            String hubURIString = TypedPropertiesUtility
+            .getHierarchicalProperty(runprops, subjobName, "hub.uri",
+                    null);
+            if (hubURIString != null) {
+                subjob.hubURI = new URI(hubURIString);
+            }
         } catch (URISyntaxException e1) {
             // ignore, default will be set!
         }

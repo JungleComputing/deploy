@@ -45,7 +45,7 @@ public class Job implements MetricListener {
      * Create a {@link Job} with the name <code>name</code>
      * 
      * @param name
-     *            the name of the {@link Job}
+     *                the name of the {@link Job}
      */
     public Job(String name) {
         this.name = name;
@@ -55,7 +55,7 @@ public class Job implements MetricListener {
      * Adds a {@link SubJob} to this {@link Job}
      * 
      * @param subjob
-     *            the {@link SubJob} to be added
+     *                the {@link SubJob} to be added
      */
     public void addSubJob(SubJob subjob) {
         subjob.setParent(this);
@@ -274,8 +274,8 @@ public class Job implements MetricListener {
      * Sets whether this Job is a closed world job or not
      * 
      * @param closedWorld
-     *            <code>true</code> if the Job is closed world,
-     *            <code>false</code> otherwise
+     *                <code>true</code> if the Job is closed world,
+     *                <code>false</code> otherwise
      */
     public void setClosedWorld(boolean closedWorld) {
         this.closedWorld = closedWorld;
@@ -286,8 +286,8 @@ public class Job implements MetricListener {
      * 
      * @return the size of the pool
      * @throws Exception
-     *             if one of the {@link SubJob#getPoolSize()} throws an
-     *             exception
+     *                 if one of the {@link SubJob#getPoolSize()} throws an
+     *                 exception
      */
     public int getPoolSize() throws Exception {
         int result = 0;
@@ -353,8 +353,7 @@ public class Job implements MetricListener {
                         serverCluster.isWindows()),
                 "-Dlog4j.configuration=file:log4j.properties" });
         if (logger.isInfoEnabled()) {
-            logger.info("arguments: "
-                    + Arrays.deepToString(sd.getArguments()));
+            logger.info("arguments: " + Arrays.deepToString(sd.getArguments()));
         }
         if (application.getServerPreStageSet() != null) {
             for (String filename : application.getServerPreStageSet()) {
@@ -364,8 +363,8 @@ public class Job implements MetricListener {
             }
         }
         RemoteClient ibisServer = new RemoteClient();
-        sd.setStderr(GAT.createFile(serverPreferences, serverCluster.getName()
-                + ".err"));
+        sd.setStderr(GAT.createFile(serverPreferences, "hub-"
+                + serverCluster.getName() + ".err"));
 
         sd.setStdout(ibisServer.getOutputStream());
         sd.setStdin(ibisServer.getInputStream());
@@ -436,7 +435,7 @@ public class Job implements MetricListener {
         ArrayList<String> result = new ArrayList<String>();
         Set<URI> uris = deployClients.keySet();
         for (URI uri : uris) {
-            logger.info("getting addresses for uri : " + uri);
+            logger.debug("getting addresses for uri : " + uri);
             if (excludeServer && uri.equals(serverURI)) {
                 continue;
             }
@@ -445,17 +444,21 @@ public class Job implements MetricListener {
             } else {
                 result.add(deployClients.get(uri).getLocalAddress());
             }
-            logger.info("last after adding address for uri: " + uri + " = "
+            logger.debug("last after adding address for uri: " + uri + " = "
                     + result.get(result.size() - 1));
         }
-        logger.info("getHubAddresses done!");
+        logger.debug("getHubAddresses done!");
         return result.toArray(new String[result.size()]);
     }
 
     public void stop() throws Exception {
         Collection<RemoteClient> clients = deployClients.values();
         for (RemoteClient client : clients) {
-            client.end(2000);
+            try {
+                client.end(2000);
+            } catch (IOException e) {
+                // ignore
+            }
         }
         Collection<org.gridlab.gat.resources.Job> jobs = deployJobs.values();
         for (org.gridlab.gat.resources.Job job : jobs) {
