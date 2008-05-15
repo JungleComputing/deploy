@@ -154,8 +154,9 @@ public class Deployer {
      * @param grid
      *                the {@link Grid} to be added
      */
-    public void addGrid(Grid grid) {
+    public String addGrid(Grid grid) {
         this.grids.add(grid);
+        return grid.getGridName();
     }
 
     /**
@@ -170,11 +171,11 @@ public class Deployer {
      * @throws IOException
      *                 if an IO error occurs during the loading from the file.
      */
-    public void addGrid(String gridFileName) throws FileNotFoundException,
+    public String addGrid(String gridFileName) throws FileNotFoundException,
             IOException {
         TypedProperties properties = new TypedProperties();
         properties.load(new java.io.FileInputStream(gridFileName));
-        addGrid(properties);
+        return addGrid(properties);
     }
 
     /**
@@ -186,9 +187,9 @@ public class Deployer {
      *                the properties object describing the {@link Grid} to be
      *                added.
      */
-    public void addGrid(TypedProperties properties) {
+    public String addGrid(TypedProperties properties) {
         properties.expandSystemVariables();
-        addGrid(Grid.load(properties));
+        return addGrid(Grid.load(properties));
     }
 
     /**

@@ -33,6 +33,8 @@ public class Cluster {
 
     private boolean isWindows;
 
+    private String location;
+
     /**
      * Creates a new Cluster which can be identified in a {@link Grid} by its
      * <code>clusterName</code>.
@@ -194,6 +196,9 @@ public class Cluster {
                 properties, fullName, "resourcebroker.adaptors", "");
         cluster.nodes = TypedPropertiesUtility.getHierarchicalInt(properties,
                 fullName, "nodes", 0);
+        cluster.location = TypedPropertiesUtility.getHierarchicalProperty(
+                properties, fullName, "location", "0,0");
+
         cluster.multicore = TypedPropertiesUtility.getHierarchicalInt(
                 properties, fullName, "multicore", 0);
         cluster.javapath = TypedPropertiesUtility.getHierarchicalProperty(
@@ -249,6 +254,40 @@ public class Cluster {
      */
     public int getNodes() {
         return nodes;
+    }
+
+    /**
+     * Returns the x coordinate of the location of this cluster
+     * 
+     * @return the x coordinate of the location of this cluster
+     */
+    public int getLocationX() {
+        if (location == null) {
+            return -1;
+        }
+        try {
+            String x = location.split(",")[0].trim();
+            return Integer.parseInt(x);
+        } catch (Exception e) {
+            return -1;
+        }
+    }
+
+    /**
+     * Returns the y coordinate of the location of this cluster
+     * 
+     * @return the y coordinate of the location of this cluster
+     */
+    public int getLocationY() {
+        if (location == null) {
+            return -1;
+        }
+        try {
+            String y = location.split(",")[1].trim();
+            return Integer.parseInt(y);
+        } catch (Exception e) {
+            return -1;
+        }
     }
 
     /**
