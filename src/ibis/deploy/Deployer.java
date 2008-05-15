@@ -9,13 +9,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.URI;
 
 public class Deployer {
-
-    private static Logger logger = Logger.getLogger(Deployer.class);
 
     private Set<Application> applications = new HashSet<Application>();
 
@@ -47,13 +44,50 @@ public class Deployer {
      * which will be submitted to the deploy broker of the cluster.
      * 
      * @param serverCluster
-     *            the cluster to be used to deploy the server on
+     *                the cluster to be used to deploy the server on
      */
     public Deployer(Cluster serverCluster) {
-        if (logger.isInfoEnabled()) {
-            logger.info("constructor");
-        }
         this.serverCluster = serverCluster;
+    }
+
+    /**
+     * Creates a deployer. The deployments with this deployer have a server
+     * which will be submitted to the deploy broker of the cluster described by
+     * the clustername located in the grid to be loaded from the gridFileName.
+     * 
+     * @param gridFileName
+     *                the initial grid to be loaded from this file
+     * @param clusterName
+     *                the name of the cluster to be used to deploy the server on
+     *                (as in the gridFile)
+     */
+    public Deployer(String gridFileName, String clusterName)
+            throws FileNotFoundException, IOException {
+        addGrid(gridFileName);
+        // there's only one grid at this moment, so we iterate over one grid!
+        for (Grid grid : grids) {
+            this.serverCluster = grid.getCluster(clusterName);
+        }
+    }
+
+    /**
+     * Creates a deployer. The deployments with this deployer have a server
+     * which will be submitted to the deploy broker of the cluster described by
+     * the clustername located in the grid to be loaded from the properties.
+     * 
+     * @param gridFileProperties
+     *                the initial grid to be loaded from these TypedProperties
+     * @param clusterName
+     *                the name of the cluster to be used to deploy the server on
+     *                (as in the gridFile)
+     */
+    public Deployer(TypedProperties properties, String clusterName)
+            throws FileNotFoundException, IOException {
+        addGrid(properties);
+        // there's only one grid at this moment, so we iterate over one grid!
+        for (Grid grid : grids) {
+            this.serverCluster = grid.getCluster(clusterName);
+        }
     }
 
     /**
@@ -62,7 +96,7 @@ public class Deployer {
      * {@link SubJob}.
      * 
      * @param applications
-     *            the {@link Application}s to be added.
+     *                the {@link Application}s to be added.
      */
     public void addApplications(Set<Application> applications) {
         this.applications.addAll(applications);
@@ -73,7 +107,7 @@ public class Deployer {
      * be referred to by a run, a {@link Job} or a {@link SubJob}.
      * 
      * @param application
-     *            the {@link Application} to be added.
+     *                the {@link Application} to be added.
      */
     public void addApplication(Application application) {
         this.applications.add(application);
@@ -85,12 +119,12 @@ public class Deployer {
      * or a {@link SubJob}.
      * 
      * @param applicationFileName
-     *            the properties file describing the {@link Application}s to be
-     *            added.
+     *                the properties file describing the {@link Application}s
+     *                to be added.
      * @throws FileNotFoundException
-     *             if the file cannot be found
+     *                 if the file cannot be found
      * @throws IOException
-     *             if an IO error occurs during the loading from the file.
+     *                 if an IO error occurs during the loading from the file.
      */
     public void addApplications(String applicationFileName)
             throws FileNotFoundException, IOException {
@@ -105,8 +139,8 @@ public class Deployer {
      * a {@link Job} or a {@link SubJob}.
      * 
      * @param properties
-     *            the properties describing the {@link Application}s to be
-     *            added.
+     *                the properties describing the {@link Application}s to be
+     *                added.
      */
     public void addApplications(TypedProperties properties) {
         properties.expandSystemVariables();
@@ -118,7 +152,7 @@ public class Deployer {
      * run, a {@link Job} or a {@link SubJob}.
      * 
      * @param grid
-     *            the {@link Grid} to be added
+     *                the {@link Grid} to be added
      */
     public void addGrid(Grid grid) {
         this.grids.add(grid);
@@ -129,11 +163,12 @@ public class Deployer {
      * Grid can be referred to by a run, a {@link Job} or a {@link SubJob}.
      * 
      * @param gridFileName
-     *            the properties file describing the {@link Grid} to be added.
+     *                the properties file describing the {@link Grid} to be
+     *                added.
      * @throws FileNotFoundException
-     *             if the file cannot be found
+     *                 if the file cannot be found
      * @throws IOException
-     *             if an IO error occurs during the loading from the file.
+     *                 if an IO error occurs during the loading from the file.
      */
     public void addGrid(String gridFileName) throws FileNotFoundException,
             IOException {
@@ -148,7 +183,8 @@ public class Deployer {
      * {@link SubJob}.
      * 
      * @param properties
-     *            the properties object describing the {@link Grid} to be added.
+     *                the properties object describing the {@link Grid} to be
+     *                added.
      */
     public void addGrid(TypedProperties properties) {
         properties.expandSystemVariables();
@@ -163,9 +199,9 @@ public class Deployer {
      * run in a single pool.
      * 
      * @param job
-     *            the job to be deployed
+     *                the job to be deployed
      * @throws Exception
-     *             if the deployment fails
+     *                 if the deployment fails
      */
     public void deploy(Job job) throws Exception {
         // start server
@@ -180,9 +216,9 @@ public class Deployer {
      * and hubs will live as long as the sub job lives.
      * 
      * @param subjob
-     *            the job to be deployed
+     *                the job to be deployed
      * @throws Exception
-     *             if the deployment fails
+     *                 if the deployment fails
      */
     public void deploy(SubJob subjob) throws Exception {
         Job job = new Job("empty container job");
@@ -196,11 +232,11 @@ public class Deployer {
      * sub job.
      * 
      * @param subjob
-     *            the sub job to be deployed in the same pool as the job
+     *                the sub job to be deployed in the same pool as the job
      * @param job
-     *            the job with the pool where the sub job joins
+     *                the job with the pool where the sub job joins
      * @throws Exception
-     *             if the deployment fails
+     *                 if the deployment fails
      */
     public void deploy(SubJob subjob, Job job) throws Exception {
         job.initHub(subjob.getCluster());
@@ -259,12 +295,12 @@ public class Deployer {
      * properties file will be returned.
      * 
      * @param runFileName
-     *            the file containing the run properties
+     *                the file containing the run properties
      * @return The {@link List} of {@link Job}s, loaded from the run file.
      * @throws FileNotFoundException
-     *             if the file cannot be found
+     *                 if the file cannot be found
      * @throws IOException
-     *             if something fails during the loading of the run.
+     *                 if something fails during the loading of the run.
      */
     public List<Job> loadRun(String runFileName) throws FileNotFoundException,
             IOException {
@@ -278,7 +314,7 @@ public class Deployer {
      * properties object will be returned.
      * 
      * @param properties
-     *            the properties containing the details of the run
+     *                the properties containing the details of the run
      * @return The {@link List} of {@link Job}s, loaded from the run
      *         properties.
      */

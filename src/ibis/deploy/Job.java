@@ -15,6 +15,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.gridlab.gat.GAT;
+import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
@@ -23,6 +24,7 @@ import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.JavaSoftwareDescription;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
+import org.gridlab.gat.security.CertificateSecurityContext;
 
 public class Job implements MetricListener {
     private static Logger logger = Logger.getLogger(Job.class);
@@ -329,6 +331,7 @@ public class Job implements MetricListener {
             serverPreferences.put("resourcebroker.adaptor.name", serverCluster
                     .getAccessType());
         }
+
         JavaSoftwareDescription sd = new JavaSoftwareDescription();
         if (serverCluster.isWindows()) {
             sd.setExecutable(serverCluster.getJavaPath() + "\\bin\\java");
@@ -349,8 +352,9 @@ public class Job implements MetricListener {
         sd.setJavaOptions(new String[] {
                 "-classpath",
                 application.getJavaClassPath(
-                        application.getServerPreStageSet(), false,
-                        serverCluster.isWindows()),
+                        application.getServerPreStageSet(), application
+                                .hasCustomServerPreStageSet(), serverCluster
+                                .isWindows()),
                 "-Dlog4j.configuration=file:log4j.properties" });
         if (logger.isInfoEnabled()) {
             logger.info("arguments: " + Arrays.deepToString(sd.getArguments()));
@@ -371,10 +375,15 @@ public class Job implements MetricListener {
         JobDescription jd = new JobDescription(sd);
         if (logger.isDebugEnabled()) {
             logger.debug("starting server at '"
-                    + serverCluster.getDeployBroker() + "'");
+                    + serverCluster.getDeployBroker() + "'"
+                    + " with username '" + serverCluster.getUserName() + "'");
         }
-        ResourceBroker broker = GAT.createResourceBroker(serverPreferences,
-                serverCluster.getDeployBroker());
+        GATContext context = new GATContext();
+        context.addSecurityContext(new CertificateSecurityContext(null, null,
+                serverCluster.getUserName(), null));
+
+        ResourceBroker broker = GAT.createResourceBroker(context,
+                serverPreferences, serverCluster.getDeployBroker());
         deployJobs.put(serverCluster.getDeployBroker(), broker.submitJob(jd,
                 this, "job.status"));
         deployClients.put(serverCluster.getDeployBroker(), ibisServer);
@@ -485,6 +494,26 @@ public class Job implements MetricListener {
             logger.info("generate pool id");
         }
         return "pool-id-" + Math.random();
+    }
+
+    public String getServerAddress() throws IOException {
+        return deployClients.get(serverURI).getLocalAddress();
+    }
+
+    public String getHubAddresses() throws IOException {
+        String[] hubAddresses = getHubAddresses(serverURI, false);
+        if (hubAddresses == null) {
+            return "";
+        } else {
+            String hubAddressesString = "";
+            for (int i = 0; i < hubAddresses.length; i++) {
+                hubAddressesString += hubAddresses[i];
+                if (i != hubAddresses.length - 1) {
+                    hubAddressesString += ",";
+                }
+            }
+            return hubAddressesString;
+        }
     }
 
     protected void submit() throws Exception {

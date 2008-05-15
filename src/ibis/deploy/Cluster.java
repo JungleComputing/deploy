@@ -15,6 +15,8 @@ public class Cluster {
 
     private String name;
 
+    private String username;
+
     private URI jobBroker;
 
     private URI deployBroker;
@@ -36,7 +38,7 @@ public class Cluster {
      * <code>clusterName</code>.
      * 
      * @param clusterName
-     *            the name of this Cluster
+     *                the name of this Cluster
      */
     public Cluster(String clusterName) {
         this.name = clusterName;
@@ -109,8 +111,8 @@ public class Cluster {
      * Gets the URI of either the job or the deploy broker
      * 
      * @param isDeployBroker
-     *            <code>true</code> for the deploy broker uri,
-     *            <code>false</code> for the job broker uri
+     *                <code>true</code> for the deploy broker uri,
+     *                <code>false</code> for the job broker uri
      * @return the URI of the specified broker
      */
     public URI getBroker(boolean isDeployBroker) {
@@ -166,13 +168,13 @@ public class Cluster {
      * <p>
      * 
      * @param properties
-     *            the properties where to load the cluster from
+     *                the properties where to load the cluster from
      * @param gridName
-     *            the name of the grid that will be prefixed to this cluster
-     *            properties
+     *                the name of the grid that will be prefixed to this cluster
+     *                properties
      * @param clusterName
-     *            the name of the cluster, which is also prefixed to this
-     *            cluster properties
+     *                the name of the cluster, which is also prefixed to this
+     *                cluster properties
      */
     public static Cluster load(TypedProperties properties, String gridName,
             String clusterName) throws URISyntaxException {
@@ -181,6 +183,10 @@ public class Cluster {
         }
         Cluster cluster = new Cluster(clusterName);
         String fullName = gridName + "." + clusterName;
+        cluster.username = TypedPropertiesUtility.getHierarchicalProperty(
+                properties, fullName, "user.name", System
+                        .getProperty("user.name"));
+
         cluster.fileAccessType = TypedPropertiesUtility
                 .getHierarchicalProperty(properties, fullName, "file.adaptors",
                         "");
@@ -219,6 +225,15 @@ public class Cluster {
     }
 
     /**
+     * Gets the user name for this cluster
+     * 
+     * @return the user name for this cluster
+     */
+    public String getUserName() {
+        return username;
+    }
+
+    /**
      * Gets the name of the cluster
      * 
      * @return the name of the cluster
@@ -240,7 +255,7 @@ public class Cluster {
      * Sets the deploy broker URI for this cluster.
      * 
      * @param deployBroker
-     *            the deploy broker URI
+     *                the deploy broker URI
      */
     public void setDeployBroker(URI deployBroker) {
         this.deployBroker = deployBroker;
@@ -250,7 +265,7 @@ public class Cluster {
      * Sets the job broker URI for this cluster.
      * 
      * @param jobBroker
-     *            the job broker URI
+     *                the job broker URI
      */
     public void setJobBroker(URI jobBroker) {
         this.jobBroker = jobBroker;
@@ -261,8 +276,8 @@ public class Cluster {
      * separated list of gat adaptors that may be used for resource brokering.
      * 
      * @param accessType
-     *            A string containing a comma separated list of gat adaptors
-     *            that may be used for resource brokering.
+     *                A string containing a comma separated list of gat adaptors
+     *                that may be used for resource brokering.
      */
     public void setAccessType(String accessType) {
         this.accessType = accessType;
@@ -273,8 +288,8 @@ public class Cluster {
      * separated list of gat adaptors that may be used for file operations.
      * 
      * @param fileAccessType
-     *            A string containing a comma separated list of gat adaptors
-     *            that may be used for file operations.
+     *                A string containing a comma separated list of gat adaptors
+     *                that may be used for file operations.
      */
     public void setFileAccessType(String fileAccessType) {
         this.fileAccessType = fileAccessType;
@@ -284,7 +299,7 @@ public class Cluster {
      * Sets the java path for this cluster
      * 
      * @param javapath
-     *            the java path for this cluster.
+     *                the java path for this cluster.
      */
     public void setJavapath(String javapath) {
         this.javapath = javapath;
@@ -294,8 +309,8 @@ public class Cluster {
      * Sets the cluster type to Windows or non-Windows.
      * 
      * @param isWindows
-     *            <code>true</code> if cluster is Windows, <code>false</code>
-     *            otherwise
+     *                <code>true</code> if cluster is Windows,
+     *                <code>false</code> otherwise
      */
     public void setWindows(boolean isWindows) {
         this.isWindows = isWindows;

@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.gridlab.gat.GAT;
+import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
@@ -24,6 +25,7 @@ import org.gridlab.gat.resources.JavaSoftwareDescription;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.SoftwareDescription;
+import org.gridlab.gat.security.CertificateSecurityContext;
 
 public class SubJob implements MetricListener {
     private static Logger logger = Logger.getLogger(SubJob.class);
@@ -114,8 +116,8 @@ public class SubJob implements MetricListener {
         }
         try {
             String hubURIString = TypedPropertiesUtility
-            .getHierarchicalProperty(runprops, subjobName, "hub.uri",
-                    null);
+                    .getHierarchicalProperty(runprops, subjobName, "hub.uri",
+                            null);
             if (hubURIString != null) {
                 subjob.hubURI = new URI(hubURIString);
             }
@@ -192,7 +194,7 @@ public class SubJob implements MetricListener {
      * Create a {@link SubJob} with the name <code>subjobName</code>
      * 
      * @param subjobName
-     *            the name of the {@link SubJob}
+     *                the name of the {@link SubJob}
      */
     public SubJob(String subjobName) {
         this.name = subjobName;
@@ -272,11 +274,11 @@ public class SubJob implements MetricListener {
      * 
      * @return the pool size of this {@link SubJob}
      * @throws Exception
-     *             if the number of nodes and the number of cores and the number
-     *             of executables are set, but are inconsistent (nodes *
-     *             multicore != executables) or the number of executables is
-     *             smaller than the number of nodes or only the number of cores
-     *             is specified
+     *                 if the number of nodes and the number of cores and the
+     *                 number of executables are set, but are inconsistent
+     *                 (nodes * multicore != executables) or the number of
+     *                 executables is smaller than the number of nodes or only
+     *                 the number of cores is specified
      * 
      */
     public int getPoolSize() throws Exception {
@@ -352,7 +354,7 @@ public class SubJob implements MetricListener {
      * Sets the poolID for this {@link SubJob}
      * 
      * @param poolID
-     *            the poolID to be used
+     *                the poolID to be used
      */
     public void setPoolID(String poolID) {
         this.poolID = poolID;
@@ -369,7 +371,7 @@ public class SubJob implements MetricListener {
      * Sets the {@link Application} for this {@link SubJob}
      * 
      * @param application
-     *            the {@link Application} to be used.
+     *                the {@link Application} to be used.
      */
     public void setApplication(Application application) {
         this.application = application;
@@ -379,7 +381,7 @@ public class SubJob implements MetricListener {
      * Sets the gat attributes for this {@link SubJob}
      * 
      * @param attributes
-     *            the attributes to be used.
+     *                the attributes to be used.
      */
     public void setAttributes(String... attributes) {
         this.attributes = attributes;
@@ -389,7 +391,7 @@ public class SubJob implements MetricListener {
      * Sets the {@link Cluster} for this {@link SubJob}
      * 
      * @param cluster
-     *            the cluster where the {@link SubJob} should run on.
+     *                the cluster where the {@link SubJob} should run on.
      */
     public void setCluster(Cluster cluster) {
         this.cluster = cluster;
@@ -399,7 +401,7 @@ public class SubJob implements MetricListener {
      * Sets the total number of executables for this {@link SubJob}
      * 
      * @param executables
-     *            the total number of executables
+     *                the total number of executables
      */
     public void setExecutables(int executables) {
         this.executables = executables;
@@ -409,7 +411,7 @@ public class SubJob implements MetricListener {
      * Sets the {@link Grid} for this {@link SubJob}
      * 
      * @param grid
-     *            the {@link Grid} for this {@link SubJob}
+     *                the {@link Grid} for this {@link SubJob}
      */
     public void setGrid(Grid grid) {
         this.grid = grid;
@@ -419,7 +421,7 @@ public class SubJob implements MetricListener {
      * Sets the URI of the hub that should be deployed for this {@link SubJob}
      * 
      * @param hubURI
-     *            the URI of the hub
+     *                the URI of the hub
      */
     public void setHubURI(URI hubURI) {
         this.hubURI = hubURI;
@@ -429,7 +431,7 @@ public class SubJob implements MetricListener {
      * Sets the number of cores for this {@link SubJob}.
      * 
      * @param multicore
-     *            the number of cores for this {@link SubJob}
+     *                the number of cores for this {@link SubJob}
      */
     public void setMulticore(int multicore) {
         this.multicore = multicore;
@@ -439,7 +441,7 @@ public class SubJob implements MetricListener {
      * Sets the number of nodes for this {@link SubJob}
      * 
      * @param nodes
-     *            the number of nodes for this {@link SubJob}
+     *                the number of nodes for this {@link SubJob}
      */
     public void setNodes(int nodes) {
         this.nodes = nodes;
@@ -449,7 +451,7 @@ public class SubJob implements MetricListener {
      * Sets the javagat preferences for this {@link SubJob}
      * 
      * @param preferences
-     *            the javagat preferences for this {@link SubJob}
+     *                the javagat preferences for this {@link SubJob}
      */
     public void setPreferences(String... preferences) {
         this.preferences = preferences;
@@ -459,7 +461,7 @@ public class SubJob implements MetricListener {
      * Sets the runtime for this {@link SubJob}
      * 
      * @param runtime
-     *            the runtime in minutes
+     *                the runtime in minutes
      */
     public void setRuntime(long runtime) {
         this.runtime = runtime;
@@ -482,8 +484,8 @@ public class SubJob implements MetricListener {
      * run
      * 
      * @param arguments
-     *            the additional arguments for the wrapper executable that
-     *            should be run
+     *                the additional arguments for the wrapper executable that
+     *                should be run
      */
     public void setWrapperArguments(String... arguments) {
         this.arguments = arguments;
@@ -493,7 +495,7 @@ public class SubJob implements MetricListener {
      * Sets the wrapper executable
      * 
      * @param executable
-     *            the wrapper executable
+     *                the wrapper executable
      */
     public void setWrapperExecutable(String executable) {
         this.executable = executable;
@@ -528,11 +530,12 @@ public class SubJob implements MetricListener {
             String[] hubAddresses) throws GATObjectCreationException,
             URISyntaxException, GATInvocationException {
         if (logger.isInfoEnabled()) {
-            logger.info("submitting sub job");
+            logger.info("submitting sub job " + name);
         }
         Preferences preferences = new Preferences();
         preferences.put("ResourceBroker.adaptor.name", cluster.getAccessType());
         preferences.put("File.adaptor.name", cluster.getFileAccessType());
+        preferences.put("sshtrilead.stoppable", "true");
         Map<String, Object> additionalPreferences = getPreferences();
         if (additionalPreferences != null) {
             Set<String> preferenceKeys = additionalPreferences.keySet();
@@ -652,8 +655,12 @@ public class SubJob implements MetricListener {
             jd = new JobDescription(nonJava);
         }
 
-        ResourceBroker broker = GAT.createResourceBroker(preferences, cluster
-                .getJobBroker());
+        GATContext context = new GATContext();
+        context.addSecurityContext(new CertificateSecurityContext(null, null,
+                cluster.getUserName(), null));
+
+        ResourceBroker broker = GAT.createResourceBroker(context, preferences,
+                cluster.getJobBroker());
         logger.debug("submission of subjob '" + name
                 + "' with job description:\n" + jd);
         broker.submitJob(jd, this, "job.status");

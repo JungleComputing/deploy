@@ -29,28 +29,31 @@ public class Application {
 
     private String[] postStageSet;
 
+    private String[] serverPreStageSet;
+
     /**
      * Creates a new {@link Application}.
      * 
      * @param name
-     *            the name of the application
+     *                the name of the application
      * @param javaMain
-     *            the java main class which should be executed
+     *                the java main class which should be executed
      * @param javaOptions
-     *            the java options for this application
+     *                the java options for this application
      * @param javaSystemProperties
-     *            the java system properties for this application as an array
-     *            {"key1=value1", "key2=value2", ..., "keyn=valuen"}
+     *                the java system properties for this application as an
+     *                array {"key1=value1", "key2=value2", ..., "keyn=valuen"}
      * @param javaArguments
-     *            the java arguments for this application
+     *                the java arguments for this application
      * @param preStageSet
-     *            the files to be pre staged
+     *                the files to be pre staged
      * @param postStageSet
-     *            the files to be post staged
+     *                the files to be post staged
      */
     public Application(String name, String javaMain, String[] javaOptions,
             String[] javaSystemProperties, String[] javaArguments,
-            String[] preStageSet, String[] postStageSet) {
+            String[] preStageSet, String[] postStageSet,
+            String[] serverPreStageSet) {
         this.name = name;
         this.javaMain = javaMain;
         this.javaOptions = javaOptions;
@@ -58,6 +61,7 @@ public class Application {
         this.javaArguments = javaArguments;
         this.preStageSet = preStageSet;
         this.postStageSet = postStageSet;
+        this.serverPreStageSet = serverPreStageSet;
     }
 
     /**
@@ -128,7 +132,7 @@ public class Application {
      * general properties.
      * 
      * @param applicationProps
-     *            the application properties
+     *                the application properties
      * @return a {@link Set} of {@link Application}s that were described by the
      *         application properties.
      */
@@ -156,12 +160,15 @@ public class Application {
             String[] preStageSet = TypedPropertiesUtility
                     .getHierarchicalStringList(applicationProps, app,
                             "prestage", null, " ");
+            String[] serverPreStageSet = TypedPropertiesUtility
+                    .getHierarchicalStringList(applicationProps, app,
+                            "ibis.server.prestage", null, " ");
             String[] postStageSet = TypedPropertiesUtility
                     .getHierarchicalStringList(applicationProps, app,
                             "poststage", null, " ");
             result.add(new Application(app, javaMain, javaOptions,
                     javaSystemProperties, javaArguments, preStageSet,
-                    postStageSet));
+                    postStageSet, serverPreStageSet));
         }
         return result;
     }
@@ -176,6 +183,9 @@ public class Application {
     }
 
     protected String[] getServerPreStageSet() {
+        if (serverPreStageSet != null) {
+            return serverPreStageSet;
+        }
         String files = "";
         if (preStageSet != null) {
             for (String filename : preStageSet) {
@@ -186,6 +196,10 @@ public class Application {
             }
         }
         return files.split(":");
+    }
+    
+    protected boolean hasCustomServerPreStageSet() {
+        return (serverPreStageSet != null);
     }
 
     protected String getJavaClassPath(String[] filenames,
@@ -221,8 +235,7 @@ public class Application {
             for (java.io.File childfile : file.listFiles()) {
                 String resolvedPrefix = "";
                 if (recursivePrefix) {
-                    resolvedPrefix = prefix + file.getName()
-                            + "/";
+                    resolvedPrefix = prefix + file.getName() + "/";
                 }
                 result += getFiles(childfile, resolvedPrefix, postfix,
                         recursivePrefix);
