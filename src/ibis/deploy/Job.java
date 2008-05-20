@@ -312,13 +312,13 @@ public class Job implements MetricListener {
         if (logger.isInfoEnabled()) {
             logger.info("start server (hub only is " + hubOnly + ")");
         }
-        if (deployClients.containsKey(serverCluster.getDeployBroker())) {
-            if (logger.isInfoEnabled()) {
-                logger.info("already a hub available at: '"
-                        + serverCluster.getDeployBroker() + "'");
-            }
-            return false;
-        }
+//        if (deployClients.containsKey(serverCluster.getDeployBroker())) {
+//            if (logger.isInfoEnabled()) {
+//                logger.info("already a hub available at: '"
+//                        + serverCluster.getDeployBroker() + "'");
+//            }
+//            return false;
+//        }
         Application application = getFirstApplication();
         if (application == null) {
             // TODO do something (exception oid)
