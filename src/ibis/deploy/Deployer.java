@@ -240,7 +240,6 @@ public class Deployer {
      *                 if the deployment fails
      */
     public void deploy(SubJob subjob, Job job) throws Exception {
-        job.initHub(subjob.getCluster());
         job.addSubJob(subjob);
         job.singleSubmit(subjob);
     }

@@ -527,7 +527,7 @@ public class SubJob implements MetricListener {
     }
 
     public void submit(String poolID, int poolSize, String serverAddress,
-            String[] hubAddresses) throws GATObjectCreationException,
+            String hubAddress) throws GATObjectCreationException,
             URISyntaxException, GATInvocationException {
         if (logger.isInfoEnabled()) {
             logger.info("submitting sub job " + name);
@@ -570,17 +570,8 @@ public class SubJob implements MetricListener {
         }
         systemProperties.put("ibis.server.address", serverAddress);
 
-        String hubAddressesString = "";
-        for (int i = 0; i < hubAddresses.length; i++) {
-            hubAddressesString += hubAddresses[i];
-            if (i != hubAddresses.length - 1) {
-                hubAddressesString += ",";
-            }
-        }
+        systemProperties.put("ibis.server.hub.addresses", hubAddress);
 
-        if (!hubAddressesString.equals("")) {
-            systemProperties.put("ibis.server.hub.addresses", hubAddressesString);
-        }
         systemProperties.put("ibis.pool.name", poolID);
         if (isClosedWorld()) {
             systemProperties.put("ibis.pool.size", "" + poolSize);
