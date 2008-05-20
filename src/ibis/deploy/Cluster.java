@@ -16,9 +16,9 @@ public class Cluster {
     private String name;
 
     private String username;
-    
+
     private String password;
-    
+
     private URI jobBroker;
 
     private URI deployBroker;
@@ -36,6 +36,8 @@ public class Cluster {
     private boolean isWindows;
 
     private String location;
+
+    private String startupScript;
 
     /**
      * Creates a new Cluster which can be identified in a {@link Grid} by its
@@ -190,6 +192,9 @@ public class Cluster {
         cluster.username = TypedPropertiesUtility.getHierarchicalProperty(
                 properties, fullName, "user.name", System
                         .getProperty("user.name"));
+        cluster.startupScript = TypedPropertiesUtility.getHierarchicalProperty(
+                properties, fullName, "startup.script", "startup-script-"
+                        + clusterName + ".sh");
 
         cluster.fileAccessType = TypedPropertiesUtility
                 .getHierarchicalProperty(properties, fullName, "file.adaptors",
@@ -239,7 +244,7 @@ public class Cluster {
     public String getUserName() {
         return username;
     }
-    
+
     /**
      * Gets the password for this cluster
      * 
@@ -248,14 +253,14 @@ public class Cluster {
     public String getPassword() {
         return password;
     }
-    
+
     /**
      * Sets the password for this cluster
      */
     public void setPassword(String password) {
         this.password = password;
     }
-    
+
     /**
      * Gets the name of the cluster
      * 
@@ -375,5 +380,13 @@ public class Cluster {
 
     protected boolean isWindows() {
         return isWindows;
+    }
+
+    public String getStartupScript() {
+        return startupScript;
+    }
+
+    public void setStartupScript(String startupScript) {
+        this.startupScript = startupScript;
     }
 }
