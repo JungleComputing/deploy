@@ -37,7 +37,8 @@ public class Job implements MetricListener {
 
     private boolean closedWorld;
 
-    private Hashtable<URI, org.gridlab.gat.resources.Job> deployJobs = new Hashtable<URI, org.gridlab.gat.resources.Job>();
+    private Hashtable<URI, org.gridlab.gat.resources.Job> deployJobs = 
+        new Hashtable<URI, org.gridlab.gat.resources.Job>();
 
     private Hashtable<URI, RemoteClient> deployClients = new Hashtable<URI, RemoteClient>();
 
@@ -306,7 +307,7 @@ public class Job implements MetricListener {
         return null;
     }
 
-    private void startServer(Cluster serverCluster, boolean hubOnly)
+    private boolean startServer(Cluster serverCluster, boolean hubOnly)
             throws Exception {
         if (logger.isInfoEnabled()) {
             logger.info("start server (hub only is " + hubOnly + ")");
@@ -316,7 +317,7 @@ public class Job implements MetricListener {
                 logger.info("already a hub available at: '"
                         + serverCluster.getDeployBroker() + "'");
             }
-            return;
+            return false;
         }
         Application application = getFirstApplication();
         if (application == null) {
@@ -378,15 +379,18 @@ public class Job implements MetricListener {
                     + serverCluster.getDeployBroker() + "'"
                     + " with username '" + serverCluster.getUserName() + "'");
         }
+        
         GATContext context = new GATContext();
         context.addSecurityContext(new CertificateSecurityContext(null, null,
-                serverCluster.getUserName(), null));
+                serverCluster.getUserName(), serverCluster.getPassword()));
 
         ResourceBroker broker = GAT.createResourceBroker(context,
                 serverPreferences, serverCluster.getDeployBroker());
         deployJobs.put(serverCluster.getDeployBroker(), broker.submitJob(jd,
                 this, "job.status"));
         deployClients.put(serverCluster.getDeployBroker(), ibisServer);
+    
+        return true;
     }
 
     protected void initIbis(Cluster serverCluster) throws Exception {
@@ -395,17 +399,29 @@ public class Job implements MetricListener {
         serverURI = serverCluster.getDeployBroker();
 
         // start the server ...
+        
+        System.out.println("CALL 1");
+        
         startServer(serverCluster, false);
+      
         // ... and the hubs ...
         for (SubJob subjob : subjobs) {
+       
+            System.out.println("CALL 2*");
+            
             startServer(subjob.getCluster(), true);
         }
+        
         // ... then wait until everyone is up and running ...
         Collection<org.gridlab.gat.resources.Job> jobs = deployJobs.values();
         for (org.gridlab.gat.resources.Job job : jobs) {
             logger.debug("waiting until job '" + job.getJobID()
                     + "' is in state RUNNING");
             while (job.getState() != org.gridlab.gat.resources.Job.RUNNING) {
+                
+                System.out.println("WAIT1");
+                
+                
                 Thread.sleep(1000);
             }
         }
@@ -422,9 +438,17 @@ public class Job implements MetricListener {
         // first store the hubs known so far...
         String[] knownHubs = getHubAddresses(null, false);
         // then start the new hub
+        
+        System.out.println("CALL 3");
+        
         startServer(hubCluster, true);
+        
         // and wait until it's running
-        while (deployJobs.get(hubCluster.getDeployBroker()).getState() != org.gridlab.gat.resources.Job.RUNNING) {
+        while (deployJobs.get(hubCluster.getDeployBroker()).getState() 
+                != org.gridlab.gat.resources.Job.RUNNING) {
+        
+            System.out.println("WAIT2");
+            
             Thread.sleep(1000);
         }
         // then retrieve its address
@@ -432,6 +456,7 @@ public class Job implements MetricListener {
                 .getLocalAddress();
         // and update all already running hubs
         Collection<RemoteClient> clients = deployClients.values();
+       
         for (RemoteClient client : clients) {
             client.addHubs(hubAddress);
         }

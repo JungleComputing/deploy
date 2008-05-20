@@ -16,7 +16,9 @@ public class Cluster {
     private String name;
 
     private String username;
-
+    
+    private String password;
+    
     private URI jobBroker;
 
     private URI deployBroker;
@@ -237,7 +239,23 @@ public class Cluster {
     public String getUserName() {
         return username;
     }
-
+    
+    /**
+     * Gets the password for this cluster
+     * 
+     * @return the password for this cluster
+     */
+    public String getPassword() {
+        return password;
+    }
+    
+    /**
+     * Sets the password for this cluster
+     */
+    public void setPassword(String password) {
+        this.password = password;
+    }
+    
     /**
      * Gets the name of the cluster
      * 
