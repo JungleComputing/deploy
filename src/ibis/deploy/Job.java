@@ -37,8 +37,7 @@ public class Job implements MetricListener {
 
     private boolean closedWorld;
 
-    private Hashtable<URI, org.gridlab.gat.resources.Job> deployJobs = 
-        new Hashtable<URI, org.gridlab.gat.resources.Job>();
+    private Hashtable<URI, org.gridlab.gat.resources.Job> deployJobs = new Hashtable<URI, org.gridlab.gat.resources.Job>();
 
     private Hashtable<URI, RemoteClient> deployClients = new Hashtable<URI, RemoteClient>();
 
@@ -380,7 +379,7 @@ public class Job implements MetricListener {
                     + serverCluster.getDeployBroker() + "'"
                     + " with username '" + serverCluster.getUserName() + "'");
         }
-        
+
         GATContext context = new GATContext();
         context.addSecurityContext(new CertificateSecurityContext(null, null,
                 serverCluster.getUserName(), serverCluster.getPassword()));
@@ -390,7 +389,7 @@ public class Job implements MetricListener {
         deployJobs.put(serverCluster.getDeployBroker(), broker.submitJob(jd,
                 this, "job.status"));
         deployClients.put(serverCluster.getDeployBroker(), ibisServer);
-    
+
         return true;
     }
 
@@ -400,29 +399,28 @@ public class Job implements MetricListener {
         serverURI = serverCluster.getDeployBroker();
 
         // start the server ...
-        
+
         System.out.println("CALL 1");
-        
+
         startServer(serverCluster, false);
-      
+
         // ... and the hubs ...
         for (SubJob subjob : subjobs) {
-       
+
             System.out.println("CALL 2*");
-            
+
             startServer(subjob.getCluster(), true);
         }
-        
+
         // ... then wait until everyone is up and running ...
         Collection<org.gridlab.gat.resources.Job> jobs = deployJobs.values();
         for (org.gridlab.gat.resources.Job job : jobs) {
             logger.debug("waiting until job '" + job.getJobID()
                     + "' is in state RUNNING");
             while (job.getState() != org.gridlab.gat.resources.Job.RUNNING) {
-                
+
                 System.out.println("WAIT1");
-                
-                
+
                 Thread.sleep(1000);
             }
         }
@@ -439,29 +437,32 @@ public class Job implements MetricListener {
         // first store the hubs known so far...
         String[] knownHubs = getHubAddresses(null, false);
         // then start the new hub
-        
+
         System.out.println("CALL 3");
-        
+
         startServer(hubCluster, true);
-        
+
         // and wait until it's running
-        while (deployJobs.get(hubCluster.getDeployBroker()).getState() 
-                != org.gridlab.gat.resources.Job.RUNNING) {
-        
+        while (deployJobs.get(hubCluster.getDeployBroker()).getState() != org.gridlab.gat.resources.Job.RUNNING) {
+
             System.out.println("WAIT2");
-            
+
             Thread.sleep(1000);
         }
         logger.debug("retrieve hub address");
         // then retrieve its address
         String hubAddress = deployClients.get(hubCluster.getDeployBroker())
                 .getLocalAddress();
+        logger.debug("retrieve hub address done");
         // and update all already running hubs
         Collection<RemoteClient> clients = deployClients.values();
-       
+
         for (RemoteClient client : clients) {
-            logger.debug("adding hubaddress to existing hubs");
+            logger
+                    .debug("adding hubaddress " + hubAddress
+                            + " to existing hub");
             client.addHubs(hubAddress);
+            logger.debug("adding hubaddress to existing hub done");
         }
         // finally add the known hubs to the new hub
         deployClients.get(hubCluster.getDeployBroker()).addHubs(knownHubs);
