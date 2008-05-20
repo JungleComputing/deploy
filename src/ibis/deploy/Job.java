@@ -440,7 +440,9 @@ public class Job implements MetricListener {
 
         System.out.println("CALL 3");
 
-        startServer(hubCluster, true);
+        if (!startServer(hubCluster, true)) {
+            return;
+        }
 
         // and wait until it's running
         while (deployJobs.get(hubCluster.getDeployBroker()).getState() != org.gridlab.gat.resources.Job.RUNNING) {
