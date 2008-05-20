@@ -63,6 +63,7 @@ public class Job implements MetricListener {
     public void addSubJob(SubJob subjob) {
         subjob.setParent(this);
         subjobs.add(subjob);
+        logger.debug("adding subjob completed");
     }
 
     protected void inform() throws Exception {
@@ -451,6 +452,7 @@ public class Job implements MetricListener {
             
             Thread.sleep(1000);
         }
+        logger.debug("retrieve hub address");
         // then retrieve its address
         String hubAddress = deployClients.get(hubCluster.getDeployBroker())
                 .getLocalAddress();
@@ -458,6 +460,7 @@ public class Job implements MetricListener {
         Collection<RemoteClient> clients = deployClients.values();
        
         for (RemoteClient client : clients) {
+            logger.debug("adding hubaddress to existing hubs");
             client.addHubs(hubAddress);
         }
         // finally add the known hubs to the new hub
@@ -560,6 +563,7 @@ public class Job implements MetricListener {
         String serverAddress = deployClients.get(serverURI).getLocalAddress();
         String[] hubAddresses = getHubAddresses(subjob.getCluster()
                 .getDeployBroker(), true);
+        logger.debug("starting the subjob");
         subjob.submit(poolID, getPoolSize(), serverAddress, hubAddresses);
     }
 }
