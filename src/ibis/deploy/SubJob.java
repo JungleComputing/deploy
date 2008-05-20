@@ -578,7 +578,9 @@ public class SubJob implements MetricListener {
             }
         }
 
-        systemProperties.put("ibis.server.hub.addresses", hubAddressesString);
+        if (!hubAddressesString.equals("")) {
+            systemProperties.put("ibis.server.hub.addresses", hubAddressesString);
+        }
         systemProperties.put("ibis.pool.name", poolID);
         if (isClosedWorld()) {
             systemProperties.put("ibis.pool.size", "" + poolSize);
