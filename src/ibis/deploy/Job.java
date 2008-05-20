@@ -455,15 +455,24 @@ public class Job implements MetricListener {
                 .getLocalAddress();
         logger.debug("retrieve hub address done");
         // and update all already running hubs
-        Collection<RemoteClient> clients = deployClients.values();
-
-        for (RemoteClient client : clients) {
-            logger
-                    .debug("adding hubaddress " + hubAddress
-                            + " to existing hub");
-            client.addHubs(hubAddress);
+        Set<URI> keys = deployClients.keySet();
+        for (URI key : keys) {
+            logger.debug("adding hubaddress " + hubAddress
+                    + " to existing hub " + key + " ("
+                    + deployClients.get(key).getLocalAddress() + ")");
+            deployClients.get(key).addHubs(hubAddress);
             logger.debug("adding hubaddress to existing hub done");
+
         }
+        // Collection<RemoteClient> clients = deployClients.values();
+        //
+        // for (RemoteClient client : clients) {
+        // logger
+        // .debug("adding hubaddress " + hubAddress
+        // + " to existing hub");
+        // client.addHubs(hubAddress);
+        // logger.debug("adding hubaddress to existing hub done");
+        // }
         // finally add the known hubs to the new hub
         deployClients.get(hubCluster.getDeployBroker()).addHubs(knownHubs);
     }
