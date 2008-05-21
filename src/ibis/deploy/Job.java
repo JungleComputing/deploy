@@ -304,8 +304,8 @@ public class Job implements MetricListener {
         return null;
     }
 
-    private RemoteClient startServer(Cluster serverCluster, boolean hubOnly)
-            throws Exception {
+    private RemoteClient startServer(Cluster serverCluster, boolean hubOnly,
+            String name) throws Exception {
         if (logger.isInfoEnabled()) {
             logger.info("start server (hub only is " + hubOnly + ") at "
                     + serverCluster.getName());
@@ -368,7 +368,7 @@ public class Job implements MetricListener {
         }
         RemoteClient ibisServer = new RemoteClient();
         sd.setStderr(GAT.createFile(serverPreferences, "hub-"
-                + serverCluster.getName() + ".err"));
+                + serverCluster.getName() + "-" + name + ".err"));
 
         sd.setStdout(ibisServer.getOutputStream());
         sd.setStdin(ibisServer.getInputStream());
@@ -421,7 +421,8 @@ public class Job implements MetricListener {
 
     protected void initIbis(Cluster serverCluster) throws Exception {
         // start the server ...
-        RemoteClient ibisServer = startServer(serverCluster, false);
+        RemoteClient ibisServer = startServer(serverCluster, false,
+                "ibis-server");
         serverRemoteClient = ibisServer;
     }
 
@@ -596,7 +597,7 @@ public class Job implements MetricListener {
     protected void singleSubmit(SubJob subjob) throws Exception {
         logger.info("submitting subjob: " + subjob.getName());
 
-        RemoteClient ibisHub = startServer(subjob.getCluster(), true);
+        RemoteClient ibisHub = startServer(subjob.getCluster(), true, subjob.getName());
 
         String hubAddress = ibisHub.getLocalAddress();
 
