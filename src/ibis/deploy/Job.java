@@ -40,6 +40,8 @@ public class Job implements MetricListener {
 
     private RemoteClient serverRemoteClient;
 
+    private String outputDirectory = "";
+
     /**
      * Create a {@link Job} with the name <code>name</code>
      * 
@@ -367,7 +369,7 @@ public class Job implements MetricListener {
             }
         }
         RemoteClient ibisServer = new RemoteClient();
-        sd.setStderr(GAT.createFile(serverPreferences, "hub-"
+        sd.setStderr(GAT.createFile(serverPreferences, outputDirectory + "hub-"
                 + serverCluster.getName() + "-" + name + ".err"));
 
         sd.setStdout(ibisServer.getOutputStream());
@@ -597,7 +599,8 @@ public class Job implements MetricListener {
     protected void singleSubmit(SubJob subjob) throws Exception {
         logger.info("submitting subjob: " + subjob.getName());
 
-        RemoteClient ibisHub = startServer(subjob.getCluster(), true, subjob.getName());
+        RemoteClient ibisHub = startServer(subjob.getCluster(), true, subjob
+                .getName());
 
         String hubAddress = ibisHub.getLocalAddress();
 
@@ -606,7 +609,7 @@ public class Job implements MetricListener {
         serverRemoteClient.addHubs(hubAddress);
 
         subjob.submit(poolID, getPoolSize(), serverRemoteClient
-                .getLocalAddress(), hubAddress);
+                .getLocalAddress(), hubAddress, outputDirectory);
     }
 
     protected void submit() throws Exception {
@@ -618,6 +621,17 @@ public class Job implements MetricListener {
             for (SubJob subjob : subjobs) {
                 singleSubmit(subjob);
             }
+        }
+    }
+
+    public void setOutputDirectory(String outputDirectory) {
+        if (outputDirectory == null) {
+            return;
+        }
+        if (outputDirectory.endsWith(java.io.File.separator)) {
+            this.outputDirectory = outputDirectory;
+        } else {
+            this.outputDirectory = outputDirectory + java.io.File.separator;
         }
     }
 }

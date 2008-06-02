@@ -527,7 +527,7 @@ public class SubJob implements MetricListener {
     }
 
     public void submit(String poolID, int poolSize, String serverAddress,
-            String hubAddress) throws GATObjectCreationException,
+            String hubAddress, String outputDirectory) throws GATObjectCreationException,
             URISyntaxException, GATInvocationException {
         if (logger.isInfoEnabled()) {
             logger.info("submitting sub job " + name);
@@ -543,9 +543,9 @@ public class SubJob implements MetricListener {
                 preferences.put(key, additionalPreferences.get(key));
             }
         }
-        File outFile = GAT.createFile(preferences, new URI(getName() + "."
+        File outFile = GAT.createFile(preferences, new URI(outputDirectory + getName() + "."
                 + application.getName() + ".stdout"));
-        File errFile = GAT.createFile(preferences, new URI(getName() + "."
+        File errFile = GAT.createFile(preferences, new URI(outputDirectory + getName() + "."
                 + application.getName() + ".stderr"));
 
         JavaSoftwareDescription sd = new JavaSoftwareDescription();
