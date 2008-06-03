@@ -368,12 +368,13 @@ public class Job implements MetricListener {
                                 filename));
             }
         }
-        RemoteClient ibisServer = new RemoteClient();
+      
         sd.setStderr(GAT.createFile(serverPreferences, outputDirectory + "hub-"
                 + serverCluster.getName() + "-" + name + ".err"));
 
-        sd.setStdout(ibisServer.getOutputStream());
-        sd.setStdin(ibisServer.getInputStream());
+        sd.enableStreamingStdout(true);
+        sd.enableStreamingStdin(true);
+        
         JobDescription jd = new JobDescription(sd);
         if (logger.isDebugEnabled()) {
             logger.debug("starting server at '"
@@ -391,6 +392,8 @@ public class Job implements MetricListener {
         org.gridlab.gat.resources.Job job = broker.submitJob(jd, this,
                 "job.status");
 
+        RemoteClient ibisServer = new RemoteClient(job.getStdout(), job.getStdin());
+        
         while (true) {
             int state = job.getState();
             if (state == org.gridlab.gat.resources.Job.RUNNING) {
