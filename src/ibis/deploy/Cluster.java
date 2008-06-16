@@ -193,8 +193,7 @@ public class Cluster {
                 properties, fullName, "user.name", System
                         .getProperty("user.name"));
         cluster.startupScript = TypedPropertiesUtility.getHierarchicalProperty(
-                properties, fullName, "startup.script", "startup-script-"
-                        + clusterName + ".sh");
+                properties, fullName, "startup.script", null);
 
         cluster.fileAccessType = TypedPropertiesUtility
                 .getHierarchicalProperty(properties, fullName, "file.adaptors",

@@ -575,10 +575,15 @@ public class SubJob implements MetricListener {
         systemProperties.put("ibis.pool.name", poolID);
         if (isClosedWorld()) {
             systemProperties.put("ibis.pool.size", "" + poolSize);
-        }
+            //FIXME: these are actually zorilla specific...
+            sd.addAttribute("malleable", "false");
+        } else {
+            sd.addAttribute("malleable", "true");
+        }            
         // systemProperties.put("ibis.location.postfix",
         // subJob.getClusterName());
-        systemProperties.put("ibis.location.automatic", "true");
+        // systemProperties.put("ibis.location.automatic", "true");
+        systemProperties.put("ibis.location", getCluster() + "@" + getGrid());
         sd.setJavaSystemProperties(systemProperties);
         sd.setJavaOptions(application.getJavaOptions());
         sd.setJavaMain(application.getJavaMain());
@@ -598,6 +603,9 @@ public class SubJob implements MetricListener {
         }
         int nodes = getNodes();
         int multicore = getMulticore();
+        
+        logger.debug("nodes = " + nodes + ", multicore = " + multicore);
+        
         sd.addAttribute("count", nodes * multicore);
         sd.addAttribute("host.count", nodes);
         sd.addAttribute("walltime.max", getRuntime());
@@ -605,6 +613,8 @@ public class SubJob implements MetricListener {
         if (!hasExecutable()) {
             jd = new JobDescription(sd);
         } else {
+            logger.debug("executable = " + getExecutable() + ", creating a non java job");
+            
             SoftwareDescription nonJava = new SoftwareDescription();
             if (sd.getAttributes() != null) {
                 nonJava.setAttributes(sd.getAttributes());
