@@ -75,7 +75,7 @@ public class Deployer {
      * which will be submitted to the deploy broker of the cluster described by
      * the clustername located in the grid to be loaded from the properties.
      * 
-     * @param gridFileProperties
+     * @param properties
      *                the initial grid to be loaded from these TypedProperties
      * @param clusterName
      *                the name of the cluster to be used to deploy the server on

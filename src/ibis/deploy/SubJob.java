@@ -194,7 +194,7 @@ public class SubJob implements MetricListener {
      * Create a {@link SubJob} with the name <code>subjobName</code>
      * 
      * @param subjobName
-     *                the name of the {@link SubJob}
+     *            the name of the {@link SubJob}
      */
     public SubJob(String subjobName) {
         this.name = subjobName;
@@ -274,11 +274,11 @@ public class SubJob implements MetricListener {
      * 
      * @return the pool size of this {@link SubJob}
      * @throws Exception
-     *                 if the number of nodes and the number of cores and the
-     *                 number of executables are set, but are inconsistent
-     *                 (nodes * multicore != executables) or the number of
-     *                 executables is smaller than the number of nodes or only
-     *                 the number of cores is specified
+     *             if the number of nodes and the number of cores and the number
+     *             of executables are set, but are inconsistent (nodes *
+     *             multicore != executables) or the number of executables is
+     *             smaller than the number of nodes or only the number of cores
+     *             is specified
      * 
      */
     public int getPoolSize() throws Exception {
@@ -354,7 +354,7 @@ public class SubJob implements MetricListener {
      * Sets the poolID for this {@link SubJob}
      * 
      * @param poolID
-     *                the poolID to be used
+     *            the poolID to be used
      */
     public void setPoolID(String poolID) {
         this.poolID = poolID;
@@ -371,7 +371,7 @@ public class SubJob implements MetricListener {
      * Sets the {@link Application} for this {@link SubJob}
      * 
      * @param application
-     *                the {@link Application} to be used.
+     *            the {@link Application} to be used.
      */
     public void setApplication(Application application) {
         this.application = application;
@@ -381,7 +381,7 @@ public class SubJob implements MetricListener {
      * Sets the gat attributes for this {@link SubJob}
      * 
      * @param attributes
-     *                the attributes to be used.
+     *            the attributes to be used.
      */
     public void setAttributes(String... attributes) {
         this.attributes = attributes;
@@ -391,7 +391,7 @@ public class SubJob implements MetricListener {
      * Sets the {@link Cluster} for this {@link SubJob}
      * 
      * @param cluster
-     *                the cluster where the {@link SubJob} should run on.
+     *            the cluster where the {@link SubJob} should run on.
      */
     public void setCluster(Cluster cluster) {
         this.cluster = cluster;
@@ -401,7 +401,7 @@ public class SubJob implements MetricListener {
      * Sets the total number of executables for this {@link SubJob}
      * 
      * @param executables
-     *                the total number of executables
+     *            the total number of executables
      */
     public void setExecutables(int executables) {
         this.executables = executables;
@@ -411,7 +411,7 @@ public class SubJob implements MetricListener {
      * Sets the {@link Grid} for this {@link SubJob}
      * 
      * @param grid
-     *                the {@link Grid} for this {@link SubJob}
+     *            the {@link Grid} for this {@link SubJob}
      */
     public void setGrid(Grid grid) {
         this.grid = grid;
@@ -421,7 +421,7 @@ public class SubJob implements MetricListener {
      * Sets the URI of the hub that should be deployed for this {@link SubJob}
      * 
      * @param hubURI
-     *                the URI of the hub
+     *            the URI of the hub
      */
     public void setHubURI(URI hubURI) {
         this.hubURI = hubURI;
@@ -431,7 +431,7 @@ public class SubJob implements MetricListener {
      * Sets the number of cores for this {@link SubJob}.
      * 
      * @param multicore
-     *                the number of cores for this {@link SubJob}
+     *            the number of cores for this {@link SubJob}
      */
     public void setMulticore(int multicore) {
         this.multicore = multicore;
@@ -441,7 +441,7 @@ public class SubJob implements MetricListener {
      * Sets the number of nodes for this {@link SubJob}
      * 
      * @param nodes
-     *                the number of nodes for this {@link SubJob}
+     *            the number of nodes for this {@link SubJob}
      */
     public void setNodes(int nodes) {
         this.nodes = nodes;
@@ -451,7 +451,7 @@ public class SubJob implements MetricListener {
      * Sets the javagat preferences for this {@link SubJob}
      * 
      * @param preferences
-     *                the javagat preferences for this {@link SubJob}
+     *            the javagat preferences for this {@link SubJob}
      */
     public void setPreferences(String... preferences) {
         this.preferences = preferences;
@@ -461,7 +461,7 @@ public class SubJob implements MetricListener {
      * Sets the runtime for this {@link SubJob}
      * 
      * @param runtime
-     *                the runtime in minutes
+     *            the runtime in minutes
      */
     public void setRuntime(long runtime) {
         this.runtime = runtime;
@@ -484,8 +484,8 @@ public class SubJob implements MetricListener {
      * run
      * 
      * @param arguments
-     *                the additional arguments for the wrapper executable that
-     *                should be run
+     *            the additional arguments for the wrapper executable that
+     *            should be run
      */
     public void setWrapperArguments(String... arguments) {
         this.arguments = arguments;
@@ -495,7 +495,7 @@ public class SubJob implements MetricListener {
      * Sets the wrapper executable
      * 
      * @param executable
-     *                the wrapper executable
+     *            the wrapper executable
      */
     public void setWrapperExecutable(String executable) {
         this.executable = executable;
@@ -527,8 +527,9 @@ public class SubJob implements MetricListener {
     }
 
     public void submit(String poolID, int poolSize, String serverAddress,
-            String hubAddress, String outputDirectory) throws GATObjectCreationException,
-            URISyntaxException, GATInvocationException {
+            String hubAddress, String outputDirectory)
+            throws GATObjectCreationException, URISyntaxException,
+            GATInvocationException {
         if (logger.isInfoEnabled()) {
             logger.info("submitting sub job " + name);
         }
@@ -543,10 +544,10 @@ public class SubJob implements MetricListener {
                 preferences.put(key, additionalPreferences.get(key));
             }
         }
-        File outFile = GAT.createFile(preferences, new URI(outputDirectory + getName() + "."
-                + application.getName() + ".stdout"));
-        File errFile = GAT.createFile(preferences, new URI(outputDirectory + getName() + "."
-                + application.getName() + ".stderr"));
+        File outFile = GAT.createFile(preferences, new URI(outputDirectory
+                + getName() + "." + application.getName() + ".stdout"));
+        File errFile = GAT.createFile(preferences, new URI(outputDirectory
+                + getName() + "." + application.getName() + ".stderr"));
 
         JavaSoftwareDescription sd = new JavaSoftwareDescription();
         Map<String, Object> additionalAttributes = getAttributes();
@@ -575,15 +576,16 @@ public class SubJob implements MetricListener {
         systemProperties.put("ibis.pool.name", poolID);
         if (isClosedWorld()) {
             systemProperties.put("ibis.pool.size", "" + poolSize);
-            //FIXME: these are actually zorilla specific...
+            // FIXME: these are actually zorilla specific...
             sd.addAttribute("malleable", "false");
         } else {
             sd.addAttribute("malleable", "true");
-        }            
+        }
         // systemProperties.put("ibis.location.postfix",
         // subJob.getClusterName());
         // systemProperties.put("ibis.location.automatic", "true");
-        systemProperties.put("ibis.location", getCluster() + "@" + getGrid());
+        systemProperties.put("ibis.location", getCluster().getName() + "@"
+                + getGrid().getGridName());
         sd.setJavaSystemProperties(systemProperties);
         sd.setJavaOptions(application.getJavaOptions());
         sd.setJavaMain(application.getJavaMain());
@@ -603,18 +605,20 @@ public class SubJob implements MetricListener {
         }
         int nodes = getNodes();
         int multicore = getMulticore();
-        
+
         logger.debug("nodes = " + nodes + ", multicore = " + multicore);
-        
+
         sd.addAttribute("count", nodes * multicore);
         sd.addAttribute("host.count", nodes);
         sd.addAttribute("walltime.max", getRuntime());
         JobDescription jd = null;
+
         if (!hasExecutable()) {
             jd = new JobDescription(sd);
         } else {
-            logger.debug("executable = " + getExecutable() + ", creating a non java job");
-            
+            logger.debug("executable = " + getExecutable()
+                    + ", creating a non java job");
+
             SoftwareDescription nonJava = new SoftwareDescription();
             if (sd.getAttributes() != null) {
                 nonJava.setAttributes(sd.getAttributes());
