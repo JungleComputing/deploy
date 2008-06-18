@@ -648,8 +648,10 @@ public class SubJob implements MetricListener {
                     argumentList.add(arg);
                 }
             }
+            
             argumentList.add("" + getNodes());
             argumentList.add("" + getMulticore());
+            
             // argumentList.add("" + subjob.getRuntime());
             argumentList.add(sd.getExecutable());
             if (sd.getArguments() != null) {

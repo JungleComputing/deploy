@@ -349,7 +349,7 @@ public class Job implements MetricListener {
                     "--port", "0", "--hub-addresses",
                     serverRemoteClient.getLocalAddress() });
         } else {
-            sd.setJavaArguments(new String[] { "--remote", "--port", "0" });
+            sd.setJavaArguments(new String[] { "--remote", "--port", "0", "--events", "--stats" });
         }
         sd.setJavaOptions(new String[] {
                 "-classpath",
