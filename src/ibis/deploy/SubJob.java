@@ -554,10 +554,12 @@ public class SubJob implements MetricListener {
         if (additionalAttributes != null) {
             sd.setAttributes(getAttributes());
         }
-        if (cluster.isWindows()) {
-            sd.setExecutable(cluster.getJavaPath() + "\\bin\\java");
-        } else {
-            sd.setExecutable(cluster.getJavaPath() + "/bin/java");
+        if (cluster.getJavaPath() != null) {
+            if (cluster.isWindows()) {
+                sd.setExecutable(cluster.getJavaPath() + "\\bin\\java");
+            } else {
+                sd.setExecutable(cluster.getJavaPath() + "/bin/java");
+            }
         }
 
         sd.setJavaClassPath(application.getJavaClassPath(application
@@ -648,10 +650,10 @@ public class SubJob implements MetricListener {
                     argumentList.add(arg);
                 }
             }
-            
+
             argumentList.add("" + getNodes());
             argumentList.add("" + getMulticore());
-            
+
             // argumentList.add("" + subjob.getRuntime());
             argumentList.add(sd.getExecutable());
             if (sd.getArguments() != null) {
