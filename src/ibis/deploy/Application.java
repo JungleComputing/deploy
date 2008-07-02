@@ -146,7 +146,8 @@ public class Application {
             String javaMain = TypedPropertiesUtility.getHierarchicalProperty(
                     applicationProps, app, "java.main", null);
             if (javaMain == null) {
-                return null;
+            	logger.warn("warning: java.main not specified for application " + app);
+            	continue;
             }
             String[] javaOptions = TypedPropertiesUtility
                     .getHierarchicalStringList(applicationProps, app,

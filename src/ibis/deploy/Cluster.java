@@ -216,6 +216,7 @@ public class Cluster {
         String deployBroker = TypedPropertiesUtility.getHierarchicalProperty(
                 properties, fullName, "deploy.broker", null);
         if (deployBroker == null) {
+        	logger.warn("warning: deploy.broker property not specified for " + cluster.name);
             return null;
         }
         if (jobBroker == null) {

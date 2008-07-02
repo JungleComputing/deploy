@@ -130,6 +130,7 @@ public class Deployer {
             throws FileNotFoundException, IOException {
         TypedProperties properties = new TypedProperties();
         properties.load(new java.io.FileInputStream(applicationFileName));
+        
         addApplications(properties);
     }
 

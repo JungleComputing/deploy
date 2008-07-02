@@ -17,6 +17,7 @@ public class IbisDeploy {
         if (args.length != 1) {
             System.err
                     .println("Usage: ibis.deploy.application.IbisDeploy <runfile>");
+            System.exit(1);
         }
         TypedProperties properties = new TypedProperties();
         try {
