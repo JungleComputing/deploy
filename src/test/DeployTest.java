@@ -7,6 +7,7 @@ import ibis.deploy.Job;
 import java.util.List;
 
 import org.gridlab.gat.URI;
+import org.gridlab.gat.resources.Job.JobState;
 
 public class DeployTest {
 
@@ -27,7 +28,7 @@ public class DeployTest {
 			List<Job> jobs = deployer.loadRun("run-test.properties");
 			for (Job job : jobs) {
 				deployer.deploy(job);
-				while (job.getStatus().get(org.gridlab.gat.resources.Job.STOPPED) < 1) {
+				while (job.getStatus().get(JobState.STOPPED) < 1) {
 					System.out.println("job.status:\n" + job.getStatus());
 				}
 			}

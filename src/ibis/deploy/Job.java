@@ -21,6 +21,7 @@ import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.JavaSoftwareDescription;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
+import org.gridlab.gat.resources.Job.JobState;
 import org.gridlab.gat.security.CertificateSecurityContext;
 
 public class Job implements MetricListener {
@@ -65,13 +66,8 @@ public class Job implements MetricListener {
 	}
 
 	protected void inform() throws Exception {
-		if (subjobs.size() == getStatus().get(
-				org.gridlab.gat.resources.Job
-						.getStateString(org.gridlab.gat.resources.Job.STOPPED))
-				+ getStatus()
-						.get(
-								org.gridlab.gat.resources.Job
-										.getStateString(org.gridlab.gat.resources.Job.SUBMISSION_ERROR))) {
+		if (subjobs.size() == getStatus().get(JobState.STOPPED)
+				+ getStatus().get(JobState.SUBMISSION_ERROR)) {
 			stop();
 		}
 	}
@@ -231,31 +227,19 @@ public class Job implements MetricListener {
 	 * 
 	 * @return the status of this Job
 	 */
-	public Map<String, Integer> getStatus() {
-		Map<String, Integer> result = new HashMap<String, Integer>();
-		result.put(org.gridlab.gat.resources.Job
-				.getStateString(org.gridlab.gat.resources.Job.INITIAL), 0);
-		result.put(org.gridlab.gat.resources.Job
-				.getStateString(org.gridlab.gat.resources.Job.SCHEDULED), 0);
-		result.put(org.gridlab.gat.resources.Job
-				.getStateString(org.gridlab.gat.resources.Job.RUNNING), 0);
-		result.put(org.gridlab.gat.resources.Job
-				.getStateString(org.gridlab.gat.resources.Job.STOPPED), 0);
-		result
-				.put(
-						org.gridlab.gat.resources.Job
-								.getStateString(org.gridlab.gat.resources.Job.SUBMISSION_ERROR),
-						0);
-		result.put(org.gridlab.gat.resources.Job
-				.getStateString(org.gridlab.gat.resources.Job.ON_HOLD), 0);
-		result.put(org.gridlab.gat.resources.Job
-				.getStateString(org.gridlab.gat.resources.Job.PRE_STAGING), 0);
-		result.put(org.gridlab.gat.resources.Job
-				.getStateString(org.gridlab.gat.resources.Job.POST_STAGING), 0);
-		result.put(org.gridlab.gat.resources.Job
-				.getStateString(org.gridlab.gat.resources.Job.UNKNOWN), 0);
+	public Map<JobState, Integer> getStatus() {
+		Map<JobState, Integer> result = new HashMap<JobState, Integer>();
+		result.put(JobState.INITIAL, 0);
+		result.put(JobState.SCHEDULED, 0);
+		result.put(JobState.RUNNING, 0);
+		result.put(JobState.STOPPED, 0);
+		result.put(JobState.SUBMISSION_ERROR, 0);
+		result.put(JobState.ON_HOLD, 0);
+		result.put(JobState.PRE_STAGING, 0);
+		result.put(JobState.POST_STAGING, 0);
+		result.put(JobState.UNKNOWN, 0);
 		for (SubJob subjob : subjobs) {
-			String subjobState = subjob.getStatus();
+			JobState subjobState = subjob.getStatus();
 			int othersInSameState = result.get(subjobState);
 			result.put(subjobState, (othersInSameState + 1));
 		}
@@ -403,15 +387,15 @@ public class Job implements MetricListener {
 				.getStdin());
 
 		while (true) {
-			int state = job.getState();
-			if (state == org.gridlab.gat.resources.Job.RUNNING) {
+			JobState state = job.getState();
+			if (state == JobState.RUNNING) {
 				// add job to lijstje
 				logger.info("hub/server is running");
 				deployJobs.add(job);
 				deployClients.add(ibisServer);
 				break;
-			} else if (state == org.gridlab.gat.resources.Job.STOPPED
-					|| state == org.gridlab.gat.resources.Job.SUBMISSION_ERROR) {
+			} else if (state == JobState.STOPPED
+					|| state == JobState.SUBMISSION_ERROR) {
 				// do something useful in case of error
 				logger.info("hub job already stopped or submission error");
 			} else {
@@ -547,7 +531,7 @@ public class Job implements MetricListener {
 			}
 		}
 		for (org.gridlab.gat.resources.Job job : deployJobs) {
-			if (job.getState() == org.gridlab.gat.resources.Job.RUNNING) {
+			if (job.getState() == JobState.RUNNING) {
 				job.stop();
 			}
 		}
