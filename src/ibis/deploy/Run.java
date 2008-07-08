@@ -15,7 +15,7 @@ class Run {
     private List<Job> jobs = new ArrayList<Job>();
 
     protected static List<Job> load(TypedProperties runprops, Set<Grid> grids,
-            Set<Application> applications) {
+            Set<Application> applications) throws Exception {
         if (logger.isInfoEnabled()) {
             logger.info("loading run");
         }

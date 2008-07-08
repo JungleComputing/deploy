@@ -298,13 +298,9 @@ public class Deployer {
      * @param runFileName
      *                the file containing the run properties
      * @return The {@link List} of {@link Job}s, loaded from the run file.
-     * @throws FileNotFoundException
-     *                 if the file cannot be found
-     * @throws IOException
-     *                 if something fails during the loading of the run.
+     * @throws Exception in case the jobs cannot be loaded
      */
-    public List<Job> loadRun(String runFileName) throws FileNotFoundException,
-            IOException {
+    public List<Job> loadRun(String runFileName) throws Exception {
         TypedProperties properties = new TypedProperties();
         properties.load(new java.io.FileInputStream(runFileName));
         return loadRun(properties);
@@ -318,8 +314,9 @@ public class Deployer {
      *                the properties containing the details of the run
      * @return The {@link List} of {@link Job}s, loaded from the run
      *         properties.
+     * @throws Exception in case the loading fails
      */
-    public List<Job> loadRun(TypedProperties properties) {
+    public List<Job> loadRun(TypedProperties properties) throws Exception {
         properties.expandSystemVariables();
         return Run.load(properties, grids, applications);
     }

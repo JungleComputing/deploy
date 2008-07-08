@@ -48,7 +48,7 @@ public class Job implements MetricListener {
      * Create a {@link Job} with the name <code>name</code>
      * 
      * @param name
-     *                the name of the {@link Job}
+     *            the name of the {@link Job}
      */
     public Job(String name) {
         this.name = name;
@@ -58,7 +58,7 @@ public class Job implements MetricListener {
      * Adds a {@link SubJob} to this {@link Job}
      * 
      * @param subjob
-     *                the {@link SubJob} to be added
+     *            the {@link SubJob} to be added
      */
     public void addSubJob(SubJob subjob) {
         subjob.setParent(this);
@@ -165,7 +165,7 @@ public class Job implements MetricListener {
     }
 
     protected static Job load(TypedProperties runprops, Set<Grid> grids,
-            Set<Application> applications, String jobName) {
+            Set<Application> applications, String jobName) throws Exception {
         if (logger.isInfoEnabled()) {
             logger.info("loading job");
         }
@@ -177,7 +177,7 @@ public class Job implements MetricListener {
 
         // runprops.getStringList("subjobs");
         if (subjobNames == null || subjobNames.length == 0) {
-            return null;
+            throw new Exception("no subjobs specified for job " + job);
         } else {
             for (String subjobName : subjobNames) {
                 if (logger.isInfoEnabled()) {
@@ -198,12 +198,13 @@ public class Job implements MetricListener {
             }
         }
         if (job.subjobs.size() == 0) {
-            return null;
+            throw new Exception("no subjobs specified for job " + job);
         } else {
             job.closedWorld = false;
             for (SubJob subjob : job.subjobs) {
                 if (job.closedWorld && !subjob.isClosedWorld()) {
-                    return null;
+                    throw new Exception("adding open world subjob " + subjob
+                            + " to closed world job " + job);
                 } else {
                     job.closedWorld = subjob.isClosedWorld();
                 }
@@ -261,8 +262,8 @@ public class Job implements MetricListener {
      * Sets whether this Job is a closed world job or not
      * 
      * @param closedWorld
-     *                <code>true</code> if the Job is closed world,
-     *                <code>false</code> otherwise
+     *            <code>true</code> if the Job is closed world,
+     *            <code>false</code> otherwise
      */
     public void setClosedWorld(boolean closedWorld) {
         this.closedWorld = closedWorld;
@@ -273,8 +274,8 @@ public class Job implements MetricListener {
      * 
      * @return the size of the pool
      * @throws Exception
-     *                 if one of the {@link SubJob#getPoolSize()} throws an
-     *                 exception
+     *             if one of the {@link SubJob#getPoolSize()} throws an
+     *             exception
      */
     public int getPoolSize() throws Exception {
         int result = 0;
