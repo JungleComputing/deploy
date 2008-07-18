@@ -36,11 +36,292 @@ public class SubJob implements MetricListener {
 
     private Job parent;
 
-    private String executable;
+    private String wrapperExecutable;
 
-    private String[] arguments;
+    private String[] wrapperArguments;
 
-    protected static SubJob[] load(TypedProperties runprops, Set<Grid> grids,
+    private String name;
+
+    private String poolID;
+
+    private int nodes;
+
+    private Application application;
+
+    private String[] attributes;
+
+    private String[] preferences;
+
+    private long runtime; // minutes
+
+    private Grid grid;
+
+    private Cluster cluster;
+
+    private int cores;
+
+    private boolean closedWorld;
+
+    private JobState status = JobState.INITIAL;
+
+    private Server hub;
+
+    /**
+     * Create a {@link SubJob} with the name <code>subjobName</code>
+     * 
+     * @param subjobName
+     *                the name of the {@link SubJob}
+     */
+    public SubJob(String subjobName) {
+        this.name = subjobName;
+    }
+
+    /**
+     * Gets the {@link Application} that will be run by deploying this
+     * {@link SubJob}
+     * 
+     * @return the {@link Application} that will be run by deploying this
+     *         {@link SubJob}
+     */
+    public Application getApplication() {
+        return application;
+    }
+
+    private HashMap<String, Object> getAttributes() {
+        if (attributes == null) {
+            return null;
+        }
+        if (attributes.length % 2 > 0) {
+            return null;
+        }
+        HashMap<String, Object> result = new HashMap<String, Object>();
+        for (int i = 0; i < attributes.length; i += 2) {
+            result.put(attributes[i], attributes[i + 1]);
+        }
+        return result;
+    }
+
+    /**
+     * Gets the {@link Cluster} where the {@link SubJob} will run if deployed
+     * 
+     * @return the {@link Cluster} where the {@link SubJob} will run if deployed
+     */
+    public Cluster getCluster() {
+        return cluster;
+    }
+
+    /**
+     * Gets the number of cores that the {@link SubJob} should run on.
+     * 
+     * @return the number of cores that the {@link SubJob} should run on.
+     */
+    public int getCores() {
+        if (cores <= 0) {
+            if (nodes > 0) {
+                return nodes;
+            } else {
+                return 1;
+            }
+        }
+        return cores;
+    }
+
+    /**
+     * Gets the {@link Grid} where the {@link SubJob} will run if deployed
+     * 
+     * @return the {@link Grid} where the {@link SubJob} will run if deployed
+     */
+    public Grid getGrid() {
+        return grid;
+    }
+
+    /**
+     * Gets the name of this {@link Grid}
+     * 
+     * @return the name of this {@link Grid}
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Gets the number of nodes that the {@link SubJob} should run on.
+     * 
+     * @return the number of nodes that the {@link SubJob} should run on.
+     */
+    public int getNodes() {
+        return nodes;
+    }
+
+    /**
+     * Gets the poolID of this {@link SubJob}
+     * 
+     * @return the poolID of this {@link SubJob}
+     */
+    public String getPoolID() {
+        return poolID;
+    }
+
+    /**
+     * Gets a {@link HashMap} containing the JavaGAT preferences for this
+     * {@link SubJob}.
+     * 
+     * @return a {@link HashMap} containing the JavaGAT preferences for this
+     *         {@link SubJob}.
+     */
+    public HashMap<String, Object> getPreferences() {
+        if (preferences == null) {
+            return null;
+        }
+        if (preferences.length % 2 > 0) {
+            return null;
+        }
+        HashMap<String, Object> result = new HashMap<String, Object>();
+        for (int i = 0; i < preferences.length; i += 2) {
+            result.put(preferences[i], preferences[i + 1]);
+        }
+        return result;
+    }
+
+    /**
+     * Gets the runtime in minutes
+     * 
+     * @return the runtime in minutes
+     */
+    public long getRuntime() {
+        return runtime;
+    }
+
+    /**
+     * Gets the status of this SubJob
+     * 
+     * @return the String indicating the status of this {@link SubJob}
+     */
+    public JobState getStatus() {
+        return status;
+    }
+
+    /**
+     * Gets the wrapper arguments for this {@link SubJob}.
+     * 
+     * @return the wrapper arguments for this {@link SubJob}.
+     */
+    public String[] getWrapperArguments() {
+        return wrapperArguments;
+    }
+
+    /**
+     * Gets the wrapper executable for this {@link SubJob}.
+     * 
+     * @return the wrapper executable for this {@link SubJob}.
+     */
+    protected String getWrapperExecutable() {
+        return wrapperExecutable;
+    }
+
+    protected boolean hasExecutable() {
+        return wrapperExecutable != null;
+    }
+
+    /**
+     * Returns whether this {@link SubJob} is a closed world {@link SubJob}.
+     * 
+     * @return whether this {@link SubJob} is a closed world {@link SubJob}
+     */
+    public boolean isClosedWorld() {
+        return closedWorld;
+    }
+
+    /**
+     * Loads a {@link SubJob} specified by its name and from a
+     * {@link TypedProperties} object and a set of {@link Grid}s and a set of
+     * {@link Application}s. The following properties can be set:
+     * 
+     * <p>
+     * <TABLE border="2" frame="box" rules="groups" summary="subjob properties">
+     * <CAPTION>subjob properties </CAPTION> <COLGROUP align="left"> <COLGROUP
+     * align="center"> <COLGROUP align="left" > <THEAD valign="top">
+     * <TR>
+     * <TH>Property
+     * <TH>Example
+     * <TH>Description<TBODY>
+     * <TR>
+     * <TD>[[job.]subjob.]application
+     * <TD>'application name'
+     * <TD>The name of the application that should be run
+     * <TR>
+     * <TD>[[job.]subjob.]grid
+     * <TD>'grid name'
+     * <TD>The name of the grid where the cluster where this subjob will run on
+     * is part of
+     * <TR>
+     * <TD>[[job.]subjob.]cluster
+     * <TD>'cluster name'
+     * <TD>The name of the cluster where this subjob will run on
+     * <TR>
+     * <TD>[[job.]subjob.]cores
+     * <TD>'integer' | 'max' | 'percentage (e.g. 20 %)'
+     * <TD>The total number of cores where the subjob will run on
+     * <TR>
+     * <TD>[[job.]subjob.]nodes
+     * <TD>'integer' | 'max' | 'percentage (e.g. 20 %)'
+     * <TD>The total number of nodes where the subjob will run on
+     * <TR>
+     * <TD>[[job.]subjob.]runtime
+     * <TD>'runtime in minutes'
+     * <TD>The runtime of this subjob in minutes
+     * <TR>
+     * <TD>[[job.]subjob.]pool.id
+     * <TD>'pool id'
+     * <TD>The pool id for this subjob (if different from the job)
+     * <TR>
+     * <TD>[[job.]subjob.]closed.world
+     * <TD>'true' | 'false'
+     * <TD>'true' if this subjob is a closed world job, 'false' otherwise
+     * <TR>
+     * <TD>[[job.]subjob.]gat.attributes
+     * <TD>key=value key2=value2
+     * <TD>javagat softwaredescription attributes
+     * <TR>
+     * <TD>[[job.]subjob.]gat.preferences
+     * <TD>key=value key2=value2
+     * <TD>javagat preferences for the resourcebroker
+     * <TR>
+     * <TD>[[job.]subjob.]chunk.size
+     * <TD>integer
+     * <TD>split this subjob in multiple subjobs of this size (chunk.size of
+     * the size of the subjobs, not the number of subjobs)
+     * <TR>
+     * <TD>[[job.]subjob.]wrapper.executable
+     * <TD>'/bin/sh'
+     * <TD>if this job shouldn't be started by directly invoking java, but by
+     * invoking for instance a script, the executable for this script can be set
+     * <TR>
+     * <TD>[[job.]subjob.]wrapper.arguments
+     * <TD>'script.sh argument1 argument2'
+     * <TD>if this job shouldn't be started by directly invoking java, but by
+     * invoking for instance a script, the arguments for the executable for this
+     * script can be set </TABLE>
+     * <p>
+     * 
+     * @param runprops
+     *                the {@link TypedProperties} where the {@link SubJob} will
+     *                be loaded from
+     * @param grids
+     *                the set of {@link Grid}s that's used to load the
+     *                {@link SubJob}
+     * @param applications
+     *                the set of {@link Application}s that's used to load the
+     *                {@link SubJob}
+     * @param subjobName
+     *                the name of the {@link SubJob}
+     * @return an array of loaded {@link SubJob}s (can be more than 1
+     *         {@link SubJob}, due to chunk.size)
+     * @throws Exception
+     *                 if the gridname, clustername or applicationname cannot be
+     *                 found in the provided sets
+     */
+    public static SubJob[] load(TypedProperties runprops, Set<Grid> grids,
             Set<Application> applications, String subjobName) throws Exception {
         if (logger.isInfoEnabled()) {
             logger.info("loading subjob");
@@ -55,8 +336,8 @@ public class SubJob implements MetricListener {
             }
         }
         if (subjob.grid == null) {
-            throw new Exception("grid \"" + gridName
-                    + "\" unknown, but used in subjob \"" + subjob + "\"");
+            throw new Exception("grid '" + gridName
+                    + "' unknown, but used in subjob '" + subjob + "'");
         }
 
         String clusterName = TypedPropertiesUtility.getHierarchicalProperty(
@@ -69,32 +350,31 @@ public class SubJob implements MetricListener {
             }
         }
         if (subjob.cluster == null) {
-            return null;
+            throw new Exception("cluster '" + clusterName
+                    + "' not found in grid '" + gridName
+                    + "', but used in subjob '" + subjob + "'");
         }
         String nodesString = TypedPropertiesUtility.getHierarchicalProperty(
                 runprops, subjobName, "nodes", "-1");
         if (nodesString.equals("max")) {
-            subjob.nodes = subjob.cluster.getNodes();
+            subjob.nodes = subjob.cluster.getTotalNodes();
         } else if (nodesString.matches("\\d+?\\s*?%")) {
             Pattern pattern = Pattern.compile("\\d*+");
             Matcher matcher = pattern.matcher(nodesString);
             if (matcher.find()) {
                 int percentage = Integer.parseInt(matcher.group());
-                subjob.nodes = (int) ((subjob.cluster.getNodes() * percentage) / 100.0);
+                subjob.nodes = (int) ((subjob.cluster.getTotalNodes() * percentage) / 100.0);
             }
         } else {
             subjob.nodes = Integer.parseInt(nodesString);
         }
-        String multicoreString = TypedPropertiesUtility
-                .getHierarchicalProperty(runprops, subjobName, "multicore",
-                        "-1");
-        if (multicoreString.equals("max")) {
-            subjob.multicore = subjob.cluster.getMulticore();
+        String coresString = TypedPropertiesUtility.getHierarchicalProperty(
+                runprops, subjobName, "cores", "-1");
+        if (coresString.equals("max")) {
+            subjob.cores = subjob.cluster.getTotalCores();
         } else {
-            subjob.multicore = Integer.parseInt(multicoreString);
+            subjob.cores = Integer.parseInt(coresString);
         }
-        subjob.executables = TypedPropertiesUtility.getHierarchicalInt(
-                runprops, subjobName, "exe.count", -1);
         subjob.runtime = TypedPropertiesUtility.getHierarchicalInt(runprops,
                 subjobName, "runtime", DEFAULT_RUNTIME);
         subjob.poolID = TypedPropertiesUtility.getHierarchicalProperty(
@@ -105,10 +385,14 @@ public class SubJob implements MetricListener {
                 runprops, subjobName, "gat.attributes", null, " ");
         subjob.preferences = TypedPropertiesUtility.getHierarchicalStringList(
                 runprops, subjobName, "gat.preferences", null, " ");
-        subjob.executable = TypedPropertiesUtility.getHierarchicalProperty(
-                runprops, subjobName, "executable", null);
-        subjob.arguments = TypedPropertiesUtility.getHierarchicalStringList(
-                runprops, subjobName, "executable.arguments", null, " ");
+        subjob.wrapperExecutable = TypedPropertiesUtility
+                .getHierarchicalProperty(runprops, subjobName,
+                        "wrapper.executable", subjob.cluster
+                                .getApplicationWrapperExecutable());
+        subjob.wrapperArguments = TypedPropertiesUtility
+                .getHierarchicalStringList(runprops, subjobName,
+                        "wrapper.arguments", subjob.cluster
+                                .getApplicationWrapperArguments(), " ");
         String applicationString = TypedPropertiesUtility
                 .getHierarchicalProperty(runprops, subjobName, "application",
                         null);
@@ -118,24 +402,11 @@ public class SubJob implements MetricListener {
                 break;
             }
         }
-        // TODO: hubURI is never used. We want to be able to configure
-        // hubs in the run files though so this needs to be fixed. ~ Nick
-        try {
-            String hubURIString = TypedPropertiesUtility
-                    .getHierarchicalProperty(runprops, subjobName, "hub.uri",
-                            null);
-            if (hubURIString != null) {
-                subjob.hubURI = new URI(hubURIString);
-            }
-        } catch (URISyntaxException e1) {
-            // ignore, default will be set!
-        }
-        if (subjob.hubURI == null) {
-            subjob.hubURI = subjob.getCluster().getDeployBroker();
-        }
 
-        // TODO: add support for overriding application properties in the subjob
-        // properties?
+        if (subjob.application == null) {
+            throw new Exception("application '" + applicationString
+                    + "' not found, but used in subjob '" + subjob + "'");
+        }
 
         int chunksize = TypedPropertiesUtility.getHierarchicalInt(runprops,
                 subjobName, "chunksize", 0);
@@ -167,357 +438,6 @@ public class SubJob implements MetricListener {
         }
     }
 
-    private URI hubURI;
-
-    private int executables;
-
-    private String name;
-
-    private String poolID;
-
-    private int nodes;
-
-    private Application application;
-
-    private String[] attributes;
-
-    private String[] preferences;
-
-    private long runtime;
-
-    private Grid grid;
-
-    private Cluster cluster;
-
-    private int multicore;
-
-    private boolean closedWorld;
-
-    private JobState status = JobState.INITIAL;
-
-    private Server hub;
-
-    /**
-     * Create a {@link SubJob} with the name <code>subjobName</code>
-     *
-     * @param subjobName
-     *            the name of the {@link SubJob}
-     */
-    public SubJob(String subjobName) {
-        this.name = subjobName;
-    }
-
-    /**
-     * Gets the {@link Application} that will be run by deploying this
-     * {@link SubJob}
-     *
-     * @return the {@link Application} that will be run by deploying this
-     *         {@link SubJob}
-     */
-    public Application getApplication() {
-        return application;
-    }
-
-    private HashMap<String, Object> getAttributes() {
-        if (attributes == null) {
-            return null;
-        }
-        if (attributes.length % 2 > 0) {
-            return null;
-        }
-        HashMap<String, Object> result = new HashMap<String, Object>();
-        for (int i = 0; i < attributes.length; i += 2) {
-            result.put(attributes[i], attributes[i + 1]);
-        }
-        return result;
-    }
-
-    /**
-     * Gets the {@link Cluster} where the {@link SubJob} will run if deployed
-     *
-     * @return the {@link Cluster} where the {@link SubJob} will run if deployed
-     */
-    public Cluster getCluster() {
-        return cluster;
-    }
-
-    /**
-     * Gets the {@link Grid} where the {@link SubJob} will run if deployed
-     *
-     * @return the {@link Grid} where the {@link SubJob} will run if deployed
-     */
-    public Grid getGrid() {
-        return grid;
-    }
-
-    protected int getMulticore() {
-        return multicore;
-    }
-
-    /**
-     * Gets the name of this Grid
-     *
-     * @return the name of this Grid
-     */
-    public String getName() {
-        return name;
-    }
-
-    protected int getNodes() {
-        return nodes;
-    }
-
-    /**
-     * Gets the poolID of this {@link SubJob}
-     *
-     * @return the poolID of this {@link SubJob}
-     */
-    public String getPoolID() {
-        return poolID;
-    }
-
-    /**
-     * Gets the pool size of this {@link SubJob}
-     *
-     * @return the pool size of this {@link SubJob}
-     * @throws Exception
-     *             if the number of nodes and the number of cores and the number
-     *             of executables are set, but are inconsistent (nodes *
-     *             multicore != executables) or the number of executables is
-     *             smaller than the number of nodes or only the number of cores
-     *             is specified
-     *
-     */
-    public int getPoolSize() throws Exception {
-        if (!closedWorld) {
-            return -1;
-        }
-        if (nodes > 0) {
-            if (multicore > 0) {
-                if (executables == nodes * multicore || !(executables > 0)) {
-                    return nodes * multicore;
-                } else {
-                    throw new Exception("nodes * multicore != executables");
-                }
-            } else {
-                if (executables >= nodes) {
-                    return executables;
-                } else if (executables > 0) {
-                    throw new Exception("0 < executables < nodes is invalid");
-                } else {
-                    return nodes;
-                }
-            }
-        } else {
-            if (executables > 0) {
-                return executables;
-            } else {
-                throw new Exception("only specifying cores doesn't make sense!");
-            }
-        }
-    }
-
-    protected HashMap<String, Object> getPreferences() {
-        if (preferences == null) {
-            return null;
-        }
-        if (preferences.length % 2 > 0) {
-            return null;
-        }
-        HashMap<String, Object> result = new HashMap<String, Object>();
-        for (int i = 0; i < preferences.length; i += 2) {
-            result.put(preferences[i], preferences[i + 1]);
-        }
-        return result;
-    }
-
-    protected long getRuntime() {
-        return runtime;
-    }
-
-    /**
-     * Gets the status of this SubJob
-     *
-     * @return the String indicating the status of this {@link SubJob}
-     */
-    public JobState getStatus() {
-        return status;
-    }
-
-    protected boolean isClosedWorld() {
-        return closedWorld;
-    }
-
-    /**
-     * Set this {@link SubJob} to run in a closed world ibis
-     *
-     * @param closedWorld
-     */
-    public void setClosedWorld(boolean closedWorld) {
-        this.closedWorld = closedWorld;
-    }
-
-    /**
-     * Sets the poolID for this {@link SubJob}
-     *
-     * @param poolID
-     *            the poolID to be used
-     */
-    public void setPoolID(String poolID) {
-        this.poolID = poolID;
-    }
-
-    public String toString() {
-        String gridName = "null";
-        if (grid != null) {
-            gridName = grid.getGridName();
-        }
-
-        String clusterName = "null";
-        if (cluster != null) {
-            clusterName = cluster.getName();
-        }
-
-        return "SubJob " + name + ": " + gridName + " " + clusterName + " "
-                + nodes + " machines, with " + multicore
-                + " cores/machine, for a total of " + (nodes * multicore)
-                + " cores";
-    }
-
-    /**
-     * Sets the {@link Application} for this {@link SubJob}
-     *
-     * @param application
-     *            the {@link Application} to be used.
-     */
-    public void setApplication(Application application) {
-        this.application = application;
-    }
-
-    /**
-     * Sets the gat attributes for this {@link SubJob}
-     *
-     * @param attributes
-     *            the attributes to be used.
-     */
-    public void setAttributes(String... attributes) {
-        this.attributes = attributes;
-    }
-
-    /**
-     * Sets the {@link Cluster} for this {@link SubJob}
-     *
-     * @param cluster
-     *            the cluster where the {@link SubJob} should run on.
-     */
-    public void setCluster(Cluster cluster) {
-        this.cluster = cluster;
-    }
-
-    /**
-     * Sets the total number of executables for this {@link SubJob}
-     *
-     * @param executables
-     *            the total number of executables
-     */
-    public void setExecutables(int executables) {
-        this.executables = executables;
-    }
-
-    /**
-     * Sets the {@link Grid} for this {@link SubJob}
-     *
-     * @param grid
-     *            the {@link Grid} for this {@link SubJob}
-     */
-    public void setGrid(Grid grid) {
-        this.grid = grid;
-    }
-
-    /**
-     * Sets the URI of the hub that should be deployed for this {@link SubJob}
-     *
-     * @param hubURI
-     *            the URI of the hub
-     */
-    public void setHubURI(URI hubURI) {
-        this.hubURI = hubURI;
-    }
-
-    /**
-     * Sets the number of cores for this {@link SubJob}.
-     *
-     * @param multicore
-     *            the number of cores for this {@link SubJob}
-     */
-    public void setMulticore(int multicore) {
-        this.multicore = multicore;
-    }
-
-    /**
-     * Sets the number of nodes for this {@link SubJob}
-     *
-     * @param nodes
-     *            the number of nodes for this {@link SubJob}
-     */
-    public void setNodes(int nodes) {
-        this.nodes = nodes;
-    }
-
-    /**
-     * Sets the javagat preferences for this {@link SubJob}
-     *
-     * @param preferences
-     *            the javagat preferences for this {@link SubJob}
-     */
-    public void setPreferences(String... preferences) {
-        this.preferences = preferences;
-    }
-
-    /**
-     * Sets the runtime for this {@link SubJob}
-     *
-     * @param runtime
-     *            the runtime in minutes
-     */
-    public void setRuntime(long runtime) {
-        this.runtime = runtime;
-    }
-
-    protected String[] getArguments() {
-        return arguments;
-    }
-
-    protected String getExecutable() {
-        return executable;
-    }
-
-    protected boolean hasExecutable() {
-        return executable != null;
-    }
-
-    /**
-     * Sets the additional arguments for the wrapper executable that should be
-     * run
-     *
-     * @param arguments
-     *            the additional arguments for the wrapper executable that
-     *            should be run
-     */
-    public void setWrapperArguments(String... arguments) {
-        this.arguments = arguments;
-    }
-
-    /**
-     * Sets the wrapper executable
-     *
-     * @param executable
-     *            the wrapper executable
-     */
-    public void setWrapperExecutable(String executable) {
-        this.executable = executable;
-    }
-
     /**
      * <b>DO NOT USE. For internal use only</b>
      */
@@ -536,10 +456,145 @@ public class SubJob implements MetricListener {
         }
     }
 
+    /**
+     * Sets the {@link Application} for this {@link SubJob}
+     * 
+     * @param application
+     *                the {@link Application} to be used.
+     */
+    public void setApplication(Application application) {
+        this.application = application;
+    }
+
+    /**
+     * Sets the gat attributes for this {@link SubJob}
+     * 
+     * @param attributes
+     *                the attributes to be used.
+     */
+    public void setAttributes(String... attributes) {
+        this.attributes = attributes;
+    }
+
+    /**
+     * Set this {@link SubJob} to run in a closed world ibis
+     * 
+     * @param closedWorld
+     */
+    public void setClosedWorld(boolean closedWorld) {
+        this.closedWorld = closedWorld;
+    }
+
+    /**
+     * Sets the {@link Cluster} for this {@link SubJob}
+     * 
+     * @param cluster
+     *                the cluster where the {@link SubJob} should run on.
+     */
+    public void setCluster(Cluster cluster) {
+        this.cluster = cluster;
+    }
+
+    /**
+     * Sets the number of cores where this {@link SubJob} should run on.
+     * 
+     * @param cores
+     *                the number of cores where this {@link SubJob} should run
+     *                on.
+     */
+    public void setCores(int cores) {
+        this.cores = cores;
+    }
+
+    /**
+     * Sets the {@link Grid} for this {@link SubJob}
+     * 
+     * @param grid
+     *                the {@link Grid} for this {@link SubJob}
+     */
+    public void setGrid(Grid grid) {
+        this.grid = grid;
+    }
+
+    /**
+     * Sets the number of nodes for this {@link SubJob}
+     * 
+     * @param nodes
+     *                the number of nodes for this {@link SubJob}
+     */
+    public void setNodes(int nodes) {
+        this.nodes = nodes;
+    }
+
     protected void setParent(Job parent) {
         this.parent = parent;
     }
 
+    /**
+     * Sets the poolID for this {@link SubJob}
+     * 
+     * @param poolID
+     *                the poolID to be used
+     */
+    public void setPoolID(String poolID) {
+        this.poolID = poolID;
+    }
+
+    /**
+     * Sets the javagat preferences for this {@link SubJob}
+     * 
+     * @param preferences
+     *                the javagat preferences for this {@link SubJob}
+     */
+    public void setPreferences(String... preferences) {
+        this.preferences = preferences;
+    }
+
+    /**
+     * Sets the runtime for this {@link SubJob}
+     * 
+     * @param runtime
+     *                the runtime in minutes
+     */
+    public void setRuntime(long runtime) {
+        this.runtime = runtime;
+    }
+
+    /**
+     * Sets the additional arguments for the wrapper executable that should be
+     * run
+     * 
+     * @param wrapperArguments
+     *                the additional arguments for the wrapper executable that
+     *                should be run
+     */
+    public void setWrapperArguments(String... wrapperArguments) {
+        this.wrapperArguments = wrapperArguments;
+    }
+
+    /**
+     * Sets the wrapper executable
+     * 
+     * @param wrapperExecutable
+     *                the wrapper executable
+     */
+    public void setWrapperExecutable(String wrapperExecutable) {
+        this.wrapperExecutable = wrapperExecutable;
+    }
+
+    /**
+     * Submits the subjob with the given poolID, poolSize, serverAddress and
+     * hubAddresses. The output will be staged to the provided output directory.
+     * 
+     * @param poolID
+     * @param poolSize
+     * @param serverAddress
+     * @param hubAddress
+     * @param outputDirectory
+     * @throws GATObjectCreationException
+     * @throws URISyntaxException
+     * @throws GATInvocationException
+     */
     public void submit(String poolID, int poolSize, String serverAddress,
             String hubAddress, String outputDirectory)
             throws GATObjectCreationException, URISyntaxException,
@@ -548,8 +603,10 @@ public class SubJob implements MetricListener {
             logger.info("submitting sub job " + name);
         }
         Preferences preferences = new Preferences();
-        preferences.put("ResourceBroker.adaptor.name", cluster.getAccessType());
-        preferences.put("File.adaptor.name", cluster.getFileAccessType());
+        preferences.put("ResourceBroker.adaptor.name", cluster
+                .getApplicationBrokerAdaptors());
+        preferences.put("File.adaptor.name", cluster
+                .getApplicationFileAdaptors());
         preferences.put("sshtrilead.stoppable", "true");
         Map<String, Object> additionalPreferences = getPreferences();
         if (additionalPreferences != null) {
@@ -619,21 +676,16 @@ public class SubJob implements MetricListener {
                         .createFile(preferences, getName() + "." + filename));
             }
         }
-        int nodes = getNodes();
-        int multicore = getMulticore();
-
-        logger.debug("nodes = " + nodes + ", multicore = " + multicore);
-
-        sd.addAttribute("count", nodes * multicore);
-        sd.addAttribute("host.count", nodes);
         sd.addAttribute("walltime.max", getRuntime());
         JobDescription jd = null;
 
-        if (!hasExecutable() && !cluster.hasStartupScript()) {
+        if (!hasExecutable()) {
             jd = new JobDescription(sd);
+            jd.setProcessCount(getCores());
+            jd.setResourceCount(getNodes());
         } else {
-            logger.debug("executable = " + getExecutable()
-                    + " startup script = " + cluster.getStartupScript() + ", creating a non java job");
+            logger.debug("executable = " + getWrapperExecutable()
+                    + ", creating a non java job");
 
             SoftwareDescription nonJava = new SoftwareDescription();
             if (sd.getAttributes() != null) {
@@ -657,24 +709,16 @@ public class SubJob implements MetricListener {
             }
             nonJava.setStderr(errFile);
             nonJava.setStdout(outFile);
+            nonJava.setExecutable(getWrapperExecutable());
             List<String> argumentList = new ArrayList<String>();
-            if (cluster.hasStartupScript()) {
-                nonJava.setExecutable(cluster.getStartupScript());
-                if (hasExecutable()) {
-                    argumentList.add(getExecutable());
-                }
-            }
-            else {
-                nonJava.setExecutable(getExecutable());
-            }
-            if (getArguments() != null) {
-                for (String arg : getArguments()) {
+            if (getWrapperArguments() != null) {
+                for (String arg : getWrapperArguments()) {
                     argumentList.add(arg);
                 }
             }
 
             argumentList.add("" + getNodes());
-            argumentList.add("" + getMulticore());
+            argumentList.add("" + getCores());
 
             // argumentList.add("" + subjob.getRuntime());
             argumentList.add(sd.getExecutable());
@@ -695,7 +739,7 @@ public class SubJob implements MetricListener {
         context.addSecurityContext(securityContext);
 
         ResourceBroker broker = GAT.createResourceBroker(context, preferences,
-                cluster.getJobBroker());
+                cluster.getApplicationBroker());
         logger.debug("submission of subjob '" + name
                 + "' with job description:\n" + jd);
         broker.submitJob(jd, this, "job.status");
@@ -708,5 +752,21 @@ public class SubJob implements MetricListener {
 
     public Server getHub() {
         return hub;
+    }
+
+    public String toString() {
+        String gridName = "null";
+        if (grid != null) {
+            gridName = grid.getGridName();
+        }
+
+        String clusterName = "null";
+        if (cluster != null) {
+            clusterName = cluster.getName();
+        }
+
+        return "SubJob " + name + ": " + gridName + " " + clusterName + " "
+                + nodes + " nodes, with " + (cores / nodes)
+                + " cores/nodes, for a total of " + cores + " cores";
     }
 }

@@ -15,34 +15,40 @@ public class Cluster {
 
     private String name;
 
-    private String username;
+    private String userName;
 
     private String password;
 
-    private URI jobBroker;
+    private URI applicationBroker;
 
-    private URI deployBroker;
+    private String applicationBrokerAdaptors;
 
-    private String accessType;
+    private String applicationFileAdaptors;
 
-    private int nodes;
+    private String applicationWrapperExecutable;
 
-    private int multicore;
+    private String[] applicationWrapperArguments;
+
+    private URI ibisHubBroker;
+
+    private String ibisHubBrokerAdaptors;
+
+    private String ibisHubFileAdaptors;
+
+    private int totalNodes;
+
+    private int totalCores;
 
     private String javapath;
 
-    private String fileAccessType;
-
     private boolean isWindows;
 
-    private String location;
-
-    private String startupScript;
+    private String physicalLocation;
 
     /**
      * Creates a new Cluster which can be identified in a {@link Grid} by its
      * <code>clusterName</code>.
-     *
+     * 
      * @param clusterName
      *                the name of this Cluster
      */
@@ -51,82 +57,14 @@ public class Cluster {
     }
 
     /**
-     * Creates a new Cluster which can be identified in a {@link Grid} by its
-     * <code>clusterName</code>. This Cluster has a broker that can be used
-     * for deployment at the specified {@link URI}.
-     *
-     * @param clusterName
-     * @param deployBroker
-     */
-    public Cluster(String clusterName, URI deployBroker) {
-        this.name = clusterName;
-        this.deployBroker = deployBroker;
-    }
-
-    /**
-     * Gets the JavaGAT resource broker adaptors which may be used for this
-     * cluster in the order and format as described for the JavaGAT Preference "<code>resourcebroker.adaptor.name</code>".
-     *
-     * @return the {@link String} containing the JavaGAT resource broker
-     *         adaptors.
-     */
-    public String getAccessType() {
-        return accessType;
-    }
-
-    /**
      * Gets the java path of this cluster. If the executable <code>java</code>
      * is located at <code>/usr/local/jdk-1.5/bin/java</code>, then the java
      * path will be: <code>/usr/local/jdk-1.5/</code>
-     *
+     * 
      * @return the java path
      */
     public String getJavaPath() {
         return javapath;
-    }
-
-    /**
-     * Gets the JavaGAT file adaptors which may be used for this cluster in the
-     * order and format as described for the JavaGAT Preference "<code>file.adaptor.name</code>".
-     *
-     * @return the {@link String} containing the JavaGAT file adaptors.
-     */
-    public String getFileAccessType() {
-        return fileAccessType;
-    }
-
-    /**
-     * Gets the URI of the deploy broker
-     *
-     * @return the URI of the deploy broker
-     */
-    public URI getDeployBroker() {
-        return deployBroker;
-    }
-
-    /**
-     * Gets the URI of the job broker
-     *
-     * @return the URI of the job broker
-     */
-    public URI getJobBroker() {
-        return jobBroker;
-    }
-
-    /**
-     * Gets the URI of either the job or the deploy broker
-     *
-     * @param isDeployBroker
-     *                <code>true</code> for the deploy broker uri,
-     *                <code>false</code> for the job broker uri
-     * @return the URI of the specified broker
-     */
-    public URI getBroker(boolean isDeployBroker) {
-        if (isDeployBroker) {
-            return deployBroker;
-        } else {
-            return jobBroker;
-        }
     }
 
     /**
@@ -142,37 +80,69 @@ public class Cluster {
      * <TH>Example
      * <TH>Description<TBODY>
      * <TR>
-     * <TD>[[grid.]cluster.]file.adaptors
-     * <TD>gridftp, ssh, local
-     * <TD>the file adaptors to be used in this cluster
+     * <TD>[[grid.]cluster.]hub.broker.uri
+     * <TD>any://myhost/mypath
+     * <TD>the location of the broker that should be used to deploy the server
+     * and hubs on this cluster
      * <TR>
-     * <TD>[[grid.]cluster.]resourcebroker.adaptors
+     * <TD>[[grid.]cluster.]hub.broker.adaptors
      * <TD>zorilla, ssh, globus
-     * <TD>the resource broker adaptors to be used in this cluster
+     * <TD>the resource broker adaptors to be used in this cluster to deploy
+     * the server and hubs
      * <TR>
-     * <TD>[[grid.]cluster.]nodes
+     * <TD>[[grid.]cluster.]hub.file.adaptors
+     * <TD>sshtrilead, gridftp, gt4gridftp
+     * <TD>the file adaptors to be used in this cluster to deploy the server
+     * and hubs
+     * <TR>
+     * <TD>[[grid.]cluster.]application.broker.uri
+     * <TD>any://myhost/mypath
+     * <TD>the location of the broker that should be used to deploy the
+     * applications on this cluster
+     * <TR>
+     * <TD>[[grid.]cluster.]application.broker.adaptors
+     * <TD>zorilla, ssh, globus
+     * <TD>the resource broker adaptors to be used in this cluster to deploy
+     * the applications
+     * <TR>
+     * <TD>[[grid.]cluster.]application.file.adaptors
+     * <TD>sshtrilead, gridftp, gt4gridftp
+     * <TD>the file adaptors to be used in this cluster to deploy the
+     * applications
+     * <TR>
+     * <TD>[[grid.]cluster.]nodes.total
      * <TD>50
      * <TD>the number of nodes in this cluster
      * <TR>
-     * <TD>[[grid.]cluster.]multicore
-     * <TD>4
-     * <TD>the number of cores per node in this cluster
+     * <TD>[[grid.]cluster.]cores.total
+     * <TD>200
+     * <TD>the number of cores in this cluster
      * <TR>
      * <TD>[[grid.]cluster.]javapath
      * <TD>/usr/local/jdk-1.5/
      * <TD>the location of java in this cluster
      * <TR>
-     * <TD>[[grid.]cluster.]job.broker
-     * <TD>any://somehost/jobmanager-sge
-     * <TD>the broker that should be used to submit the jobs in this cluster
+     * <TD>[[grid.]cluster.]is.windows
+     * <TD>true
+     * <TD>whether this cluster is a windows cluster
      * <TR>
-     * <TD>[[grid.]cluster.]deploy.broker
-     * <TD>any://somehost/jobmanager-fork
-     * <TD>the broker that should be used to submit the server and hubs in this
-     * cluster
-     * <TR> </TABLE>
+     * <TD>[[grid.]cluster.]user.name
+     * <TD>username
+     * <TD>the username to be used for this cluster
+     * <TR>
+     * <TD>[[grid.]cluster.]physical.location
+     * <TD>423,234
+     * <TD>the physical location of this cluster (x,y)
+     * <TR>
+     * <TD>[[grid.]cluster.]application.wrapper.executable
+     * <TD>/bin/sh
+     * <TD>the wrapper executable for this cluster
+     * <TR>
+     * <TD>[[grid.]cluster.]application.wrapper.arguments
+     * <TD>prunscript.sh arg2
+     * <TD>arguments for the wrapper executable </TABLE>
      * <p>
-     *
+     * 
      * @param properties
      *                the properties where to load the cluster from
      * @param gridName
@@ -189,68 +159,66 @@ public class Cluster {
         }
         Cluster cluster = new Cluster(clusterName);
         String fullName = gridName + "." + clusterName;
-        cluster.username = TypedPropertiesUtility.getHierarchicalProperty(
-                properties, fullName, "user.name", System
-                        .getProperty("user.name"));
-        cluster.startupScript = TypedPropertiesUtility.getHierarchicalProperty(
-                properties, fullName, "startup.script", null);
+        cluster.applicationBroker = new URI(TypedPropertiesUtility
+                .getHierarchicalProperty(properties, fullName,
+                        "application.broker.uri", "any://localhost"));
+        cluster.applicationBrokerAdaptors = TypedPropertiesUtility
+                .getHierarchicalProperty(properties, fullName,
+                        "application.broker.adaptors", null);
+        cluster.applicationFileAdaptors = TypedPropertiesUtility
+                .getHierarchicalProperty(properties, fullName,
+                        "application.file.adaptors", null);
+        cluster.applicationWrapperExecutable = TypedPropertiesUtility
+                .getHierarchicalProperty(properties, fullName,
+                        "application.wrapper.executable", null);
+        cluster.applicationWrapperArguments = TypedPropertiesUtility
+                .getHierarchicalStringList(properties, fullName,
+                        "application.wrapper.arguments", null, " ");
+        cluster.ibisHubBroker = new URI(TypedPropertiesUtility
+                .getHierarchicalProperty(properties, fullName,
+                        "ibis.hub.broker.uri", cluster.applicationBroker
+                                .toString()));
+        cluster.ibisHubBrokerAdaptors = TypedPropertiesUtility
+                .getHierarchicalProperty(properties, fullName,
+                        "ibis.hub.broker.adaptors",
+                        cluster.applicationBrokerAdaptors);
+        cluster.ibisHubFileAdaptors = TypedPropertiesUtility
+                .getHierarchicalProperty(properties, fullName,
+                        "ibis.hub.file.adaptors",
+                        cluster.applicationFileAdaptors);
 
-        cluster.fileAccessType = TypedPropertiesUtility
-                .getHierarchicalProperty(properties, fullName, "file.adaptors",
-                        "");
-        cluster.accessType = TypedPropertiesUtility.getHierarchicalProperty(
-                properties, fullName, "resourcebroker.adaptors", "");
-        cluster.nodes = TypedPropertiesUtility.getHierarchicalInt(properties,
-                fullName, "nodes", 0);
-        cluster.location = TypedPropertiesUtility.getHierarchicalProperty(
-                properties, fullName, "location", "0,0");
-
-        cluster.multicore = TypedPropertiesUtility.getHierarchicalInt(
-                properties, fullName, "multicore", 0);
         cluster.javapath = TypedPropertiesUtility.getHierarchicalProperty(
                 properties, fullName, "javapath", null);
+        cluster.totalNodes = TypedPropertiesUtility.getHierarchicalInt(
+                properties, fullName, "nodes.total", 1);
+        cluster.totalCores = TypedPropertiesUtility.getHierarchicalInt(
+                properties, fullName, "cores.total", 1);
         cluster.isWindows = TypedPropertiesUtility.getHierarchicalBoolean(
                 properties, fullName, "is.windows", false);
-        String jobBroker = TypedPropertiesUtility.getHierarchicalProperty(
-                properties, fullName, "job.broker", null);
-        String deployBroker = TypedPropertiesUtility.getHierarchicalProperty(
-                properties, fullName, "deploy.broker", null);
-        if (deployBroker == null) {
-        	logger.warn("warning: deploy.broker property not specified for " + cluster.name);
-            return null;
-        }
-        if (jobBroker == null) {
-            jobBroker = deployBroker;
-        }
-        cluster.jobBroker = new URI(jobBroker);
-        cluster.deployBroker = new URI(deployBroker);
+        cluster.userName = TypedPropertiesUtility.getHierarchicalProperty(
+                properties, fullName, "user.name", System
+                        .getProperty("user.name"));
+        cluster.physicalLocation = TypedPropertiesUtility
+                .getHierarchicalProperty(properties, fullName,
+                        "physical.location", "0,0");
         return cluster;
     }
 
     /**
-     * Gets the number of cores per node in this cluster
-     *
-     * @return the number of cores per node in this cluster
-     */
-    public int getMulticore() {
-        return multicore;
-    }
-
-    /**
      * Gets the user name for this cluster
-     *
+     * 
      * @return the user name for this cluster
      */
     public String getUserName() {
-        return username;
+        return userName;
     }
 
     /**
      * Gets the password for this cluster
-     *
+     * 
      * @return the password for this cluster
      */
-    public String getPassword() {
+    protected String getPassword() {
         return password;
     }
 
@@ -263,7 +231,7 @@ public class Cluster {
 
     /**
      * Gets the name of the cluster
-     *
+     * 
      * @return the name of the cluster
      */
     public String getName() {
@@ -272,24 +240,24 @@ public class Cluster {
 
     /**
      * Gets the number of nodes in this cluster
-     *
+     * 
      * @return the number of nodes in this cluster
      */
-    public int getNodes() {
-        return nodes;
+    public int getTotalNodes() {
+        return totalNodes;
     }
 
     /**
      * Returns the x coordinate of the location of this cluster
-     *
+     * 
      * @return the x coordinate of the location of this cluster
      */
-    public int getLocationX() {
-        if (location == null) {
+    public int getPhysicalLocationX() {
+        if (physicalLocation == null) {
             return -1;
         }
         try {
-            String x = location.split(",")[0].trim();
+            String x = physicalLocation.split(",")[0].trim();
             return Integer.parseInt(x);
         } catch (Exception e) {
             return -1;
@@ -298,15 +266,15 @@ public class Cluster {
 
     /**
      * Returns the y coordinate of the location of this cluster
-     *
+     * 
      * @return the y coordinate of the location of this cluster
      */
-    public int getLocationY() {
-        if (location == null) {
+    public int getPhysicalLocationY() {
+        if (physicalLocation == null) {
             return -1;
         }
         try {
-            String y = location.split(",")[1].trim();
+            String y = physicalLocation.split(",")[1].trim();
             return Integer.parseInt(y);
         } catch (Exception e) {
             return -1;
@@ -314,52 +282,8 @@ public class Cluster {
     }
 
     /**
-     * Sets the deploy broker URI for this cluster.
-     *
-     * @param deployBroker
-     *                the deploy broker URI
-     */
-    public void setDeployBroker(URI deployBroker) {
-        this.deployBroker = deployBroker;
-    }
-
-    /**
-     * Sets the job broker URI for this cluster.
-     *
-     * @param jobBroker
-     *                the job broker URI
-     */
-    public void setJobBroker(URI jobBroker) {
-        this.jobBroker = jobBroker;
-    }
-
-    /**
-     * Sets the access type for this cluster. A string containing a comma
-     * separated list of gat adaptors that may be used for resource brokering.
-     *
-     * @param accessType
-     *                A string containing a comma separated list of gat adaptors
-     *                that may be used for resource brokering.
-     */
-    public void setAccessType(String accessType) {
-        this.accessType = accessType;
-    }
-
-    /**
-     * Sets the file access type for this cluster. A string containing a comma
-     * separated list of gat adaptors that may be used for file operations.
-     *
-     * @param fileAccessType
-     *                A string containing a comma separated list of gat adaptors
-     *                that may be used for file operations.
-     */
-    public void setFileAccessType(String fileAccessType) {
-        this.fileAccessType = fileAccessType;
-    }
-
-    /**
      * Sets the java path for this cluster
-     *
+     * 
      * @param javapath
      *                the java path for this cluster.
      */
@@ -369,7 +293,7 @@ public class Cluster {
 
     /**
      * Sets the cluster type to Windows or non-Windows.
-     *
+     * 
      * @param isWindows
      *                <code>true</code> if cluster is Windows,
      *                <code>false</code> otherwise
@@ -378,19 +302,257 @@ public class Cluster {
         this.isWindows = isWindows;
     }
 
-    protected boolean isWindows() {
+    /**
+     * Gets whether the cluster is a Windows or non Windows cluster.
+     * 
+     * @return whether the cluster is a Windows or non Windows cluster.
+     */
+    public boolean isWindows() {
         return isWindows;
     }
 
-    public String getStartupScript() {
-        return startupScript;
+    /**
+     * Returns the URI of the broker that is used to submit the application to.
+     * 
+     * @return the URI of the broker that is used to submit the application to.
+     */
+    public URI getApplicationBroker() {
+        return applicationBroker;
     }
 
-    public void setStartupScript(String startupScript) {
-        this.startupScript = startupScript;
+    /**
+     * Sets the URI of the broker that is used to submit the application to.
+     * 
+     * @param applicationBroker
+     *                the URI of the broker that is used to submit the
+     *                application to.
+     * 
+     */
+    public void setApplicationBroker(URI applicationBroker) {
+        this.applicationBroker = applicationBroker;
     }
 
-    public boolean hasStartupScript() {
-        return startupScript != null;
+    /**
+     * Gets the String containing a comma separated list of JavaGAT adaptors
+     * that may be used for the resource broker for the application.
+     * 
+     * @return the String containing a comma separated list of JavaGAT adaptors
+     *         that may be used for the resource broker for the application.
+     */
+    public String getApplicationBrokerAdaptors() {
+        return applicationBrokerAdaptors;
     }
+
+    /**
+     * Sets the String containing a comma separated list of JavaGAT adaptors
+     * that may be used for the resource broker for the application.
+     * 
+     * @param applicationBrokerAdaptors
+     *                the String containing a comma separated list of JavaGAT
+     *                adaptors that may be used for the resource broker for the
+     *                application.
+     */
+    public void setApplicationBrokerAdaptors(String applicationBrokerAdaptors) {
+        this.applicationBrokerAdaptors = applicationBrokerAdaptors;
+    }
+
+    /**
+     * Gets the String containing a comma separated list of JavaGAT adaptors
+     * that may be used for the file operations for the application.
+     * 
+     * @return the String containing a comma separated list of JavaGAT adaptors
+     *         that may be used for the file operations for the application.
+     */
+    public String getApplicationFileAdaptors() {
+        return applicationFileAdaptors;
+    }
+
+    /**
+     * Sets the String containing a comma separated list of JavaGAT adaptors
+     * that may be used for the file operations for the application.
+     * 
+     * @param applicationFileAdaptors
+     *                the String containing a comma separated list of JavaGAT
+     *                adaptors that may be used for the file operations for the
+     *                application.
+     */
+    public void setApplicationFileAdaptors(String applicationFileAdaptors) {
+        this.applicationFileAdaptors = applicationFileAdaptors;
+    }
+
+    /**
+     * Gets the wrapper executable for applications to be run on this cluster.
+     * 
+     * @return the wrapper executable for applications to be run on this cluster
+     */
+    public String getApplicationWrapperExecutable() {
+        return applicationWrapperExecutable;
+    }
+
+    /**
+     * Sets the wrapper executable for applications to be run on this cluster.
+     * 
+     * @param applicationWrapperExecutable
+     *                the wrapper executable for applications to be run on this
+     *                cluster.
+     */
+    public void setApplicationWrapperExecutable(
+            String applicationWrapperExecutable) {
+        this.applicationWrapperExecutable = applicationWrapperExecutable;
+    }
+
+    /**
+     * Gets the arguments for the wrapper executable for applications to be run
+     * on this cluster.
+     * 
+     * @return the arguments for the wrapper executable for applications to be
+     *         run on this cluster.
+     */
+    public String[] getApplicationWrapperArguments() {
+        return applicationWrapperArguments;
+    }
+
+    /**
+     * Sets the arguments for the wrapper executable for applications to be run
+     * on this cluster.
+     * 
+     * @param applicationWrapperArguments
+     *                the arguments for the wrapper executable for applications
+     *                to be run on this cluster.
+     */
+    public void setApplicationWrapperArguments(
+            String[] applicationWrapperArguments) {
+        this.applicationWrapperArguments = applicationWrapperArguments;
+    }
+
+    /**
+     * Returns the URI of the broker that is used to submit the ibis hubs and
+     * server to.
+     * 
+     * @return the URI of the broker that is used to submit the ibis hubs and
+     *         server to.
+     */
+    public URI getIbisHubBroker() {
+        return ibisHubBroker;
+    }
+
+    /**
+     * Sets the URI of the broker that is used to submit the ibis hubs and
+     * server to.
+     * 
+     * @param ibisHubBroker
+     *                the URI of the broker that is used to submit the ibis hubs
+     *                and server to.
+     */
+    public void setIbisHubBroker(URI ibisHubBroker) {
+        this.ibisHubBroker = ibisHubBroker;
+    }
+
+    /**
+     * Gets the String containing a comma separated list of JavaGAT adaptors
+     * that may be used for the resource broker for the ibis hubs and server.
+     * 
+     * @return the String containing a comma separated list of JavaGAT adaptors
+     *         that may be used for the resource broker for the ibis hubs and
+     *         server.
+     */
+    public String getIbisHubBrokerAdaptors() {
+        return ibisHubBrokerAdaptors;
+    }
+
+    /**
+     * Sets the String containing a comma separated list of JavaGAT adaptors
+     * that may be used for the resource broker for the ibis hubs and server.
+     * 
+     * @param ibisHubBrokerAdaptors
+     *                the String containing a comma separated list of JavaGAT
+     *                adaptors that may be used for the resource broker for the
+     *                ibis hubs and server.
+     */
+    public void setIbisHubBrokerAdaptors(String ibisHubBrokerAdaptors) {
+        this.ibisHubBrokerAdaptors = ibisHubBrokerAdaptors;
+    }
+
+    /**
+     * Gets the String containing a comma separated list of JavaGAT adaptors
+     * that may be used for the file operations for the ibis hubs and server.
+     * 
+     * @return the String containing a comma separated list of JavaGAT adaptors
+     *         that may be used for the file operations for the ibis hubs and
+     *         server.
+     */
+    public String getIbisHubFileAdaptors() {
+        return ibisHubFileAdaptors;
+    }
+
+    /**
+     * Sets the String containing a comma separated list of JavaGAT adaptors
+     * that may be used for the file operations for the ibis hubs and server.
+     * 
+     * @param ibisHubFileAdaptors
+     *                the String containing a comma separated list of JavaGAT
+     *                adaptors that may be used for the file operations for the
+     *                ibis hubs and server.
+     */
+    public void setIbisHubFileAdaptors(String ibisHubFileAdaptors) {
+        this.ibisHubFileAdaptors = ibisHubFileAdaptors;
+    }
+
+    /**
+     * Gets the total number of cores of this cluster
+     * 
+     * @return the total number of cores of this cluster
+     */
+    public int getTotalCores() {
+        return totalCores;
+    }
+
+    /**
+     * Sets the total number of cores of this cluster
+     * 
+     * @param totalCores
+     *                the total number of cores of this cluster
+     */
+    public void setTotalCores(int totalCores) {
+        this.totalCores = totalCores;
+    }
+
+    /**
+     * Gets the physical location of this cluster
+     * 
+     * @return the physical location of this cluster
+     */
+    public String getPhysicalLocation() {
+        return physicalLocation;
+    }
+
+    /**
+     * Sets the physical location of this cluster
+     * 
+     * @param physicalLocation
+     *                the physical location of this cluster
+     */
+    public void setPhysicalLocation(String physicalLocation) {
+        this.physicalLocation = physicalLocation;
+    }
+
+    /**
+     * Gets the javapath of this cluster
+     * 
+     * @return the javapath of this cluster
+     */
+    public String getJavapath() {
+        return javapath;
+    }
+
+    /**
+     * Sets the total number of nodes for this cluster
+     * 
+     * @param totalNodes
+     *                the total number of nodes for this cluster
+     */
+    public void setTotalNodes(int totalNodes) {
+        this.totalNodes = totalNodes;
+    }
+
 }

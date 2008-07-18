@@ -46,9 +46,13 @@ public class Application {
      * @param javaArguments
      *                the java arguments for this application
      * @param preStageSet
-     *                the files to be pre staged
+     *                the files to be pre staged for the application itself
      * @param postStageSet
-     *                the files to be post staged
+     *                the files to be post staged for the application itself
+     * @param serverPreStageSet
+     *                the files to be pre staged for the ibis server / hubs, if
+     *                <code>null</code>, the server pre stage set will
+     *                consist of all jar files in the application pre stage set.
      */
     public Application(String name, String javaMain, String[] javaOptions,
             String[] javaSystemProperties, String[] javaArguments,
@@ -114,6 +118,11 @@ public class Application {
      * <TD>[name.]poststage
      * <TD>file1 dir file2 path/to/otherfile path/to/otherdir
      * <TD>the files and directories that should be poststaged.
+     * <TR>
+     * <TD>[name.]ibis.server.prestage
+     * <TD>file1 dir file2 path/to/otherfile path/to/otherdir
+     * <TD>the files and directories that should be prestaged in order to start
+     * the ibis server.
      * <TR> </TABLE>
      * <p>
      * The properties are hierarchical, an example of this is shown below:
@@ -146,8 +155,9 @@ public class Application {
             String javaMain = TypedPropertiesUtility.getHierarchicalProperty(
                     applicationProps, app, "java.main", null);
             if (javaMain == null) {
-            	logger.warn("warning: java.main not specified for application " + app);
-            	continue;
+                logger.warn("warning: java.main not specified for application "
+                        + app);
+                continue;
             }
             String[] javaOptions = TypedPropertiesUtility
                     .getHierarchicalStringList(applicationProps, app,
@@ -183,7 +193,14 @@ public class Application {
         return javaArguments;
     }
 
-    protected String[] getServerPreStageSet() {
+    /**
+     * Returns the pre stage file set that is used to start the ibis server and
+     * hubs.
+     * 
+     * @return the pre stage file set that is used to start the ibis server and
+     *         hubs.
+     */
+    public String[] getServerPreStageSet() {
         if (serverPreStageSet != null) {
             return serverPreStageSet;
         }

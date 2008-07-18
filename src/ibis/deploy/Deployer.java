@@ -25,13 +25,13 @@ public class Deployer {
      * the localhost.
      */
     public Deployer() {
-        Cluster cluster = null;
+        Cluster cluster = new Cluster("server");
         try {
-            cluster = new Cluster("server", new URI("any://localhost"));
+            cluster.setIbisHubBroker(new URI("any://localhost"));
         } catch (URISyntaxException e) {
         }
-        cluster.setAccessType("local");
-        cluster.setFileAccessType("local");
+        cluster.setIbisHubBrokerAdaptors("local");
+        cluster.setIbisHubFileAdaptors("local");
         cluster.setJavapath(System.getProperty("java.home"));
         if (System.getProperty("os.name").contains("Windows")) {
             cluster.setWindows(true);
@@ -298,7 +298,8 @@ public class Deployer {
      * @param runFileName
      *                the file containing the run properties
      * @return The {@link List} of {@link Job}s, loaded from the run file.
-     * @throws Exception in case the jobs cannot be loaded
+     * @throws Exception
+     *                 in case the jobs cannot be loaded
      */
     public List<Job> loadRun(String runFileName) throws Exception {
         TypedProperties properties = new TypedProperties();
@@ -314,7 +315,8 @@ public class Deployer {
      *                the properties containing the details of the run
      * @return The {@link List} of {@link Job}s, loaded from the run
      *         properties.
-     * @throws Exception in case the loading fails
+     * @throws Exception
+     *                 in case the loading fails
      */
     public List<Job> loadRun(TypedProperties properties) throws Exception {
         properties.expandSystemVariables();

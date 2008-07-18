@@ -17,7 +17,7 @@ import org.gridlab.gat.security.SecurityContext;
 
 /**
  * A representation of an Ibis Server process.
- *
+ * 
  */
 public class Server {
     private static final Logger logger = Logger.getLogger(Server.class);
@@ -43,11 +43,13 @@ public class Server {
     private final Server registryServer;
 
     /**
-     * Constructs a new server with the given name on the given cluster.
-     * This server will run both a registry and a smartsockets hub.
-     *
-     * @param name The name of the server
-     * @param serverCluster The cluster the server should be started on
+     * Constructs a new server with the given name on the given cluster. This
+     * server will run both a registry and a smartsockets hub.
+     * 
+     * @param name
+     *                The name of the server
+     * @param serverCluster
+     *                The cluster the server should be started on
      */
     public Server(String name, Cluster serverCluster) {
         this(name, serverCluster, null);
@@ -55,12 +57,15 @@ public class Server {
 
     /**
      * Constructs a new hub server with the given name on the given cluster.
-     * This server will only run as a smartsockets hub and will be directed
-     * to connect to the hub.
-     *
-     * @param name The name of this server
-     * @param serverCluster The cluster this server should be started on
-     * @param registry The hub to connect this server to.
+     * This server will only run as a smartsockets hub and will be directed to
+     * connect to the hub.
+     * 
+     * @param name
+     *                The name of this server
+     * @param serverCluster
+     *                The cluster this server should be started on
+     * @param registry
+     *                The hub to connect this server to.
      */
     public Server(String name, Cluster serverCluster, Server registry) {
         this.name = name;
@@ -70,6 +75,7 @@ public class Server {
 
     /**
      * Returns the cluster this server is running on.
+     * 
      * @return This servers cluster
      */
     public Cluster getCluster() {
@@ -78,6 +84,7 @@ public class Server {
 
     /**
      * Returns true if this server is only acting as a hub.
+     * 
      * @return true if this server is only acting as a hub.
      */
     public boolean isHubOnly() {
@@ -86,6 +93,7 @@ public class Server {
 
     /**
      * Returns the name for this server.
+     * 
      * @return The name for this server.
      */
     public String name() {
@@ -94,12 +102,13 @@ public class Server {
 
     public String toString() {
         return "server: " + name() + " (hub only: " + isHubOnly() + ") at "
-        + serverCluster.getName();
+                + serverCluster.getName();
     }
 
     /**
      * Returns true if this server has been started. This does not check if it
      * is still alive.
+     * 
      * @return true if this server has been started.
      */
 
@@ -109,14 +118,18 @@ public class Server {
 
     /**
      * Starts the specified server on the servers cluster
-     * @param job The job this server is being started for
+     * 
+     * @param job
+     *                The job this server is being started for
      * @return The GAT Job object which started this server
-     * @throws Exception If there is a problem starting the server
+     * @throws Exception
+     *                 If there is a problem starting the server
      */
     org.gridlab.gat.resources.Job startServer(Job forJob) throws Exception {
         if (logger.isInfoEnabled()) {
             logger.info("start " + this);
         }
+
         // if (deployClients.containsKey(serverCluster.getDeployBroker())) {
         // if (logger.isInfoEnabled()) {
         // logger.info("already a hub available at: '"
@@ -130,13 +143,13 @@ public class Server {
         }
 
         Preferences serverPreferences = new Preferences();
-        if (getCluster().getFileAccessType() != null) {
+        if (getCluster().getIbisHubFileAdaptors() != null) {
             serverPreferences.put("file.adaptor.name", getCluster()
-                    .getFileAccessType());
+                    .getIbisHubFileAdaptors());
         }
-        if (getCluster().getAccessType() != null) {
+        if (getCluster().getIbisHubBrokerAdaptors() != null) {
             serverPreferences.put("resourcebroker.adaptor.name", getCluster()
-                    .getAccessType());
+                    .getIbisHubBrokerAdaptors());
         }
 
         JavaSoftwareDescription sd = new JavaSoftwareDescription();
@@ -179,8 +192,13 @@ public class Server {
             }
         }
 
-        sd.setStderr(GAT.createFile(serverPreferences, forJob.getOutputDirectory() + "hub-"
-                + getCluster().getName() + "-" + forJob.getName() + ".err"));
+        sd.setStderr(GAT.createFile(serverPreferences, forJob
+                .getOutputDirectory()
+                + "hub-"
+                + getCluster().getName()
+                + "-"
+                + forJob.getName()
+                + ".err"));
 
         sd.enableStreamingStdout(true);
         sd.enableStreamingStdin(true);
@@ -188,7 +206,7 @@ public class Server {
         JobDescription jd = new JobDescription(sd);
         if (logger.isDebugEnabled()) {
             logger.debug("starting server at '"
-                    + getCluster().getDeployBroker() + "'"
+                    + getCluster().getIbisHubBroker() + "'"
                     + " with username '" + getCluster().getUserName() + "'");
         }
 
@@ -202,7 +220,7 @@ public class Server {
         }
 
         ResourceBroker broker = GAT.createResourceBroker(context,
-                serverPreferences, getCluster().getDeployBroker());
+                serverPreferences, getCluster().getIbisHubBroker());
 
         org.gridlab.gat.resources.Job job = broker.submitJob(jd, forJob,
                 "job.status");
@@ -238,11 +256,12 @@ public class Server {
 
     /**
      * Returns the RemoteClient that can be used to talk to the server
-     * @return The RemoteClient for this server or null if it has not been started.
+     * 
+     * @return The RemoteClient for this server or null if it has not been
+     *         started.
      */
     public RemoteClient getServerClient() {
         return serverClient;
     }
-
 
 }

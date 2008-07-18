@@ -15,7 +15,7 @@ public class SleepTest {
      * 
      * args[1] = nodes
      * 
-     * args[2] = cores/node
+     * args[2] = cores
      * 
      * @param args
      */
@@ -33,7 +33,7 @@ public class SleepTest {
                     null, // java system properties
                     new String[] { args[0] }, // java arguments
                     new String[] { "sleep", "sleep/log4j.properties" }, // pre
-                                                                        // stage
+                    // stage
                     null, // post stage
                     null // ibis server pre stage
             );
@@ -60,10 +60,10 @@ public class SleepTest {
             subJob1.setGrid(das3);
             // on the specific cluster
             subJob1.setCluster(das3.getCluster("VU"));
-            // with these number of nodes
+            // with this number of nodes
             subJob1.setNodes(Integer.parseInt(args[1]));
-            // and these number of instances per node
-            subJob1.setMulticore(Integer.parseInt(args[2]));
+            // and this total number of cores
+            subJob1.setCores(Integer.parseInt(args[2]));
             // we're done specifying the sub job and now add it to the main job
             job.addSubJob(subJob1);
 
@@ -74,10 +74,10 @@ public class SleepTest {
             subJob2.setGrid(das3);
             // on the specific cluster
             subJob2.setCluster(das3.getCluster("VU"));
-            // with these number of nodes
+            // with this number of nodes
             subJob2.setNodes(Integer.parseInt(args[1]));
-            // and these number of instances per node
-            subJob2.setMulticore(Integer.parseInt(args[2]));
+            // and this total number of cores
+            subJob2.setCores(Integer.parseInt(args[2]));
             // we're done specifying the sub job and now add it to the main job
             job.addSubJob(subJob2);
 
