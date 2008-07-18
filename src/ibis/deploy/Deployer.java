@@ -42,7 +42,7 @@ public class Deployer {
     /**
      * Creates a deployer. The deployments with this deployer have a server
      * which will be submitted to the deploy broker of the cluster.
-     * 
+     *
      * @param serverCluster
      *                the cluster to be used to deploy the server on
      */
@@ -54,7 +54,7 @@ public class Deployer {
      * Creates a deployer. The deployments with this deployer have a server
      * which will be submitted to the deploy broker of the cluster described by
      * the clustername located in the grid to be loaded from the gridFileName.
-     * 
+     *
      * @param gridFileName
      *                the initial grid to be loaded from this file
      * @param clusterName
@@ -74,7 +74,7 @@ public class Deployer {
      * Creates a deployer. The deployments with this deployer have a server
      * which will be submitted to the deploy broker of the cluster described by
      * the clustername located in the grid to be loaded from the properties.
-     * 
+     *
      * @param properties
      *                the initial grid to be loaded from these TypedProperties
      * @param clusterName
@@ -94,7 +94,7 @@ public class Deployer {
      * Adds a {@link Set} of {@link Application}s to this deployer. These
      * Applications can be referred to by a run, a {@link Job} or a
      * {@link SubJob}.
-     * 
+     *
      * @param applications
      *                the {@link Application}s to be added.
      */
@@ -105,7 +105,7 @@ public class Deployer {
     /**
      * Adds a single {@link Application} to this deployer. This Application can
      * be referred to by a run, a {@link Job} or a {@link SubJob}.
-     * 
+     *
      * @param application
      *                the {@link Application} to be added.
      */
@@ -117,7 +117,7 @@ public class Deployer {
      * Adds all {@link Application}s described in a properties file to this
      * deployer. These Applications can be referred to by a run, a {@link Job}
      * or a {@link SubJob}.
-     * 
+     *
      * @param applicationFileName
      *                the properties file describing the {@link Application}s
      *                to be added.
@@ -130,7 +130,7 @@ public class Deployer {
             throws FileNotFoundException, IOException {
         TypedProperties properties = new TypedProperties();
         properties.load(new java.io.FileInputStream(applicationFileName));
-        
+
         addApplications(properties);
     }
 
@@ -138,7 +138,7 @@ public class Deployer {
      * Adds all {@link Application}s described in a the {@link TypedProperties}
      * object to this deployer. These Applications can be referred to by a run,
      * a {@link Job} or a {@link SubJob}.
-     * 
+     *
      * @param properties
      *                the properties describing the {@link Application}s to be
      *                added.
@@ -151,7 +151,7 @@ public class Deployer {
     /**
      * Adds a {@link Grid} to this deployer. This Grid can be referred to by a
      * run, a {@link Job} or a {@link SubJob}.
-     * 
+     *
      * @param grid
      *                the {@link Grid} to be added
      */
@@ -163,7 +163,7 @@ public class Deployer {
     /**
      * Adds a {@link Grid} described in a properties file to this deployer. This
      * Grid can be referred to by a run, a {@link Job} or a {@link SubJob}.
-     * 
+     *
      * @param gridFileName
      *                the properties file describing the {@link Grid} to be
      *                added.
@@ -183,7 +183,7 @@ public class Deployer {
      * Adds a {@link Grid} described in a {@link TypedProperties} object to this
      * deployer. This Grid can be referred to by a run, a {@link Job} or a
      * {@link SubJob}.
-     * 
+     *
      * @param properties
      *                the properties object describing the {@link Grid} to be
      *                added.
@@ -199,7 +199,7 @@ public class Deployer {
      * Then the hubs are started and finally all {@link SubJob}s are started.
      * The server and hubs will live as long as the job lives. All sub jobs will
      * run in a single pool.
-     * 
+     *
      * @param job
      *                the job to be deployed
      * @throws Exception
@@ -216,7 +216,7 @@ public class Deployer {
      * is started at the location defined at the construction of this deployer.
      * Then the hubs are started and finally the sub job is started. The server
      * and hubs will live as long as the sub job lives.
-     * 
+     *
      * @param subjob
      *                the job to be deployed
      * @throws Exception
@@ -232,7 +232,7 @@ public class Deployer {
      * Adds a {@link SubJob} to a {@link Job}. The server will be or is already
      * started by the Job, the sub job only starts a hub and then will run the
      * sub job.
-     * 
+     *
      * @param subjob
      *                the sub job to be deployed in the same pool as the job
      * @param job
@@ -255,7 +255,7 @@ public class Deployer {
     /**
      * Returns the {@link Set} of {@link Application}s associated with this
      * deployer
-     * 
+     *
      * @return the {@link Set} of {@link Application}s associated with this
      *         deployer
      */
@@ -265,7 +265,7 @@ public class Deployer {
 
     /**
      * Returns the {@link Set} of {@link Grid}s associated with this deployer
-     * 
+     *
      * @return the {@link Set} of {@link Grid}s associated with this deployer
      */
     public Set<Grid> getGrids() {
@@ -275,7 +275,7 @@ public class Deployer {
     /**
      * Gets the {@link Grid} associated with this deployer with the provided
      * name
-     * 
+     *
      * @return the {@link Grid} associated with this deployer with the provided
      *         name
      */
@@ -294,7 +294,7 @@ public class Deployer {
     /**
      * Loads a run from a properties file. All the jobs described in the
      * properties file will be returned.
-     * 
+     *
      * @param runFileName
      *                the file containing the run properties
      * @return The {@link List} of {@link Job}s, loaded from the run file.
@@ -309,7 +309,7 @@ public class Deployer {
     /**
      * Loads a run from a TypedProperties object. All the jobs described in the
      * properties object will be returned.
-     * 
+     *
      * @param properties
      *                the properties containing the details of the run
      * @return The {@link List} of {@link Job}s, loaded from the run

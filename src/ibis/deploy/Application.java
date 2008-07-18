@@ -33,7 +33,7 @@ public class Application {
 
     /**
      * Creates a new {@link Application}.
-     * 
+     *
      * @param name
      *                the name of the application
      * @param javaMain
@@ -66,7 +66,7 @@ public class Application {
 
     /**
      * Gets the name of the application
-     * 
+     *
      * @return the name of the application
      */
     public String getName() {
@@ -130,7 +130,7 @@ public class Application {
      * is -server, but for app3 it's overwritten with -client. Note that the
      * order of the properties doesn't matter, specific properties overwrite
      * general properties.
-     * 
+     *
      * @param applicationProps
      *                the application properties
      * @return a {@link Set} of {@link Application}s that were described by the
@@ -176,7 +176,7 @@ public class Application {
 
     /**
      * Gets the java arguments
-     * 
+     *
      * @return the java arguments.
      */
     public String[] getJavaArguments() {
@@ -198,7 +198,7 @@ public class Application {
         }
         return files.split(":");
     }
-    
+
     protected boolean hasCustomServerPreStageSet() {
         return (serverPreStageSet != null);
     }
@@ -249,7 +249,7 @@ public class Application {
 
     /**
      * Gets the java main class
-     * 
+     *
      * @return the java main class
      */
     public String getJavaMain() {
@@ -258,7 +258,7 @@ public class Application {
 
     /**
      * Gets the java jvm options
-     * 
+     *
      * @return the java jvm options
      */
     public String[] getJavaOptions() {
@@ -267,7 +267,7 @@ public class Application {
 
     /**
      * Gets the java system properties
-     * 
+     *
      * @return the java system properties
      */
     public Map<String, String> getJavaSystemProperties() {
@@ -287,7 +287,7 @@ public class Application {
 
     /**
      * Gets the post stage file set
-     * 
+     *
      * @return the post stage file set.
      */
     public String[] getPostStageSet() {
@@ -296,7 +296,7 @@ public class Application {
 
     /**
      * Gets the pre stage file set
-     * 
+     *
      * @return the pre stage file set
      */
     public String[] getPreStageSet() {

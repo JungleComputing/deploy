@@ -118,6 +118,8 @@ public class SubJob implements MetricListener {
                 break;
             }
         }
+        // TODO: hubURI is never used. We want to be able to configure
+        // hubs in the run files though so this needs to be fixed. ~ Nick
         try {
             String hubURIString = TypedPropertiesUtility
                     .getHierarchicalProperty(runprops, subjobName, "hub.uri",
@@ -193,9 +195,11 @@ public class SubJob implements MetricListener {
 
     private JobState status = JobState.INITIAL;
 
+    private Server hub;
+
     /**
      * Create a {@link SubJob} with the name <code>subjobName</code>
-     * 
+     *
      * @param subjobName
      *            the name of the {@link SubJob}
      */
@@ -206,7 +210,7 @@ public class SubJob implements MetricListener {
     /**
      * Gets the {@link Application} that will be run by deploying this
      * {@link SubJob}
-     * 
+     *
      * @return the {@link Application} that will be run by deploying this
      *         {@link SubJob}
      */
@@ -230,7 +234,7 @@ public class SubJob implements MetricListener {
 
     /**
      * Gets the {@link Cluster} where the {@link SubJob} will run if deployed
-     * 
+     *
      * @return the {@link Cluster} where the {@link SubJob} will run if deployed
      */
     public Cluster getCluster() {
@@ -239,7 +243,7 @@ public class SubJob implements MetricListener {
 
     /**
      * Gets the {@link Grid} where the {@link SubJob} will run if deployed
-     * 
+     *
      * @return the {@link Grid} where the {@link SubJob} will run if deployed
      */
     public Grid getGrid() {
@@ -252,7 +256,7 @@ public class SubJob implements MetricListener {
 
     /**
      * Gets the name of this Grid
-     * 
+     *
      * @return the name of this Grid
      */
     public String getName() {
@@ -265,7 +269,7 @@ public class SubJob implements MetricListener {
 
     /**
      * Gets the poolID of this {@link SubJob}
-     * 
+     *
      * @return the poolID of this {@link SubJob}
      */
     public String getPoolID() {
@@ -274,7 +278,7 @@ public class SubJob implements MetricListener {
 
     /**
      * Gets the pool size of this {@link SubJob}
-     * 
+     *
      * @return the pool size of this {@link SubJob}
      * @throws Exception
      *             if the number of nodes and the number of cores and the number
@@ -282,7 +286,7 @@ public class SubJob implements MetricListener {
      *             multicore != executables) or the number of executables is
      *             smaller than the number of nodes or only the number of cores
      *             is specified
-     * 
+     *
      */
     public int getPoolSize() throws Exception {
         if (!closedWorld) {
@@ -333,7 +337,7 @@ public class SubJob implements MetricListener {
 
     /**
      * Gets the status of this SubJob
-     * 
+     *
      * @return the String indicating the status of this {@link SubJob}
      */
     public JobState getStatus() {
@@ -346,7 +350,7 @@ public class SubJob implements MetricListener {
 
     /**
      * Set this {@link SubJob} to run in a closed world ibis
-     * 
+     *
      * @param closedWorld
      */
     public void setClosedWorld(boolean closedWorld) {
@@ -355,7 +359,7 @@ public class SubJob implements MetricListener {
 
     /**
      * Sets the poolID for this {@link SubJob}
-     * 
+     *
      * @param poolID
      *            the poolID to be used
      */
@@ -382,7 +386,7 @@ public class SubJob implements MetricListener {
 
     /**
      * Sets the {@link Application} for this {@link SubJob}
-     * 
+     *
      * @param application
      *            the {@link Application} to be used.
      */
@@ -392,7 +396,7 @@ public class SubJob implements MetricListener {
 
     /**
      * Sets the gat attributes for this {@link SubJob}
-     * 
+     *
      * @param attributes
      *            the attributes to be used.
      */
@@ -402,7 +406,7 @@ public class SubJob implements MetricListener {
 
     /**
      * Sets the {@link Cluster} for this {@link SubJob}
-     * 
+     *
      * @param cluster
      *            the cluster where the {@link SubJob} should run on.
      */
@@ -412,7 +416,7 @@ public class SubJob implements MetricListener {
 
     /**
      * Sets the total number of executables for this {@link SubJob}
-     * 
+     *
      * @param executables
      *            the total number of executables
      */
@@ -422,7 +426,7 @@ public class SubJob implements MetricListener {
 
     /**
      * Sets the {@link Grid} for this {@link SubJob}
-     * 
+     *
      * @param grid
      *            the {@link Grid} for this {@link SubJob}
      */
@@ -432,7 +436,7 @@ public class SubJob implements MetricListener {
 
     /**
      * Sets the URI of the hub that should be deployed for this {@link SubJob}
-     * 
+     *
      * @param hubURI
      *            the URI of the hub
      */
@@ -442,7 +446,7 @@ public class SubJob implements MetricListener {
 
     /**
      * Sets the number of cores for this {@link SubJob}.
-     * 
+     *
      * @param multicore
      *            the number of cores for this {@link SubJob}
      */
@@ -452,7 +456,7 @@ public class SubJob implements MetricListener {
 
     /**
      * Sets the number of nodes for this {@link SubJob}
-     * 
+     *
      * @param nodes
      *            the number of nodes for this {@link SubJob}
      */
@@ -462,7 +466,7 @@ public class SubJob implements MetricListener {
 
     /**
      * Sets the javagat preferences for this {@link SubJob}
-     * 
+     *
      * @param preferences
      *            the javagat preferences for this {@link SubJob}
      */
@@ -472,7 +476,7 @@ public class SubJob implements MetricListener {
 
     /**
      * Sets the runtime for this {@link SubJob}
-     * 
+     *
      * @param runtime
      *            the runtime in minutes
      */
@@ -495,7 +499,7 @@ public class SubJob implements MetricListener {
     /**
      * Sets the additional arguments for the wrapper executable that should be
      * run
-     * 
+     *
      * @param arguments
      *            the additional arguments for the wrapper executable that
      *            should be run
@@ -506,7 +510,7 @@ public class SubJob implements MetricListener {
 
     /**
      * Sets the wrapper executable
-     * 
+     *
      * @param executable
      *            the wrapper executable
      */
@@ -625,11 +629,11 @@ public class SubJob implements MetricListener {
         sd.addAttribute("walltime.max", getRuntime());
         JobDescription jd = null;
 
-        if (!hasExecutable()) {
+        if (!hasExecutable() && !cluster.hasStartupScript()) {
             jd = new JobDescription(sd);
         } else {
             logger.debug("executable = " + getExecutable()
-                    + ", creating a non java job");
+                    + " startup script = " + cluster.getStartupScript() + ", creating a non java job");
 
             SoftwareDescription nonJava = new SoftwareDescription();
             if (sd.getAttributes() != null) {
@@ -653,8 +657,16 @@ public class SubJob implements MetricListener {
             }
             nonJava.setStderr(errFile);
             nonJava.setStdout(outFile);
-            nonJava.setExecutable(getExecutable());
             List<String> argumentList = new ArrayList<String>();
+            if (cluster.hasStartupScript()) {
+                nonJava.setExecutable(cluster.getStartupScript());
+                if (hasExecutable()) {
+                    argumentList.add(getExecutable());
+                }
+            }
+            else {
+                nonJava.setExecutable(getExecutable());
+            }
             if (getArguments() != null) {
                 for (String arg : getArguments()) {
                     argumentList.add(arg);
@@ -688,5 +700,13 @@ public class SubJob implements MetricListener {
                 + "' with job description:\n" + jd);
         broker.submitJob(jd, this, "job.status");
 
+    }
+
+    public void setHub(Server hub) {
+        this.hub = hub;
+    }
+
+    public Server getHub() {
+        return hub;
     }
 }

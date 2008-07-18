@@ -5,25 +5,16 @@ import ibis.util.TypedProperties;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.gridlab.gat.GAT;
-import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.Preferences;
 import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.MetricListener;
-import org.gridlab.gat.resources.JavaSoftwareDescription;
-import org.gridlab.gat.resources.JobDescription;
-import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.Job.JobState;
-import org.gridlab.gat.security.CertificateSecurityContext;
-import org.gridlab.gat.security.SecurityContext;
 
 public class Job implements MetricListener {
     private static Logger logger = Logger.getLogger(Job.class);
@@ -40,13 +31,13 @@ public class Job implements MetricListener {
 
     private List<RemoteClient> deployClients = new ArrayList<RemoteClient>();
 
-    private RemoteClient serverRemoteClient;
+    private Server ibisServer = null;
 
     private String outputDirectory = "";
 
     /**
      * Create a {@link Job} with the name <code>name</code>
-     * 
+     *
      * @param name
      *            the name of the {@link Job}
      */
@@ -56,7 +47,7 @@ public class Job implements MetricListener {
 
     /**
      * Adds a {@link SubJob} to this {@link Job}
-     * 
+     *
      * @param subjob
      *            the {@link SubJob} to be added
      */
@@ -64,6 +55,14 @@ public class Job implements MetricListener {
         subjob.setParent(this);
         subjobs.add(subjob);
         logger.debug("adding subjob completed");
+    }
+
+    /**
+     * Add a server for this job.
+     * @param server
+     */
+    public void setServer(Server server) {
+        ibisServer = server;
     }
 
     protected void inform() throws Exception {
@@ -75,7 +74,7 @@ public class Job implements MetricListener {
 
     /**
      * Gets the name of the Job
-     * 
+     *
      * @return the name of the Job
      */
     public String getName() {
@@ -84,7 +83,7 @@ public class Job implements MetricListener {
 
     /**
      * Gets the ibis poolID of the Job
-     * 
+     *
      * @return the ibis poolID of the Job
      */
     public String getPoolID() {
@@ -103,7 +102,7 @@ public class Job implements MetricListener {
 
     /**
      * Gets the total number of cores used by this Job
-     * 
+     *
      * @return the total number of cores used by this Job
      */
     public int getTotalCores() {
@@ -118,7 +117,7 @@ public class Job implements MetricListener {
 
     /**
      * Gets the total number of nodes used by this Job
-     * 
+     *
      * @return the total number of nodes used by this Job
      */
     public int getTotalNodes() {
@@ -132,7 +131,7 @@ public class Job implements MetricListener {
 
     /**
      * Gets the number of {@link SubJob}s of this Job
-     * 
+     *
      * @return the number of {@link SubJob}s of this Job
      */
     public int numberOfSubJobs() {
@@ -141,7 +140,7 @@ public class Job implements MetricListener {
 
     /**
      * Sets the poolID of this Job
-     * 
+     *
      * @param poolID
      */
     public void setPoolID(String poolID) {
@@ -215,7 +214,7 @@ public class Job implements MetricListener {
 
     /**
      * Gets a {@link List} of the {@link SubJob}s of this Job.
-     * 
+     *
      * @return a {@link List} of the {@link SubJob}s of this Job.
      */
     public List<SubJob> getSubJobs() {
@@ -226,7 +225,7 @@ public class Job implements MetricListener {
      * Gets the status of this Job. The status is a Map containing all the
      * possible states as keys and the number of sub jobs that are in the
      * particular state as value.
-     * 
+     *
      * @return the status of this Job
      */
     public Map<JobState, Integer> getStatus() {
@@ -250,7 +249,7 @@ public class Job implements MetricListener {
 
     /**
      * Returns whether this Job is a closed world job or an open world job.
-     * 
+     *
      * @return <code>true</code> if the Job is closed world,
      *         <code>false</code> otherwise
      */
@@ -260,7 +259,7 @@ public class Job implements MetricListener {
 
     /**
      * Sets whether this Job is a closed world job or not
-     * 
+     *
      * @param closedWorld
      *            <code>true</code> if the Job is closed world,
      *            <code>false</code> otherwise
@@ -271,7 +270,7 @@ public class Job implements MetricListener {
 
     /**
      * Gets the size of the pool
-     * 
+     *
      * @return the size of the pool
      * @throws Exception
      *             if one of the {@link SubJob#getPoolSize()} throws an
@@ -285,146 +284,40 @@ public class Job implements MetricListener {
         return result;
     }
 
-    private Application getFirstApplication() {
+    Application getFirstApplication() {
         if (subjobs != null && subjobs.size() > 0) {
             return subjobs.get(0).getApplication();
         }
         return null;
     }
 
-    private RemoteClient startServer(Cluster serverCluster, boolean hubOnly,
-            String name) throws Exception {
-        if (logger.isInfoEnabled()) {
-            logger.info("start server (hub only is " + hubOnly + ") at "
-                    + serverCluster.getName());
+    /**
+     * Starts the specified server on the servers cluster
+     * @param server
+     * @return
+     * @throws Exception
+     */
+    private RemoteClient startServer(Server server) throws Exception {
+        if (!server.isStarted()) {
+            this.deployJobs.add(server.startServer(this));
+            this.deployClients.add(server.getServerClient());
+            return server.getServerClient();
         }
-        // if (deployClients.containsKey(serverCluster.getDeployBroker())) {
-        // if (logger.isInfoEnabled()) {
-        // logger.info("already a hub available at: '"
-        // + serverCluster.getDeployBroker() + "'");
-        // }
-        // return null;
-        // }
-        Application application = getFirstApplication();
-        if (application == null) {
-            throw new Exception("cannot start server, no application specified");
+        else {
+            throw new Exception("Server already started!");
         }
-
-        Preferences serverPreferences = new Preferences();
-        if (serverCluster.getFileAccessType() != null) {
-            serverPreferences.put("file.adaptor.name", serverCluster
-                    .getFileAccessType());
-        }
-        if (serverCluster.getAccessType() != null) {
-            serverPreferences.put("resourcebroker.adaptor.name", serverCluster
-                    .getAccessType());
-        }
-
-        JavaSoftwareDescription sd = new JavaSoftwareDescription();
-        if (serverCluster.getJavaPath() != null) {
-            if (serverCluster.isWindows()) {
-                sd.setExecutable(serverCluster.getJavaPath() + "\\bin\\java");
-            } else {
-                sd.setExecutable(serverCluster.getJavaPath() + "/bin/java");
-            }
-        }
-        if (logger.isInfoEnabled()) {
-            logger.info("executable: " + sd.getExecutable());
-        }
-
-        sd.setJavaMain("ibis.server.Server");
-        if (hubOnly) {
-            sd.setJavaArguments(new String[] { "--hub-only", "--remote",
-                    "--port", "0", "--hub-addresses",
-                    serverRemoteClient.getLocalAddress() });
-        } else {
-            sd.setJavaArguments(new String[] { "--remote", "--port", "0",
-                    "--events", "--stats" });
-        }
-        sd.setJavaOptions(new String[] {
-                "-classpath",
-                application.getJavaClassPath(
-                        application.getServerPreStageSet(), application
-                                .hasCustomServerPreStageSet(), serverCluster
-                                .isWindows()),
-                "-Dlog4j.configuration=file:log4j.properties" });
-        if (logger.isInfoEnabled()) {
-            logger.info("arguments: " + Arrays.deepToString(sd.getArguments()));
-        }
-        if (application.getServerPreStageSet() != null) {
-            for (String filename : application.getServerPreStageSet()) {
-                sd
-                        .addPreStagedFile(GAT.createFile(serverPreferences,
-                                filename));
-            }
-        }
-
-        sd.setStderr(GAT.createFile(serverPreferences, outputDirectory + "hub-"
-                + serverCluster.getName() + "-" + name + ".err"));
-
-        sd.enableStreamingStdout(true);
-        sd.enableStreamingStdin(true);
-
-        JobDescription jd = new JobDescription(sd);
-        if (logger.isDebugEnabled()) {
-            logger.debug("starting server at '"
-                    + serverCluster.getDeployBroker() + "'"
-                    + " with username '" + serverCluster.getUserName() + "'");
-        }
-
-        GATContext context = new GATContext();
-        if (serverCluster.getUserName() != null) {
-            SecurityContext securityContext = new CertificateSecurityContext(
-                    null, null, serverCluster.getUserName(), serverCluster
-                            .getPassword());
-            securityContext.addNote("adaptors", "commandlinessh,sshtrilead");
-            context.addSecurityContext(securityContext);
-        }
-
-        ResourceBroker broker = GAT.createResourceBroker(context,
-                serverPreferences, serverCluster.getDeployBroker());
-
-        org.gridlab.gat.resources.Job job = broker.submitJob(jd, this,
-                "job.status");
-
-        RemoteClient ibisServer = new RemoteClient(job.getStdout(), job
-                .getStdin());
-
-        while (true) {
-            JobState state = job.getState();
-            if (state == JobState.RUNNING) {
-                // add job to lijstje
-                logger.info("hub/server is running");
-                deployJobs.add(job);
-                deployClients.add(ibisServer);
-                break;
-            } else if (state == JobState.STOPPED
-                    || state == JobState.SUBMISSION_ERROR) {
-                // do something useful in case of error
-                logger.info("hub job already stopped or submission error");
-            } else {
-                logger.info("waiting until hub is in state RUNNING");
-                Thread.sleep(1000);
-            }
-        }
-
-        return ibisServer;
-        // stop het in de administratie
-        // wacht tot de job running is
-        // return de remote client?
-
-        // deployJobs.put(serverCluster.getDeployBroker(), broker.submitJob(jd,
-        // this, "job.status"));
-        // deployClients.put(serverCluster.getDeployBroker(), ibisServer);
-        //
-        // return true;
     }
 
+    /**
+     * Initializes the ibis server which will act as registry and smartsockets hub
+     * @param serverCluster The cluster to start the registry on
+     * @throws Exception if something goes wrong starting the server
+     */
     protected void initIbis(Cluster serverCluster) throws Exception {
-        // start the server ...
-        RemoteClient ibisServer = startServer(serverCluster, false,
-                "ibis-server");
-        serverRemoteClient = ibisServer;
+        if (ibisServer == null) {
+            ibisServer = new Server("ibis-server", serverCluster);
+        }
+        startServer(ibisServer);
     }
 
     // // ... and the hubs ...
@@ -526,6 +419,10 @@ public class Job implements MetricListener {
     // return result.toArray(new String[result.size()]);
     // }
 
+    /**
+     * Stops this job and all associated servers
+     * @throws Exception if something goes wrong while trying to stop things
+     */
     public void stop() throws Exception {
         for (RemoteClient client : deployClients) {
             try {
@@ -561,7 +458,7 @@ public class Job implements MetricListener {
     }
 
     public String getServerAddress() throws IOException {
-        return serverRemoteClient.getLocalAddress();
+        return ibisServer.getServerClient().getLocalAddress();
     }
 
     // public String getHubAddresses() throws IOException {
@@ -598,17 +495,18 @@ public class Job implements MetricListener {
     protected void singleSubmit(SubJob subjob) throws Exception {
         logger.info("submitting subjob: " + subjob.getName());
 
-        RemoteClient ibisHub = startServer(subjob.getCluster(), true, subjob
-                .getName());
+        if (subjob.getHub() == null) {
+            subjob.setHub(new Server(subjob.getName(), subjob.getCluster(), ibisServer));
+        }
+        RemoteClient ibisHub = startServer(subjob.getHub());
 
         String hubAddress = ibisHub.getLocalAddress();
 
         logger.info("adding just started hub '" + hubAddress
                 + "' to ibis server");
-        serverRemoteClient.addHubs(hubAddress);
+        ibisServer.getServerClient().addHubs(hubAddress);
 
-        subjob.submit(poolID, getPoolSize(), serverRemoteClient
-                .getLocalAddress(), hubAddress, outputDirectory);
+        subjob.submit(poolID, getPoolSize(), getServerAddress(), hubAddress, outputDirectory);
     }
 
     protected void submit() throws Exception {
@@ -632,5 +530,9 @@ public class Job implements MetricListener {
         } else {
             this.outputDirectory = outputDirectory + java.io.File.separator;
         }
+    }
+
+    public String getOutputDirectory() {
+        return outputDirectory;
     }
 }

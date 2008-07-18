@@ -18,7 +18,7 @@ public class Grid {
 
 	/**
 	 * Creates a {@link Grid} with the name <code>gridName</code>
-	 * 
+	 *
 	 * @param gridName
 	 *            the name of the Grid
 	 */
@@ -28,7 +28,7 @@ public class Grid {
 
 	/**
 	 * Gets the name of the Grid
-	 * 
+	 *
 	 * @return the name of the Grid
 	 */
 	public String getGridName() {
@@ -37,7 +37,7 @@ public class Grid {
 
 	/**
 	 * Adds a {@link Cluster} to this Grid
-	 * 
+	 *
 	 * @param cluster
 	 *            the {@link Cluster} to be added
 	 */
@@ -47,7 +47,7 @@ public class Grid {
 
 	/**
 	 * Gets the {@link Cluster}s in this Grid
-	 * 
+	 *
 	 * @return the {@link Cluster}s in this Grid.
 	 */
 	public Cluster[] getClusters() {
@@ -56,7 +56,7 @@ public class Grid {
 
 	/**
 	 * Gets the {@link Cluster} with name <code>clusterName</code>.
-	 * 
+	 *
 	 * @param clusterName
 	 *            the name of the {@link Cluster}
 	 * @return a {@link Cluster} with the <code>clusterName</code> or
@@ -77,7 +77,7 @@ public class Grid {
 
 	/**
 	 * Gets the total number of nodes in this Grid
-	 * 
+	 *
 	 * @return the total number of nodes in this Grid
 	 */
 	public int getTotalNodes() {
@@ -91,7 +91,7 @@ public class Grid {
 
 	/**
 	 * Gets the total number of cores in this Grid
-	 * 
+	 *
 	 * @return the total number of cores in this Grid
 	 */
 	public int getTotalCores() {
@@ -123,7 +123,7 @@ public class Grid {
 	 * <TD>
 	 * <TD>see {@link Cluster#load(TypedProperties, String, String)}
 	 * <TR> </TABLE>
-	 * 
+	 *
 	 * @param gridprops
 	 *            the grid and cluster properties
 	 * @return the loaded grid

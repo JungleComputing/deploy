@@ -42,7 +42,7 @@ public class Cluster {
     /**
      * Creates a new Cluster which can be identified in a {@link Grid} by its
      * <code>clusterName</code>.
-     * 
+     *
      * @param clusterName
      *                the name of this Cluster
      */
@@ -54,7 +54,7 @@ public class Cluster {
      * Creates a new Cluster which can be identified in a {@link Grid} by its
      * <code>clusterName</code>. This Cluster has a broker that can be used
      * for deployment at the specified {@link URI}.
-     * 
+     *
      * @param clusterName
      * @param deployBroker
      */
@@ -66,7 +66,7 @@ public class Cluster {
     /**
      * Gets the JavaGAT resource broker adaptors which may be used for this
      * cluster in the order and format as described for the JavaGAT Preference "<code>resourcebroker.adaptor.name</code>".
-     * 
+     *
      * @return the {@link String} containing the JavaGAT resource broker
      *         adaptors.
      */
@@ -78,7 +78,7 @@ public class Cluster {
      * Gets the java path of this cluster. If the executable <code>java</code>
      * is located at <code>/usr/local/jdk-1.5/bin/java</code>, then the java
      * path will be: <code>/usr/local/jdk-1.5/</code>
-     * 
+     *
      * @return the java path
      */
     public String getJavaPath() {
@@ -88,7 +88,7 @@ public class Cluster {
     /**
      * Gets the JavaGAT file adaptors which may be used for this cluster in the
      * order and format as described for the JavaGAT Preference "<code>file.adaptor.name</code>".
-     * 
+     *
      * @return the {@link String} containing the JavaGAT file adaptors.
      */
     public String getFileAccessType() {
@@ -97,7 +97,7 @@ public class Cluster {
 
     /**
      * Gets the URI of the deploy broker
-     * 
+     *
      * @return the URI of the deploy broker
      */
     public URI getDeployBroker() {
@@ -106,7 +106,7 @@ public class Cluster {
 
     /**
      * Gets the URI of the job broker
-     * 
+     *
      * @return the URI of the job broker
      */
     public URI getJobBroker() {
@@ -115,7 +115,7 @@ public class Cluster {
 
     /**
      * Gets the URI of either the job or the deploy broker
-     * 
+     *
      * @param isDeployBroker
      *                <code>true</code> for the deploy broker uri,
      *                <code>false</code> for the job broker uri
@@ -172,7 +172,7 @@ public class Cluster {
      * cluster
      * <TR> </TABLE>
      * <p>
-     * 
+     *
      * @param properties
      *                the properties where to load the cluster from
      * @param gridName
@@ -229,7 +229,7 @@ public class Cluster {
 
     /**
      * Gets the number of cores per node in this cluster
-     * 
+     *
      * @return the number of cores per node in this cluster
      */
     public int getMulticore() {
@@ -238,7 +238,7 @@ public class Cluster {
 
     /**
      * Gets the user name for this cluster
-     * 
+     *
      * @return the user name for this cluster
      */
     public String getUserName() {
@@ -247,7 +247,7 @@ public class Cluster {
 
     /**
      * Gets the password for this cluster
-     * 
+     *
      * @return the password for this cluster
      */
     public String getPassword() {
@@ -263,7 +263,7 @@ public class Cluster {
 
     /**
      * Gets the name of the cluster
-     * 
+     *
      * @return the name of the cluster
      */
     public String getName() {
@@ -272,7 +272,7 @@ public class Cluster {
 
     /**
      * Gets the number of nodes in this cluster
-     * 
+     *
      * @return the number of nodes in this cluster
      */
     public int getNodes() {
@@ -281,7 +281,7 @@ public class Cluster {
 
     /**
      * Returns the x coordinate of the location of this cluster
-     * 
+     *
      * @return the x coordinate of the location of this cluster
      */
     public int getLocationX() {
@@ -298,7 +298,7 @@ public class Cluster {
 
     /**
      * Returns the y coordinate of the location of this cluster
-     * 
+     *
      * @return the y coordinate of the location of this cluster
      */
     public int getLocationY() {
@@ -315,7 +315,7 @@ public class Cluster {
 
     /**
      * Sets the deploy broker URI for this cluster.
-     * 
+     *
      * @param deployBroker
      *                the deploy broker URI
      */
@@ -325,7 +325,7 @@ public class Cluster {
 
     /**
      * Sets the job broker URI for this cluster.
-     * 
+     *
      * @param jobBroker
      *                the job broker URI
      */
@@ -336,7 +336,7 @@ public class Cluster {
     /**
      * Sets the access type for this cluster. A string containing a comma
      * separated list of gat adaptors that may be used for resource brokering.
-     * 
+     *
      * @param accessType
      *                A string containing a comma separated list of gat adaptors
      *                that may be used for resource brokering.
@@ -348,7 +348,7 @@ public class Cluster {
     /**
      * Sets the file access type for this cluster. A string containing a comma
      * separated list of gat adaptors that may be used for file operations.
-     * 
+     *
      * @param fileAccessType
      *                A string containing a comma separated list of gat adaptors
      *                that may be used for file operations.
@@ -359,7 +359,7 @@ public class Cluster {
 
     /**
      * Sets the java path for this cluster
-     * 
+     *
      * @param javapath
      *                the java path for this cluster.
      */
@@ -369,7 +369,7 @@ public class Cluster {
 
     /**
      * Sets the cluster type to Windows or non-Windows.
-     * 
+     *
      * @param isWindows
      *                <code>true</code> if cluster is Windows,
      *                <code>false</code> otherwise
@@ -388,5 +388,9 @@ public class Cluster {
 
     public void setStartupScript(String startupScript) {
         this.startupScript = startupScript;
+    }
+
+    public boolean hasStartupScript() {
+        return startupScript != null;
     }
 }
