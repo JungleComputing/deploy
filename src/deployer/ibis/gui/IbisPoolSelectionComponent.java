@@ -113,8 +113,6 @@ public class IbisPoolSelectionComponent implements SelectionComponent {
             return new Object[] { existingPoolComboBox.getSelectedItem() };
         } else {
             String poolName = newPoolTextField.getText();
-            System.out.println("current: " + poolName);
-            System.out.println("compare: " + "pool-" + poolID);
             if (poolName.equals("pool-" + poolID)) {
                 poolID++;
                 newPoolTextField.setText("pool-" + poolID);

@@ -59,7 +59,7 @@ public class Cluster extends PropertySet {
      * 
      * @param name
      *                The name of the cluster
-     * @param group
+     * @param grid
      *                The grid where this application belongs to
      * @throws Exception
      *                 If name is <code>null</code>
@@ -239,7 +239,7 @@ public class Cluster extends PropertySet {
     /**
      * Sets the URI of the broker that is used to submit the application to.
      * 
-     * @param applicationBroker
+     * @param broker
      *                the URI of the broker that is used to submit the
      *                application to.
      * 
@@ -295,7 +295,7 @@ public class Cluster extends PropertySet {
      * Sets the String containing a comma separated list of JavaGAT adaptors
      * that may be used for the file operations for the application.
      * 
-     * @param applicationFileAdaptors
+     * @param fileAdaptors
      *                the String containing a comma separated list of JavaGAT
      *                adaptors that may be used for the file operations for the
      *                application.

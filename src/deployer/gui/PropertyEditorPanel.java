@@ -138,7 +138,6 @@ public abstract class PropertyEditorPanel extends JPanel {
             TableModel model = (TableModel) e.getSource();
             Object value = model.getValueAt(row, 1);
             Object key = model.getValueAt(row, 0);
-            System.out.println(key + "->" + value);
             data.put((String) key, (String) value);
         }
     }
@@ -153,7 +152,6 @@ public abstract class PropertyEditorPanel extends JPanel {
         }
 
         public void valueChanged(TreeSelectionEvent event) {
-            System.out.println(event.getPath());
             if (event.getPath().getPathCount() < 2) {
                 return;
             }
@@ -286,7 +284,6 @@ public abstract class PropertyEditorPanel extends JPanel {
                 TreePath currentSelection = tree.getSelectionPath();
                 if (currentSelection != null) {
                     JMenuItem item = (JMenuItem) e.getSource();
-                    System.out.println(item.getText());
                     if (item.getText().equals("add")) {
                         Object newObject = null;
                         if (currentSelection.getPathCount() == 1) {
@@ -365,11 +362,9 @@ public abstract class PropertyEditorPanel extends JPanel {
                             }
 
                         });
-                        int returnVal = chooser
-                                .showOpenDialog(PropertyEditorPanel.this);
+                        int returnVal = chooser.showDialog(
+                                PropertyEditorPanel.this, "Load");
                         if (returnVal == JFileChooser.APPROVE_OPTION) {
-                            System.out.println("You chose to open this file: "
-                                    + chooser.getSelectedFile().getName());
                             PropertySetGroup added = null;
                             try {
                                 added = load(deployer, chooser
@@ -398,10 +393,8 @@ public abstract class PropertyEditorPanel extends JPanel {
 
                         });
                         int returnVal = chooser
-                                .showOpenDialog(PropertyEditorPanel.this);
+                                .showSaveDialog(PropertyEditorPanel.this);
                         if (returnVal == JFileChooser.APPROVE_OPTION) {
-                            System.out.println("You chose to open this file: "
-                                    + chooser.getSelectedFile().getName());
                             try {
                                 ((PropertySetGroup) ((DefaultMutableTreeNode) currentSelection
                                         .getPathComponent(1)).getUserObject())

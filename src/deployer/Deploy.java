@@ -288,7 +288,6 @@ public class Deploy {
         }
 
         public void processMetricEvent(MetricEvent event) {
-            System.out.println(event);
             for (int i = 0; i < model.getRowCount(); i++) {
                 try {
                     if ((Integer) model.getValueAt(i, 0) == ((Job) event

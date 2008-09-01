@@ -247,7 +247,6 @@ public class ApplicationGroup extends PropertySetGroup {
         out.write("# This application group consists of these applications\n"
                 .getBytes());
         out.write("applications=".getBytes());
-        System.out.println(applications.size());
         for (Application application : applications) {
             out.write((application.getName() + ",").getBytes());
         }
