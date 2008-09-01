@@ -400,7 +400,10 @@ public abstract class PropertyEditorPanel extends JPanel {
                                         .getPathComponent(1)).getUserObject())
                                         .save(chooser.getSelectedFile()
                                                 .getPath()
-                                                + ".properties");
+                                                + (chooser.getSelectedFile()
+                                                        .getPath().endsWith(
+                                                                ".properties") ? ""
+                                                        : ".properties"));
                             } catch (IOException e1) {
                                 e1.printStackTrace();
                             }
