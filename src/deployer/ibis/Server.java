@@ -155,6 +155,7 @@ public class Server {
             sd.addPreStagedFile(GAT.createFile(serverPreferences, application
                     .getIbisPreStage()));
         }
+        System.out.println("Ibis prestage: " + application.getIbisPreStage());
         if (logger.isInfoEnabled()) {
             logger.info("arguments: " + Arrays.deepToString(sd.getArguments()));
         }

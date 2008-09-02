@@ -232,7 +232,7 @@ public class ApplicationGroup extends PropertySetGroup {
         out.write("\n".getBytes());
         out.write("# Default settings\n".getBytes());
         for (PropertyCategory category : getCategories()) {
-            out.write(("# " + category + " defaults\n").getBytes());
+            out.write(("# " + category.getName() + " defaults\n").getBytes());
             for (String key : category.getData().keySet()) {
                 if (category.getData().get(key) != null) {
                     out.write((key + "=" + category.getData().get(key) + "\n")

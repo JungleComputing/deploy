@@ -31,7 +31,8 @@ public class IbisApplication extends JavaApplication {
                 new PropertyCategory("ibis", ibisApplicationProperties));
     }
 
-    public IbisApplication(String name, ApplicationGroup group) throws Exception {
+    public IbisApplication(String name, ApplicationGroup group)
+            throws Exception {
         super(name, group);
         SortedMap<String, String> ibisApplicationProperties = new TreeMap<String, String>();
         for (String key : IbisBasedApplicationGroup.KEYS) {
@@ -52,6 +53,8 @@ public class IbisApplication extends JavaApplication {
         for (PropertyCategory category : getCategories()) {
             if (category.getData().get("ibis.prestage") != null) {
                 return category.getData().get("ibis.prestage");
+            } else if (defaultValueFor("ibis.prestage", "ibis") != null) {
+                return defaultValueFor("ibis.prestage", "ibis");
             }
         }
         return null;

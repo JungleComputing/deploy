@@ -54,8 +54,8 @@ public class IbisBasedApplicationGroup extends JavaBasedApplicationGroup {
 
         SortedMap<String, String> ibisApplicationGroupProperties = new TreeMap<String, String>();
         for (String key : IbisBasedApplicationGroup.KEYS) {
-            ibisApplicationGroupProperties.put(key, properties.getProperty(
-                    properties.getProperty("name") + "." + key, null));
+            ibisApplicationGroupProperties.put(key, properties.getProperty(key,
+                    null));
         }
         getCategories().add(
                 new PropertyCategory("ibis", ibisApplicationGroupProperties));
