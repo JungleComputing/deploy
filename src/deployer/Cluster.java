@@ -353,6 +353,31 @@ public class Cluster extends PropertySet {
     }
 
     /**
+     * Returns the wrapper executable of this cluster
+     * 
+     * @return the wrapper executable of this cluster
+     */
+    public String getWrapperExecutable() {
+        if (getCategories().get(0).getData().get("wrapper.executable") == null) {
+            return grid.getCategories().get(0).getData().get(
+                    "wrapper.executable");
+        } else {
+            return getCategories().get(0).getData().get("wrapper.executable");
+        }
+    }
+
+    /**
+     * Sets the wrapper executable of this cluster
+     * 
+     * @param wrapperExecutable
+     *                the wrapper executable of this cluster
+     */
+    public void setWrapperExecutable(String wrapperExecutable) {
+        getCategories().get(0).getData().put("wrapper.executable",
+                wrapperExecutable);
+    }
+
+    /**
      * Sets the total number of nodes for this cluster
      * 
      * @param totalNodes

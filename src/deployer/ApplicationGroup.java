@@ -53,11 +53,13 @@ public class ApplicationGroup extends PropertySetGroup {
      * a ' '.</li>
      * <li><code>attributes</code>: to describe which JavaGAT attributes
      * should be used for this application. </li>
+     * <li><code>wrapper.script</code>: to describe which script should be
+     * invoked if a wrapper executable is used for the cluster</li>
      * <ul>
      */
     public static final String[] KEYS = new String[] { "executable",
             "arguments", "environment", "stdout", "stderr", "prestage",
-            "poststage", "attributes" };
+            "poststage", "attributes", "wrapper.script" };
 
     private Set<Application> applications = new HashSet<Application>();
 

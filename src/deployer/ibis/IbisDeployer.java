@@ -1,7 +1,9 @@
 package deployer.ibis;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.gridlab.gat.GAT;
@@ -14,6 +16,7 @@ import org.gridlab.gat.resources.JavaSoftwareDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
+import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.Job.JobState;
 
 import deployer.Application;
@@ -142,9 +145,53 @@ public class IbisDeployer extends Deployer {
         // + application.getLog4jPropertiesLocation());
         sd.setJavaSystemProperties(systemProperties);
 
-        JobDescription jd = new JobDescription(sd);
-        jd.setProcessCount(processCount);
-        jd.setResourceCount(resourceCount);
+        JobDescription jd = null;
+
+        if (application.getWrapperScript() != null
+                && cluster.getWrapperExecutable() != null) {
+            SoftwareDescription wrapperSd = new SoftwareDescription();
+            if (sd.getAttributes() != null) {
+                wrapperSd.setAttributes(sd.getAttributes());
+            }
+            if (sd.getEnvironment() != null) {
+                wrapperSd.setEnvironment(sd.getEnvironment());
+            }
+            if (sd.getPreStaged() != null) {
+                for (File src : sd.getPreStaged().keySet()) {
+                    wrapperSd.addPreStagedFile(src, sd.getPreStaged().get(src));
+                }
+            }
+            File script = GAT.createFile(application.getWrapperScript());
+            wrapperSd.addPreStagedFile(script);
+            if (sd.getPostStaged() != null) {
+                for (File src : sd.getPostStaged().keySet()) {
+                    wrapperSd.addPostStagedFile(src, sd.getPostStaged()
+                            .get(src));
+                }
+            }
+            wrapperSd.setStderr(sd.getStderr());
+            wrapperSd.setStdout(sd.getStdout());
+            wrapperSd.setExecutable(cluster.getWrapperExecutable());
+            List<String> argumentList = new ArrayList<String>();
+            argumentList.add(script.getName());
+            argumentList.add("" + resourceCount);
+            argumentList.add("" + processCount);
+            argumentList.add(sd.getExecutable());
+            if (sd.getArguments() != null) {
+                for (String arg : sd.getArguments()) {
+                    argumentList.add(arg);
+                }
+            }
+            wrapperSd.setArguments(argumentList.toArray(new String[argumentList
+                    .size()]));
+            jd = new JobDescription(wrapperSd);
+            jd.setProcessCount(1);
+            jd.setResourceCount(1);
+        } else {
+            jd = new JobDescription(sd);
+            jd.setProcessCount(processCount);
+            jd.setResourceCount(resourceCount);
+        }
         Preferences preferences = new Preferences();
         preferences.put("file.chmod", "0755");
         if (cluster.getBrokerAdaptors() != null) {

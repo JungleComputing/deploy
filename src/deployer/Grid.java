@@ -40,11 +40,15 @@ public class Grid extends PropertySetGroup {
      * has a Windows Operating System.</li>
      * <li><code>user.name</code>: the username to be used for the cluster</li>
      * <li><code>geo.position</code>: the geo position of the cluster</li>
+     * <li><code>wrapper.executable</code>: the executable to invoke if a
+     * wrapper script is used (for relative executable paths, the path should be
+     * relative to the javagat sandbox</li>
      * <ul>
      */
     public static final String[] KEYS = new String[] { "broker.uri",
             "broker.adaptors", "file.adaptors", "javapath", "nodes.total",
-            "cores.total", "is.windows", "user.name", "geo.position" };
+            "cores.total", "is.windows", "user.name", "geo.position",
+            "wrapper.executable" };
 
     private Set<Cluster> clusters = new HashSet<Cluster>();
 

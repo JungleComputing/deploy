@@ -81,6 +81,21 @@ public class Application extends PropertySet {
     }
 
     /**
+     * Gets the String containing the script that is to be used for a cluster
+     * with a wrapper executable.
+     * 
+     * @return the String containing the script that is to be used for a cluster
+     *         with a wrapper executable.
+     */
+    public String getWrapperScript() {
+        if (getCategories().get(0).getData().get("wrapper.script") == null) {
+            return group.getCategories().get(0).getData().get("wrapper.script");
+        } else {
+            return getCategories().get(0).getData().get("wrapper.script");
+        }
+    }
+
+    /**
      * Returns a JavaGAT SoftwareDescription that reflects this Application.
      * Note that for the stderr and stdout values ending with an '#', this '#'
      * will be replaced by a counter for each time this method is invoked.
