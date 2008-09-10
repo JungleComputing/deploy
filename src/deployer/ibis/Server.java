@@ -181,8 +181,6 @@ public class Server {
         sd.enableStreamingStdout(true);
         sd.enableStreamingStdin(true);
 
-        sd.addAttribute("sandbox.delete", "false");
-
         JobDescription jd = new JobDescription(sd);
         if (logger.isDebugEnabled()) {
             logger.debug("starting server at '"
