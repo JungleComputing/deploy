@@ -9,7 +9,6 @@ import org.apache.log4j.Logger;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.resources.JavaSoftwareDescription;
 import org.gridlab.gat.resources.JobDescription;
@@ -103,8 +102,7 @@ public class Server {
         return serverClient != null;
     }
 
-    public void startServer() throws IOException, GATObjectCreationException,
-            GATInvocationException {
+    public void startServer() throws Exception {
         if (logger.isInfoEnabled()) {
             logger.info("start " + this);
         }
@@ -118,7 +116,7 @@ public class Server {
             serverPreferences.put("resourcebroker.adaptor.name", getCluster()
                     .getServerBrokerAdaptors());
         }
-
+        serverPreferences.put("file.create", "true");
         JavaSoftwareDescription sd = new JavaSoftwareDescription();
 
         // if (getCluster().getJavaPath() != null) {
@@ -142,20 +140,37 @@ public class Server {
                     "--events", "--stats" });
         }
 
+        String ibisDir = "";
         if (application.getIbisPreStage() != null) {
-            String ibisDir = new java.io.File(application.getIbisPreStage())
-                    .getName()
-                    + (getCluster().isWindows() ? "\\" : "/");
-            sd.setJavaOptions(new String[] {
-                    "-classpath",
-
-                    ibisDir + "*:" + ibisDir + "commons-jxpath.jar",
-                    "-Dlog4j.configuration=file:" + ibisDir
-                            + "log4j.properties" });
-            sd.addPreStagedFile(GAT.createFile(serverPreferences, application
-                    .getIbisPreStage()));
+            String preStageFile = application.getIbisPreStage();
+            if (preStageFile.split(" ").length > 1) {
+                throw new Exception(
+                        "ibis.prestage has multiple entries, this is not allowed. Please supply one entry with a directory.");
+            }
+            if (preStageFile.indexOf("=") > 0 && !preStageFile.endsWith("=")) {
+                sd.addPreStagedFile(GAT.createFile(serverPreferences,
+                        preStageFile.substring(0, preStageFile.indexOf("="))),
+                        GAT.createFile(preStageFile.substring(preStageFile
+                                .indexOf("=") + 1, preStageFile.length())));
+                ibisDir = preStageFile.substring(preStageFile.indexOf("=") + 1,
+                        preStageFile.length())
+                        + (getCluster().isWindows() ? "\\" : "/")
+                        + new java.io.File(preStageFile.substring(0,
+                                preStageFile.indexOf("="))).getName()
+                        + (getCluster().isWindows() ? "\\" : "/");
+            } else {
+                sd.addPreStagedFile(GAT.createFile(serverPreferences,
+                        preStageFile), null);
+                ibisDir = new java.io.File(preStageFile).getName()
+                        + (getCluster().isWindows() ? "\\" : "/");
+            }
         }
-        System.out.println("Ibis prestage: " + application.getIbisPreStage());
+
+        // construct proper classpath!
+        sd.setJavaOptions(new String[] { "-classpath",
+                ibisDir + "*:" + ibisDir + "commons-jxpath.jar",
+                "-Dlog4j.configuration=file:" + ibisDir + "log4j.properties" });
+
         if (logger.isInfoEnabled()) {
             logger.info("arguments: " + Arrays.deepToString(sd.getArguments()));
         }
@@ -165,6 +180,8 @@ public class Server {
 
         sd.enableStreamingStdout(true);
         sd.enableStreamingStdin(true);
+
+        sd.addAttribute("sandbox.delete", "false");
 
         JobDescription jd = new JobDescription(sd);
         if (logger.isDebugEnabled()) {
@@ -181,6 +198,8 @@ public class Server {
             securityContext.addNote("adaptors", "commandlinessh,sshtrilead");
             context.addSecurityContext(securityContext);
         }
+
+        System.out.println("softwaredescription: " + sd);
 
         ResourceBroker broker = GAT.createResourceBroker(context,
                 serverPreferences, getCluster().getServerBroker());
