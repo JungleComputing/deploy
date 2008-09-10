@@ -93,6 +93,25 @@ public class IbisDeployer extends Deployer {
         return classpath;
     }
 
+    protected String getJavaClassPath(Map<File, File> files,
+            boolean recursivePrefix, boolean toWindows) {
+        String classpath = "";
+        if (files != null) {
+            for (File file : files.keySet()) {
+                if (files.get(file) != null) {
+                    classpath += files.get(file).getName() + "/";
+                }
+                classpath += getFiles(new java.io.File(file.getPath()), "",
+                        ".jar", recursivePrefix);
+            }
+        }
+        if (toWindows) {
+            classpath = classpath.replace('/', '\\');
+            classpath = classpath.replace(':', ';');
+        }
+        return classpath;
+    }
+
     private String getFiles(java.io.File file, String prefix, String postfix,
             boolean recursivePrefix) {
         String result = "";
@@ -127,8 +146,14 @@ public class IbisDeployer extends Deployer {
         for (File file : sd.getPreStaged().keySet()) {
             files[i++] = file.getPath();
         }
-        sd.setJavaOptions(new String[] { "-classpath",
-                getJavaClassPath(files, true, cluster.isWindows()) });
+        // sd.setJavaOptions(new String[] { "-classpath",
+        // getJavaClassPath(files, true, cluster.isWindows()) });
+
+        sd
+                .setJavaOptions(new String[] {
+                        "-classpath",
+                        getJavaClassPath(sd.getPreStaged(), true, cluster
+                                .isWindows()) });
 
         Map<String, String> systemProperties = new HashMap<String, String>();
         if (sd.getJavaSystemProperties() != null) {
