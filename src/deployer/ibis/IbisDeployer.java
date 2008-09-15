@@ -148,13 +148,9 @@ public class IbisDeployer extends Deployer {
         }
         // sd.setJavaOptions(new String[] { "-classpath",
         // getJavaClassPath(files, true, cluster.isWindows()) });
-
-        sd
-                .setJavaOptions(new String[] {
-                        "-classpath",
-                        getJavaClassPath(sd.getPreStaged(), true, cluster
-                                .isWindows()) });
-
+        if (sd.getJavaClassPath() == null) {
+            getJavaClassPath(sd.getPreStaged(), true, cluster.isWindows());
+        }
         Map<String, String> systemProperties = new HashMap<String, String>();
         if (sd.getJavaSystemProperties() != null) {
             systemProperties.putAll(sd.getJavaSystemProperties());
