@@ -6,11 +6,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.gridlab.gat.GAT;
+import org.gridlab.gat.GATContext;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
+import org.gridlab.gat.security.CertificateSecurityContext;
+import org.gridlab.gat.security.SecurityContext;
 
 /**
  * A Deployer object can be used to deploy applications on clusters. It also
@@ -132,20 +135,29 @@ public class Deployer {
     public Job deploy(Application application, int processCount,
             Cluster cluster, int resourceCount, MetricListener listener)
             throws Exception {
-        JobDescription jd = new JobDescription(application
-                .getSoftwareDescription());
-        jd.setProcessCount(processCount);
-        jd.setResourceCount(resourceCount);
-        Preferences preferences = new Preferences();
-        preferences.put("file.chmod", "0755");
+        GATContext context = new GATContext();
+        if (cluster.getUserName() != null) {
+            SecurityContext securityContext = new CertificateSecurityContext(
+                    null, null, cluster.getUserName(), cluster.getPassword());
+            // securityContext.addNote("adaptors", "commandlinessh,sshtrilead");
+            context.addSecurityContext(securityContext);
+        }
+        context.addPreference("file.chmod", "0755");
         if (cluster.getBrokerAdaptors() != null) {
-            preferences.put("resourcebroker.adaptor.name", cluster
+            context.addPreference("resourcebroker.adaptor.name", cluster
                     .getBrokerAdaptors());
         }
         if (cluster.getFileAdaptors() != null) {
-            preferences.put("file.adaptor.name", cluster.getFileAdaptors());
+            context.addPreference("file.adaptor.name", cluster
+                    .getFileAdaptors());
         }
-        ResourceBroker broker = GAT.createResourceBroker(preferences, cluster
+
+        JobDescription jd = new JobDescription(application
+                .getSoftwareDescription(context));
+        jd.setProcessCount(processCount);
+        jd.setResourceCount(resourceCount);
+
+        ResourceBroker broker = GAT.createResourceBroker(context, cluster
                 .getBroker());
         return broker.submitJob(jd, listener, "job.status");
     }

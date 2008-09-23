@@ -143,4 +143,31 @@ public class IbisCluster extends Cluster {
                 fileAdaptors);
     }
 
+    /**
+     * Returns the options that are used for starting a server/hub on this
+     * cluster
+     * 
+     * @return the options that are used for starting a server/hub on this
+     *         cluster
+     */
+    public String getServerOptions() {
+        if (getCategories().get(1).getData().get("ibis.server.options") == null) {
+            return grid.getCategories().get(1).getData().get(
+                    "ibis.server.options");
+        } else {
+            return getCategories().get(1).getData().get("ibis.server.options");
+        }
+    }
+
+    /**
+     * Sets the options that are used for starting a server/hub on this cluster
+     * 
+     * @param options
+     *                the options that are used for starting a server/hub on
+     *                this cluster
+     */
+    public void setServerOptions(String options) {
+        getCategories().get(1).getData().put("ibis.server.options", options);
+    }
+
 }

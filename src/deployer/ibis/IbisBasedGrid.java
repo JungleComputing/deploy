@@ -30,7 +30,7 @@ public class IbisBasedGrid extends Grid {
      */
     public static final String[] KEYS = new String[] {
             "ibis.server.broker.uri", "ibis.server.broker.adaptors",
-            "ibis.server.file.adaptors" };
+            "ibis.server.file.adaptors", "ibis.server.options" };
 
     public IbisBasedGrid(String fileName) throws FileNotFoundException,
             IOException, Exception {

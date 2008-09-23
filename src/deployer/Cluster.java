@@ -67,6 +67,7 @@ public class Cluster extends PropertySet {
     public Cluster(String name, Grid grid) throws Exception {
         super(name);
         this.grid = grid;
+        grid.addCluster(this);
         SortedMap<String, String> clusterProperties = new TreeMap<String, String>();
         for (String key : Grid.KEYS) {
             clusterProperties.put(key, null);
@@ -95,10 +96,10 @@ public class Cluster extends PropertySet {
      * @return the user name for this cluster
      */
     public String getUserName() {
-        if (getCategories().get(0).getData().get("username") == null) {
-            return grid.getCategories().get(0).getData().get("username");
+        if (getCategories().get(0).getData().get("user.name") == null) {
+            return grid.getCategories().get(0).getData().get("user.name");
         } else {
-            return getCategories().get(0).getData().get("username");
+            return getCategories().get(0).getData().get("user.name");
         }
     }
 

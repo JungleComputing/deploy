@@ -75,6 +75,9 @@ public class PropertySet {
      *                the name of the PropertySet
      */
     public final void setName(String name) {
+        if (name == null) {
+            throw new NullPointerException("setName got null parameter");
+        }
         this.name = name;
     }
 

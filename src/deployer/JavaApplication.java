@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.resources.JavaSoftwareDescription;
@@ -90,9 +91,9 @@ public class JavaApplication extends Application {
      *                 not be created by JavaGAT
      * 
      */
-    public SoftwareDescription getSoftwareDescription()
+    public SoftwareDescription getSoftwareDescription(GATContext context)
             throws GATObjectCreationException {
-        SoftwareDescription tmp = super.getSoftwareDescription();
+        SoftwareDescription tmp = super.getSoftwareDescription(context);
         JavaSoftwareDescription result = new JavaSoftwareDescription();
         SortedMap<String, String> mergedData = new TreeMap<String, String>();
         for (PropertyCategory category : group.getCategories()) {

@@ -5,7 +5,7 @@ import org.jdesktop.swingx.mapviewer.TileFactory;
 import org.jdesktop.swingx.mapviewer.TileFactoryInfo;
 
 public class GoogleMapStreetTileProvider {
-    private static final String VERSION = "2.80";
+    private static final String VERSION = "w2.83";
 
     private static final int minZoom = 1;
 
@@ -19,20 +19,30 @@ public class GoogleMapStreetTileProvider {
 
     private static final boolean yt2b = true;
 
-    // http://mt2.google.com/mt/v=w2p.81&hl=nl&x=2106&y=1348&zoom=5
-    private static final String baseURL = "http://mt1.google.com/mt/v=w"
-            + VERSION + "&hl=nl";
+    // old: http://mt2.google.com/mt/v=w2p.81&hl=nl&x=2106&y=1348&zoom=5
+    // new: http://mt3.google.com/mt?v=app.81&hl=nl&x=525&y=335&z=10&s=Galile
+    private static final String baseURL = "http://mt0.google.com";
 
-    private static final String x = "x";
-
-    private static final String y = "y";
-
-    private static final String z = "zoom";
-
-    private static final TileFactoryInfo GOOGLE_MAPS_TILE_INFO = new TileFactoryInfo(
-            minZoom, maxZoom, mapZoom, tileSize, xr2l, yt2b, baseURL, x, y, z);
+    private static final TileFactoryInfo GOOGLE_MAPS_TILE_INFO = new GoogleMapStreetTileFactoryInfo(
+            minZoom, maxZoom, mapZoom, tileSize, xr2l, yt2b, baseURL);
 
     public static TileFactory getDefaultTileFactory() {
         return (new DefaultTileFactory(GOOGLE_MAPS_TILE_INFO));
+    }
+
+    private static class GoogleMapStreetTileFactoryInfo extends TileFactoryInfo {
+
+        public GoogleMapStreetTileFactoryInfo(int minZoom, int maxZoom,
+                int mapZoom, int tileSize, boolean xr2l, boolean ytb2,
+                String baseURL) {
+            super(minZoom, maxZoom, mapZoom, tileSize, xr2l, ytb2, baseURL,
+                    null, null, null);
+        }
+
+        public String getTileUrl(int x, int y, int zoom) {
+            return this.baseURL + "/mt?v=" + VERSION + "&hl=nl&x=" + x + "&y="
+                    + y + "&z=" + ((mapZoom - zoom));
+        }
+
     }
 }

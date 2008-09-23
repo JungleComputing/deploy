@@ -8,6 +8,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.gridlab.gat.GAT;
+import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.resources.SoftwareDescription;
 
@@ -107,7 +108,7 @@ public class Application extends PropertySet {
      *                 created by JavaGAT
      * 
      */
-    public SoftwareDescription getSoftwareDescription()
+    public SoftwareDescription getSoftwareDescription(GATContext context)
             throws GATObjectCreationException {
         // in order to construct the software description, we've to merge the
         // defaults from the ApplicationGroup with the specific values of this
@@ -134,12 +135,12 @@ public class Application extends PropertySet {
         synchronized (this) {
             counter++;
             if (mergedData.get("stdout") != null) {
-                result.setStdout(GAT.createFile(mergedData.get("stdout")
-                        .replace("#", "-" + counter)));
+                result.setStdout(GAT.createFile(context, mergedData.get(
+                        "stdout").replace("#", "-" + counter)));
             }
             if (mergedData.get("stderr") != null) {
-                result.setStderr(GAT.createFile(mergedData.get("stderr")
-                        .replace("#", "-" + counter)));
+                result.setStderr(GAT.createFile(context, mergedData.get(
+                        "stderr").replace("#", "-" + counter)));
             }
         }
         // add poststage files
@@ -149,14 +150,15 @@ public class Application extends PropertySet {
                 for (String postStageFile : postStageFiles) {
                     if (postStageFile.indexOf("=") > 0
                             && !postStageFile.endsWith("=")) {
-                        result.addPostStagedFile(GAT.createFile(postStageFile
-                                .substring(0, postStageFile.indexOf("="))), GAT
-                                .createFile(postStageFile.substring(
-                                        postStageFile.indexOf("=") + 1,
-                                        postStageFile.length())));
+                        result.addPostStagedFile(GAT.createFile(context,
+                                postStageFile.substring(0, postStageFile
+                                        .indexOf("="))), GAT.createFile(
+                                context, postStageFile.substring(postStageFile
+                                        .indexOf("=") + 1, postStageFile
+                                        .length())));
                     } else {
-                        result.addPostStagedFile(GAT.createFile(postStageFile),
-                                null);
+                        result.addPostStagedFile(GAT.createFile(context,
+                                postStageFile), null);
                     }
                 }
             }
@@ -168,14 +170,15 @@ public class Application extends PropertySet {
                 for (String preStageFile : preStageFiles) {
                     if (preStageFile.indexOf("=") > 0
                             && !preStageFile.endsWith("=")) {
-                        result.addPreStagedFile(GAT.createFile(preStageFile
-                                .substring(0, preStageFile.indexOf("="))), GAT
-                                .createFile(preStageFile.substring(preStageFile
+                        result.addPreStagedFile(GAT.createFile(context,
+                                preStageFile.substring(0, preStageFile
+                                        .indexOf("="))), GAT.createFile(
+                                context, preStageFile.substring(preStageFile
                                         .indexOf("=") + 1, preStageFile
                                         .length())));
                     } else {
-                        result.addPreStagedFile(GAT.createFile(preStageFile),
-                                null);
+                        result.addPreStagedFile(GAT.createFile(context,
+                                preStageFile), null);
                     }
                 }
             }

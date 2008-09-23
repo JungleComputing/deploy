@@ -91,7 +91,9 @@ public class Grid extends PropertySetGroup {
         getCategories().add(new PropertyCategory("basic", gridProperties));
 
         for (Cluster cluster : clusters) {
-            this.clusters.add(cluster);
+            if (cluster != null) {
+                this.clusters.add(cluster);
+            }
         }
     }
 
@@ -146,7 +148,7 @@ public class Grid extends PropertySetGroup {
      *                the {@link Cluster} to be added
      */
     public void addCluster(Cluster cluster) {
-        clusters.add(cluster);
+        this.clusters.add(cluster);
     }
 
     /**
@@ -213,7 +215,7 @@ public class Grid extends PropertySetGroup {
         out.write("\n".getBytes());
         out.write("# Default settings\n".getBytes());
         for (PropertyCategory category : getCategories()) {
-            out.write(("# " + category + " defaults\n").getBytes());
+            out.write(("# " + category.getName() + " defaults\n").getBytes());
             for (String key : category.getData().keySet()) {
                 if (category.getData().get(key) != null) {
                     out.write((key + "=" + category.getData().get(key) + "\n")
@@ -227,6 +229,8 @@ public class Grid extends PropertySetGroup {
         out.write("\n".getBytes());
         out.write("# This grid consists of these clusters\n".getBytes());
         out.write("clusters=".getBytes());
+        System.out.println("cluster.size: " + clusters.size());
+
         for (Cluster cluster : clusters) {
             out.write((cluster.getName() + ",").getBytes());
         }
@@ -251,6 +255,8 @@ public class Grid extends PropertySetGroup {
                 }
             }
         }
+        out.flush();
+        out.close();
 
     }
 

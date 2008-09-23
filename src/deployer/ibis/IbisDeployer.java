@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.gridlab.gat.GAT;
+import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.io.File;
@@ -18,6 +19,8 @@ import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.Job.JobState;
+import org.gridlab.gat.security.CertificateSecurityContext;
+import org.gridlab.gat.security.SecurityContext;
 
 import deployer.Application;
 import deployer.ApplicationGroup;
@@ -134,8 +137,25 @@ public class IbisDeployer extends Deployer {
             Cluster cluster, int resourceCount, IbisPool pool,
             String serverAddress, String hubAddress, MetricListener listener)
             throws Exception, GATInvocationException, IOException {
+        GATContext context = new GATContext();
+        if (cluster.getUserName() != null) {
+            SecurityContext securityContext = new CertificateSecurityContext(
+                    null, null, cluster.getUserName(), cluster.getPassword());
+            // securityContext.addNote("adaptors", "commandlinessh,sshtrilead");
+            context.addSecurityContext(securityContext);
+        }
+        context.addPreference("file.chmod", "0755");
+        if (cluster.getBrokerAdaptors() != null) {
+            context.addPreference("resourcebroker.adaptor.name", cluster
+                    .getBrokerAdaptors());
+        }
+        if (cluster.getFileAdaptors() != null) {
+            context.addPreference("file.adaptor.name", cluster
+                    .getFileAdaptors());
+        }
+
         JavaSoftwareDescription sd = (JavaSoftwareDescription) application
-                .getSoftwareDescription();
+                .getSoftwareDescription(context);
 
         // add ibis specific things to sd
         if (sd.getExecutable() == null || sd.getExecutable().equals("java")) {
@@ -149,7 +169,8 @@ public class IbisDeployer extends Deployer {
         // sd.setJavaOptions(new String[] { "-classpath",
         // getJavaClassPath(files, true, cluster.isWindows()) });
         if (sd.getJavaClassPath() == null) {
-            getJavaClassPath(sd.getPreStaged(), true, cluster.isWindows());
+            sd.setJavaClassPath(getJavaClassPath(sd.getPreStaged(), true,
+                    cluster.isWindows()));
         }
         Map<String, String> systemProperties = new HashMap<String, String>();
         if (sd.getJavaSystemProperties() != null) {
@@ -182,7 +203,8 @@ public class IbisDeployer extends Deployer {
                     wrapperSd.addPreStagedFile(src, sd.getPreStaged().get(src));
                 }
             }
-            File script = GAT.createFile(application.getWrapperScript());
+            File script = GAT.createFile(context, application
+                    .getWrapperScript());
             wrapperSd.addPreStagedFile(script);
             if (sd.getPostStaged() != null) {
                 for (File src : sd.getPostStaged().keySet()) {
@@ -213,16 +235,8 @@ public class IbisDeployer extends Deployer {
             jd.setProcessCount(processCount);
             jd.setResourceCount(resourceCount);
         }
-        Preferences preferences = new Preferences();
-        preferences.put("file.chmod", "0755");
-        if (cluster.getBrokerAdaptors() != null) {
-            preferences.put("resourcebroker.adaptor.name", cluster
-                    .getBrokerAdaptors());
-        }
-        if (cluster.getFileAdaptors() != null) {
-            preferences.put("file.adaptor.name", cluster.getFileAdaptors());
-        }
-        ResourceBroker broker = GAT.createResourceBroker(preferences, cluster
+
+        ResourceBroker broker = GAT.createResourceBroker(context, cluster
                 .getBroker());
         Job result = broker.submitJob(jd, listener, "job.status");
         return result;

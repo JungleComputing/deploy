@@ -118,6 +118,9 @@ public class Server {
         }
         serverPreferences.put("file.create", "true");
         JavaSoftwareDescription sd = new JavaSoftwareDescription();
+        if (getCluster().getServerOptions() != null) {
+            sd.setJavaArguments(getCluster().getServerOptions().split(" "));
+        }
 
         // if (getCluster().getJavaPath() != null) {
         // if (getCluster().isWindows()) {
@@ -193,7 +196,7 @@ public class Server {
             SecurityContext securityContext = new CertificateSecurityContext(
                     null, null, getCluster().getUserName(), getCluster()
                             .getPassword());
-            securityContext.addNote("adaptors", "commandlinessh,sshtrilead");
+            // securityContext.addNote("adaptors", "commandlinessh,sshtrilead");
             context.addSecurityContext(securityContext);
         }
 

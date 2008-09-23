@@ -72,18 +72,17 @@ public class ClusterSelectionComponent implements SelectionComponent {
                         .getPreferredSize().getHeight()));
 
         JXMapKit mapKit = new JXMapKit();
-        mapKit.setTileFactory(GoogleMapTerrainTileProvider
-                .getDefaultTileFactory());
+        mapKit.setTileFactory(MicrosoftMapTileProvider.getDefaultTileFactory());
         mapKit.setMiniMapVisible(false);
         mapKit.setAddressLocationShown(false);
         mapKit.getMainMap().setZoom(INITIAL_MAP_ZOOM);
         mapKit.getMainMap().setCenterPosition(INITIAL_MAP_CENTER);
 
         JPanel mapSelectionPanel = new JPanel();
-        JRadioButton googleMapsTerrain = new JRadioButton("Google (Terrain)",
-                true);
+        JRadioButton googleMapsTerrain = new JRadioButton("Google (Terrain)");
         JRadioButton googleMapsStreet = new JRadioButton("Google (Street)");
-        JRadioButton microsoftMaps = new JRadioButton("Microsoft (Satellite)");
+        JRadioButton microsoftMaps = new JRadioButton("Microsoft (Satellite)",
+                true);
         JRadioButton openStreetMaps = new JRadioButton(
                 "OpenStreetMaps (Street)");
 
