@@ -9,7 +9,6 @@ import java.util.Map;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.Preferences;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.MetricListener;
@@ -102,7 +101,7 @@ public class IbisDeployer extends Deployer {
         if (files != null) {
             for (File file : files.keySet()) {
                 if (files.get(file) != null) {
-                    classpath += files.get(file).getName() + "/";
+                    classpath += files.get(file).getPath() + "/";
                 }
                 classpath += getFiles(new java.io.File(file.getPath()), "",
                         ".jar", recursivePrefix);
@@ -189,7 +188,7 @@ public class IbisDeployer extends Deployer {
 
         JobDescription jd = null;
 
-        if (application.getWrapperScript() != null
+        if (cluster.getWrapperScript() != null
                 && cluster.getWrapperExecutable() != null) {
             SoftwareDescription wrapperSd = new SoftwareDescription();
             if (sd.getAttributes() != null) {
@@ -203,8 +202,7 @@ public class IbisDeployer extends Deployer {
                     wrapperSd.addPreStagedFile(src, sd.getPreStaged().get(src));
                 }
             }
-            File script = GAT.createFile(context, application
-                    .getWrapperScript());
+            File script = GAT.createFile(context, cluster.getWrapperScript());
             wrapperSd.addPreStagedFile(script);
             if (sd.getPostStaged() != null) {
                 for (File src : sd.getPostStaged().keySet()) {

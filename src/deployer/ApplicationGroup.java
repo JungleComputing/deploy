@@ -59,7 +59,7 @@ public class ApplicationGroup extends PropertySetGroup {
      */
     public static final String[] KEYS = new String[] { "executable",
             "arguments", "environment", "stdout", "stderr", "prestage",
-            "poststage", "attributes", "wrapper.script" };
+            "poststage", "attributes" };
 
     private Set<Application> applications = new HashSet<Application>();
 

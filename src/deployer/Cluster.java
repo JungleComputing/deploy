@@ -379,6 +379,29 @@ public class Cluster extends PropertySet {
     }
 
     /**
+     * Returns the wrapper script of this cluster
+     * 
+     * @return the wrapper script of this cluster
+     */
+    public String getWrapperScript() {
+        if (getCategories().get(0).getData().get("wrapper.script") == null) {
+            return grid.getCategories().get(0).getData().get("wrapper.script");
+        } else {
+            return getCategories().get(0).getData().get("wrapper.script");
+        }
+    }
+
+    /**
+     * Sets the wrapper script of this cluster
+     * 
+     * @param wrapperScript
+     *                the wrapper script of this cluster
+     */
+    public void setWrapperScript(String wrapperScript) {
+        getCategories().get(0).getData().put("wrapper.script", wrapperScript);
+    }
+
+    /**
      * Sets the total number of nodes for this cluster
      * 
      * @param totalNodes

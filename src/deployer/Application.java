@@ -82,6 +82,8 @@ public class Application extends PropertySet {
     }
 
     /**
+     * @deprecated wrapper script should be defined in the cluster properties
+     * 
      * Gets the String containing the script that is to be used for a cluster
      * with a wrapper executable.
      * 

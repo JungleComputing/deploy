@@ -48,7 +48,7 @@ public class Grid extends PropertySetGroup {
     public static final String[] KEYS = new String[] { "broker.uri",
             "broker.adaptors", "file.adaptors", "javapath", "nodes.total",
             "cores.total", "is.windows", "user.name", "geo.position",
-            "wrapper.executable" };
+            "wrapper.executable", "wrapper.script" };
 
     private Set<Cluster> clusters = new HashSet<Cluster>();
 
