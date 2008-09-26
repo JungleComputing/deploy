@@ -171,6 +171,7 @@ public class IbisHubSelectionComponent implements SelectionComponent {
     public void addHub(Server ibisHub) {
         ibisHubs.add(ibisHub);
         existingHubComboBox.addItem(ibisHub);
+        startVizComboBox.addItem(ibisHub);
     }
 
     private class StartVizActionListener implements ActionListener {
