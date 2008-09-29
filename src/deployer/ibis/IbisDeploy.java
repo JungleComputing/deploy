@@ -24,8 +24,8 @@ import deployer.ibis.gui.IbisPoolSelectionComponent;
 
 public class IbisDeploy extends Deploy {
 
-    public IbisDeploy(String name) {
-        super(name, new IbisDeployer());
+    public IbisDeploy(String name, String[] args) {
+        super(name, new IbisDeployer(), args);
         List<SelectionComponent> deploySelectionComponents = new ArrayList<SelectionComponent>();
         deploySelectionComponents.add(new IbisPoolSelectionComponent());
         deploySelectionComponents.add(new IbisHubSelectionComponent());
@@ -43,7 +43,7 @@ public class IbisDeploy extends Deploy {
     public static void main(String[] args) {
         JPopupMenu.setDefaultLightWeightPopupEnabled(false);
 
-        final IbisDeploy deploy = new IbisDeploy("Ibis Deploy");
+        final IbisDeploy deploy = new IbisDeploy("Ibis Deploy", args);
         // Schedule a job for the event-dispatching thread:
         // creating and showing this application's GUI.
         javax.swing.SwingUtilities.invokeLater(new Runnable() {

@@ -5,6 +5,7 @@ import ibis.util.TypedProperties;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.monitoring.MetricListener;
@@ -204,6 +205,35 @@ public class Deployer {
      */
     public void removeGrid(Grid grid) {
         grids.remove(grid);
+    }
+
+    /**
+     * -g gridfile -a applicationfile
+     * 
+     * @param args
+     */
+    public void init(String[] args) {
+        int i = 0;
+        while (i + 1 < args.length) {
+            if (args[i].equals("-g")) {
+                try {
+                    addGrid(args[i + 1]);
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            } else if (args[i].equals("-a")) {
+                try {
+                    addApplicationGroup(args[i + 1]);
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            } else {
+                // invalid argument
+            }
+            i += 2;
+        }
     }
 
 }

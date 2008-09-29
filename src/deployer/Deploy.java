@@ -53,14 +53,14 @@ public class Deploy {
 
     private String name;
 
-    protected Deploy(String name) {
-        this(name, new Deployer());
-
+    protected Deploy(String name, String[] args) {
+        this(name, new Deployer(), args);
     }
 
-    protected Deploy(String name, Deployer deployer) {
+    protected Deploy(String name, Deployer deployer, String[] args) {
         this.name = name;
         this.deployer = deployer;
+        this.deployer.init(args);
         // defaults for Deploy
         List<SelectionComponent> deploySelectionComponents = new ArrayList<SelectionComponent>();
         deploySelectionComponents.add(new ApplicationSelectionComponent(
@@ -80,7 +80,7 @@ public class Deploy {
      *                arguments are ignored
      */
     public static void main(String[] args) {
-        final Deploy deploy = new Deploy("JavaGAT Deploy");
+        final Deploy deploy = new Deploy("JavaGAT Deploy", args);
         // for (LookAndFeelInfo lf : UIManager.getInstalledLookAndFeels()) {
         // System.out.println(lf.getClassName());
         // }
