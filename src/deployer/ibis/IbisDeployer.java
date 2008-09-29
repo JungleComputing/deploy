@@ -239,4 +239,34 @@ public class IbisDeployer extends Deployer {
         Job result = broker.submitJob(jd, listener, "job.status");
         return result;
     }
+
+    /**
+     * -g gridfile -a applicationfile
+     * 
+     * @param args
+     */
+    public void init(String[] args) {
+        int i = 0;
+        while (i + 1 < args.length) {
+            if (args[i].equals("-g")) {
+                try {
+                    addGrid(new IbisBasedGrid(args[i + 1]));
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            } else if (args[i].equals("-a")) {
+                try {
+                    addApplicationGroup(new IbisBasedApplicationGroup(
+                            args[i + 1]));
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            } else {
+                // invalid argument
+            }
+            i += 2;
+        }
+    }
 }

@@ -224,7 +224,8 @@ public class Deployer {
                 }
             } else if (args[i].equals("-a")) {
                 try {
-                    addApplicationGroup(args[i + 1]);
+                    addApplicationGroup(new JavaBasedApplicationGroup(
+                            args[i + 1]));
                 } catch (Exception e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
