@@ -1,24 +1,28 @@
 package ibis.deploy;
 
 import ibis.server.ServerProperties;
-import ibis.server.remote.RemoteClient;
 
 import java.io.File;
 import java.util.Properties;
 
+import org.gridlab.gat.URI;
+
 /**
- * Running server (or hub)
+ * Running server/hub
  * 
  */
-public class Hub {
+public class Server {
 
     // used in case of a local server
     private final ibis.server.Server server;
 
     private final String address;
+    
+    //URI used to deploy this server.
+    private final URI clusterURI;
 
     /**
-     * Start a server locally.
+     * Start a server/hub locally.
      * 
      * @param libs
      *            jar files/directories needed to start the server
@@ -27,12 +31,13 @@ public class Hub {
      * @throws Exception
      *             if starting the server fails.
      */
-    public Hub(File[] libs, boolean hubOnly) throws Exception {
+    public Server(File[] libs, boolean hubOnly) throws Exception {
         Properties properties = new Properties();
         properties.put(ServerProperties.HUB_ONLY, hubOnly + "");
 
         server = new ibis.server.Server(properties);
         address = server.getLocalAddress();
+        clusterURI = null;
         
     }
 
@@ -45,10 +50,11 @@ public class Hub {
      *            if true, start in seperate vm. If false, start in this VM (if
      *            so, libs not supported)
      */
-    public Hub(File[] libs, Cluster cluster, boolean hubOnly) {
+    public Server(File[] libs, Cluster cluster, boolean hubOnly) {
         server = null;
         
         address = null;
+        clusterURI = null;
 
     }
 
@@ -59,13 +65,17 @@ public class Hub {
     public String[] getHubs() {
         return null;
     }
-
-    public void addHubs(String[] hubs) {
+    
+    public void addHubs(String... hubs) {
     }
 
     public void killAll() {
     }
 
     public void kill() {
+    }
+    
+    public URI getClusterURI() {
+    	return clusterURI;
     }
 }
