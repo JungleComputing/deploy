@@ -10,6 +10,8 @@ import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
+import org.gridlab.gat.io.File;
+import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.JavaSoftwareDescription;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
@@ -103,6 +105,10 @@ public class Server {
     }
 
     public void startServer() throws Exception {
+        startServer(null);
+    }
+
+    public void startServer(MetricListener listener) throws Exception {
         if (logger.isInfoEnabled()) {
             logger.info("start " + this);
         }
@@ -162,14 +168,17 @@ public class Server {
                                 preStageFile.indexOf("="))).getName()
                         + (getCluster().isWindows() ? "\\" : "/");
             } else {
-                sd.addPreStagedFile(GAT.createFile(serverPreferences,
-                        preStageFile), null);
-                ibisDir = new java.io.File(preStageFile).getName()
-                        + (getCluster().isWindows() ? "\\" : "/");
+                File ibis = GAT.createFile(serverPreferences, preStageFile);
+                sd.addPreStagedFile(ibis, null);
+                if (!ibis.isAbsolute()) {
+                    ibisDir = new java.io.File(preStageFile).getName();
+                } else {
+                    ibisDir = preStageFile;
+                }
+                ibisDir += (getCluster().isWindows() ? "\\" : "/");
             }
         }
 
-        // construct proper classpath!
         sd.setJavaOptions(new String[] { "-classpath",
                 ibisDir + "*:" + ibisDir + "commons-jxpath.jar",
                 "-Dlog4j.configuration=file:" + ibisDir + "log4j.properties" });
@@ -205,7 +214,7 @@ public class Server {
         ResourceBroker broker = GAT.createResourceBroker(context,
                 serverPreferences, getCluster().getServerBroker());
 
-        job = broker.submitJob(jd);
+        job = broker.submitJob(jd, listener, "job.status");
 
         serverClient = new RemoteClient(job.getStdout(), job.getStdin());
 

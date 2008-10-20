@@ -139,11 +139,11 @@ public class Deploy {
 
         @SuppressWarnings("unchecked")
         public Class getColumnClass(int c) {
-            if (getValueAt(0, c) == null) {
-                return String.class;
-            }
             if (c == 5) {
                 return Job.class;
+            }
+            if (getValueAt(0, c) == null) {
+                return String.class;
             }
             return getValueAt(0, c).getClass();
         }
@@ -214,19 +214,15 @@ public class Deploy {
         }
 
         public void actionPerformed(ActionEvent event) {
-            for (List<SelectionComponent> selectionComponentGroup : deploy
-                    .getSelectionComponentGroups()) {
-                for (SelectionComponent selectionComponent : selectionComponentGroup) {
-                    selectionComponent.update();
-                }
-            }
         }
 
         public void stateChanged(ChangeEvent e) {
-            for (List<SelectionComponent> selectionComponentGroup : deploy
-                    .getSelectionComponentGroups()) {
-                for (SelectionComponent selectionComponent : selectionComponentGroup) {
-                    selectionComponent.update();
+            if (((JTabbedPane) e.getSource()).getSelectedIndex() == 0) {
+                for (List<SelectionComponent> selectionComponentGroup : deploy
+                        .getSelectionComponentGroups()) {
+                    for (SelectionComponent selectionComponent : selectionComponentGroup) {
+                        selectionComponent.update();
+                    }
                 }
             }
         }

@@ -31,6 +31,7 @@ import org.jdesktop.swingx.mapviewer.Waypoint;
 import org.jdesktop.swingx.mapviewer.WaypointPainter;
 import org.jdesktop.swingx.mapviewer.WaypointRenderer;
 
+import deployer.ApplicationGroup;
 import deployer.Cluster;
 import deployer.Deployer;
 import deployer.Grid;
@@ -51,6 +52,8 @@ public class ClusterSelectionComponent implements SelectionComponent {
     private JSpinner resourceCountSpinner;
 
     private Deployer deployer;
+
+    private MapActionListener mapActionListener;
 
     public ClusterSelectionComponent(Deployer deployer) {
         this.deployer = deployer;
@@ -137,10 +140,10 @@ public class ClusterSelectionComponent implements SelectionComponent {
         panel.add(mapSelectionPanel);
 
         // finally add the listeners to the components
-        gridComboBox.addActionListener(new MapActionListener(gridComboBox,
-                clusterComboBox, mapKit));
-        clusterComboBox.addActionListener(new MapActionListener(gridComboBox,
-                clusterComboBox, mapKit));
+        mapActionListener = new MapActionListener(gridComboBox,
+                clusterComboBox, mapKit);
+        gridComboBox.addActionListener(mapActionListener);
+        clusterComboBox.addActionListener(mapActionListener);
         gridComboBox.addActionListener(new GridComboBoxActionListener(
                 gridComboBox, clusterComboBox));
         mapKit.getMainMap().addMouseListener(
@@ -149,9 +152,63 @@ public class ClusterSelectionComponent implements SelectionComponent {
     }
 
     public void update() {
-        gridComboBox.removeAllItems();
+        for (int i = 0; i < gridComboBox.getItemCount(); i++) {
+            boolean exists = false;
+            for (Grid grid : deployer.getGrids()) {
+                if (grid == gridComboBox.getItemAt(i)) {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) {
+                gridComboBox.removeItemAt(i);
+                i--;
+            }
+        }
         for (Grid grid : deployer.getGrids()) {
-            gridComboBox.addItem(grid);
+            boolean exists = false;
+            for (int i = 0; i < gridComboBox.getItemCount(); i++) {
+                if (grid == gridComboBox.getItemAt(i)) {
+                    exists = true;
+                }
+            }
+            if (!exists) {
+                gridComboBox.addItem(grid);
+            }
+        }
+        for (int i = 0; i < clusterComboBox.getItemCount(); i++) {
+            boolean exists = false;
+            if (((Grid) gridComboBox.getSelectedItem()) != null) {
+                for (Cluster cluster : ((Grid) gridComboBox.getSelectedItem())
+                        .getClusters()) {
+                    if (cluster == clusterComboBox.getItemAt(i)) {
+                        exists = true;
+                        break;
+                    }
+                }
+            }
+            if (!exists) {
+                clusterComboBox.removeItemAt(i);
+                i--;
+                mapActionListener.actionPerformed(new ActionEvent(
+                        clusterComboBox, 0, null));
+            }
+        }
+        if (((Grid) gridComboBox.getSelectedItem()) != null) {
+            for (Cluster cluster : ((Grid) gridComboBox.getSelectedItem())
+                    .getClusters()) {
+                boolean exists = false;
+                for (int i = 0; i < clusterComboBox.getItemCount(); i++) {
+                    if (cluster == clusterComboBox.getItemAt(i)) {
+                        exists = true;
+                    }
+                }
+                if (!exists) {
+                    clusterComboBox.addItem(cluster);
+                    mapActionListener.actionPerformed(new ActionEvent(
+                            gridComboBox, 0, null));
+                }
+            }
         }
     }
 

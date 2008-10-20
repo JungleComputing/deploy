@@ -10,6 +10,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
 
+import org.gridlab.gat.monitoring.MetricEvent;
+import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.Job;
 
 import deployer.Application;
@@ -85,7 +87,8 @@ public class IbisDeploy extends Deploy {
                 final String name = (String) getSelectionComponentGroups().get(
                         1).get(1).getValues()[2];
 
-                model.addRow(new Object[] { "n.a.", "INITIAL" });
+                model.addRow(new Object[] { "n.a.", "INITIAL", null, null,
+                        null, (Job) null });
                 model.fireTableChanged(new TableModelEvent(model));
                 final int row = model.getRowCount() - 1;
                 new Thread() {
@@ -97,7 +100,15 @@ public class IbisDeploy extends Deploy {
                                 Server ibisServer = new Server(name,
                                         (IbisCluster) cluster,
                                         (IbisApplication) application);
-                                ibisServer.startServer();
+                                ibisServer.startServer(new MetricListener() {
+                                    public void processMetricEvent(
+                                            MetricEvent event) {
+                                        model.setValueAt("SERVER "
+                                                + event.getValue().toString(),
+                                                row, 1);
+                                        model.fireTableCellUpdated(row, 1);
+                                    }
+                                });
                                 serverAddress = ibisServer.getServerClient()
                                         .getLocalAddress();
                                 hubAddress = ibisServer.getServerClient()
@@ -110,7 +121,17 @@ public class IbisDeploy extends Deploy {
                                 Server ibisHub = new Server(name,
                                         (IbisCluster) cluster,
                                         (IbisApplication) application, server);
-                                ibisHub.startServer();
+                                ibisHub.startServer(new MetricListener() {
+
+                                    public void processMetricEvent(
+                                            MetricEvent event) {
+                                        model.setValueAt("HUB "
+                                                + event.getValue().toString(),
+                                                row, 1);
+                                        model.fireTableCellUpdated(row, 1);
+                                    }
+
+                                });
                                 serverAddress = server;
                                 hubAddress = ibisHub.getServerClient()
                                         .getLocalAddress();
@@ -134,13 +155,14 @@ public class IbisDeploy extends Deploy {
                             model.setValueAt(job, row, 5);
                             model.fireTableChanged(new TableModelEvent(model));
                         } catch (Exception e) {
-                            System.err.println(e);
-                            System.err.println("submission failed!");
+                            model.setValueAt("DEPLOY FAILED ", row, 1);
+                            model.fireTableCellUpdated(row, 1);
                             e.printStackTrace();
                         }
                     }
                 }.start();
             } catch (Exception e) {
+                System.err.println("ARGH FAILED");
                 e.printStackTrace();
             }
         }

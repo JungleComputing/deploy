@@ -37,8 +37,9 @@ public class ApplicationSelectionComponent implements SelectionComponent {
 
         panel.setBorder(BorderFactory.createTitledBorder("select application"));
 
-        JPanel gridPanel = new JPanel(new GridLayout(0, 2, 3, 3));
-        gridPanel.add(new JLabel("application group: ", JLabel.RIGHT));
+        JPanel applicationGroupPanel = new JPanel(new GridLayout(0, 2, 3, 3));
+        applicationGroupPanel.add(new JLabel("application group: ",
+                JLabel.RIGHT));
         applicationGroupComboBox = new JComboBox();
         applicationGroupComboBox.setPreferredSize(new Dimension(
                 DEFAULT_COMPONENT_WIDTH, (int) applicationGroupComboBox
@@ -48,8 +49,8 @@ public class ApplicationSelectionComponent implements SelectionComponent {
                 .getApplicationGroups()) {
             applicationGroupComboBox.addItem(applicationGroup);
         }
-        gridPanel.add(applicationGroupComboBox);
-        gridPanel.add(new JLabel("application: ", JLabel.RIGHT));
+        applicationGroupPanel.add(applicationGroupComboBox);
+        applicationGroupPanel.add(new JLabel("application: ", JLabel.RIGHT));
         applicationComboBox = new JComboBox();
         applicationComboBox.setPreferredSize(new Dimension(
                 DEFAULT_COMPONENT_WIDTH, (int) applicationComboBox
@@ -58,25 +59,74 @@ public class ApplicationSelectionComponent implements SelectionComponent {
         applicationGroupComboBox
                 .addActionListener(new ApplicationGroupComboBoxActionListener(
                         applicationGroupComboBox, applicationComboBox));
-        gridPanel.add(applicationComboBox);
-        gridPanel.add(new JLabel("process count: ", JLabel.RIGHT));
+        applicationGroupPanel.add(applicationComboBox);
+        applicationGroupPanel.add(new JLabel("process count: ", JLabel.RIGHT));
         processCount = new JSpinner(new SpinnerNumberModel(1, 1,
                 Integer.MAX_VALUE, 1));
         processCount.setPreferredSize(new Dimension(
                 DEFAULT_COMPONENT_WIDTH / 2, (int) processCount
                         .getPreferredSize().getHeight()));
 
-        gridPanel.add(processCount);
+        applicationGroupPanel.add(processCount);
 
-        panel.add(gridPanel);
+        panel.add(applicationGroupPanel);
         panel.add(Box.createHorizontalGlue());
     }
 
     public void update() {
-        applicationGroupComboBox.removeAllItems();
-        for (ApplicationGroup applicationGroup : deployer
-                .getApplicationGroups()) {
-            applicationGroupComboBox.addItem(applicationGroup);
+        for (int i = 0; i < applicationGroupComboBox.getItemCount(); i++) {
+            boolean exists = false;
+            for (ApplicationGroup group : deployer.getApplicationGroups()) {
+                if (group == applicationGroupComboBox.getItemAt(i)) {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) {
+                applicationGroupComboBox.removeItemAt(i);
+                i--;
+            }
+        }
+        for (ApplicationGroup group : deployer.getApplicationGroups()) {
+            boolean exists = false;
+            for (int i = 0; i < applicationGroupComboBox.getItemCount(); i++) {
+                if (group == applicationGroupComboBox.getItemAt(i)) {
+                    exists = true;
+                }
+            }
+            if (!exists) {
+                applicationGroupComboBox.addItem(group);
+            }
+        }
+        for (int i = 0; i < applicationComboBox.getItemCount(); i++) {
+            boolean exists = false;
+            if (((ApplicationGroup) applicationGroupComboBox.getSelectedItem()) != null) {
+                for (Application application : ((ApplicationGroup) applicationGroupComboBox
+                        .getSelectedItem()).getApplications()) {
+                    if (application == applicationComboBox.getItemAt(i)) {
+                        exists = true;
+                        break;
+                    }
+                }
+            }
+            if (!exists) {
+                applicationComboBox.removeItemAt(i);
+                i--;
+            }
+        }
+        if (((ApplicationGroup) applicationGroupComboBox.getSelectedItem()) != null) {
+            for (Application application : ((ApplicationGroup) applicationGroupComboBox
+                    .getSelectedItem()).getApplications()) {
+                boolean exists = false;
+                for (int i = 0; i < applicationComboBox.getItemCount(); i++) {
+                    if (application == applicationComboBox.getItemAt(i)) {
+                        exists = true;
+                    }
+                }
+                if (!exists) {
+                    applicationComboBox.addItem(application);
+                }
+            }
         }
     }
 
