@@ -27,7 +27,7 @@ public class Cluster {
 	//path of java on cluster (simply "java" if not specified)
 	private String javaPath;
 
-	public void startHub(Server rootServer) {
+	public void startHub(Hub rootServer) {
 		// TODO Auto-generated method stub
 		
 	}

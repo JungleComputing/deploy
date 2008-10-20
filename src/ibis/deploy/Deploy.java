@@ -10,102 +10,65 @@ import java.util.Set;
 
 public class Deploy {
 
-	// "root" server
-	private Server rootServer;
+    // "root" hub (perhaps including the server)
+    private Hub rootHub;
 
-	private List<Grid> grids;
+    // server (possibly remote)
+    private Hub server;
 
-	private ApplicationGroup applications;
+    private List<Job> jobs;
 
-	private List<Job> jobs;
+    Deploy() {
+        rootHub = null;
+        server = null;
 
-	private Set<String> pools;
+        jobs = new ArrayList<Job>();
+    }
 
-	Deploy(File[] gridFiles, File applicationsFile) {
-		rootServer = null;
-		grids = new ArrayList<Grid>();
+    /**
+     * Initialize this deployment object.
+     * 
+     * @param serverLibs
+     *            All required files and directories to start a server or hub.
+     *            Jar files will also be loaded into this JVM automatically.
+     * @param serverCluster
+     *            cluster where the server should be started, or null for a
+     *            server embedded in this JVM.
+     */
+    void initialize(File[] serverLibs, Cluster serverCluster) {
 
-		if (gridFiles != null) {
-			for (File file : gridFiles) {
-				Grid grid = new Grid(file);
-				grids.add(grid);
-			}
-		}
+    }
+    
+    private Hub getHub(Cluster cluster, boolean forceNew) {
+        return null;
+        
+    }
+    
 
-		this.applications = new ApplicationGroup(applicationsFile);
+    // submit a new job
+    /**
+     * @param serverCluster,
+     */
+    public Job submit(Cluster cluster, int resourceCount,
+            Application aplication, int processCount, String poolName,
+            boolean startHub) throws Exception {
 
-		jobs = new ArrayList<Job>();
+        // ensure a hub is running on the specified cluster
+        Hub hub = getHub(cluster);
+        
 
-		pools = new HashSet<String>();
-	}
-	
-	public Grid addGrid() {
-		Grid result = new Grid();
-		grids.add(result);
-		return result;
-	}
+        // start job
+        Job job = new Job(cluster, resourceCount, application, processCount,
+                poolName);
 
-	public synchronized Grid getGrid(String gridName) {
-		for(Grid grid: grids) {
-			if (grid.getName().equals(gridName)) {
-				return grid;
-			}
-		}
-		return null;
-	}
+        synchronized (this) {
+            jobs.add(job);
+        }
 
-	private synchronized void addPool(String poolName) {
-		pools.add(poolName);
-	}
+        // add pool to known pool names
+        addPool(poolName);
 
-	private synchronized Server getRootServer() {
-		if (rootServer == null) {
-			rootServer = new Server(applications.getServerLibs(), false, false);
-		}
-		return rootServer;
-	}
-
-	// submit a new job
-	public Job submit(String gridName, String clusterName, int resourceCount,
-			String applicationName, int processCount, String poolName)
-			throws Exception {
-		// find grid
-		Grid grid = getGrid(gridName);
-		if (grid == null) {
-			throw new Exception(gridName + " not a valid grid");
-		}
-
-		// find cluster in grid
-		Cluster cluster = grid.getCluster(clusterName);
-		if (cluster == null) {
-			throw new Exception(clusterName + " not a cluster of " + gridName);
-		}
-
-		// find application
-		Application application = applications.getApplication(applicationName);
-		if (application == null) {
-			throw new Exception("cannot find application: " + applicationName);
-		}
-
-		// make sure the root server is started (requires a configured
-		// application)
-		Server rootServer = getRootServer();
-
-		// ensure a hub is running on the specified cluster
-		cluster.startHub(rootServer);
-
-		// start job
-		Job job = new Job(cluster, resourceCount, application, processCount,
-				poolName);
-
-		synchronized (this) {
-			jobs.add(job);
-		}
-
-		// add pool to known pool names
-		addPool(poolName);
-
-		return job;
-	}
+        return job;
+    }
 
 }
