@@ -9,7 +9,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class Application {
+
+	private static final Logger logger = LoggerFactory
+			.getLogger(Application.class);
 
 	// name of application
 	private String name;
@@ -36,7 +42,19 @@ public class Application {
 	// additional JVM options
 	private List<String> javaOptions;
 
-	public Application() {
+	/**
+	 * Creates a new application with a given name
+	 * 
+	 * @param name
+	 *            the name of the aplication
+	 * @throws Exception
+	 *             if the name given is <code>null</code>
+	 */
+	public Application(String name) throws Exception {
+		if (name == null) {
+			throw new Exception("no name specified for application");
+		}
+		this.name = name;
 		mainClass = null;
 		libs = new ArrayList<File>();
 		arguments = new ArrayList<String>();
@@ -58,34 +76,42 @@ public class Application {
 	 * @throws Exception
 	 *             if application cannot be read properly
 	 */
-	public Application(TypedProperties properties, String name) throws Exception  {
+	public Application(TypedProperties properties, String name)
+			throws Exception {
 		String prefix;
 		if (name == null) {
 			prefix = "";
 		} else {
 			prefix = name + ".";
 		}
-		
+
+		this.name = name;
 		mainClass = properties.getProperty(prefix + "main.class");
 		libs = parseFileString(properties.getProperty(prefix + "libs"));
-		arguments = parseStringList(properties.getProperty(prefix + "arguments"));
-		inputFiles = parseFileString(properties.getProperty(prefix + "input.files"));
-		outputFiles = parseFileString(properties.getProperty(prefix + "output.files"));
-		
+		arguments = parseStringList(properties
+				.getProperty(prefix + "arguments"));
+		inputFiles = parseFileString(properties.getProperty(prefix
+				+ "input.files"));
+		outputFiles = parseFileString(properties.getProperty(prefix
+				+ "output.files"));
+
 		systemProperties = new HashMap<String, String>();
-		String[] propertyStrings = properties.getStringList(prefix + "system.properties");
-		for(String string: propertyStrings) {
+		String[] propertyStrings = properties.getStringList(prefix
+				+ "system.properties");
+		for (String string : propertyStrings) {
 			String[] keyValue = string.split("=", 2);
 			if (keyValue.length == 2) {
 				systemProperties.put(keyValue[0], keyValue[1]);
 			} else if (keyValue.length == 1) {
 				systemProperties.put(keyValue[0], null);
 			} else {
-				throw new Exception("invalid system property specification: " + string);
+				throw new Exception("invalid system property specification: "
+						+ string);
 			}
 		}
 
-		javaOptions = parseStringList(properties.getProperty(prefix + "java.options"));
+		javaOptions = parseStringList(properties.getProperty(prefix
+				+ "java.options"));
 	}
 
 	public List<String> getArguments() {
@@ -177,7 +203,7 @@ public class Application {
 
 	private List<File> parseFileString(String string) {
 		List<File> result = new ArrayList<File>();
-		
+
 		if (string == null) {
 			return result;
 		}
@@ -208,7 +234,7 @@ public class Application {
 		if (string == null) {
 			return result;
 		}
-		
+
 		String[] list = string.split(",");
 		for (String element : list) {
 			if (element != null && element.length() > 0) {
@@ -225,11 +251,16 @@ public class Application {
 	 *            stream to write this file to
 	 * @param if
 	 *            true, key/value lines prepended with the application name
+	 * @throws Exception if this application has no name
 	 */
-	public void print(PrintWriter out, boolean prependName) {
+	public void print(PrintWriter out, boolean prependName) throws Exception {
 		String prefix;
 
 		if (prependName) {
+			if (name == null || name.length() == 0) {
+				throw new Exception("cannot print application to file,"
+						+ " name is not specified");
+			}
 			prefix = name + ".";
 		} else {
 			prefix = "";

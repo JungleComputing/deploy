@@ -2,16 +2,15 @@ package ibis.deploy;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.gridlab.gat.GAT;
-import org.gridlab.gat.URI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Deploy {
+
+	private static final Logger logger = LoggerFactory.getLogger(Deploy.class);
 
 	// "root" hub (perhaps including the server)
 	private Server rootHub;
@@ -22,9 +21,11 @@ public class Deploy {
 	// libraries used to start a server/hub
 	private File[] serverLibs;
 
+	// submitted jobs
 	private List<Job> jobs;
 
-	// running hubs.
+	// running hubs. Does not include hubs specificically started for a single
+	// job
 	private List<Server> hubs;
 
 	Deploy() {
@@ -45,56 +46,59 @@ public class Deploy {
 	 * @param serverCluster
 	 *            cluster where the server should be started, or null for a
 	 *            server embedded in this JVM.
-	 * @throws Exception if the sercer cannot be started
+	 * @throws Exception
+	 *             if the sercer cannot be started
 	 */
-	synchronized void initialize(File[] serverLibs, Cluster serverCluster) throws Exception {
+	synchronized void initialize(File[] serverLibs, Cluster serverCluster)
+			throws Exception {
 		if (serverLibs == null) {
 			throw new Exception("no server libraries specified");
 		}
 		this.serverLibs = serverLibs.clone();
-		//TODO: load server libs into this JVM
-		
+		// TODO: load server libs into this JVM
+
 		if (serverCluster == null) {
-			//build-in server, including hub
+			logger.info("Initializing deployer, server build-in");
+
 			rootHub = new Server(serverLibs, false);
 			server = rootHub;
 		} else {
+			logger.info("Initializing deployer, server running on: "
+					+ serverCluster);
+
 			rootHub = new Server(serverLibs, true);
 			server = new Server(serverLibs, serverCluster, false);
 			rootHub.addHubs(server.getAddress());
 		}
 	}
 
-	// returns a hub running on the specified cluster, or starts a new one if
-	// needed (or forced)
-	private synchronized Server getHub(Cluster cluster, boolean forceNew) {
-		if (!forceNew) {
-			for (Server server : hubs) {
-				if (server.getClusterURI().equals(cluster.getServerURI())) {
-					return server;
-				}
+	// returns a hub running on the specified cluster.
+	synchronized Server getHub(Cluster cluster) {
+		for (Server server : hubs) {
+			if (server.getClusterURI().equals(cluster.getServerURI())) {
+				return server;
 			}
 		}
 
-		// no hub found at specified cluster, or new hub forced
+		// no hub found at specified cluster, start a new one
 		Server result = new Server(serverLibs, cluster, true);
-		
-		//notify root hub of new hub
+
+		// notify root hub of new hub
 		rootHub.addHubs(result.getAddress());
-		
-		//add to list
+
+		// add to list
 		hubs.add(result);
 
 		return result;
 	}
-	
-	
 
 	/**
 	 * Submit a new job.
-	 * 
+	 *
+	 * @param grid
+	 *            grid to submit job to
 	 * @param cluster
-	 *            cluster to submit job to
+	 *            cluster within grid to submit job to
 	 * @param resourceCount
 	 *            number of resources to allocate on the cluster
 	 * @param aplication
@@ -103,36 +107,33 @@ public class Deploy {
 	 *            number of processes to start on the allocated resources
 	 * @param poolName
 	 *            name of the pool to join
-	 * @param forceNewHub
-	 *            If true, a new hub is started per job. If false, a single hub
-	 *            is started per cluster.
+	 * @param localHub
+	 *            If true, a new hub is started for this job. If false, a single
+	 *            hub is started per cluster.
 	 * @return
 	 * @throws Exception
 	 */
-	public synchronized Job submit(Cluster cluster, int resourceCount,
+	public synchronized Job submit(Grid grid, Cluster cluster, int resourceCount,
 			Application application, int processCount, String poolName,
-			boolean forceNewHub) throws Exception {
+			boolean localHub) throws Exception {
 		if (rootHub == null) {
 			throw new Exception("Deployer not initialized, cannot submit jobs");
 		}
 
-		// start a new hub on the specified cluster (if needed)
-		Server hub = getHub(cluster, forceNewHub);
-		
 		// start job
-		Job job = new Job(cluster, resourceCount, application, processCount,
-				poolName, server.getAddress(), hub.getAddress(), rootHub.getHubs());
+		Job job = new Job(grid, cluster, resourceCount, application, processCount,
+				poolName, server.getAddress(), rootHub, localHub);
 
 		jobs.add(job);
 
 		return job;
 	}
-	
-    /**
-     * Ends all jobs and closes all open connections.
-     */
-    public void end() {
-        GAT.end();
-    }
+
+	/**
+	 * Ends all jobs and closes all open connections.
+	 */
+	public void end() {
+		GAT.end();
+	}
 
 }

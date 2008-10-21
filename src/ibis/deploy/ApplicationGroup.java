@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -73,6 +74,13 @@ public class ApplicationGroup {
 	 */
 	public ApplicationGroup(String name, Application... applications)
 			throws Exception {
+		if (name == null) {
+			throw new Exception("no name specified for application group");
+		}
+		
+		this.name = name;
+		this.applications = Arrays.asList(applications);
+		this.defaults = new Application("defaults");
 	}
 
 	public String getName() {
@@ -142,7 +150,7 @@ public class ApplicationGroup {
 		return null;
 	}
 
-	public void save(File file) throws IOException {
+	public void save(File file) throws Exception {
 		if (!file.exists()) {
 			if (!file.createNewFile()) {
 				throw new IOException("failed to create a new file '" + file

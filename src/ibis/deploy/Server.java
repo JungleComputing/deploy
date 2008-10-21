@@ -6,12 +6,15 @@ import java.io.File;
 import java.util.Properties;
 
 import org.gridlab.gat.URI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Running server/hub
  * 
  */
 public class Server {
+	private static final Logger logger = LoggerFactory.getLogger(Server.class);
 
     // used in case of a local server
     private final ibis.server.Server server;
@@ -32,6 +35,8 @@ public class Server {
      *             if starting the server fails.
      */
     public Server(File[] libs, boolean hubOnly) throws Exception {
+    	logger.info("Starting build-in server, hub only: " + hubOnly);
+    	
         Properties properties = new Properties();
         properties.put(ServerProperties.HUB_ONLY, hubOnly + "");
 
@@ -51,6 +56,8 @@ public class Server {
      *            so, libs not supported)
      */
     public Server(File[] libs, Cluster cluster, boolean hubOnly) {
+    	logger.info("Starting server on " + cluster + " , hub only: " + hubOnly);
+
         server = null;
         
         address = null;
