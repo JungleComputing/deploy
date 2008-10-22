@@ -1,1 +1,1 @@
-${JAVA_HOME}/bin/java -classpath lib/* -Dlog4j.configuration=file:log4j.properties -Dgat.adaptor.path=lib/adaptors deployer.Deploy $*
+${JAVA_HOME}/bin/java -classpath lib/*:lib/javagat/* -Dlog4j.configuration=file:log4j.properties -Dgat.adaptor.path=lib/javagat/adaptors deployer.Deploy $*

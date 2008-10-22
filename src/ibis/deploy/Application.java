@@ -9,13 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class Application {
-
-	private static final Logger logger = LoggerFactory
-			.getLogger(Application.class);
 
 	// name of application
 	private String name;
@@ -281,6 +275,10 @@ public class Application {
 
 		out.println(prefix + "java.options=" + printStringList(javaOptions));
 
+	}
+	
+	public String toString() {
+		return name;
 	}
 
 }

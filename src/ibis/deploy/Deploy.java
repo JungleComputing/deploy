@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.gridlab.gat.GAT;
+import org.gridlab.gat.monitoring.MetricListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,77 +25,52 @@ public class Deploy {
 	// submitted jobs
 	private List<Job> jobs;
 
-	// running hubs. Does not include hubs specificically started for a single
-	// job
-	private List<Server> hubs;
-
 	Deploy() {
 		rootHub = null;
 		server = null;
 		serverLibs = null;
 
 		jobs = new ArrayList<Job>();
-		hubs = new ArrayList<Server>();
 	}
 
 	/**
 	 * Initialize this deployment object.
 	 * 
-	 * @param serverLibs
-	 *            All required files and directories to start a server or hub.
-	 *            Jar files will also be loaded into this JVM automatically.
 	 * @param serverCluster
 	 *            cluster where the server should be started, or null for a
 	 *            server embedded in this JVM.
+	 * @param serverLibs
+	 *            All required files and directories to start a server or hub.
+	 *            Jar files will also be loaded into this JVM automatically.
 	 * @throws Exception
 	 *             if the sercer cannot be started
 	 */
-	synchronized void initialize(File[] serverLibs, Cluster serverCluster)
+	synchronized void initialize(Cluster serverCluster, File... serverLibs)
 			throws Exception {
 		if (serverLibs == null) {
 			throw new Exception("no server libraries specified");
 		}
 		this.serverLibs = serverLibs.clone();
-		// TODO: load server libs into this JVM
 
 		if (serverCluster == null) {
 			logger.info("Initializing deployer, server build-in");
 
-			rootHub = new Server(serverLibs, false);
+			rootHub = new Server(false);
 			server = rootHub;
 		} else {
 			logger.info("Initializing deployer, server running on: "
 					+ serverCluster);
 
-			rootHub = new Server(serverLibs, true);
+			rootHub = new Server(true);
 			server = new Server(serverLibs, serverCluster, false);
 			rootHub.addHubs(server.getAddress());
 		}
-	}
-
-	// returns a hub running on the specified cluster.
-	synchronized Server getHub(Cluster cluster) {
-		for (Server server : hubs) {
-			if (server.getClusterURI().equals(cluster.getServerURI())) {
-				return server;
-			}
-		}
-
-		// no hub found at specified cluster, start a new one
-		Server result = new Server(serverLibs, cluster, true);
-
-		// notify root hub of new hub
-		rootHub.addHubs(result.getAddress());
-
-		// add to list
-		hubs.add(result);
-
-		return result;
+		logger.info("Deployer initialized succesfully");
 	}
 
 	/**
 	 * Submit a new job.
-	 *
+	 * 
 	 * @param grid
 	 *            grid to submit job to
 	 * @param cluster
@@ -113,16 +89,17 @@ public class Deploy {
 	 * @return
 	 * @throws Exception
 	 */
-	public synchronized Job submit(Grid grid, Cluster cluster, int resourceCount,
-			Application application, int processCount, String poolName,
-			boolean localHub) throws Exception {
+	public synchronized Job submit(Grid grid, Cluster cluster,
+			int resourceCount, Application application, int processCount,
+			String poolName, MetricListener listener) throws Exception {
 		if (rootHub == null) {
 			throw new Exception("Deployer not initialized, cannot submit jobs");
 		}
 
 		// start job
-		Job job = new Job(grid, cluster, resourceCount, application, processCount,
-				poolName, server.getAddress(), rootHub, localHub);
+		Job job = new Job(grid, cluster, resourceCount, application,
+				processCount, poolName, server.getAddress(), rootHub,
+				serverLibs);
 
 		jobs.add(job);
 
@@ -132,7 +109,21 @@ public class Deploy {
 	/**
 	 * Ends all jobs and closes all open connections.
 	 */
-	public void end() {
+	public synchronized void end() {
+		logger.info("ending ibis-deploy engine");
+		for(Job job: jobs) {
+			job.kill();
+		}
+		
+		if (rootHub != null) {
+			rootHub.killAll();
+			rootHub.kill();
+		}
+		
+		if (server != null) {
+			server.kill();
+		}
+
 		GAT.end();
 	}
 

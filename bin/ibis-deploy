@@ -1,1 +1,1 @@
-${JAVA_HOME}/bin/java -classpath lib/*:lib/castor-1.1.1-xml.jar -Dhub.background=0,0,0 -Dlog4j.configuration=file:log4j.properties -Dgat.adaptor.path=lib/adaptors deployer.ibis.IbisDeploy $*
+${JAVA_HOME}/bin/java -classpath lib/*:lib/javagat/*:lib/ipl/*:lib/javagat/castor-1.1.1-xml.jar -Dhub.background=0,0,0 -Dlog4j.configuration=file:log4j.properties -Dgat.adaptor.path=lib/javagat/adaptors deployer.ibis.IbisDeploy $*

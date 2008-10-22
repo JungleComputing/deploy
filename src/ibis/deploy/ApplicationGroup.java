@@ -189,5 +189,9 @@ public class ApplicationGroup {
 		}
 	}
 
+	public String toString() {
+		return name;
+	}
+
 
 }
