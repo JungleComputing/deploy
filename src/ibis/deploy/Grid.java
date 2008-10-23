@@ -6,212 +6,210 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 public class Grid {
 
-	private String name;
+    private String name;
 
-	// cluster representing defaults
-	private Cluster defaults;
+    // cluster representing defaults
+    private Cluster defaults;
 
-	private List<Cluster> clusters;
+    private List<Cluster> clusters;
 
-	/**
-	 * Constructs a grid object from properties stored in the given file. And
-	 * also constructs the clusters inside this grid.
-	 * 
-	 * @param file
-	 *            the file containing the properties
-	 * @throws FileNotFoundException
-	 *             if the given file cannot be found
-	 * @throws IOException
-	 *             if reading from the given file fails
-	 * @throws Exception
-	 *             if the properties don't contain a 'name' property with the
-	 *             name of the grid
-	 */
-	public Grid(File file) throws FileNotFoundException, IOException, Exception {
-		if (!file.exists()) {
-			throw new FileNotFoundException("file \"" + file
-					+ "\" does not exist");
-		}
+    /**
+     * Constructs a grid object from properties stored in the given file. And
+     * also constructs the clusters inside this grid.
+     * 
+     * @param file
+     *            the file containing the properties
+     * @throws FileNotFoundException
+     *             if the given file cannot be found
+     * @throws IOException
+     *             if reading from the given file fails
+     * @throws Exception
+     *             if the properties don't contain a 'name' property with the
+     *             name of the grid
+     */
+    public Grid(File file) throws FileNotFoundException, IOException, Exception {
+        if (!file.exists()) {
+            throw new FileNotFoundException("file \"" + file
+                    + "\" does not exist");
+        }
 
-		TypedProperties properties = new TypedProperties();
-		properties.loadFromFile(file.getAbsolutePath());
+        TypedProperties properties = new TypedProperties();
+        properties.loadFromFile(file.getAbsolutePath());
 
-		name = properties.getProperty("name");
+        name = properties.getProperty("name");
 
-		if (name == null || name.length() == 0) {
-			throw new Exception("no grid name specified in grid file: " + file);
-		}
+        if (name == null || name.length() == 0) {
+            throw new Exception("no grid name specified in grid file: " + file);
+        }
 
-		defaults = new Cluster(properties, null, null);
+        defaults = new Cluster(properties, null, null);
 
-		clusters = new ArrayList<Cluster>();
-		String[] clusterNames = properties.getStringList("clusters");
-		if (clusterNames != null) {
-			for (String clusterName : clusterNames) {
-				Cluster cluster = new Cluster(properties, clusterName, this);
-				clusters.add(cluster);
-			}
-		}
-	}
+        clusters = new ArrayList<Cluster>();
+        String[] clusterNames = properties.getStringList("clusters");
+        if (clusterNames != null) {
+            for (String clusterName : clusterNames) {
+                Cluster cluster = new Cluster(properties, clusterName, this);
+                clusters.add(cluster);
+            }
+        }
+    }
 
-	/**
-	 * Constructs a grid with the given name.
-	 * 
-	 * @param name
-	 *            the name of the grid
-	 * @throws Exception
-	 *             if the name is <code>null</code>
-	 */
-	public Grid(String name) throws Exception {
-		if (name == null) {
-			throw new Exception("no name specified for grid");
-		}
+    /**
+     * Constructs a grid with the given name.
+     * 
+     * @param name
+     *            the name of the grid
+     * @throws Exception
+     *             if the name is <code>null</code>
+     */
+    public Grid(String name) throws Exception {
+        if (name == null) {
+            throw new Exception("no name specified for grid");
+        }
 
-		this.name = name;
-		this.clusters = new ArrayList<Cluster>();
-		defaults = new Cluster("defaults", null);
-	}
+        this.name = name;
+        this.clusters = new ArrayList<Cluster>();
+        defaults = new Cluster("defaults", null);
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	/**
-	 * Returns the Clusters in this Grid.
-	 * 
-	 * @return the clusters in this Grid
-	 */
-	public Cluster[] getClusters() {
-		return clusters.toArray(new Cluster[0]);
-	}
+    /**
+     * Returns the Clusters in this Grid.
+     * 
+     * @return the clusters in this Grid
+     */
+    public Cluster[] getClusters() {
+        return clusters.toArray(new Cluster[0]);
+    }
 
-	/**
-	 * Removes the given cluster from the grid (if it belongs to the grid at
-	 * all).
-	 * 
-	 * @param cluster
-	 *            the cluster to be removed from this group
-	 */
-	public void removeCluster(Cluster cluster) {
-		clusters.remove(cluster);
-	}
+    /**
+     * Removes the given cluster from the grid (if it belongs to the grid at
+     * all).
+     * 
+     * @param cluster
+     *            the cluster to be removed from this group
+     */
+    public void removeCluster(Cluster cluster) {
+        clusters.remove(cluster);
+    }
 
-	/**
-	 * Creates a new cluster in this grid, with a given name.
-	 * 
-	 * @param name
-	 *            the name of the cluster
-	 * @throws Exception
-	 *             if the name given is <code>null</code>
-	 */
-	public Cluster createNewCluster(String name) throws Exception {
-		Cluster result = new Cluster(name, this);
+    /**
+     * Creates a new cluster in this grid, with a given name.
+     * 
+     * @param name
+     *            the name of the cluster
+     * @throws Exception
+     *             if the name given is <code>null</code>
+     */
+    public Cluster createNewCluster(String name) throws Exception {
+        Cluster result = new Cluster(name, this);
 
-		clusters.add(result);
+        clusters.add(result);
 
-		return result;
-	}
+        return result;
+    }
 
-	/**
-	 * Get an cluster with a given name from this Grid
-	 * 
-	 * @param clusterName
-	 *            the name of the cluster to search for
-	 * @return the cluster with the given name, or <code>null</code> if no
-	 *         clusters with the given name exist in this Grid.
-	 */
-	public Cluster getCluster(String clusterName) {
-		for (Cluster cluster : clusters) {
-			if (cluster.getName().equals(clusterName)) {
-				return cluster;
-			}
-		}
-		return null;
-	}
+    /**
+     * Get an cluster with a given name from this Grid
+     * 
+     * @param clusterName
+     *            the name of the cluster to search for
+     * @return the cluster with the given name, or <code>null</code> if no
+     *         clusters with the given name exist in this Grid.
+     */
+    public Cluster getCluster(String clusterName) {
+        for (Cluster cluster : clusters) {
+            if (cluster.getName().equals(clusterName)) {
+                return cluster;
+            }
+        }
+        return null;
+    }
 
-	/**
-	 * Returns cluster representing defaults of this grid.
-	 * 
-	 * @return cluster representing defaults of this grid.
-	 */
-	public Cluster getDefaults() {
-		return defaults;
-	}
+    /**
+     * Returns cluster representing defaults of this grid.
+     * 
+     * @return cluster representing defaults of this grid.
+     */
+    public Cluster getDefaults() {
+        return defaults;
+    }
 
-	public void save(File file) throws Exception {
-		if (!file.exists()) {
-			if (!file.createNewFile()) {
-				throw new IOException("failed to create a new file '" + file
-						+ "'.");
-			}
-		}
-		PrintWriter out = new PrintWriter(file);
-		// write defaults
-		out.println("# Grid properties file, " + "generated by Ibis Deploy on "
-				+ new Date(System.currentTimeMillis()));
-		out.println();
-		out.println("# Grid name:");
-		out.println("name = " + getName());
+    public void save(File file) throws Exception {
+        if (!file.exists()) {
+            if (!file.createNewFile()) {
+                throw new IOException("failed to create a new file '" + file
+                        + "'.");
+            }
+        }
+        PrintWriter out = new PrintWriter(file);
+        // write defaults
+        out.println("# Grid properties file, " + "generated by Ibis Deploy on "
+                + new Date(System.currentTimeMillis()));
+        out.println();
+        out.println("# Grid name:");
+        out.println("name = " + getName());
 
-		out.println();
-		out.println("# Default settings:");
-		defaults.print(out, false);
+        out.println();
+        out.println("# Default settings:");
+        defaults.print(out, false);
 
-		// write names of clusters
-		out.println();
-		out.println("# Comma seperated list of clusters in this grid:");
+        // write names of clusters
+        out.println();
+        out.println("# Comma seperated list of clusters in this grid:");
 
-		if (clusters.size() > 0) {
-			out.print("clusters = ");
-			for (int i = 0; i < clusters.size() - 1; i++) {
-				out.print(clusters.get(i).getName() + ",");
-			}
-			out.println(clusters.get(clusters.size() - 1).getName());
-		} else {
-			out.println("clusters = ");
-		}
+        if (clusters.size() > 0) {
+            out.print("clusters = ");
+            for (int i = 0; i < clusters.size() - 1; i++) {
+                out.print(clusters.get(i).getName() + ",");
+            }
+            out.println(clusters.get(clusters.size() - 1).getName());
+        } else {
+            out.println("clusters = ");
+        }
 
-		// write clusters
-		for (Cluster cluster : clusters) {
-			out.println();
-			out.println("# Details of cluster \"" + cluster.getName() + "\"");
-			cluster.print(out, true);
+        // write clusters
+        for (Cluster cluster : clusters) {
+            out.println();
+            out.println("# Details of cluster \"" + cluster.getName() + "\"");
+            cluster.print(out, true);
 
-		}
-		out.flush();
-		out.close();
-	}
+        }
+        out.flush();
+        out.close();
+    }
 
-	public String toString() {
-		return name;
-	}
+    public String toString() {
+        return name;
+    }
 
-	/**
-	 * Returns an info string suitable for printing (with newlines)
-	 * 
-	 * @return an info string suitable for printing (with newlines)
-	 */
-	public String toPrintString() {
-		String result = "Grid \"" + getName() + "\" containing "
-				+ clusters.size() + " clusters\n";
+    /**
+     * Returns an info string suitable for printing (with newlines)
+     * 
+     * @return an info string suitable for printing (with newlines)
+     */
+    public String toPrintString() {
+        String result = "Grid \"" + getName() + "\" containing "
+                + clusters.size() + " clusters\n";
 
-		for (Cluster cluster : clusters) {
-			result += cluster.toPrintString() + "\n";
-		}
+        for (Cluster cluster : clusters) {
+            result += cluster.toPrintString() + "\n";
+        }
 
-		return result;
-	}
+        return result;
+    }
 
 }

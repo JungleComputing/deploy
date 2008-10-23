@@ -7,7 +7,7 @@ import java.util.Set;
  * A PropertySetGroup is the abstract base class of a group of PropertySets that
  * has some default values.
  * 
- * @author rkemp
+ * @author rkempproperties
  */
 public abstract class PropertySetGroup extends PropertySet {
 

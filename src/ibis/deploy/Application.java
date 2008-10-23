@@ -5,280 +5,366 @@ import ibis.util.TypedProperties;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class Application {
 
-	// name of application
-	private String name;
+    // group this application belongs to
+    private final ApplicationGroup parent;
 
-	// main class of application
-	private String mainClass;
+    // name of application
+    private String name;
 
-	// files and dirs which need to be in the classpath
-	// automatically prestaged aswell.
-	private List<File> libs;
+    // main class of application
+    private String mainClass;
 
-	// arguments of the application
-	private List<String> arguments;
+    // files and dirs which need to be in the classpath
+    // automatically prestaged aswell.
+    private List<File> classpath;
 
-	// additional input files (not jars)
-	private List<File> inputFiles;
+    // arguments of the application
+    private List<String> arguments;
 
-	// output files
-	private List<File> outputFiles;
+    // additional input files (not jars)
+    private List<File> inputFiles;
 
-	// <NAME, VALUE> additional system properties
-	private Map<String, String> systemProperties;
+    // output files
+    private List<File> outputFiles;
 
-	// additional JVM options
-	private List<String> javaOptions;
+    // <NAME, VALUE> additional system properties
+    private Map<String, String> systemProperties;
 
-	/**
-	 * Creates a new application with a given name
-	 * 
-	 * @param name
-	 *            the name of the aplication
-	 * @throws Exception
-	 *             if the name given is <code>null</code>
-	 */
-	public Application(String name) throws Exception {
-		if (name == null) {
-			throw new Exception("no name specified for application");
-		}
-		this.name = name;
-		mainClass = null;
-		libs = new ArrayList<File>();
-		arguments = new ArrayList<String>();
-		inputFiles = new ArrayList<File>();
-		outputFiles = new ArrayList<File>();
-		systemProperties = new HashMap<String, String>();
-		javaOptions = new ArrayList<String>();
-	}
+    // additional JVM options
+    private List<String> javaOptions;
 
-	/**
-	 * Load application from the given properties (usually loaded from an
-	 * application file)
-	 * 
-	 * @param properties
-	 *            properties to load application from
-	 * @param object
-	 *            name of this application, or null to load "defaults"
-	 *            application
-	 * @throws Exception
-	 *             if application cannot be read properly
-	 */
-	public Application(TypedProperties properties, String name)
-			throws Exception {
-		String prefix;
-		if (name == null) {
-			prefix = "";
-		} else {
-			prefix = name + ".";
-		}
+    /**
+     * Creates a new appplication with a given name. Applications cannot be
+     * created directly, but are constructed by a parent ApplicationGroup
+     * object.
+     * 
+     * @param name
+     *            the name of the application
+     * @throws Exception
+     *             if the name given is <code>null</code>
+     */
 
-		this.name = name;
-		mainClass = properties.getProperty(prefix + "main.class");
-		libs = parseFileString(properties.getProperty(prefix + "libs"));
-		arguments = parseStringList(properties
-				.getProperty(prefix + "arguments"));
-		inputFiles = parseFileString(properties.getProperty(prefix
-				+ "input.files"));
-		outputFiles = parseFileString(properties.getProperty(prefix
-				+ "output.files"));
+    Application(String name, ApplicationGroup parent) throws Exception {
+        this.parent = parent;
 
-		systemProperties = new HashMap<String, String>();
-		String[] propertyStrings = properties.getStringList(prefix
-				+ "system.properties");
-		for (String string : propertyStrings) {
-			String[] keyValue = string.split("=", 2);
-			if (keyValue.length == 2) {
-				systemProperties.put(keyValue[0], keyValue[1]);
-			} else if (keyValue.length == 1) {
-				systemProperties.put(keyValue[0], null);
-			} else {
-				throw new Exception("invalid system property specification: "
-						+ string);
-			}
-		}
+        if (name == null) {
+            throw new Exception("no name specified for application");
+        }
+        this.name = name;
 
-		javaOptions = parseStringList(properties.getProperty(prefix
-				+ "java.options"));
-	}
+        mainClass = null;
+        classpath = null;
+        arguments = null;
+        inputFiles = null;
+        outputFiles = null;
+        systemProperties = null;
+        javaOptions = null;
+    }
 
-	public List<String> getArguments() {
-		return arguments;
-	}
+    /**
+     * Load application from the given properties (usually loaded from an
+     * application-group file)
+     * 
+     * @param properties
+     *            properties to load application from
+     * @param object
+     *            name of this application, or null to load "defaults"
+     *            application
+     * @throws Exception
+     *             if application cannot be read properly
+     */
+    Application(TypedProperties properties, String name, ApplicationGroup parent)
+            throws Exception {
+        this.parent = parent;
+        this.name = name;
 
-	public void setArguments(List<String> arguments) {
-		this.arguments = arguments;
-	}
+        String prefix;
+        if (name == null) {
+            prefix = "";
+        } else {
+            prefix = name + ".";
+        }
 
-	public List<File> getInputFiles() {
-		return inputFiles;
-	}
+        mainClass = properties.getProperty(prefix + "main.class");
+        classpath = Util.getFileListProperty(properties, prefix + "libs");
+        arguments = Util
+                .getStringListProperty(properties, prefix + "arguments");
+        inputFiles = Util.getFileListProperty(properties, prefix
+                + "input.files");
+        outputFiles = Util.getFileListProperty(properties, prefix
+                + "output.files");
+        systemProperties = Util.getStringMapProperty(properties, prefix
+                + "system.properties");
+        javaOptions = Util.getStringListProperty(properties, prefix
+                + "java.options");
+    }
 
-	public void setInputFiles(List<File> inputFiles) {
-		this.inputFiles = inputFiles;
-	}
+    public String[] getArguments() {
+        if (arguments == null) {
+            if (parent == null) {
+                return null;
+            }
+            return parent.getDefaults().getArguments();
+        }
+        return arguments.toArray(new String[0]);
+    }
 
-	public void addInputFile(File file) {
-		inputFiles.add(file);
-	}
+    public void setArguments(String[] arguments) {
+        if (arguments == null) {
+            this.arguments = null;
+        } else {
+            this.arguments = Arrays.asList(arguments.clone());
+        }
+    }
 
-	public List<String> getJavaOptions() {
-		return javaOptions;
-	}
+    public void addArgument(String argument) {
+        if (arguments == null) {
+            arguments = new ArrayList<String>();
+        }
+        arguments.add(argument);
+    }
 
-	public void setJavaOptions(List<String> javaOptions) {
-		this.javaOptions = javaOptions;
-	}
+    public File[] getInputFiles() {
+        if (inputFiles == null) {
+            if (parent == null) {
+                return null;
+            }
+            return parent.getDefaults().getInputFiles();
+        }
+        return inputFiles.toArray(new File[0]);
+    }
 
-	public void addJavaOption(String option) {
-		javaOptions.add(option);
-	}
+    public void setInputFiles(File[] inputFiles) {
+        if (inputFiles == null) {
+            this.inputFiles = null;
+        } else {
+            this.inputFiles = Arrays.asList(inputFiles.clone());
+        }
+    }
 
-	public List<File> getLibs() {
-		return libs;
-	}
+    public void addInputFiles(String inputFile) {
+        if (inputFiles == null) {
+            inputFiles = new ArrayList<File>();
+        }
+        arguments.add(inputFile);
+    }
 
-	public void setLibs(List<File> libs) {
-		this.libs = libs;
-	}
+    public String[] getJavaOptions() {
+        if (javaOptions == null) {
+            if (parent == null) {
+                return null;
+            }
+            return parent.getDefaults().getJavaOptions();
+        }
+        return javaOptions.toArray(new String[0]);
+    }
 
-	public String getMainClass() {
-		return mainClass;
-	}
+    public void setJavaOptions(String[] javaOptions) {
+        if (javaOptions == null) {
+            this.javaOptions = null;
+        } else {
+            this.javaOptions = Arrays.asList(javaOptions.clone());
+        }
+    }
 
-	public void setMainClass(String mainClass) {
-		this.mainClass = mainClass;
-	}
+    public void addJavaOptions(String javaOption) {
+        if (javaOptions == null) {
+            javaOptions = new ArrayList<String>();
+        }
+        javaOptions.add(javaOption);
+    }
 
-	public List<File> getOutputFiles() {
-		return outputFiles;
-	}
+    public File[] getClasspath() {
+        if (classpath == null) {
+            if (parent == null) {
+                return null;
+            }
+            return parent.getDefaults().getClasspath();
+        }
+        return classpath.toArray(new File[0]);
+    }
 
-	public void setOutputFiles(List<File> outputFiles) {
-		this.outputFiles = outputFiles;
-	}
+    public void setClasspath(File[] classpath) {
+        if (classpath == null) {
+            this.classpath = null;
+        } else {
+            this.classpath = Arrays.asList(classpath.clone());
+        }
+    }
 
-	public void addOutputFile(File file) {
-		outputFiles.add(file);
-	}
+    public void addClasspathElement(File classpathElement) {
+        if (classpath == null) {
+            classpath = new ArrayList<File>();
+        }
+        classpath.add(classpathElement);
+    }
 
-	public Map<String, String> getSystemProperties() {
-		return systemProperties;
-	}
+    public String getMainClass() {
+        if (mainClass == null) {
+            if (parent == null) {
+                return null;
+            }
+            return parent.getDefaults().getMainClass();
+        }
+        return mainClass;
+    }
 
-	public void setSystemProperties(Map<String, String> systemProperties) {
-		this.systemProperties = systemProperties;
-	}
+    public void setMainClass(String mainClass) {
+        this.mainClass = mainClass;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	private String printFileList(List<File> list) {
-		if (list.size() == 0) {
-			return "";
-		}
-		String result = "";
-		for (File object : list) {
-			result = result + object.toString() + ",";
-		}
-		return result.substring(0, result.length() - 1);
-	}
+    public File[] getOutputFiles() {
+        if (outputFiles == null) {
+            if (parent == null) {
+                return null;
+            }
+            return parent.getDefaults().getOutputFiles();
+        }
+        return outputFiles.toArray(new File[0]);
+    }
 
-	private List<File> parseFileString(String string) {
-		List<File> result = new ArrayList<File>();
+    public void setOutputFiles(File[] outputFiles) {
+        if (outputFiles == null) {
+            this.outputFiles = null;
+        } else {
+            this.outputFiles = Arrays.asList(outputFiles.clone());
+        }
+    }
 
-		if (string == null) {
-			return result;
-		}
+    public void addOutputFilesElement(File outputFile) {
+        if (outputFiles == null) {
+            outputFiles = new ArrayList<File>();
+        }
+        outputFiles.add(outputFile);
+    }
 
-		String[] list = string.split(",");
-		for (String element : list) {
-			if (element != null && element.length() > 0) {
-				result.add(new File(element));
-			}
-		}
-		return result;
-	}
+    public Map<String, String> getSystemProperties() {
+        if (systemProperties == null) {
+            if (parent == null) {
+                return null;
+            }
+            return parent.getDefaults().getSystemProperties();
+        }
+        return new HashMap<String, String>(systemProperties);
+    }
 
-	private String printStringList(List<String> list) {
-		if (list.size() == 0) {
-			return "";
-		}
-		String result = "";
-		for (String object : list) {
-			result = result + object.toString() + ",";
-		}
-		return result.substring(0, result.length() - 1);
-	}
+    public void setSystemProperties(Map<String, String> systemProperties) {
+        if (systemProperties == null) {
+            this.systemProperties = null;
+        } else {
+            this.systemProperties = new HashMap<String, String>(
+                    systemProperties);
+        }
+    }
+    
+    public void addSystemProperty(String key, String value) {
+        if (systemProperties == null) {
+            systemProperties = new HashMap<String, String>();
+        }
+        systemProperties.put(key, value);
+    }
 
-	private List<String> parseStringList(String string) {
-		List<String> result = new ArrayList<String>();
+    /**
+     * Print the settings of this application to a (properties) file
+     * 
+     * @param out
+     *            stream to write this file to
+     * @param prependName
+     *            if true, key/value lines prepended with the application name
+     * @throws Exception
+     *             if this application has no name
+     */
+    public void print(PrintWriter out, boolean prependName) throws Exception {
+        String prefix;
 
-		if (string == null) {
-			return result;
-		}
+        if (prependName) {
+            if (name == null || name.length() == 0) {
+                throw new Exception("cannot print application to file,"
+                        + " name is not specified");
+            }
+            prefix = name + ".";
+        } else {
+            prefix = "";
+        }
 
-		String[] list = string.split(",");
-		for (String element : list) {
-			if (element != null && element.length() > 0) {
-				result.add(element);
-			}
-		}
-		return result;
-	}
+        if (mainClass == null) {
+            out.println("#" + prefix + "main.class =");
+        } else {
+            out.println(prefix + "main.class = " + mainClass);
+        }
 
-	/**
-	 * Print the settings of this application to a (properties) file
-	 * 
-	 * @param out
-	 *            stream to write this file to
-	 * @param if
-	 *            true, key/value lines prepended with the application name
-	 * @throws Exception if this application has no name
-	 */
-	public void print(PrintWriter out, boolean prependName) throws Exception {
-		String prefix;
+        if (classpath == null) {
+            out.println("#" + prefix + "libs =");
+        } else {
+            out.println(prefix + "libs = " + Util.files2CSS(classpath));
+        }
 
-		if (prependName) {
-			if (name == null || name.length() == 0) {
-				throw new Exception("cannot print application to file,"
-						+ " name is not specified");
-			}
-			prefix = name + ".";
-		} else {
-			prefix = "";
-		}
+        if (arguments == null) {
+            out.println("#" + prefix + "arguments =");
+        } else {
+            out.println(prefix + "arguments = " + Util.strings2CSS(arguments));
+        }
 
-		out.println(prefix + "main.class=" + mainClass);
-		out.println(prefix + "libs=" + printFileList(libs));
-		out.println(prefix + "arguments=" + printStringList(arguments));
+        if (inputFiles == null) {
+            out.println("#" + prefix + "input.files =");
+        } else {
+            out.println(prefix + "input.files = " + Util.files2CSS(inputFiles));
+        }
 
-		out.println(prefix + "input.files=" + printFileList(inputFiles));
-		out.println(prefix + "output.files=" + printFileList(outputFiles));
+        if (outputFiles == null) {
+            out.println("#" + prefix + "output.files =");
+        } else {
+            out.println(prefix + "output.files = "
+                    + Util.files2CSS(outputFiles));
+        }
 
-		out.print(prefix + "system.properties=");
-		for (Map.Entry<String, String> entry : systemProperties.entrySet()) {
-			out.print(entry.getKey() + "=" + entry.getValue() + ",");
-		}
-		out.println();
+        if (systemProperties == null) {
+            out.println("#" + prefix + "system.properties =");
+        } else {
+            out.print(prefix + "system.properties = "
+                    + Util.toCSString(systemProperties));
+            out.println();
+        }
 
-		out.println(prefix + "java.options=" + printStringList(javaOptions));
+        if (javaOptions == null) {
+            out.println("#" + prefix + "java.options =");
+        } else {
+            out.println(prefix + "java.options = "
+                    + Util.strings2CSS(javaOptions));
+        }
+    }
 
-	}
-	
-	public String toString() {
-		return name;
-	}
+    public String toPrintString() {
+        String result = "Application " + getName() + "\n";
+        result += " Main class = " + getMainClass() + "\n";
+        result += " Libs = " + Util.files2CSS(getClasspath()) + "\n";
+        result += " Arguments = " + Util.strings2CSS(getArguments()) + "\n";
+        result += " Input Files = " + Util.files2CSS(getInputFiles()) + "\n";
+        result += " Output Files = " + Util.files2CSS(getOutputFiles()) + "\n";
+        result += " System properties = "
+                + Util.toCSString(getSystemProperties()) + "\n";
+        result += " Java Options = " + Util.strings2CSS(getJavaOptions()) + "\n";
+
+        return result;
+    }
+
+    public String toString() {
+        return name;
+    }
 
 }
