@@ -26,301 +26,356 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class Server implements Runnable, MetricListener {
-    private static final Logger logger = LoggerFactory.getLogger(Server.class);
+	private static final Logger logger = LoggerFactory.getLogger(Server.class);
 
-    // used in case of a local server
-    private final ibis.server.Server server;
+	// used in case of a local server
+	private final ibis.server.Server server;
 
-    private String address;
+	private String address;
 
-    private final boolean local;
+	private final boolean local;
 
-    private final boolean hubOnly;
+	private final boolean hubOnly;
 
-    private final GATContext context;
+	private final GATContext context;
 
-    private final URI resourceBrokerURI;
+	private final URI resourceBrokerURI;
 
-    private final JobDescription jobDescription;
+	private final JobDescription jobDescription;
 
-    // in case this hub/server dies or fails to start, the error will be here
-    private Exception error = null;
+	// in case this hub/server dies or fails to start, the error will be here
+	private Exception error = null;
 
-    /**
-     * Start a server/hub locally.
-     * 
-     * @param hubOnly
-     *            if true, only start a hub. If false, also start a server.
-     * @throws Exception
-     *             if starting the server fails.
-     */
-    @SuppressWarnings("unchecked")
-    public Server(boolean hubOnly) throws Exception {
-        local = true;
-        this.hubOnly = hubOnly;
+	private final String gridName;
 
-        logger.info("Starting build-in server, hub only: " + hubOnly);
+	private final String clusterName;
 
-        Properties properties = new Properties();
-        properties.put(ServerProperties.HUB_ONLY, hubOnly + "");
-        properties.put(ServerProperties.PRINT_ERRORS, "true");
-        properties.put(ServerProperties.PRINT_EVENTS, "true");
-        properties.put(ServerProperties.PRINT_STATS, "true");
+	// reference to rootHub so this server can report its address
+	private final Server rootHub;
 
-        server = new ibis.server.Server(properties);
-        address = server.getLocalAddress();
+	/**
+	 * Start a server/hub locally.
+	 * 
+	 * @param hubOnly
+	 *            if true, only start a hub. If false, also start a server.
+	 * @throws Exception
+	 *             if starting the server fails.
+	 */
+	@SuppressWarnings("unchecked")
+	Server(boolean hubOnly, Server rootHub) throws Exception {
+		gridName = null;
+		clusterName = null;
+		local = true;
+		this.hubOnly = hubOnly;
+		this.rootHub = rootHub;
 
-        context = null;
-        resourceBrokerURI = null;
-        jobDescription = null;
+		if (hubOnly) {
+			logger.info("Starting build-in hub");
+		} else {
+			logger.info("Starting build-in server");
+		}
 
-        logger.info(server.toString());
-    }
+		Properties properties = new Properties();
+		properties.put(ServerProperties.HUB_ONLY, hubOnly + "");
+		properties.put(ServerProperties.PRINT_ERRORS, "true");
+		properties.put(ServerProperties.PRINT_EVENTS, "true");
+		properties.put(ServerProperties.PRINT_STATS, "true");
+		properties.put(ServerProperties.PORT, "0");
 
-    /**
-     * Create a server/hub on the given cluster. Does not block, so server may
-     * not be available when this constructor completes.
-     * 
-     * @param libs
-     *            jar files/directories needed to start the server
-     * @param hubOnly
-     *            if true, only start a smartsockets hub. If false, start the
-     *            complete server)
-     */
-    public Server(File[] libs, Cluster cluster, boolean hubOnly)
-            throws Exception {
-        local = false;
-        server = null;
-        this.hubOnly = hubOnly;
+		server = new ibis.server.Server(properties);
+		address = server.getLocalAddress();
 
-        address = null;
+		context = null;
+		resourceBrokerURI = null;
+		jobDescription = null;
 
-        logger
-                .info("Starting server on " + cluster + " , hub only: "
-                        + hubOnly);
+		if (rootHub != null) {
+			rootHub.addHubs(this.getAddress());
+		}
 
-        context = createGATContext(cluster);
+		logger.info(server.toString());
+	}
 
-        resourceBrokerURI = cluster.getServerURI();
-        if (resourceBrokerURI == null) {
-            throw new Exception("no resource broker URI given for cluster "
-                    + cluster);
-        }
+	/**
+	 * Create a server/hub on the given cluster. Does not block, so server may
+	 * not be available when this constructor completes.
+	 * 
+	 * @param libs
+	 *            jar files/directories needed to start the server
+	 * @param cluster
+	 *            cluster to start this server on
+	 * @param hubOnly
+	 *            if true, only start a smartsockets hub. If false, start the
+	 *            complete server)
+	 * @param rootHub
+	 *            roothub of this ibis-deploy. Address of this hub is reported
+	 *            to root-hub.
+	 */
+	Server(File[] libs, Cluster cluster, boolean hubOnly, Server rootHub)
+			throws Exception {
+		local = false;
+		server = null;
+		this.hubOnly = hubOnly;
+		this.rootHub = rootHub;
+		gridName = cluster.getGridName();
+		clusterName = cluster.getName();
 
-        jobDescription = createJobDescription(cluster, libs, hubOnly);
+		address = null;
 
-        ThreadPool.createNew(this, "server on " + cluster);
-    }
+		if (clusterName == null) {
+			throw new Exception(
+					"cannot start hub on an unnamed cluster. (grid = "
+							+ gridName + ")");
+		}
 
-    private static GATContext createGATContext(Cluster cluster)
-            throws Exception {
-        GATContext context = new GATContext();
-        if (cluster.getUserName() != null) {
-            SecurityContext securityContext = new CertificateSecurityContext(
-                    null, null, cluster.getUserName(), null);
-            // securityContext.addNote("adaptors",
-            // "commandlinessh,sshtrilead");
-            context.addSecurityContext(securityContext);
-        }
-        context.addPreference("file.chmod", "0755");
-        if (cluster.getServerAdaptor() == null) {
-            throw new Exception("no server adaptor specified for cluster: "
-                    + cluster);
-        }
+		if (gridName == null) {
+			throw new Exception(
+					"cannot start hub on an unnamed grid. (cluster = "
+							+ clusterName + ")");
+		}
 
-        context.addPreference("resourcebroker.adaptor.name", cluster
-                .getServerAdaptor());
+		if (hubOnly) {
+			logger.info("Starting hub on " + cluster + " using " + cluster.getServerAdaptor() + "(" + cluster.getServerURI() + ")");
+		} else {
+			logger.info("Starting server on " + cluster + " using " + cluster.getServerAdaptor() + "(" + cluster.getServerURI() + ")");
+		}
 
-        if (cluster.getFileAdaptors() == null
-                || cluster.getFileAdaptors().length == 0) {
-            throw new Exception("no file adaptors specified for cluster: "
-                    + cluster);
-        }
+		context = createGATContext(cluster);
 
-        context.addPreference("file.adaptor.name", Util.strings2CSS(cluster
-                .getFileAdaptors()));
+		resourceBrokerURI = cluster.getServerURI();
+		if (resourceBrokerURI == null) {
+			throw new Exception("no resource broker URI given for cluster "
+					+ cluster);
+		}
 
-        return context;
+		jobDescription = createJobDescription(cluster, libs, hubOnly);
 
-    }
+		ThreadPool.createNew(this, "server on " + cluster);
+	}
 
-    private static String classpathFor(File file, String prefix) {
-        logger
-                .debug("getting classpath for " + file + " with prefix "
-                        + prefix);
+	private static GATContext createGATContext(Cluster cluster)
+			throws Exception {
+		GATContext context = new GATContext();
+		if (cluster.getUserName() != null) {
+			SecurityContext securityContext = new CertificateSecurityContext(
+					null, null, cluster.getUserName(), null);
+			// securityContext.addNote("adaptors",
+			// "commandlinessh,sshtrilead");
+			context.addSecurityContext(securityContext);
+		}
+		context.addPreference("file.chmod", "0755");
+		if (cluster.getServerAdaptor() == null) {
+			throw new Exception("no server adaptor specified for cluster: "
+					+ cluster);
+		}
 
-        if (!file.isDirectory()) {
-            // regular files not in classpath
-            return "";
-        }
-        // classpath for dir "lib" with prefix "dir/" is dir/lib/*:dir/lib
-        // both directory itself, and all files in that dir (*)
-        String result = prefix + file.getName() + File.separator + "*"
-                + File.pathSeparator + prefix + file.getName()
-                + File.pathSeparator;
-        for (File child : file.listFiles()) {
-            result = result
-                    + classpathFor(child, file.getName() + File.separator);
-        }
-        return result;
-    }
+		context.addPreference("resourcebroker.adaptor.name", cluster
+				.getServerAdaptor());
 
-    // classpath made up of all directories, as well as
-    private static String createClassPath(File[] serverLibs) {
-        // start with root directory
-        String result = "." + File.pathSeparator + "*" + File.pathSeparator;
+		if (cluster.getFileAdaptors() == null
+				|| cluster.getFileAdaptors().length == 0) {
+			throw new Exception("no file adaptors specified for cluster: "
+					+ cluster);
+		}
 
-        for (File file : serverLibs) {
-            result = result + classpathFor(file, "");
-        }
+		context.addPreference("file.adaptor.name", Util.strings2CSS(cluster
+				.getFileAdaptors()));
 
-        return result;
-    }
+		return context;
 
-    private static JobDescription createJobDescription(Cluster cluster,
-            File[] serverLibs, boolean hubOnly) throws Exception {
-        logger.debug("creating job description");
+	}
 
-        JavaSoftwareDescription sd = new JavaSoftwareDescription();
+	private static String classpathFor(File file, String prefix) {
+		if (!file.isDirectory()) {
+			// regular files not in classpath
+			return "";
+		}
+		// classpath for dir "lib" with prefix "dir/" is dir/lib/*:dir/lib
+		// both directory itself, and all files in that dir (*)
+		String result = prefix + file.getName() + File.separator + "*"
+				+ File.pathSeparator + prefix + file.getName()
+				+ File.pathSeparator;
+		for (File child : file.listFiles()) {
+			result = result
+					+ classpathFor(child, prefix + file.getName() + File.separator);
+		}
+		return result;
+	}
 
-        sd.setExecutable(cluster.getJavaPath());
-        if (logger.isInfoEnabled()) {
-            logger.info("executable: " + sd.getExecutable());
-        }
+	// classpath made up of all directories, as well as
+	private static String createClassPath(File[] serverLibs) {
+		// start with root directory
+		String result = "." + File.pathSeparator + "*" + File.pathSeparator;
 
-        // main class and options
-        sd.setJavaMain("ibis.server.Server");
-        if (hubOnly) {
-            sd.setJavaArguments(new String[] { "--hub-only", "--remote",
-                    "--port", "0" });
-        } else {
-            sd.setJavaArguments(new String[] { "--remote", "--port", "0",
-                    "--events", "--stats" });
-        }
+		for (File file : serverLibs) {
+			result = result + classpathFor(file, "");
+		}
 
-        for (File file : serverLibs) {
-            URI uri = new URI(file.getAbsolutePath());
-            org.gridlab.gat.io.File gatFile = GAT.createFile(uri);
+		return result;
+	}
 
-            org.gridlab.gat.io.File gatDstFile = GAT.createFile(new URI("."));
+	private static JobDescription createJobDescription(Cluster cluster,
+			File[] serverLibs, boolean hubOnly) throws Exception {
+		logger.debug("creating job description");
 
-            sd.addPreStagedFile(gatFile, gatDstFile);
-        }
+		JavaSoftwareDescription sd = new JavaSoftwareDescription();
 
-        sd.getAttributes().put("sandbox.delete", "false");
+		sd.setExecutable(cluster.getJavaPath());
+		logger.debug("executable: " + sd.getExecutable());
 
-        // class path
-        sd.setJavaClassPath(createClassPath(serverLibs));
+		// main class and options
+		sd.setJavaMain("ibis.server.Server");
+		if (hubOnly) {
+			sd.setJavaArguments(new String[] { "--hub-only", "--remote",
+					"--port", "0" });
+		} else {
+			sd.setJavaArguments(new String[] { "--remote", "--port", "0",
+					"--events", "--stats" });
+		}
 
-        sd.enableStreamingStdout(true);
-        sd.enableStreamingStderr(true);
-        sd.enableStreamingStdin(true);
+		for (File file : serverLibs) {
+			URI uri = new URI(file.getAbsolutePath());
+			org.gridlab.gat.io.File gatFile = GAT.createFile(uri);
 
-        JobDescription result = new JobDescription(sd);
+			org.gridlab.gat.io.File gatDstFile = GAT.createFile(new URI("."));
 
-        result.setProcessCount(1);
-        result.setResourceCount(1);
+			sd.addPreStagedFile(gatFile, gatDstFile);
+		}
 
-        return result;
-    }
+		//sd.getAttributes().put("sandbox.delete", "false");
 
-    public synchronized String getAddress() throws Exception {
-        waitUntilRunning();
-        return address;
-    }
+		// class path
+		sd.setJavaClassPath(createClassPath(serverLibs));
 
-    private synchronized void setAddress(String address) {
-        this.address = address;
-        notifyAll();
-    }
+		sd.enableStreamingStdout(true);
+		sd.enableStreamingStderr(true);
+		sd.enableStreamingStdin(true);
 
-    public String[] getHubs() throws Exception {
-        if (!local) {
-            throw new Exception("cannot get hubs for remote server");
-        }
-        return server.getHubs();
-    }
+		JobDescription result = new JobDescription(sd);
 
-    public void addHubs(String... hubs) throws Exception {
-        if (!local) {
-            throw new Exception("cannot add hubs to remote server");
-        }
+		result.setProcessCount(1);
+		result.setResourceCount(1);
 
-        server.addHubs(hubs);
-    }
+		return result;
+	}
 
-    public void killAll() {
-        // TODO:implement
-    }
+	/**
+	 * Geth the address of this server. Also waits until it is running.
+	 * 
+	 * @return the address of this server
+	 * @throws Exception
+	 *             if the server failed to start
+	 */
+	public synchronized String getAddress() throws Exception {
+		waitUntilRunning();
+		return address;
+	}
 
-    public void kill() {
-        if (local) {
-            server.end(-1);
-        } else {
-            // TODO: kill server
-        }
-    }
+	private synchronized void setAddress(String address) {
+		this.address = address;
+		notifyAll();
+	}
 
-    private synchronized void setError(Exception error) {
-        this.error = error;
-        notifyAll();
-    }
+	String[] getHubs() throws Exception {
+		if (!local) {
+			throw new Exception("cannot get hubs for remote server");
+		}
+		return server.getHubs();
+	}
 
-    /**
-     * Ensure this server is running, wait for it if needed.
-     * 
-     * @throws Exception
-     *             when the server could not be started.
-     */
-    public synchronized void waitUntilRunning() throws Exception {
-        while (address == null) {
-            if (error != null) {
-                throw error;
-            }
+	void addHubs(String... hubs) throws Exception {
+		if (!local) {
+			throw new Exception("cannot add hubs to remote server");
+		}
 
-            wait(1000);
-        }
-        if (error != null) {
-            throw error;
-        }
-    }
+		server.addHubs(hubs);
+	}
 
-    public String toString() {
-        if (local && hubOnly) {
-            return "Local Hub";
-        } else if (local) {
-            return "Local Server";
-        } else if (hubOnly) {
-            return "Remote Hub";
-        } else {
-            return "Remote Server";
-        }
-    }
+	void killAll() {
+		// TODO:implement
+	}
 
-    public void run() {
-        try {
-            logger.debug("creating resource broker for hub");
+	void kill() {
+		if (local) {
+			server.end(-1);
+		} else {
+			// TODO: kill server
+		}
+	}
 
-            ResourceBroker jobBroker = GAT.createResourceBroker(context,
-                    resourceBrokerURI);
+	private synchronized void setError(Exception error) {
+		this.error = error;
+		notifyAll();
+	}
 
-            logger.info("submitting job: " + jobDescription.toString());
+	/**
+	 * Ensure this server is running, wait for it if needed.
+	 * 
+	 * @throws Exception
+	 *             when the server could not be started.
+	 */
+	public synchronized void waitUntilRunning() throws Exception {
+		while (address == null) {
+			if (error != null) {
+				throw error;
+			}
 
-            org.gridlab.gat.resources.Job job = jobBroker.submitJob(
-                    jobDescription, this, "job.status");
+			wait(1000);
+		}
+		if (error != null) {
+			throw error;
+		}
+	}
 
-            // TODO: remote remote client stuff
-            RemoteClient client = new RemoteClient(job.getStdout(), job
-                    .getStdin());
-            new OutputForwarder(job.getStderr(), System.err);
-            setAddress(client.getLocalAddress());
-        } catch (Exception e) {
-            logger.error("cannot start hub", e);
-            setError(e);
-        }
-    }
+	public String toString() {
+		if (local && hubOnly) {
+			return "Local Hub";
+		} else if (local) {
+			return "Local Server";
+		} else if (hubOnly) {
+			return "Remote Hub on " + clusterName + "@" + gridName;
+		} else {
+			return "Remote Server " + clusterName + "@" + gridName;
+		}
+	}
 
-    public void processMetricEvent(MetricEvent event) {
-        logger.info("Status of job now: " + event);
-    }
+	public void run() {
+		try {
+			logger.debug("creating resource broker for hub");
+
+			ResourceBroker jobBroker = GAT.createResourceBroker(context,
+					resourceBrokerURI);
+
+			logger.debug("submitting job: " + jobDescription.toString());
+
+			org.gridlab.gat.resources.Job job = jobBroker.submitJob(
+					jobDescription, this, "job.status");
+
+			// TODO: remote remote client stuff
+			logger.debug("starting remote client");
+			RemoteClient client = new RemoteClient(job.getStdout(), job
+					.getStdin());
+			new OutputForwarder(job.getStderr(), System.err);
+
+			logger.debug("getting address via remote client");
+
+			setAddress(client.getLocalAddress());
+
+			logger.debug("address is " + getAddress());
+
+			if (rootHub != null) {
+				logger.debug("adding server to root hub");
+				rootHub.addHubs(this.getAddress());
+			}
+
+			logger.info(this + " now running");
+		} catch (Exception e) {
+			logger.error("cannot start hub", e);
+			setError(e);
+		}
+	}
+
+	public void processMetricEvent(MetricEvent event) {
+			logger.info(this + " status now " + event.getValue());
+	}
 }

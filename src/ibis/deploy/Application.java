@@ -23,7 +23,7 @@ public class Application {
 
     // files and dirs which need to be in the classpath
     // automatically prestaged aswell.
-    private List<File> classpath;
+    private List<File> libs;
 
     // arguments of the application
     private List<String> arguments;
@@ -60,7 +60,7 @@ public class Application {
         this.name = name;
 
         mainClass = null;
-        classpath = null;
+        libs = null;
         arguments = null;
         inputFiles = null;
         outputFiles = null;
@@ -93,7 +93,7 @@ public class Application {
         }
 
         mainClass = properties.getProperty(prefix + "main.class");
-        classpath = Util.getFileListProperty(properties, prefix + "libs");
+        libs = Util.getFileListProperty(properties, prefix + "libs");
         arguments = Util
                 .getStringListProperty(properties, prefix + "arguments");
         inputFiles = Util.getFileListProperty(properties, prefix
@@ -104,6 +104,13 @@ public class Application {
                 + "system.properties");
         javaOptions = Util.getStringListProperty(properties, prefix
                 + "java.options");
+    }
+    
+    public String getGroupName() {
+    	if (parent == null) {
+    		return null;
+    	}
+    	return parent.getName();
     }
 
     public String[] getArguments() {
@@ -181,29 +188,29 @@ public class Application {
         javaOptions.add(javaOption);
     }
 
-    public File[] getClasspath() {
-        if (classpath == null) {
+    public File[] getLibs() {
+        if (libs == null) {
             if (parent == null) {
                 return null;
             }
-            return parent.getDefaults().getClasspath();
+            return parent.getDefaults().getLibs();
         }
-        return classpath.toArray(new File[0]);
+        return libs.toArray(new File[0]);
     }
 
-    public void setClasspath(File[] classpath) {
+    public void setLibs(File[] classpath) {
         if (classpath == null) {
-            this.classpath = null;
+            this.libs = null;
         } else {
-            this.classpath = Arrays.asList(classpath.clone());
+            this.libs = Arrays.asList(classpath.clone());
         }
     }
 
-    public void addClasspathElement(File classpathElement) {
-        if (classpath == null) {
-            classpath = new ArrayList<File>();
+    public void addLib(File lib) {
+        if (libs == null) {
+            libs = new ArrayList<File>();
         }
-        classpath.add(classpathElement);
+        libs.add(lib);
     }
 
     public String getMainClass() {
@@ -308,10 +315,10 @@ public class Application {
             out.println(prefix + "main.class = " + mainClass);
         }
 
-        if (classpath == null) {
+        if (libs == null) {
             out.println("#" + prefix + "libs =");
         } else {
-            out.println(prefix + "libs = " + Util.files2CSS(classpath));
+            out.println(prefix + "libs = " + Util.files2CSS(libs));
         }
 
         if (arguments == null) {
@@ -352,7 +359,7 @@ public class Application {
     public String toPrintString() {
         String result = "Application " + getName() + "\n";
         result += " Main class = " + getMainClass() + "\n";
-        result += " Libs = " + Util.files2CSS(getClasspath()) + "\n";
+        result += " Libs = " + Util.files2CSS(getLibs()) + "\n";
         result += " Arguments = " + Util.strings2CSS(getArguments()) + "\n";
         result += " Input Files = " + Util.files2CSS(getInputFiles()) + "\n";
         result += " Output Files = " + Util.files2CSS(getOutputFiles()) + "\n";
@@ -364,7 +371,7 @@ public class Application {
     }
 
     public String toString() {
-        return name;
+        return  name + "@" + getGroupName();
     }
 
 }

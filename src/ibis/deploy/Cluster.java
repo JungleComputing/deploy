@@ -125,6 +125,17 @@ public class Cluster {
         longitude = properties.getDoubleProperty(prefix + "longitude", 0);
 
     }
+    
+    public Grid getGrid() {
+    	return parent;
+    }
+    
+    public String getGridName() {
+    	if (parent == null) {
+    		return null;
+    	}
+    	return parent.getName();
+    }
 
     public String[] getFileAdaptors() {
         if (fileAdaptors == null) {
@@ -426,7 +437,7 @@ public class Cluster {
     }
 
     public String toString() {
-        return name;
+        return name + "@" + getGridName();
     }
 
     public String toPrintString() {
