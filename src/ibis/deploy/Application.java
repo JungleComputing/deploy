@@ -105,12 +105,12 @@ public class Application {
         javaOptions = Util.getStringListProperty(properties, prefix
                 + "java.options");
     }
-    
+
     public String getGroupName() {
-    	if (parent == null) {
-    		return null;
-    	}
-    	return parent.getName();
+        if (parent == null) {
+            return null;
+        }
+        return parent.getName();
     }
 
     public String[] getArguments() {
@@ -278,7 +278,7 @@ public class Application {
                     systemProperties);
         }
     }
-    
+
     public void addSystemProperty(String key, String value) {
         if (systemProperties == null) {
             systemProperties = new HashMap<String, String>();
@@ -365,13 +365,14 @@ public class Application {
         result += " Output Files = " + Util.files2CSS(getOutputFiles()) + "\n";
         result += " System properties = "
                 + Util.toCSString(getSystemProperties()) + "\n";
-        result += " Java Options = " + Util.strings2CSS(getJavaOptions()) + "\n";
+        result += " Java Options = " + Util.strings2CSS(getJavaOptions())
+                + "\n";
 
         return result;
     }
 
     public String toString() {
-        return  name + "@" + getGroupName();
+        return name + "@" + getGroupName();
     }
 
 }

@@ -17,7 +17,7 @@ applications = RegistryUpcalls
 
 # Details of application "RegistryUpcalls"
 RegistryUpcalls.main.class = ibis.ipl.examples.RegistryUpcalls
-RegistryUpcalls.libs = /home/ndrost/workspace/ipl/examples/lib,/home/ndrost/workspace/ipl/lib
+RegistryUpcalls.libs = /home/ndrost/workspace/ipl/examples/lib,/home/ndrost/workspace/ipl/lib,log4j.properties
 #RegistryUpcalls.arguments =
 #RegistryUpcalls.input.files =
 #RegistryUpcalls.output.files =

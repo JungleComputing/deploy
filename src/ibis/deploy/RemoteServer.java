@@ -240,7 +240,7 @@ public class RemoteServer implements Runnable, MetricListener {
         return address;
     }
 
-    public synchronized void addJobStateListener(MetricListener listener)
+    public synchronized void addStateListener(MetricListener listener)
             throws Exception {
         if (gatJob == null) {
             // listerers added when job is submitted
@@ -336,7 +336,7 @@ public class RemoteServer implements Runnable, MetricListener {
     }
 
     private synchronized void setGatJob(org.gridlab.gat.resources.Job gatJob)
-            throws GATInvocationException {
+            throws Exception {
         this.gatJob = gatJob;
 
         for (MetricListener listener : listeners) {

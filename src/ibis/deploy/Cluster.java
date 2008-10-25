@@ -112,8 +112,9 @@ public class Cluster {
         jobURI = Util.getURIProperty(properties, prefix + "job.uri");
 
         // get adaptors as list of string, defaults to "null"
-        fileAdaptors = Util.getStringListProperty(properties, prefix + "file.adaptors");
-        
+        fileAdaptors = Util.getStringListProperty(properties, prefix
+                + "file.adaptors");
+
         javaPath = properties.getProperty(prefix + "java.path");
         wrapperScript = Util.getFileProperty(properties, prefix
                 + "wrapper.script");
@@ -125,16 +126,16 @@ public class Cluster {
         longitude = properties.getDoubleProperty(prefix + "longitude", 0);
 
     }
-    
+
     public Grid getGrid() {
-    	return parent;
+        return parent;
     }
-    
+
     public String getGridName() {
-    	if (parent == null) {
-    		return null;
-    	}
-    	return parent.getName();
+        if (parent == null) {
+            return null;
+        }
+        return parent.getName();
     }
 
     public String[] getFileAdaptors() {
@@ -154,7 +155,7 @@ public class Cluster {
             this.fileAdaptors = Arrays.asList(fileAdaptors.clone());
         }
     }
-    
+
     public void addFileAdaptor(String fileAdaptor) {
         if (fileAdaptors == null) {
             fileAdaptors = new ArrayList<String>();
@@ -415,7 +416,7 @@ public class Cluster {
         } else {
             out.println(prefix + "nodes = " + nodes);
         }
-        
+
         if (cores <= 0) {
             out.println("#" + prefix + "cores = ");
         } else {

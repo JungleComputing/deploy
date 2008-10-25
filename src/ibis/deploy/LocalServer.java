@@ -66,7 +66,7 @@ public class LocalServer {
         return server.getHubs();
     }
 
-    synchronized void kill() {
+    void kill() {
         server.end(-1);
     }
 

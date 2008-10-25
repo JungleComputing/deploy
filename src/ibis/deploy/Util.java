@@ -61,7 +61,8 @@ class Util {
             } else if (keyValue.length == 1) {
                 result.put(keyValue[0], null);
             } else {
-                throw new Exception("error on parsing key " + key + " with value " + properties.getProperty(key));
+                throw new Exception("error on parsing key " + key
+                        + " with value " + properties.getProperty(key));
             }
         }
 

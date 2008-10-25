@@ -8,55 +8,56 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CommandLine implements MetricListener {
-	
-	private static final Logger logger = LoggerFactory.getLogger(CommandLine.class);
 
-	public static void main(String[] arguments) throws Exception {
+    private static final Logger logger = LoggerFactory
+            .getLogger(CommandLine.class);
 
-		Deploy deploy = new Deploy();
+    public static void main(String[] arguments) throws Exception {
 
-		File ibisLib = new File("lib-server");
-		File log4j = new File("log4j.properties");
+        Deploy deploy = new Deploy();
 
-		Grid localGrid = new Grid(new File("grids/local.grid"));
-		Grid das3 = new Grid(new File("grids/das3.grid"));
+        File ibisLib = new File("lib-server");
+        File log4j = new File("log4j.properties");
 
-		ApplicationGroup applications = new ApplicationGroup(new File(
-				"applications/examples.applications"));
+        Grid localGrid = new Grid(new File("grids/local.grid"));
+        Grid das3 = new Grid(new File("grids/das3.grid"));
 
-		System.err.println(applications.toPrintString());
+        ApplicationGroup applications = new ApplicationGroup(new File(
+                "applications/examples.applications"));
 
-		applications.save(new File("application.tmp"));
+        System.err.println(applications.toPrintString());
 
-		System.err.println(localGrid.toPrintString());
-		//
-		// Cluster serverCluster = localGrid.getCluster("local");
-		//
-		deploy.initialize(null, ibisLib, log4j);
-		//
-		// deploy.submitHub(serverCluster, false);
-		//
-		// deploy.submitHub(das3.getCluster("VU"), false);
-		//		
-		// deploy.submitHub(das3.getCluster("VU"), false);
-		//
-		// deploy.submitHub(das3.getCluster("VU"), false);
-		//
-		Job job1 = deploy.submitJob(localGrid.getCluster("local"), 1, applications
-				.getApplication("RegistryUpcalls"), 1, "test", null, null,
-				false);
-		Job job2 = deploy.submitJob(localGrid.getCluster("local"), 1, applications
-				.getApplication("RegistryUpcalls"), 1, "test", null, null,
-				false);
+        applications.save(new File("application.tmp"));
 
-		job1.waitUntilFinished();
-		job2.waitUntilFinished();
+        System.err.println(localGrid.toPrintString());
+        //
+         Cluster serverCluster = das3.getCluster("VU");
+        //
+        deploy.initialize(serverCluster, ibisLib, log4j);
+        
+        Thread.sleep(20000);
+        
+        deploy.getHub(serverCluster, true);
+        deploy.getHub(serverCluster, true);
+        deploy.getHub(serverCluster, true);
+        deploy.getHub(serverCluster, true);
+        deploy.getHub(serverCluster, true);
+        
+        Job job1 = deploy.submitJob(localGrid.getCluster("local"), 1,
+                applications.getApplication("RegistryUpcalls"), 1, "test",
+                null, null, true);
+        Job job2 = deploy.submitJob(localGrid.getCluster("local"), 1,
+                applications.getApplication("RegistryUpcalls"), 1, "test",
+                null, null, true);
 
-		deploy.end();
-	}
+        job1.waitUntilFinished();
+        job2.waitUntilFinished();
 
-	public void processMetricEvent(MetricEvent event) {
-		logger.info("Command line client, got event: " + event);
-		
-	}
+        deploy.end();
+    }
+
+    public void processMetricEvent(MetricEvent event) {
+        logger.info("Command line client, got event: " + event);
+
+    }
 }
