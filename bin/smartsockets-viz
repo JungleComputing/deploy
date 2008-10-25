@@ -1,0 +1,1 @@
+java -classpath .:lib/ipl/* ibis.smartsockets.viz.SmartsocketsViz  $*

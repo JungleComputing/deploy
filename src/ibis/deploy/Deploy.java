@@ -16,10 +16,10 @@ public class Deploy {
 	private static final Logger logger = LoggerFactory.getLogger(Deploy.class);
 
 	// "root" hub (perhaps including the server)
-	private Server rootHub;
+	private LocalServer rootHub;
 
-	// server (possibly remote)
-	private Server server;
+	// remote server (if it exists)
+	private RemoteServer remoteServer;
 
 	// libraries used to start a server/hub
 	private File[] serverLibs;
@@ -28,16 +28,16 @@ public class Deploy {
 	private List<Job> jobs;
 
 	// Map<gridName, Map<clusterName, Server>> with "gobal" hubs
-	private Map<String, Map<String, Server>> hubs;
+	private Map<String, Map<String, RemoteServer>> hubs;
 
 	Deploy() {
 		rootHub = null;
-		server = null;
+		remoteServer = null;
 		serverLibs = null;
 
 		jobs = new ArrayList<Job>();
-		hubs = new HashMap<String, Map<String,Server>>(); 
-		
+		hubs = new HashMap<String, Map<String, RemoteServer>>();
+
 	}
 
 	/**
@@ -60,23 +60,23 @@ public class Deploy {
 		this.serverLibs = serverLibs.clone();
 
 		logger.info("Initializing deployer");
-		
+
 		if (serverCluster == null) {
-
-			rootHub = new Server(false, null);
-			server = rootHub;
+                        //rootHub includes server
+			rootHub = new LocalServer(false);
+                        remoteServer = null;
 		} else {
-			rootHub = new Server(true, null);
-			server = new Server(serverLibs, serverCluster, false, rootHub);
+			rootHub = new LocalServer(true);
+			remoteServer = new RemoteServer(serverLibs, serverCluster, false, rootHub);
 
-			//add server to map of hubs (no need to start another hub on the 
-			//same cluster later)
-			Map<String, Server> clusterMap = new HashMap<String, Server>();
-			clusterMap.put(serverCluster.getName(), server);
+			// add server to map of hubs (no need to start another hub on the
+			// same cluster later)
+			Map<String, RemoteServer> clusterMap = new HashMap<String, RemoteServer>();
+			clusterMap.put(serverCluster.getName(), remoteServer);
 			hubs.put(serverCluster.getGridName(), clusterMap);
-			
-			//wait until server is started
-			server.waitUntilRunning();
+
+			// wait until server is started
+			remoteServer.waitUntilRunning();
 		}
 		logger.info("Deployer initialized succesfully");
 	}
@@ -94,30 +94,42 @@ public class Deploy {
 	 *            number of processes to start on the allocated resources
 	 * @param poolName
 	 *            name of the pool to join
-	 * @param listener
+	 * @param jobListener
 	 *            callback object for status of job
-	 *  @param globalHub
-	 *            If true, a "global" hub is used, started on each cluster and shared between all hubs.
-	 *            If false, a hub is created specifically for this job, and stopped after the job completes. 
+	 * @param hubListener
+	 *            callback object for status of hub
+	 * @param globalHub
+	 *            If true, a "global" hub is used, started on each cluster and
+	 *            shared between all jobs on that cluster. If false, a hub is created
+	 *            specifically for this job, and stopped after the job
+	 *            completes.
 	 * @return the resulting job
 	 * @throws Exception
 	 */
-	public synchronized Job submit(Cluster cluster,
-			int resourceCount, Application application, int processCount,
-			String poolName, MetricListener listener, boolean globalHub) throws Exception {
+	public synchronized Job submitJob(Cluster cluster, int resourceCount,
+			Application application, int processCount, String poolName,
+			MetricListener jobListener, MetricListener hubListener,
+			boolean globalHub) throws Exception {
 		if (rootHub == null) {
 			throw new Exception("Deployer not initialized, cannot submit jobs");
 		}
-		
-		Server hub = null;
+
+		RemoteServer hub = null;
 		if (globalHub) {
-			hub = submitHub(cluster, false);
+			hub = getHub(cluster, false);
+		}
+
+		if (hubListener != null) {
+			hub.addJobStateListener(hubListener);
 		}
 
 		// start job
-		Job job = new Job(cluster, resourceCount, application,
-				processCount, poolName, server.getAddress(), rootHub, hub,
-				serverLibs);
+		Job job = new Job(cluster, resourceCount, application, processCount,
+				poolName, remoteServer.getAddress(), rootHub, hub, serverLibs);
+
+		if (jobListener != null) {
+			job.addJobStateListener(jobListener);
+		}
 
 		jobs.add(job);
 
@@ -125,46 +137,55 @@ public class Deploy {
 	}
 
 	/**
-	 * Submit a hub to the given cluster. If a hub is already running, does
-	 * nothing.
+	 * Returns a hub on the specified cluster. If a hub does not exist on the
+	 * cluster, one is submitted. May not be running (yet).
 	 * 
 	 * @param cluster
 	 *            cluster to deploy the hub on
-	 * @return a hub running on the given cluster
-	 * @throws Exception  if the hub cannot be started
+	 * @param waitUntilRunning
+	 *            wait until hub is actually running
+	 * @return reference to a hub on the given cluster
+	 * @throws Exception
+	 *             if the hub cannot be started
 	 */
-	public synchronized Server submitHub(Cluster cluster, boolean waitUntilRunning) throws Exception  {
+	public synchronized RemoteServer getHub(Cluster cluster, boolean waitUntilRunning)
+			throws Exception {
 		String clusterName = cluster.getName();
 		String gridName = cluster.getGridName();
-		
+
 		logger.debug("starting hub on " + clusterName + "@" + gridName);
-		
+
 		if (clusterName == null) {
-			throw new Exception("cannot start hub on an unnamed cluster. (grid = " + gridName + ")");
+			throw new Exception(
+					"cannot start hub on an unnamed cluster. (grid = "
+							+ gridName + ")");
 		}
-		
+
 		if (gridName == null) {
-			throw new Exception("cannot start hub on an unnamed grid. (cluster = " + clusterName + ")");
+			throw new Exception(
+					"cannot start hub on an unnamed grid. (cluster = "
+							+ clusterName + ")");
 		}
-		
-		//find map containing all clusters of the specified grid. Create if needed.
-		Map<String, Server> clusterMap = hubs.get(gridName);
+
+		// find map containing all clusters of the specified grid. Create if
+		// needed.
+		Map<String, RemoteServer> clusterMap = hubs.get(gridName);
 		if (clusterMap == null) {
-			clusterMap = new HashMap<String, Server>();
+			clusterMap = new HashMap<String, RemoteServer>();
 			hubs.put(gridName, clusterMap);
 		}
-		
-		Server result = clusterMap.get(clusterName);
+
+		RemoteServer result = clusterMap.get(clusterName);
 
 		if (result == null) {
-			result = new Server(serverLibs, cluster, true, rootHub);
+			result = new RemoteServer(serverLibs, cluster, true, rootHub);
 			clusterMap.put(clusterName, result);
 		}
-		
+
 		if (waitUntilRunning) {
 			result.waitUntilRunning();
 		}
-		
+
 		return result;
 	}
 
@@ -176,9 +197,9 @@ public class Deploy {
 		for (Job job : jobs) {
 			job.kill();
 		}
-		
-		for(Map<String, Server> grids: hubs.values()) {
-			for(Server hub: grids.values()) {
+
+		for (Map<String, RemoteServer> grids : hubs.values()) {
+			for (RemoteServer hub : grids.values()) {
 				hub.kill();
 			}
 		}
@@ -188,8 +209,8 @@ public class Deploy {
 			rootHub.kill();
 		}
 
-		if (server != null) {
-			server.kill();
+		if (remoteServer != null) {
+			remoteServer.kill();
 		}
 
 		GAT.end();

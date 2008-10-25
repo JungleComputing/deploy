@@ -5,7 +5,6 @@ import ibis.util.TypedProperties;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.monitoring.MetricListener;
