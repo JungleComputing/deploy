@@ -20,8 +20,8 @@ public class ApplicationGroup {
     private List<Application> applications;
 
     /**
-     * Constructs a grid object from properties stored in the given file. And
-     * also constructs the applications inside this grid.
+     * Constructs a application group object from properties stored in the given
+     * file. Also constructs the applications in this group.
      * 
      * @param file
      *            the file containing the properties
@@ -31,7 +31,7 @@ public class ApplicationGroup {
      *             if reading from the given file fails
      * @throws Exception
      *             if the properties don't contain a 'name' property with the
-     *             name of the grid
+     *             name of the application group
      */
     public ApplicationGroup(File file) throws FileNotFoundException,
             IOException, Exception {
@@ -46,7 +46,7 @@ public class ApplicationGroup {
         name = properties.getProperty("name");
 
         if (name == null || name.length() == 0) {
-            throw new Exception("no grid name specified in grid file: " + file);
+            throw new Exception("no application-group name specified in application-group file: " + file);
         }
 
         defaults = new Application(properties, null, null);
@@ -63,16 +63,16 @@ public class ApplicationGroup {
     }
 
     /**
-     * Constructs a grid with the given name.
+     * Constructs a application-group with the given name.
      * 
      * @param name
-     *            the name of the grid
+     *            the name of the application-group
      * @throws Exception
      *             if the name is <code>null</code>
      */
     public ApplicationGroup(String name) throws Exception {
         if (name == null) {
-            throw new Exception("no name specified for grid");
+            throw new Exception("no name specified for application-group");
         }
 
         this.name = name;
@@ -98,7 +98,7 @@ public class ApplicationGroup {
     }
 
     /**
-     * Removes the given application from the grid (if it belongs to the grid at
+     * Removes the given application from the application-group (if it belongs to the application-group at
      * all).
      * 
      * @param application
@@ -109,7 +109,7 @@ public class ApplicationGroup {
     }
 
     /**
-     * Creates a new application in this grid, with a given name.
+     * Creates a new application in this application-group, with a given name.
      * 
      * @param name
      *            the name of the application
@@ -142,9 +142,9 @@ public class ApplicationGroup {
     }
 
     /**
-     * Returns application representing defaults of this grid.
+     * Returns application representing defaults of this application-group.
      * 
-     * @return application representing defaults of this grid.
+     * @return application representing defaults of this application-group.
      */
     public Application getDefaults() {
         return defaults;
@@ -172,7 +172,7 @@ public class ApplicationGroup {
 
         // write names of applications
         out.println();
-        out.println("# Comma seperated list of applications in this grid:");
+        out.println("# Comma separated list of applications in this application-group:");
 
         if (applications.size() > 0) {
             out.print("applications = ");

@@ -11,7 +11,19 @@ import org.gridlab.gat.monitoring.MetricListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Main entry point for ibis-deploy framework. Allows users to deploy jobs and
+ * start hubs on a grid.
+ * 
+ * @author ndrost
+ * 
+ */
 public class Deploy {
+
+    public static final String HOME_PROPERTY = "ibis.deploy.home";
+
+    public static final String[] REQUIRED_FILES = { "lib-server",
+            "log4j.server.properties" };
 
     private static final Logger logger = LoggerFactory.getLogger(Deploy.class);
 
@@ -21,25 +33,46 @@ public class Deploy {
     // remote server (if it exists)
     private RemoteServer remoteServer;
 
+    // address of server
     private String serverAddress;
 
-    // libraries used to start a server/hub
-    private File[] serverLibs;
+    // home dir of ibis-deploy
+    private File homeDir;
 
     // submitted jobs
     private List<Job> jobs;
 
-    // Map<gridName, Map<clusterName, Server>> with "gobal" hubs
+    // Map<gridName, Map<clusterName, Server>> with "shared" hubs
     private Map<String, Map<String, RemoteServer>> hubs;
 
-    Deploy() {
+    /**
+     * Create a new (uninitialized) deployment interface.
+     */
+    public Deploy() {
         rootHub = null;
         remoteServer = null;
-        serverLibs = null;
+        homeDir = null;
 
         jobs = new ArrayList<Job>();
         hubs = new HashMap<String, Map<String, RemoteServer>>();
 
+    }
+
+    /**
+     * Checks if required files are in the specified home dir
+     * 
+     * @param home
+     *            ibis-deploy home dir
+     * @throws Exception
+     *             if one or more files are missing
+     */
+    private static void checkFiles(File home) throws Exception {
+        for (String fileName : REQUIRED_FILES) {
+            if (!new File(home, fileName).exists()) {
+                throw new Exception("required file/dir \"" + fileName
+                        + "\" not found in ibis deploy home (" + home + ")");
+            }
+        }
     }
 
     /**
@@ -48,18 +81,28 @@ public class Deploy {
      * @param serverCluster
      *            cluster where the server should be started, or null for a
      *            server embedded in this JVM.
-     * @param serverLibs
-     *            All required files and directories to start a server or hub.
-     *            Jar files will also be loaded into this JVM automatically.
+     * @param deployHome
+     *            "home" directory of ibis-deploy. If null, the default location
+     *            is used from the "ibis.deploy.home" system property. If this
+     *            property is unspecified, final default value is the current
+     *            working directory.
      * @throws Exception
-     *             if the sercer cannot be started
+     *             if the server cannot be started
      */
-    synchronized void initialize(Cluster serverCluster, File... serverLibs)
+    public synchronized void initialize(Cluster serverCluster, File deployHome)
             throws Exception {
-        if (serverLibs == null) {
-            throw new Exception("no server libraries specified");
+        if (deployHome == null) {
+            String homeProperty = System.getProperty(HOME_PROPERTY);
+            if (homeProperty == null || homeProperty.length() == 0) {
+                homeProperty = System.getProperty("user.dir");
+            }
+            homeDir = new File(homeProperty);
+        } else {
+            homeDir = deployHome;
         }
-        this.serverLibs = serverLibs.clone();
+
+        // see if all files we need are there.
+        checkFiles(homeDir);
 
         logger.info("Initializing deployer");
 
@@ -70,8 +113,8 @@ public class Deploy {
             serverAddress = rootHub.getAddress();
         } else {
             rootHub = new LocalServer(true);
-            remoteServer = new RemoteServer(serverLibs, serverCluster, false,
-                    rootHub);
+            remoteServer = new RemoteServer(serverCluster, false, rootHub,
+                    homeDir);
             serverAddress = remoteServer.getAddress();
 
             // add server to map of hubs (no need to start another hub on the
@@ -83,7 +126,7 @@ public class Deploy {
             // wait until server is started
             remoteServer.waitUntilRunning();
         }
-        logger.info("Deployer initialized succesfully");
+        logger.info("Deployer initialized successfully");
     }
 
     /**
@@ -103,8 +146,8 @@ public class Deploy {
      *            callback object for status of job
      * @param hubListener
      *            callback object for status of hub
-     * @param globalHub
-     *            If true, a "global" hub is used, started on each cluster and
+     * @param sharedHub
+     *            If true, a "shared" hub is used, started on each cluster and
      *            shared between all jobs on that cluster. If false, a hub is
      *            created specifically for this job, and stopped after the job
      *            completes.
@@ -114,13 +157,13 @@ public class Deploy {
     public synchronized Job submitJob(Cluster cluster, int resourceCount,
             Application application, int processCount, String poolName,
             MetricListener jobListener, MetricListener hubListener,
-            boolean globalHub) throws Exception {
+            boolean sharedHub) throws Exception {
         if (serverAddress == null) {
             throw new Exception("Deployer not initialized, cannot submit jobs");
         }
 
         RemoteServer hub = null;
-        if (globalHub) {
+        if (sharedHub) {
             hub = getHub(cluster, false);
             if (hubListener != null) {
                 hub.addStateListener(hubListener);
@@ -129,7 +172,7 @@ public class Deploy {
 
         // start job
         Job job = new Job(cluster, resourceCount, application, processCount,
-                poolName, serverAddress, rootHub, hub, serverLibs);
+                poolName, serverAddress, rootHub, hub, homeDir);
 
         if (jobListener != null) {
             job.addStateListener(jobListener);
@@ -186,7 +229,7 @@ public class Deploy {
         RemoteServer result = clusterMap.get(clusterName);
 
         if (result == null) {
-            result = new RemoteServer(serverLibs, cluster, true, rootHub);
+            result = new RemoteServer(cluster, true, rootHub, homeDir);
             clusterMap.put(clusterName, result);
         }
 

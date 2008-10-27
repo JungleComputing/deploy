@@ -69,7 +69,7 @@ public class Job implements Runnable, MetricListener {
      */
     public Job(Cluster cluster, int resourceCount, Application application,
             int processCount, String poolName, String serverAddress,
-            LocalServer rootHub, RemoteServer hub, File[] serverLibs)
+            LocalServer rootHub, RemoteServer hub, File homeDir)
             throws Exception {
         gridName = cluster.getGridName();
         clusterName = cluster.getName();
@@ -80,7 +80,7 @@ public class Job implements Runnable, MetricListener {
 
         if (hub == null) {
             globalHub = false;
-            hub = new RemoteServer(serverLibs, cluster, true, rootHub);
+            hub = new RemoteServer(cluster, true, rootHub, homeDir);
         } else {
             globalHub = true;
         }

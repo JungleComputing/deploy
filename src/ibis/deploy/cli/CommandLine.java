@@ -1,4 +1,10 @@
-package ibis.deploy;
+package ibis.deploy.cli;
+
+import ibis.deploy.ApplicationGroup;
+import ibis.deploy.Cluster;
+import ibis.deploy.Deploy;
+import ibis.deploy.Grid;
+import ibis.deploy.Job;
 
 import java.io.File;
 
@@ -33,7 +39,7 @@ public class CommandLine implements MetricListener {
         //
          Cluster serverCluster = das3.getCluster("VU");
         //
-        deploy.initialize(serverCluster, ibisLib, log4j);
+        deploy.initialize(serverCluster, null);
         
         Thread.sleep(20000);
         

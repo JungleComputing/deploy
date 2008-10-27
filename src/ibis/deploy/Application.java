@@ -22,7 +22,7 @@ public class Application {
     private String mainClass;
 
     // files and dirs which need to be in the classpath
-    // automatically prestaged aswell.
+    // automatically prestaged as well.
     private List<File> libs;
 
     // arguments of the application

@@ -16,7 +16,7 @@ import org.gridlab.gat.URI;
 /**
  * some utility functions of Ibis-Deploy
  */
-class Util {
+public class Util {
 
     public static URI getURIProperty(Properties properties, String key)
             throws URISyntaxException {

@@ -20,8 +20,8 @@ public class Grid {
     private List<Cluster> clusters;
 
     /**
-     * Constructs a grid object from properties stored in the given file. And
-     * also constructs the clusters inside this grid.
+     * Constructs a grid object from properties stored in the given file. Also
+     * constructs the clusters inside this grid.
      * 
      * @param file
      *            the file containing the properties

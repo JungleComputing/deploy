@@ -65,8 +65,6 @@ public class RemoteServer implements Runnable, MetricListener {
      * Create a server/hub on the given cluster. Does not block, so server may
      * not be available when this constructor completes.
      * 
-     * @param libs
-     *            jar files/directories needed to start the server
      * @param cluster
      *            cluster to start this server on
      * @param hubOnly
@@ -75,9 +73,13 @@ public class RemoteServer implements Runnable, MetricListener {
      * @param rootHub
      *            roothub of this ibis-deploy. Address of this hub is reported
      *            to root-hub.
+     * @param homeDir
+     *            home dir of ibis-deploy. Files used to start server should be
+     *            here.
+     * 
      */
-    RemoteServer(File[] libs, Cluster cluster, boolean hubOnly,
-            LocalServer rootHub) throws Exception {
+    RemoteServer(Cluster cluster, boolean hubOnly, LocalServer rootHub,
+            File homeDir) throws Exception {
         this.hubOnly = hubOnly;
         this.rootHub = rootHub;
         listeners = new ArrayList<MetricListener>();
@@ -116,39 +118,9 @@ public class RemoteServer implements Runnable, MetricListener {
                     + cluster);
         }
 
-        jobDescription = createJobDescription(cluster, libs, hubOnly);
+        jobDescription = createJobDescription(cluster, hubOnly, homeDir);
 
         ThreadPool.createNew(this, "server on " + cluster);
-    }
-
-    private static String classpathFor(File file, String prefix) {
-        if (!file.isDirectory()) {
-            // regular files not in classpath
-            return "";
-        }
-        // classpath for dir "lib" with prefix "dir/" is dir/lib/*:dir/lib
-        // both directory itself, and all files in that dir (*)
-        String result = prefix + file.getName() + File.separator + "*"
-                + File.pathSeparator + prefix + file.getName()
-                + File.pathSeparator;
-        for (File child : file.listFiles()) {
-            result = result
-                    + classpathFor(child, prefix + file.getName()
-                            + File.separator);
-        }
-        return result;
-    }
-
-    // classpath made up of all directories, as well as
-    private static String createClassPath(File[] serverLibs) {
-        // start with root directory
-        String result = "." + File.pathSeparator + "*" + File.pathSeparator;
-
-        for (File file : serverLibs) {
-            result = result + classpathFor(file, "");
-        }
-
-        return result;
     }
 
     private static GATContext createGATContext(Cluster cluster)
@@ -184,7 +156,7 @@ public class RemoteServer implements Runnable, MetricListener {
     }
 
     private static JobDescription createJobDescription(Cluster cluster,
-            File[] serverLibs, boolean hubOnly) throws Exception {
+            boolean hubOnly, File homeDir) throws Exception {
         logger.debug("creating job description");
 
         JavaSoftwareDescription sd = new JavaSoftwareDescription();
@@ -202,19 +174,25 @@ public class RemoteServer implements Runnable, MetricListener {
                     "--events", "--stats" });
         }
 
-        for (File file : serverLibs) {
-            URI uri = new URI(file.getAbsolutePath());
-            org.gridlab.gat.io.File gatFile = GAT.createFile(uri);
+        // add server libraries to pre-stage
+        File serverLibs = new File(homeDir, "lib-server");
+        
+        org.gridlab.gat.io.File gatFile = GAT.createFile(serverLibs.toString());
+        org.gridlab.gat.io.File gatDstFile = GAT.createFile(".");
+        sd.addPreStagedFile(gatFile, gatDstFile);
 
-            org.gridlab.gat.io.File gatDstFile = GAT.createFile(new URI("."));
+        // add server log4j file
+        File log4j = new File(homeDir, "log4j.server.properties");
+        org.gridlab.gat.io.File log4JGatFile = GAT.createFile(log4j
+                .toString());
+        org.gridlab.gat.io.File log4JgatDstFile = GAT
+                .createFile("log4j.properties");
+        sd.addPreStagedFile(log4JGatFile, log4JgatDstFile);
 
-            sd.addPreStagedFile(gatFile, gatDstFile);
-        }
-
-        // sd.getAttributes().put("sandbox.delete", "false");
-
-        // class path
-        sd.setJavaClassPath(createClassPath(serverLibs));
+        // set classpath 
+        sd.setJavaClassPath(".:lib-server:lib-server/*");
+        
+        sd.getAttributes().put("sandbox.delete", "false");
 
         sd.enableStreamingStdout(true);
         sd.enableStreamingStderr(true);
