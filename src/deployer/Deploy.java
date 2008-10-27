@@ -32,6 +32,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
+import org.apache.log4j.Logger;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.MetricListener;
@@ -47,6 +48,10 @@ import deployer.gui.SelectionComponent;
 
 public class Deploy {
 
+    // The logger
+    private static final Logger logger = Logger.getLogger(Deploy.class);
+
+    // The deployer object, this is the connection to the Ibis Deploy Library
     protected Deployer deployer;
 
     private List<List<SelectionComponent>> selectionComponentGroups = new ArrayList<List<SelectionComponent>>();
@@ -61,7 +66,12 @@ public class Deploy {
         this.name = name;
         this.deployer = deployer;
         this.deployer.init(args);
-        // defaults for Deploy
+
+        // The deploy tool can have multiple so called selection components.
+        // Each selection component can be used to specify a specific part of
+        // the deployment. For example there is a selection component to select
+        // what should be deployed, and a selection component to select where it
+        // should be deployed.
         List<SelectionComponent> deploySelectionComponents = new ArrayList<SelectionComponent>();
         deploySelectionComponents.add(new ApplicationSelectionComponent(
                 deployer));
@@ -81,9 +91,7 @@ public class Deploy {
      */
     public static void main(String[] args) {
         final Deploy deploy = new Deploy("JavaGAT Deploy", args);
-        // for (LookAndFeelInfo lf : UIManager.getInstalledLookAndFeels()) {
-        // System.out.println(lf.getClassName());
-        // }
+
         // Schedule a job for the event-dispatching thread:
         // creating and showing this application's GUI.
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
@@ -102,8 +110,8 @@ public class Deploy {
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.add("Deploy", createDeployPanel(deploy));
         tabbedPane.add("Applications", deploy
-                .getApplicationEditor(deploy.deployer));
-        tabbedPane.add("Grids", deploy.getGridEditor(deploy.deployer));
+                .createApplicationEditor(deploy.deployer));
+        tabbedPane.add("Grids", deploy.createGridEditor(deploy.deployer));
         tabbedPane.addChangeListener(new TabbedPaneChangeListener(deploy));
         frame.getContentPane().add(tabbedPane, BorderLayout.CENTER);
 
@@ -113,14 +121,33 @@ public class Deploy {
 
     }
 
-    protected JPanel getApplicationEditor(Deployer deployer) {
+    /**
+     * Returns the application editor
+     * 
+     * @param deployer
+     *                the deployer object needed to create an application editor
+     * @return the newly created panel holding the application editor
+     */
+    protected JPanel createApplicationEditor(Deployer deployer) {
         return new ApplicationEditorPanel(deployer, "applications");
     }
 
-    protected JPanel getGridEditor(Deployer deployer) {
+    /**
+     * Returns the grid editor
+     * 
+     * @param deployer
+     *                the deployer object needed to create a grid editor
+     * @return the newly created panel holding the grid editor
+     */
+    protected JPanel createGridEditor(Deployer deployer) {
         return new GridEditorPanel(deployer, "grids");
     }
 
+    /**
+     * The Table Model for the table listing the submitted jobs.
+     * 
+     * @author rkemp
+     */
     private static class JobMonitoringTableModel extends DefaultTableModel {
 
         /**
@@ -168,6 +195,7 @@ public class Deploy {
             selectionComponentsPanel.add(columnPanel);
         }
         panel.add(selectionComponentsPanel);
+        
 
         JPanel buttonPanel = new JPanel();
 

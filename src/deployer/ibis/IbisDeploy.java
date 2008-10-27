@@ -34,11 +34,11 @@ public class IbisDeploy extends Deploy {
         getSelectionComponentGroups().add(deploySelectionComponents);
     }
 
-    public JPanel getApplicationEditor(Deployer deployer) {
+    public JPanel createApplicationEditor(Deployer deployer) {
         return new IbisApplicationEditorPanel(deployer, "applications");
     }
 
-    public JPanel getGridEditor(Deployer deployer) {
+    public JPanel createGridEditor(Deployer deployer) {
         return new IbisGridEditorPanel(deployer, "grids");
     }
 
