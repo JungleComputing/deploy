@@ -23,6 +23,9 @@ public class Job {
     // name of job
     private String name;
 
+    // application group of application
+    private String applicationGroup;
+    
     // application to run
     private String application;
 
@@ -57,6 +60,7 @@ public class Job {
         }
         this.name = name;
 
+        applicationGroup = null;
         application = null;
         arguments = null;
         processCount = 0;
@@ -89,14 +93,15 @@ public class Job {
             prefix = name + ".";
         }
 
+        applicationGroup = properties.getProperty(prefix + "application.group");
         application = properties.getProperty(prefix + "application");
         arguments = Util.getStringListProperty(properties, prefix + "application");
 
-        processCount = properties.getIntProperty(prefix + "process.count");
+        processCount = properties.getIntProperty(prefix + "process.count", 0);
 
         grid = properties.getProperty(prefix + "grid");
         cluster = properties.getProperty(prefix + "cluster");
-        resourceCount = properties.getIntProperty(prefix + "resource.count");
+        resourceCount = properties.getIntProperty(prefix + "resource.count", 0);
         if(!properties.containsKey("shared.hub")) {
             sharedHub = null;
         } else {
@@ -117,6 +122,20 @@ public class Job {
 
     public void setName(String name) {
         this.name = name;
+    }
+    
+    public String getApplicationGroup() {
+        if (applicationGroup == null) {
+            if (parent == null) {
+                return null;
+            }
+            return parent.getDefaults().getApplicationGroup();
+        }
+        return applicationGroup;
+    }
+
+    public void setApplicationGroup(String applicationGroup) {
+        this.applicationGroup = applicationGroup;
     }
     
     public String getApplication() {

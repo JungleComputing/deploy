@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -23,6 +24,7 @@ public class Experiment {
     private String name;
     
     private List<File> gridFiles;
+    
     private List<File> applicationFiles; 
 
     // job representing defaults
@@ -164,7 +166,47 @@ public class Experiment {
     public Job getDefaults() {
         return defaults;
     }
+    
+    
+    public File[] getGridFiles() {
+        return gridFiles.toArray(new File[0]);
+    }
 
+    public void setGridFiles(File[] gridFiles) {
+        if (gridFiles == null) {
+            this.gridFiles = null;
+        } else {
+            this.gridFiles = Arrays.asList(gridFiles.clone());
+        }
+    }
+
+    public void addGridFile(File gridFile) {
+        if (gridFiles == null) {
+            gridFiles = new ArrayList<File>();
+        }
+        gridFiles.add(gridFile);
+    }
+
+    public File[] getApplicationFiles() {
+        return applicationFiles.toArray(new File[0]);
+    }
+
+    public void setApplicationFiles(File[] applicationFiles) {
+        if (applicationFiles == null) {
+            this.applicationFiles = null;
+        } else {
+            this.applicationFiles = Arrays.asList(applicationFiles.clone());
+        }
+    }
+
+    public void addApplicationFile(File applicationFile) {
+        if (applicationFiles == null) {
+            applicationFiles = new ArrayList<File>();
+        }
+        applicationFiles.add(applicationFile);
+    }
+
+    
     /**
      * Save this experiment to the given file
      * 
@@ -186,6 +228,14 @@ public class Experiment {
         out.println();
         out.println("# Experiment (and pool) name:");
         out.println("name = " + getName());
+
+        out.println();
+        out.println("# Files with grid descriptions:");
+        out.println("grid.files = " + Util.files2CSS(getGridFiles()));
+
+        out.println();
+        out.println("# Files with application descriptions:");
+        out.println("application.files = " + Util.files2CSS(getApplicationFiles()));
 
         out.println();
         out.println("# Default settings:");

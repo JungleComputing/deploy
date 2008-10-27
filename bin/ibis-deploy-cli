@@ -1,1 +1,1 @@
-java -classpath .:lib/*:lib/javagat/*:lib/ipl/*:lib/javagat/castor-1.1.1-xml.jar -Dhub.background=0,0,0 -Dgat.adaptor.path=lib/javagat/adaptors ibis.deploy.CommandLine $*
+java -classpath .:lib/*:lib/javagat/*:lib/ipl/*:lib/javagat/castor-1.1.1-xml.jar -Dgat.adaptor.path=lib/javagat/adaptors ibis.deploy.cli.CommandLine $*

@@ -162,6 +162,28 @@ public class Deploy {
             throw new Exception("Deployer not initialized, cannot submit jobs");
         }
 
+        if (cluster == null) {
+            throw new Exception("cluster not specified in creating new job");
+        }
+
+        if (resourceCount < 0) {
+            throw new Exception("resource count cannot be negative or zero. Resource count = "
+                    + resourceCount);
+        }
+        
+        if (application == null) {
+            throw new Exception("no application speficied in creating new job");
+        }
+
+        if (processCount < 0) {
+            throw new Exception("process count cannot be negative or zero. Process count = "
+                    + processCount);
+        }
+        
+        if (poolName == null) {
+            throw new Exception("poolname not specified in submitting job");
+        }
+        
         RemoteServer hub = null;
         if (sharedHub) {
             hub = getHub(cluster, false);

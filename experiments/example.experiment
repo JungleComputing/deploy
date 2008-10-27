@@ -1,9 +1,10 @@
 name = some-experiment
 
 grid.files=grids/local.grid,grids/das3.grid
-application.files=applications/hello.application
+application.files=applications/examples.applications
 
-application=hello
+application.group=examples
+application=RegistryUpcalls
 #process.count=1
 #grid=local
 #cluster=local
