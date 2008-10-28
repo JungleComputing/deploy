@@ -25,10 +25,15 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
+import org.apache.log4j.Logger;
+
 import deployer.gui.SelectionComponent;
 import deployer.ibis.Server;
 
 public class IbisHubSelectionComponent implements SelectionComponent {
+
+    private static final Logger logger = Logger
+            .getLogger(IbisHubSelectionComponent.class);
 
     private JPanel panel;
 
@@ -170,6 +175,22 @@ public class IbisHubSelectionComponent implements SelectionComponent {
 
     public void addHub(Server ibisHub) {
         ibisHubs.add(ibisHub);
+
+        // tell everyone there is a new hub in town
+        try {
+            String address = ibisHub.getServerClient().getLocalAddress();
+
+            for (Server server : ibisHubs) {
+                try {
+                    server.getServerClient().addHub(address);
+                } catch (Exception e) {
+                    logger.error("cannot tell new hub address to " + server , e);
+                }
+            }
+        } catch (Exception e) {
+            logger.error("cannot get new hub address", e);
+        }
+
         existingHubComboBox.addItem(ibisHub);
         startVizComboBox.addItem(ibisHub);
     }
