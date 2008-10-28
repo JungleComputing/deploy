@@ -30,6 +30,12 @@ import deployer.JavaApplication;
 import deployer.JavaBasedApplicationGroup;
 
 public class IbisDeployer extends Deployer {
+    
+    private static int nextID = 0;
+    
+    private static synchronized int getNextID() {
+        return nextID++;
+    }
 
     class JobListener implements MetricListener {
 
@@ -181,6 +187,10 @@ public class IbisDeployer extends Deployer {
         if (pool.isClosedWorld()) {
             systemProperties.put("ibis.pool.size", "" + pool.getSize());
         }
+        systemProperties.put("ibis.deploy.job.id", "Job-ID-" + getNextID());
+        systemProperties.put("ibis.deploy.job.size", "" + processCount);
+
+        systemProperties.put("ibis.location", cluster.getGrid().getName() + "@" + cluster.getName());
 
         // systemProperties.put("log4j.configuration", "file:"
         // + application.getLog4jPropertiesLocation());
