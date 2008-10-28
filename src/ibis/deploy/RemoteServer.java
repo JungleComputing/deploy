@@ -357,4 +357,8 @@ public class RemoteServer implements Runnable, MetricListener {
             throw error;
         }
     }
+
+    public synchronized boolean isRunning() throws Exception {
+        return address != null && getState() == JobState.RUNNING;
+    }
 }

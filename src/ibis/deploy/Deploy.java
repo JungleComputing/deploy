@@ -33,9 +33,6 @@ public class Deploy {
     // remote server (if it exists)
     private RemoteServer remoteServer;
 
-    // address of server
-    private String serverAddress;
-
     // home dir of ibis-deploy
     private File homeDir;
 
@@ -76,7 +73,43 @@ public class Deploy {
     }
 
     /**
-     * Initialize this deployment object.
+     * Returns the address of the build-in root hub.
+     * 
+     * @return the address of the build-in root hub.
+     * @throws Exception
+     *             if ibis-deploy has not been initialized yet.
+     */
+    public synchronized String getRootHubAddress() throws Exception {
+        if (rootHub == null) {
+            throw new Exception("Ibis-deploy not initialized yet");
+        }
+
+        return rootHub.getAddress();
+    }
+
+    /**
+     * Retrieves address of server. May block if server has not been started
+     * yet.
+     * 
+     * @return address of server
+     * @throws Exception
+     *             if server state cannot be retrieved.
+     */
+    public synchronized String getServerAddress() throws Exception {
+        if (rootHub == null) {
+            throw new Exception("Ibis-deploy not initialized yet");
+        }
+
+        if (remoteServer == null) {
+            return rootHub.getAddress();
+        } else {
+            return remoteServer.getAddress();
+        }
+    }
+
+    /**
+     * Initialize this deployment object. Will wait until the server is actually
+     * running
      * 
      * @param serverCluster
      *            cluster where the server should be started, or null for a
@@ -90,6 +123,34 @@ public class Deploy {
      *             if the server cannot be started
      */
     public synchronized void initialize(Cluster serverCluster, File deployHome)
+            throws Exception {
+        initialize(serverCluster, deployHome, null, true);
+    }
+
+    /**
+     * Initialize this deployment object. Will NOT wait until the server is
+     * actually running
+     * 
+     * @param serverCluster
+     *            cluster where the server should be started, or null for a
+     *            server embedded in this JVM.
+     * @param deployHome
+     *            "home" directory of ibis-deploy. If null, the default location
+     *            is used from the "ibis.deploy.home" system property. If this
+     *            property is unspecified, final default value is the current
+     *            working directory.
+     * @param listener
+     *            callback object for status of server
+     * @throws Exception
+     *             if the server cannot be started
+     */
+    public synchronized void initialize(Cluster serverCluster, File deployHome,
+            MetricListener listener) throws Exception {
+        initialize(serverCluster, deployHome, listener, false);
+    }
+
+    private synchronized void initialize(Cluster serverCluster,
+            File deployHome, MetricListener listener, boolean blocking)
             throws Exception {
         if (deployHome == null) {
             String homeProperty = System.getProperty(HOME_PROPERTY);
@@ -110,12 +171,10 @@ public class Deploy {
             // rootHub includes server
             rootHub = new LocalServer(false);
             remoteServer = null;
-            serverAddress = rootHub.getAddress();
         } else {
             rootHub = new LocalServer(true);
             remoteServer = new RemoteServer(serverCluster, false, rootHub,
                     homeDir);
-            serverAddress = remoteServer.getAddress();
 
             // add server to map of hubs (no need to start another hub on the
             // same cluster later)
@@ -123,8 +182,6 @@ public class Deploy {
             clusterMap.put(serverCluster.getName(), remoteServer);
             hubs.put(serverCluster.getGridName(), clusterMap);
 
-            // wait until server is started
-            remoteServer.waitUntilRunning();
         }
         logger.info("Deployer initialized successfully");
     }
@@ -160,8 +217,8 @@ public class Deploy {
             Application application, int processCount, String poolName,
             int poolSize, MetricListener jobListener,
             MetricListener hubListener, boolean sharedHub) throws Exception {
-        if (serverAddress == null) {
-            throw new Exception("Deployer not initialized, cannot submit jobs");
+        if (rootHub == null) {
+            throw new Exception("Ibis-deploy not initialized yet");
         }
 
         if (cluster == null) {
@@ -175,7 +232,7 @@ public class Deploy {
         }
 
         if (application == null) {
-            throw new Exception("no application speficied in creating new job");
+            throw new Exception("no application specified in creating new job");
         }
 
         if (processCount < 0) {
@@ -187,10 +244,18 @@ public class Deploy {
         if (poolName == null) {
             throw new Exception("pool name not specified in submitting job");
         }
-        
+
         if (poolSize < 0) {
             throw new Exception("pool size cannot be negative");
         }
+
+        if (remoteServer != null && !remoteServer.isRunning()) {
+            throw new Exception("Cannot submit job (yet), server \""
+                    + remoteServer + "\" not running");
+        }
+
+        // waits until server is running
+        String serverAddress = getServerAddress();
 
         RemoteServer hub = null;
         if (sharedHub) {
@@ -227,7 +292,7 @@ public class Deploy {
      */
     public synchronized RemoteServer getHub(Cluster cluster,
             boolean waitUntilRunning) throws Exception {
-        if (serverAddress == null) {
+        if (rootHub == null) {
             throw new Exception("Deployer not initialized, cannot get hub");
         }
 

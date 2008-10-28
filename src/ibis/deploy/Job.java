@@ -10,6 +10,7 @@ import java.util.List;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricEvent;
@@ -17,6 +18,7 @@ import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.JavaSoftwareDescription;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
+import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.Job.JobState;
 import org.gridlab.gat.security.CertificateSecurityContext;
 import org.gridlab.gat.security.SecurityContext;
@@ -51,7 +53,11 @@ public class Job implements Runnable, MetricListener {
 
     private final JavaSoftwareDescription javaSoftwareDescription;
 
-    private final JobDescription jobDescription;
+    private final int processCount;
+
+    private final int resourceCount;
+
+    private final File wrapperScript;
 
     // set in case this jobs fails for some reason.
     private Exception error = null;
@@ -68,11 +74,14 @@ public class Job implements Runnable, MetricListener {
      * they can be changed after this constructor finishes.
      */
     public Job(Cluster cluster, int resourceCount, Application application,
-            int processCount, String poolName, int poolSize, String serverAddress,
-            LocalServer rootHub, RemoteServer hub, File homeDir)
-            throws Exception {
+            int processCount, String poolName, int poolSize,
+            String serverAddress, LocalServer rootHub, RemoteServer hub,
+            File homeDir) throws Exception {
         gridName = cluster.getGridName();
         clusterName = cluster.getName();
+        this.processCount = processCount;
+        this.resourceCount = resourceCount;
+        this.wrapperScript = cluster.getWrapperScript();
         this.rootHub = rootHub;
         listeners = new ArrayList<MetricListener>();
 
@@ -88,13 +97,12 @@ public class Job implements Runnable, MetricListener {
 
         context = createGATContext(cluster);
         resourceBrokerURI = cluster.getJobURI();
+
+        // create java software description. JobDescription created when hub
+        // is started. We need the hub address to complete the description...
         javaSoftwareDescription = createJavaSoftwareDescription(cluster,
                 resourceCount, application, processCount, poolName, poolSize,
                 serverAddress);
-
-        jobDescription = new JobDescription(javaSoftwareDescription);
-        jobDescription.setProcessCount(processCount);
-        jobDescription.setResourceCount(resourceCount);
 
         logger.info("Submitting application \"" + application + "\" to "
                 + clusterName + "@" + gridName + " using "
@@ -142,6 +150,13 @@ public class Job implements Runnable, MetricListener {
         notifyAll();
     }
 
+    /**
+     * Attach a listener to this job. Will report the job state when it changes.
+     * 
+     * @param listener
+     *            the listener to attach
+     * @throws Exception
+     */
     public synchronized void addStateListener(MetricListener listener)
             throws Exception {
         if (gatJob == null) {
@@ -155,6 +170,14 @@ public class Job implements Runnable, MetricListener {
         }
     }
 
+    /**
+     * Returns the state of this job
+     * 
+     * @return the state of this job
+     * 
+     * @throws Exception
+     *             in case the state cannot be retrieved
+     */
     public synchronized JobState getState() throws Exception {
         if (error != null) {
             throw error;
@@ -165,6 +188,12 @@ public class Job implements Runnable, MetricListener {
         return gatJob.getState();
     }
 
+    /**
+     * Wait until this job is in the "STOPPED" or "SUBMISSION_ERROR" state.
+     * 
+     * @throws Exception
+     *             in case an error occurs.
+     */
     public synchronized void waitUntilFinished() throws Exception {
         while (true) {
             if (error != null) {
@@ -234,8 +263,8 @@ public class Job implements Runnable, MetricListener {
 
     private JavaSoftwareDescription createJavaSoftwareDescription(
             Cluster cluster, int resourceCount, Application application,
-            int processCount, String poolName, int poolSize, String serverAddress)
-            throws Exception {
+            int processCount, String poolName, int poolSize,
+            String serverAddress) throws Exception {
         logger.debug("creating job description");
 
         JavaSoftwareDescription sd = new JavaSoftwareDescription();
@@ -325,6 +354,73 @@ public class Job implements Runnable, MetricListener {
         return sd;
     }
 
+    private static JobDescription createJobDescription(
+            JavaSoftwareDescription sd, int processCount, int resourceCount,
+            File wrapperScript) throws Exception {
+        JobDescription result;
+
+        if (wrapperScript == null) {
+            result = new JobDescription(sd);
+        } else {
+            if (!wrapperScript.exists()) {
+                throw new Exception("wrapper script \"" + wrapperScript + "\" does not exist");
+            }
+            
+            // copy all settings from the java description to a "normal"
+            // software description
+            SoftwareDescription wrapperSd = new SoftwareDescription();
+            if (sd.getAttributes() != null) {
+                wrapperSd.setAttributes(sd.getAttributes());
+            }
+            if (sd.getEnvironment() != null) {
+                wrapperSd.setEnvironment(sd.getEnvironment());
+            }
+            if (sd.getPreStaged() != null) {
+                for (org.gridlab.gat.io.File src : sd.getPreStaged().keySet()) {
+                    wrapperSd.addPreStagedFile(src, sd.getPreStaged().get(src));
+                }
+            }
+            if (sd.getPostStaged() != null) {
+                for (org.gridlab.gat.io.File src : sd.getPostStaged().keySet()) {
+                    wrapperSd.addPostStagedFile(src, sd.getPostStaged()
+                            .get(src));
+                }
+            }
+            wrapperSd.setStderr(sd.getStderr());
+            wrapperSd.setStdout(sd.getStdout());
+
+            // add wrapper to pre-stage files
+            wrapperSd.addPreStagedFile(
+                    GAT.createFile(wrapperScript.toString()), GAT
+                            .createFile("."));
+
+            // set /bin/sh as executable
+            wrapperSd.setExecutable("/bin/sh");
+
+            // prepend arguments with script, java exec, resource and process
+            // count
+            List<String> argumentList = new ArrayList<String>();
+            argumentList.add(wrapperScript.getName());
+            argumentList.add("" + resourceCount);
+            argumentList.add("" + processCount);
+            argumentList.add(sd.getExecutable());
+            if (sd.getArguments() != null) {
+                for (String arg : sd.getArguments()) {
+                    argumentList.add(arg);
+                }
+            }
+            wrapperSd.setArguments(argumentList.toArray(new String[argumentList
+                    .size()]));
+
+            result = new JobDescription(wrapperSd);
+        }
+
+        result.setProcessCount(processCount);
+        result.setResourceCount(resourceCount);
+
+        return result;
+    }
+
     public void run() {
         try {
             hub.waitUntilRunning();
@@ -336,7 +432,7 @@ public class Job implements Runnable, MetricListener {
                 hubList = hubList + "," + hub;
             }
 
-            // add hub list to softwaredescription
+            // add hub list to software description
             javaSoftwareDescription.addJavaSystemProperty(
                     IbisProperties.HUB_ADDRESSES, hubList);
             // some versions of the server expect the hubs to be in
@@ -344,10 +440,14 @@ public class Job implements Runnable, MetricListener {
             javaSoftwareDescription.addJavaSystemProperty(
                     "ibis.server.hub.addresses", hubList);
 
+            JobDescription jobDescription = createJobDescription(
+                    javaSoftwareDescription, processCount, resourceCount,
+                    wrapperScript);
+
+            logger.info("job description = " + jobDescription);
+
             ResourceBroker jobBroker = GAT.createResourceBroker(context,
                     resourceBrokerURI);
-
-            logger.info("job description = " + javaSoftwareDescription);
 
             org.gridlab.gat.resources.Job gatJob = jobBroker.submitJob(
                     jobDescription, this, "job.status");
@@ -392,7 +492,7 @@ public class Job implements Runnable, MetricListener {
     }
 
     public void processMetricEvent(MetricEvent event) {
-            logger.info(this + " status now " + event.getValue());
+        logger.info(this + " status now " + event.getValue());
     }
 
     public String toString() {
