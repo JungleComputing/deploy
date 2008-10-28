@@ -68,7 +68,7 @@ public class Job implements Runnable, MetricListener {
      * they can be changed after this constructor finishes.
      */
     public Job(Cluster cluster, int resourceCount, Application application,
-            int processCount, String poolName, String serverAddress,
+            int processCount, String poolName, int poolSize, String serverAddress,
             LocalServer rootHub, RemoteServer hub, File homeDir)
             throws Exception {
         gridName = cluster.getGridName();
@@ -89,7 +89,7 @@ public class Job implements Runnable, MetricListener {
         context = createGATContext(cluster);
         resourceBrokerURI = cluster.getJobURI();
         javaSoftwareDescription = createJavaSoftwareDescription(cluster,
-                resourceCount, application, processCount, poolName,
+                resourceCount, application, processCount, poolName, poolSize,
                 serverAddress);
 
         jobDescription = new JobDescription(javaSoftwareDescription);
@@ -234,7 +234,7 @@ public class Job implements Runnable, MetricListener {
 
     private JavaSoftwareDescription createJavaSoftwareDescription(
             Cluster cluster, int resourceCount, Application application,
-            int processCount, String poolName, String serverAddress)
+            int processCount, String poolName, int poolSize, String serverAddress)
             throws Exception {
         logger.debug("creating job description");
 
@@ -262,7 +262,7 @@ public class Job implements Runnable, MetricListener {
         sd.addJavaSystemProperty(IbisProperties.LOCATION_POSTFIX, gridName
                 + "@" + clusterName);
         sd.addJavaSystemProperty(IbisProperties.POOL_NAME, poolName);
-        sd.addJavaSystemProperty(IbisProperties.POOL_SIZE, "" + processCount);
+        sd.addJavaSystemProperty(IbisProperties.POOL_SIZE, "" + poolSize);
         sd.addJavaSystemProperty(IbisProperties.SERVER_ADDRESS, serverAddress);
 
         // file referring to lib dir

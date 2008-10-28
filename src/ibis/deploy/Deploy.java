@@ -142,6 +142,8 @@ public class Deploy {
      *            number of processes to start on the allocated resources
      * @param poolName
      *            name of the pool to join
+     * @param poolSize
+     *            size of pool. Only used in case of a closed-world pool.
      * @param jobListener
      *            callback object for status of job
      * @param hubListener
@@ -156,8 +158,8 @@ public class Deploy {
      */
     public synchronized Job submitJob(Cluster cluster, int resourceCount,
             Application application, int processCount, String poolName,
-            MetricListener jobListener, MetricListener hubListener,
-            boolean sharedHub) throws Exception {
+            int poolSize, MetricListener jobListener,
+            MetricListener hubListener, boolean sharedHub) throws Exception {
         if (serverAddress == null) {
             throw new Exception("Deployer not initialized, cannot submit jobs");
         }
@@ -167,23 +169,29 @@ public class Deploy {
         }
 
         if (resourceCount < 0) {
-            throw new Exception("resource count cannot be negative or zero. Resource count = "
-                    + resourceCount);
+            throw new Exception(
+                    "resource count cannot be negative or zero. Resource count = "
+                            + resourceCount);
         }
-        
+
         if (application == null) {
             throw new Exception("no application speficied in creating new job");
         }
 
         if (processCount < 0) {
-            throw new Exception("process count cannot be negative or zero. Process count = "
-                    + processCount);
+            throw new Exception(
+                    "process count cannot be negative or zero. Process count = "
+                            + processCount);
         }
-        
+
         if (poolName == null) {
-            throw new Exception("poolname not specified in submitting job");
+            throw new Exception("pool name not specified in submitting job");
         }
         
+        if (poolSize < 0) {
+            throw new Exception("pool size cannot be negative");
+        }
+
         RemoteServer hub = null;
         if (sharedHub) {
             hub = getHub(cluster, false);
@@ -194,7 +202,7 @@ public class Deploy {
 
         // start job
         Job job = new Job(cluster, resourceCount, application, processCount,
-                poolName, serverAddress, rootHub, hub, homeDir);
+                poolName, poolSize, serverAddress, rootHub, hub, homeDir);
 
         if (jobListener != null) {
             job.addStateListener(jobListener);

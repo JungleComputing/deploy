@@ -84,7 +84,7 @@ public class CommandLine {
             }
 
             deployJobs.add(deploy.submitJob(cluster, job.getResourceCount(),
-                    application, job.getProcessCount(), experiment.getName(),
+                    application, job.getProcessCount(), experiment.getName(), 0,
                     null, null, job.getSharedHub()));
         }
         
