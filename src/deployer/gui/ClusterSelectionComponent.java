@@ -31,7 +31,6 @@ import org.jdesktop.swingx.mapviewer.Waypoint;
 import org.jdesktop.swingx.mapviewer.WaypointPainter;
 import org.jdesktop.swingx.mapviewer.WaypointRenderer;
 
-import deployer.ApplicationGroup;
 import deployer.Cluster;
 import deployer.Deployer;
 import deployer.Grid;

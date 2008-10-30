@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
-import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.util.OutputForwarder;
 import org.gridlab.gat.monitoring.Metric;
