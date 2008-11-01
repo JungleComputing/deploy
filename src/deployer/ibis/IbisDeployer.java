@@ -190,7 +190,7 @@ public class IbisDeployer extends Deployer {
         systemProperties.put("ibis.deploy.job.id", "Job-ID-" + getNextID());
         systemProperties.put("ibis.deploy.job.size", "" + processCount);
 
-        systemProperties.put("ibis.location", cluster.getGrid().getName() + "@" + cluster.getName());
+        systemProperties.put("ibis.location",  cluster.getName()  + "@" + cluster.getGrid().getName() );
 
         // systemProperties.put("log4j.configuration", "file:"
         // + application.getLog4jPropertiesLocation());
