@@ -284,7 +284,7 @@ public class Job implements Runnable, MetricListener {
 
         sd.setJavaArguments(application.getArguments());
         sd.setJavaSystemProperties(application.getSystemProperties());
-        sd.setJavaOptions(application.getJavaOptions());
+        sd.setJavaOptions(application.getJVMOptions());
 
         // ibis stuff
         sd.addJavaSystemProperty(IbisProperties.LOCATION_POSTFIX, gridName

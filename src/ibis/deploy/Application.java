@@ -10,6 +10,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Application belonging to some ApplicationGroup. Applications are Java
+ * applications which use the IPL library to communicate
+ * 
+ * @author ndrost
+ * 
+ */
 public class Application {
 
     // group this application belongs to
@@ -21,8 +28,8 @@ public class Application {
     // main class of application
     private String mainClass;
 
-    // files and dirs which need to be in the classpath
-    // automatically prestaged as well.
+    // files and directories which need to be in the classpath
+    // automatically pre-staged as well.
     private List<File> libs;
 
     // arguments of the application
@@ -38,11 +45,25 @@ public class Application {
     private Map<String, String> systemProperties;
 
     // additional JVM options
-    private List<String> javaOptions;
+    private List<String> jvmOptions;
 
     /**
-     * Creates a new appplication with a given name. Applications cannot be
-     * created directly, but are constructed by a parent ApplicationGroup
+     * Creates an empty application object, with no name or parent
+     */
+    Application() {
+        parent = null;
+        name = null;
+        mainClass = null;
+        libs = null;
+        arguments = null;
+        inputFiles = null;
+        outputFiles = null;
+        systemProperties = null;
+        jvmOptions = null;
+    }
+
+    /**
+     * Creates a new application with a given name and parent ApplicationGroup
      * object.
      * 
      * @param name
@@ -65,7 +86,7 @@ public class Application {
         inputFiles = null;
         outputFiles = null;
         systemProperties = null;
-        javaOptions = null;
+        jvmOptions = null;
     }
 
     /**
@@ -74,9 +95,9 @@ public class Application {
      * 
      * @param properties
      *            properties to load application from
-     * @param object
-     *            name of this application, or null to load "defaults"
-     *            application
+     * @param name
+     *            name of this application. Also used as prefix for all keys in
+     *            property object
      * @throws Exception
      *             if application cannot be read properly
      */
@@ -102,27 +123,76 @@ public class Application {
                 + "output.files");
         systemProperties = Util.getStringMapProperty(properties, prefix
                 + "system.properties");
-        javaOptions = Util.getStringListProperty(properties, prefix
+        jvmOptions = Util.getStringListProperty(properties, prefix
                 + "java.options");
     }
 
-    public String getGroupName() {
-        if (parent == null) {
-            return null;
+    /**
+     * Put all non-null values of given application into this application
+     * 
+     * @param other
+     *            source application object
+     */
+    void overwrite(Application other) {
+        if (other == null) {
+            return;
         }
-        return parent.getName();
+
+        if (other.mainClass != null) {
+            this.mainClass = other.mainClass;
+        }
+
+        if (other.libs != null) {
+            libs = new ArrayList<File>();
+            libs.addAll(other.libs);
+        }
+
+        if (other.arguments != null) {
+            arguments = new ArrayList<String>();
+            arguments.addAll(other.arguments);
+        }
+
+        if (other.inputFiles != null) {
+            inputFiles = new ArrayList<File>();
+            inputFiles.addAll(other.inputFiles);
+        }
+
+        if (other.outputFiles != null) {
+            outputFiles = new ArrayList<File>();
+            outputFiles.addAll(other.outputFiles);
+        }
+
+        if (other.systemProperties != null) {
+            for (Map.Entry<String, String> entry : other.systemProperties
+                    .entrySet()) {
+                setSystemProperty(entry.getKey(), entry.getValue());
+            }
+        }
+
+        if (other.jvmOptions != null) {
+            jvmOptions = new ArrayList<String>();
+            jvmOptions.addAll(other.jvmOptions);
+        }
     }
 
+    /**
+     * Returns application parameters of this application.
+     * 
+     * @return application parameters of this application.
+     */
     public String[] getArguments() {
         if (arguments == null) {
-            if (parent == null) {
-                return null;
-            }
-            return parent.getDefaults().getArguments();
+            return null;
         }
         return arguments.toArray(new String[0]);
     }
 
+    /**
+     * Sets application parameters of this application.
+     * 
+     * @param arguments
+     *            new application parameters of this application.
+     */
     public void setArguments(String[] arguments) {
         if (arguments == null) {
             this.arguments = null;
@@ -131,6 +201,13 @@ public class Application {
         }
     }
 
+    /**
+     * Add addition arguments to list of parameters of this application. List
+     * will be created if needed.
+     * 
+     * @param argument
+     *            new application parameter of this application.
+     */
     public void addArgument(String argument) {
         if (arguments == null) {
             arguments = new ArrayList<String>();
@@ -138,16 +215,25 @@ public class Application {
         arguments.add(argument);
     }
 
+    /**
+     * Returns application input files.
+     * 
+     * @return list of input files
+     */
     public File[] getInputFiles() {
         if (inputFiles == null) {
-            if (parent == null) {
-                return null;
-            }
-            return parent.getDefaults().getInputFiles();
+            return null;
         }
         return inputFiles.toArray(new File[0]);
     }
 
+    /**
+     * Sets application input files, overwriting any previous setting. There is
+     * no need to add libraries to this list, as they are automatically added
+     * 
+     * @param inputFiles
+     *            new list of input files
+     */
     public void setInputFiles(File[] inputFiles) {
         if (inputFiles == null) {
             this.inputFiles = null;
@@ -156,53 +242,74 @@ public class Application {
         }
     }
 
-    public void addInputFiles(String inputFile) {
+    /**
+     * Add a single input file to the list of input files. Automatically creates
+     * list, if needed.
+     * 
+     * @param inputFile
+     *            new input file
+     */
+    public void addInputFile(File inputFile) {
         if (inputFiles == null) {
             inputFiles = new ArrayList<File>();
         }
-        arguments.add(inputFile);
+        inputFiles.add(inputFile);
     }
 
-    public String[] getJavaOptions() {
-        if (javaOptions == null) {
-            if (parent == null) {
-                return null;
-            }
-            return parent.getDefaults().getJavaOptions();
+    /**
+     * Returns any additional JVM options needed for this application (usually
+     * memory settings and such)
+     * 
+     * @return The JVM options.
+     */
+    public String[] getJVMOptions() {
+        if (jvmOptions == null) {
+            return null;
         }
-        return javaOptions.toArray(new String[0]);
+        return jvmOptions.toArray(new String[0]);
     }
 
-    public void setJavaOptions(String[] javaOptions) {
-        if (javaOptions == null) {
-            this.javaOptions = null;
+    /**
+     * Sets any addition JVM options needed for this application (usually memory
+     * settings and such)
+     * 
+     * @param jvmOptions
+     *            The new JVM options.
+     */
+    public void setJVMOptions(String[] jvmOptions) {
+        if (jvmOptions == null) {
+            this.jvmOptions = null;
         } else {
-            this.javaOptions = Arrays.asList(javaOptions.clone());
+            this.jvmOptions = Arrays.asList(jvmOptions.clone());
         }
     }
 
-    public void addJavaOptions(String javaOption) {
-        if (javaOptions == null) {
-            javaOptions = new ArrayList<String>();
+    /**
+     * Adds a single option to the list of JVM options. List is created if
+     * needed.
+     * 
+     * @param jvmOption
+     *            The new JVM option.
+     */
+    public void addJVMOption(String jvmOption) {
+        if (jvmOptions == null) {
+            jvmOptions = new ArrayList<String>();
         }
-        javaOptions.add(javaOption);
+        jvmOptions.add(jvmOption);
     }
 
     public File[] getLibs() {
         if (libs == null) {
-            if (parent == null) {
-                return null;
-            }
-            return parent.getDefaults().getLibs();
+            return null;
         }
         return libs.toArray(new File[0]);
     }
 
-    public void setLibs(File[] classpath) {
-        if (classpath == null) {
+    public void setLibs(File[] libs) {
+        if (libs == null) {
             this.libs = null;
         } else {
-            this.libs = Arrays.asList(classpath.clone());
+            this.libs = Arrays.asList(libs.clone());
         }
     }
 
@@ -253,7 +360,7 @@ public class Application {
         }
     }
 
-    public void addOutputFilesElement(File outputFile) {
+    public void addOutputFile(File outputFile) {
         if (outputFiles == null) {
             outputFiles = new ArrayList<File>();
         }
@@ -279,7 +386,7 @@ public class Application {
         }
     }
 
-    public void addSystemProperty(String key, String value) {
+    public void setSystemProperty(String key, String value) {
         if (systemProperties == null) {
             systemProperties = new HashMap<String, String>();
         }
@@ -348,11 +455,11 @@ public class Application {
             out.println();
         }
 
-        if (javaOptions == null) {
+        if (jvmOptions == null) {
             out.println("#" + prefix + "java.options =");
         } else {
             out.println(prefix + "java.options = "
-                    + Util.strings2CSS(javaOptions));
+                    + Util.strings2CSS(jvmOptions));
         }
     }
 
@@ -365,14 +472,13 @@ public class Application {
         result += " Output Files = " + Util.files2CSS(getOutputFiles()) + "\n";
         result += " System properties = "
                 + Util.toCSString(getSystemProperties()) + "\n";
-        result += " Java Options = " + Util.strings2CSS(getJavaOptions())
-                + "\n";
+        result += " Java Options = " + Util.strings2CSS(getJVMOptions()) + "\n";
 
         return result;
     }
 
     public String toString() {
-        return name + "@" + getGroupName();
+        return name;
     }
 
 }

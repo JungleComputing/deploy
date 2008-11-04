@@ -127,6 +127,23 @@ public class Cluster {
 
     }
 
+    Cluster() {
+        name = null;
+        parent = null;
+        serverAdaptor = null;
+        serverURI = null;
+        jobAdaptor = null;
+        jobURI = null;
+        fileAdaptors = null;
+        javaPath = null;
+        wrapperScript = null;
+        userName = null;
+        nodes = 0;
+        cores = 0;
+        latitude = 0;
+        longitude = 0;
+    }
+
     public Grid getGrid() {
         return parent;
     }
@@ -140,10 +157,7 @@ public class Cluster {
 
     public String[] getFileAdaptors() {
         if (fileAdaptors == null) {
-            if (parent == null) {
                 return null;
-            }
-            return parent.getDefaults().getFileAdaptors();
         }
         return fileAdaptors.toArray(new String[0]);
     }
@@ -164,12 +178,6 @@ public class Cluster {
     }
 
     public String getJavaPath() {
-        if (javaPath == null) {
-            if (parent == null) {
-                return null;
-            }
-            return parent.getDefaults().getJavaPath();
-        }
         return javaPath;
     }
 
@@ -178,12 +186,6 @@ public class Cluster {
     }
 
     public File getWrapperScript() {
-        if (wrapperScript == null) {
-            if (parent == null) {
-                return null;
-            }
-            return parent.getDefaults().getWrapperScript();
-        }
         return wrapperScript;
     }
 
@@ -192,12 +194,6 @@ public class Cluster {
     }
 
     public String getJobAdaptor() {
-        if (jobAdaptor == null) {
-            if (parent == null) {
-                return null;
-            }
-            return parent.getDefaults().getJobAdaptor();
-        }
         return jobAdaptor;
     }
 
@@ -206,12 +202,6 @@ public class Cluster {
     }
 
     public URI getJobURI() {
-        if (jobURI == null) {
-            if (parent == null) {
-                return null;
-            }
-            return parent.getDefaults().getJobURI();
-        }
         return jobURI;
     }
 
@@ -228,12 +218,6 @@ public class Cluster {
     }
 
     public String getServerAdaptor() {
-        if (serverAdaptor == null) {
-            if (parent == null) {
-                return null;
-            }
-            return parent.getDefaults().getServerAdaptor();
-        }
         return serverAdaptor;
     }
 
@@ -242,12 +226,6 @@ public class Cluster {
     }
 
     public URI getServerURI() {
-        if (serverURI == null) {
-            if (parent == null) {
-                return null;
-            }
-            return parent.getDefaults().getServerURI();
-        }
         return serverURI;
     }
 
@@ -256,12 +234,6 @@ public class Cluster {
     }
 
     public String getUserName() {
-        if (userName == null) {
-            if (parent == null) {
-                return null;
-            }
-            return parent.getDefaults().getUserName();
-        }
         return userName;
     }
 
@@ -275,12 +247,6 @@ public class Cluster {
      * @return Total number of nodes in this cluster. Returns 0 if unknown
      */
     public int getNodes() {
-        if (nodes <= 0) {
-            if (parent == null) {
-                return 0;
-            }
-            return parent.getDefaults().getNodes();
-        }
         return nodes;
     }
 
@@ -294,12 +260,6 @@ public class Cluster {
      * @return Total number of cores in this cluster. Returns 0 if unknown
      */
     public int getCores() {
-        if (cores <= 0) {
-            if (parent == null) {
-                return 0;
-            }
-            return parent.getDefaults().getCores();
-        }
         return cores;
     }
 
@@ -313,12 +273,6 @@ public class Cluster {
      * @return Latitude position of this cluster. Returns 0 if unknown
      */
     public double getLatitude() {
-        if (latitude == 0) {
-            if (parent == null) {
-                return 0;
-            }
-            return parent.getDefaults().getLatitude();
-        }
         return latitude;
     }
 
@@ -332,12 +286,6 @@ public class Cluster {
      * @return Longitude position of this cluster. Returns 0 if unknown
      */
     public double getLongitude() {
-        if (longitude == 0) {
-            if (parent == null) {
-                return 0;
-            }
-            return parent.getDefaults().getLongitude();
-        }
         return longitude;
     }
 
@@ -457,6 +405,11 @@ public class Cluster {
         result += " Longitude = " + getLongitude() + "\n";
 
         return result;
+    }
+
+    void overwrite(Cluster defaults) {
+        // TODO Auto-generated method stub
+        
     }
 
 }

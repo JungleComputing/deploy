@@ -7,16 +7,41 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.gridlab.gat.URI;
 
 /**
- * some utility functions of Ibis-Deploy
+ * Some utility functions of Ibis-Deploy
  */
 public class Util {
+    
+    /**
+     * Finds a list of clusters, jobs or application in a list of properties
+     * 
+     * Each unique string in the set of keys(cut on the first ".") is returned, except for "default"
+     * 
+     * @param properties to search for elements in.
+     * 
+     * @return the set of elements
+     */
+    public static String[] getElementList(Properties properties) {
+        Set<String> result = new HashSet<String>();
+        
+        for(String key: properties.stringPropertyNames()) {
+            //add part of key before the first period to the result
+            result.add(key.split("\\.")[0]);
+        }
+        
+        //make sure "default" is not in the list
+        result.remove("default");
+        
+        return result.toArray(new String[0]);
+    }
 
     public static URI getURIProperty(Properties properties, String key)
             throws URISyntaxException {

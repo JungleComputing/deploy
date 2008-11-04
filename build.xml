@@ -13,9 +13,9 @@
     <property name="gat-location" location="${env.GAT_LOCATION}" />
     <property name="ipl-home" location="${env.IPL_HOME}" />
 
-    <target name="build" description="Build with included JavaGAT and IPL" depends="clean,copy-included,compile,javadoc,copy-server-libs" />
+    <target name="build" description="Build with included JavaGAT and IPL" depends="clean,copy-included,compile,copy-server-libs" />
 
-    <target name="build-external" description="Build with external JavaGAT and IPL" depends="clean,copy-external,compile,javadoc,copy-server-libs" />
+    <target name="build-external" description="Build with external JavaGAT and IPL" depends="clean,copy-external,compile,copy-server-libs" />
 
 
     <!-- copy libraries needed to start a ibis-server and/or hub -->
@@ -82,15 +82,14 @@
         <!-- Create jar file -->
         <jar destfile="lib/${dist-name}.jar" basedir="tmp" includes="**/*.class">
         </jar>
-        <delete dir="tmp" />
 
-    </target>
-
-    <!-- Generate javadoc -->
-    <target name="javadoc" description="generate all javadocs">
+        <!-- Generate javadoc -->
         <javadoc destdir="javadoc" access="public" classpathref="default.classpath" packagenames="*" sourcepath="src" windowtitle="Ibis ${ant.project.name} Documentation" doctitle="Ibis ${ant.project.name} Documentation" bottom="The Ibis project">
             <link href="http://java.sun.com/j2se/1.5.0/docs/api/" />
         </javadoc>
+        
+        <delete dir="tmp" />
+
     </target>
 
     <!-- Clean up everything -->

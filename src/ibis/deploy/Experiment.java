@@ -1,6 +1,5 @@
-package ibis.deploy.cli;
+package ibis.deploy;
 
-import ibis.deploy.Util;
 import ibis.util.TypedProperties;
 
 import java.io.File;
@@ -23,15 +22,11 @@ public class Experiment {
     // name of the experiment (and pool)
     private String name;
     
-    private List<File> gridFiles;
-    
-    private List<File> applicationFiles; 
-
     // job representing defaults
-    private Job defaults;
+    private JobDescription defaults;
 
     // jobs in this experiment
-    private List<Job> jobs;
+    private List<JobDescription> jobs;
 
     /**
      * Constructs a experiment object from properties stored in the given file.
@@ -59,21 +54,18 @@ public class Experiment {
 
         name = properties.getProperty("name");
         
-        gridFiles = Util.getFileListProperty(properties, "grid.files");
-        applicationFiles = Util.getFileListProperty(properties, "application.files");
-        
         if (name == null || name.length() == 0) {
             throw new Exception(
                     "no experiment name specified in experiment file: " + file);
         }
 
-        defaults = new Job(properties, null, null);
+        defaults = new JobDescription(properties, null, null);
 
-        jobs = new ArrayList<Job>();
+        jobs = new ArrayList<JobDescription>();
         String[] jobNames = properties.getStringList("jobs");
         if (jobNames != null) {
             for (String jobName : jobNames) {
-                Job job = new Job(properties, jobName, this);
+                JobDescription job = new JobDescription(properties, jobName, this);
                 jobs.add(job);
             }
         }
@@ -93,8 +85,8 @@ public class Experiment {
         }
 
         this.name = name;
-        this.jobs = new ArrayList<Job>();
-        defaults = new Job("defaults", null);
+        this.jobs = new ArrayList<JobDescription>();
+        defaults = new JobDescription("defaults", null);
     }
 
     public String getName() {
@@ -105,13 +97,14 @@ public class Experiment {
         this.name = name;
     }
     
+    
     /**
      * Returns the Jobs in this Experiment.
      * 
      * @return the jobs in this Experiment
      */
-    public Job[] getJobs() {
-        return jobs.toArray(new Job[0]);
+    public JobDescription[] getJobs() {
+        return jobs.toArray(new JobDescription[0]);
     }
 
     /**
@@ -121,7 +114,7 @@ public class Experiment {
      * @param job
      *            the job to be removed from this experiment
      */
-    public void removeJob(Job job) {
+    public void removeJob(JobDescription job) {
         jobs.remove(job);
     }
 
@@ -133,8 +126,8 @@ public class Experiment {
      * @throws Exception
      *             if the name given is <code>null</code>
      */
-    public Job createNewJob(String name) throws Exception {
-        Job result = new Job(name, this);
+    public JobDescription createNewJob(String name) throws Exception {
+        JobDescription result = new JobDescription(name, this);
 
         jobs.add(result);
 
@@ -149,8 +142,8 @@ public class Experiment {
      * @return the job with the given name, or <code>null</code> if no jobs
      *         with the given name exist in this Experiment.
      */
-    public Job getJob(String jobName) {
-        for (Job job : jobs) {
+    public JobDescription getJob(String jobName) {
+        for (JobDescription job : jobs) {
             if (job.getName().equals(jobName)) {
                 return job;
             }
@@ -163,49 +156,10 @@ public class Experiment {
      * 
      * @return job representing defaults of this experiment.
      */
-    public Job getDefaults() {
+    public JobDescription getDefaults() {
         return defaults;
     }
     
-    
-    public File[] getGridFiles() {
-        return gridFiles.toArray(new File[0]);
-    }
-
-    public void setGridFiles(File[] gridFiles) {
-        if (gridFiles == null) {
-            this.gridFiles = null;
-        } else {
-            this.gridFiles = Arrays.asList(gridFiles.clone());
-        }
-    }
-
-    public void addGridFile(File gridFile) {
-        if (gridFiles == null) {
-            gridFiles = new ArrayList<File>();
-        }
-        gridFiles.add(gridFile);
-    }
-
-    public File[] getApplicationFiles() {
-        return applicationFiles.toArray(new File[0]);
-    }
-
-    public void setApplicationFiles(File[] applicationFiles) {
-        if (applicationFiles == null) {
-            this.applicationFiles = null;
-        } else {
-            this.applicationFiles = Arrays.asList(applicationFiles.clone());
-        }
-    }
-
-    public void addApplicationFile(File applicationFile) {
-        if (applicationFiles == null) {
-            applicationFiles = new ArrayList<File>();
-        }
-        applicationFiles.add(applicationFile);
-    }
-
     
     /**
      * Save this experiment to the given file
@@ -230,14 +184,6 @@ public class Experiment {
         out.println("name = " + getName());
 
         out.println();
-        out.println("# Files with grid descriptions:");
-        out.println("grid.files = " + Util.files2CSS(getGridFiles()));
-
-        out.println();
-        out.println("# Files with application descriptions:");
-        out.println("application.files = " + Util.files2CSS(getApplicationFiles()));
-
-        out.println();
         out.println("# Default settings:");
         defaults.print(out, false);
 
@@ -256,7 +202,7 @@ public class Experiment {
         }
 
         // write jobs
-        for (Job job : jobs) {
+        for (JobDescription job : jobs) {
             out.println();
             out.println("# Details of job \"" + job.getName() + "\"");
             job.print(out, true);
@@ -279,7 +225,7 @@ public class Experiment {
         String result = "Experiment \"" + getName() + "\" containing "
                 + jobs.size() + " jobs\n";
 
-        for (Job job : jobs) {
+        for (JobDescription job : jobs) {
             result += job.toPrintString() + "\n";
         }
 
