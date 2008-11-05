@@ -15,13 +15,19 @@ import org.slf4j.LoggerFactory;
  * Main entry point for ibis-deploy framework. Allows users to deploy jobs and
  * start hubs on a grid.
  * 
- * @author ndrost
+ * @author Niels Drost
  * 
  */
 public class Deploy {
 
+    /**
+     * System property with home dir of Ibis deploy.
+     */
     public static final String HOME_PROPERTY = "ibis.deploy.home";
 
+    /**
+     * Files needed by ibis-deploy. Searched for in ibis deploy home dir
+     */
     public static final String[] REQUIRED_FILES = { "lib-server",
             "log4j.server.properties" };
 
@@ -40,7 +46,7 @@ public class Deploy {
     private List<Job> jobs;
 
     // Map<gridName, Map<clusterName, Server>> with "shared" hubs
-    private Map<String, Map<String, RemoteServer>> hubs;
+    private Map<String, RemoteServer> hubs;
 
     /**
      * Create a new (uninitialized) deployment interface.
@@ -51,7 +57,7 @@ public class Deploy {
         homeDir = null;
 
         jobs = new ArrayList<Job>();
-        hubs = new HashMap<String, Map<String, RemoteServer>>();
+        hubs = new HashMap<String, RemoteServer>();
 
     }
 
@@ -165,7 +171,7 @@ public class Deploy {
         // see if all files we need are there.
         checkFiles(homeDir);
 
-        logger.info("Initializing deployer");
+        logger.info("Initializing deploy");
 
         if (serverCluster == null) {
             // rootHub includes server
@@ -176,98 +182,60 @@ public class Deploy {
             remoteServer = new RemoteServer(serverCluster, false, rootHub,
                     homeDir);
 
-            // add server to map of hubs (no need to start another hub on the
-            // same cluster later)
-            Map<String, RemoteServer> clusterMap = new HashMap<String, RemoteServer>();
-            clusterMap.put(serverCluster.getName(), remoteServer);
-            hubs.put(serverCluster.getGridName(), clusterMap);
-
+            hubs.put(serverCluster.getName(), remoteServer);
         }
-        logger.info("Deployer initialized successfully");
+        logger.info("Ibis Deploy initialized successfully");
     }
 
     /**
      * Submit a new job.
      * 
-     * @param cluster
-     *            cluster within grid to submit job to
-     * @param resourceCount
-     *            number of resources to allocate on the cluster
-     * @param application
-     *            application to run.
-     * @param processCount
-     *            number of processes to start on the allocated resources
-     * @param poolName
-     *            name of the pool to join
-     * @param poolSize
-     *            size of pool. Only used in case of a closed-world pool.
-     * @param jobListener
-     *            callback object for status of job
+     * @param description
+     *            description of the job.
+     * @param applicationGroup
+     *            applicationGroup for job
+     * @param grid
+     *            grid to use
      * @param hubListener
-     *            callback object for status of hub
-     * @param sharedHub
-     *            If true, a "shared" hub is used, started on each cluster and
-     *            shared between all jobs on that cluster. If false, a hub is
-     *            created specifically for this job, and stopped after the job
-     *            completes.
+     *            listener for state of hub
+     * @param jobListener
+     *            listener for state of job
+     * 
+     * 
+     * 
+     * 
      * @return the resulting job
      * @throws Exception
      */
-    public synchronized Job submitJob(Cluster cluster, int resourceCount,
-            Application application, int processCount, String poolName,
-            int poolSize, MetricListener jobListener,
-            MetricListener hubListener, boolean sharedHub) throws Exception {
+    public synchronized Job submitJob(JobDescription description,
+            ApplicationGroup applicationGroup, Grid grid,
+            MetricListener jobListener, MetricListener hubListener)
+            throws Exception {
         if (rootHub == null) {
             throw new Exception("Ibis-deploy not initialized yet");
-        }
-
-        if (cluster == null) {
-            throw new Exception("cluster not specified in creating new job");
-        }
-
-        if (resourceCount < 0) {
-            throw new Exception(
-                    "resource count cannot be negative or zero. Resource count = "
-                            + resourceCount);
-        }
-
-        if (application == null) {
-            throw new Exception("no application specified in creating new job");
-        }
-
-        if (processCount < 0) {
-            throw new Exception(
-                    "process count cannot be negative or zero. Process count = "
-                            + processCount);
-        }
-
-        if (poolName == null) {
-            throw new Exception("pool name not specified in submitting job");
-        }
-
-        if (poolSize < 0) {
-            throw new Exception("pool size cannot be negative");
         }
 
         if (remoteServer != null && !remoteServer.isRunning()) {
             throw new Exception("Cannot submit job (yet), server \""
                     + remoteServer + "\" not running");
         }
+        
+        //resolve given description into single "independent" description
+        description = description.resolve(applicationGroup, grid);
 
         // waits until server is running
         String serverAddress = getServerAddress();
 
         RemoteServer hub = null;
-        if (sharedHub) {
-            hub = getHub(cluster, false);
+        if (description.getSharedHub()) {
+            hub = getHub(description.getClusterOverrides(), false);
             if (hubListener != null) {
                 hub.addStateListener(hubListener);
             }
         }
-
+        
         // start job
-        Job job = new Job(cluster, resourceCount, application, processCount,
-                poolName, poolSize, serverAddress, rootHub, hub, homeDir);
+        Job job = new Job(description, serverAddress, rootHub, hub, homeDir);
 
         if (jobListener != null) {
             job.addStateListener(jobListener);
@@ -293,39 +261,22 @@ public class Deploy {
     public synchronized RemoteServer getHub(Cluster cluster,
             boolean waitUntilRunning) throws Exception {
         if (rootHub == null) {
-            throw new Exception("Deployer not initialized, cannot get hub");
+            throw new Exception("Ibis Deploy not initialized, cannot get hub");
         }
 
         String clusterName = cluster.getName();
-        String gridName = cluster.getGridName();
 
-        logger.debug("starting hub on " + clusterName + "@" + gridName);
+        logger.debug("starting hub on " + clusterName);
 
         if (clusterName == null) {
-            throw new Exception(
-                    "cannot start hub on an unnamed cluster. (grid = "
-                            + gridName + ")");
+            throw new Exception("cannot start hub on an unnamed cluster.");
         }
 
-        if (gridName == null) {
-            throw new Exception(
-                    "cannot start hub on an unnamed grid. (cluster = "
-                            + clusterName + ")");
-        }
-
-        // find map containing all clusters of the specified grid. Create if
-        // needed.
-        Map<String, RemoteServer> clusterMap = hubs.get(gridName);
-        if (clusterMap == null) {
-            clusterMap = new HashMap<String, RemoteServer>();
-            hubs.put(gridName, clusterMap);
-        }
-
-        RemoteServer result = clusterMap.get(clusterName);
+        RemoteServer result = hubs.get(clusterName);
 
         if (result == null) {
             result = new RemoteServer(cluster, true, rootHub, homeDir);
-            clusterMap.put(clusterName, result);
+            hubs.put(clusterName, result);
         }
 
         if (waitUntilRunning) {
@@ -344,10 +295,8 @@ public class Deploy {
             job.kill();
         }
 
-        for (Map<String, RemoteServer> grids : hubs.values()) {
-            for (RemoteServer hub : grids.values()) {
-                hub.kill();
-            }
+        for (RemoteServer hub : hubs.values()) {
+            hub.kill();
         }
 
         if (remoteServer != null) {

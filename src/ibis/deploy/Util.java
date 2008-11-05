@@ -14,35 +14,48 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.gridlab.gat.URI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Some utility functions of Ibis-Deploy
  */
 public class Util {
-    
+
+    private static final Logger logger = LoggerFactory.getLogger(Util.class);
+
     /**
      * Finds a list of clusters, jobs or application in a list of properties
      * 
-     * Each unique string in the set of keys(cut on the first ".") is returned, except for "default"
+     * Each unique string in the set of keys(cut on the first ".") is returned,
+     * except for "default"
      * 
-     * @param properties to search for elements in.
+     * @param properties
+     *            to search for elements in.
      * 
      * @return the set of elements
      */
     public static String[] getElementList(Properties properties) {
         Set<String> result = new HashSet<String>();
-        
-        for(String key: properties.stringPropertyNames()) {
-            //add part of key before the first period to the result
+
+        for (String key : properties.stringPropertyNames()) {
+            // add part of key before the first period to the result
             result.add(key.split("\\.")[0]);
         }
-        
-        //make sure "default" is not in the list
+
+        // make sure "default" is not in the list
         result.remove("default");
-        
+
         return result.toArray(new String[0]);
     }
 
+    /**
+     * Extracts a URI property from a properties object
+     * @param properties source properties object
+     * @param key key of property to extract
+     * @return URI version of property, or null if it does not exist
+     * @throws URISyntaxException
+     */
     public static URI getURIProperty(Properties properties, String key)
             throws URISyntaxException {
         if (properties.getProperty(key) == null) {
@@ -51,6 +64,12 @@ public class Util {
         return new URI(properties.getProperty(key));
     }
 
+    /**
+     * Extracts a File property from a properties object
+     * @param properties source properties object
+     * @param key key of property to extract
+     * @return File version of property, or null if it does not exist
+     */
     public static File getFileProperty(Properties properties, String key) {
         if (properties.getProperty(key) == null) {
             return null;
@@ -58,6 +77,12 @@ public class Util {
         return new File(properties.getProperty(key));
     }
 
+    /**
+     * Extracts a list of files from a properties object
+     * @param properties source properties object
+     * @param key key of property to extract
+     * @return List of Files , or null if the property does not exist
+     */
     public static List<File> getFileListProperty(TypedProperties properties,
             String key) {
         if (properties.getProperty(key) == null) {
@@ -72,8 +97,17 @@ public class Util {
         return result;
     }
 
+    /**
+     * Get a string map from a property object
+     * 
+     * @param properties
+     *            the properties to extract the map from.
+     * @param key
+     *            the key of the map.
+     * @return a string map.
+     */
     public static Map<String, String> getStringMapProperty(
-            TypedProperties properties, String key) throws Exception {
+            TypedProperties properties, String key) {
         if (properties.getProperty(key) == null) {
             return null;
         }
@@ -86,15 +120,21 @@ public class Util {
             } else if (keyValue.length == 1) {
                 result.put(keyValue[0], null);
             } else {
-                throw new Exception("error on parsing key " + key
-                        + " with value " + properties.getProperty(key));
+                logger.warn("error on parsing key " + key + " with value "
+                        + properties.getProperty(key));
             }
         }
 
         return result;
     }
 
-    // convert a list of Strings to a single comma seperated String
+    /**
+     * Convert a list of Strings to a single comma separated String
+     * 
+     * @param list
+     *            the input list
+     * @return a comma separated version of the list
+     */
     public static String strings2CSS(List<String> list) {
         if (list == null) {
             return null;
@@ -110,7 +150,13 @@ public class Util {
         return result.substring(0, result.length() - 1);
     }
 
-    // convert a list of Strings to a single comma seperated String
+    /**
+     * convert a list of Strings to a single comma separated String
+     * 
+     * @param list
+     *            the input list
+     * @return a comma separated version of the list
+     */
     public static String strings2CSS(String[] list) {
         if (list == null) {
             return null;
@@ -126,7 +172,13 @@ public class Util {
         return result.substring(0, result.length() - 1);
     }
 
-    // convert a list of files to a single comma seperated String
+    /**
+     * convert a list of files to a single comma separated String
+     * 
+     * @param list
+     *            the input list
+     * @return a comma separated version of the list
+     */
     public static String files2CSS(List<File> list) {
         if (list == null) {
             return null;
@@ -142,7 +194,13 @@ public class Util {
         return result.substring(0, result.length() - 1);
     }
 
-    // convert a list of files to a single comma seperated String
+    /**
+     * convert a list of files to a single comma separated String
+     * 
+     * @param list
+     *            the input list
+     * @return a comma separated version of the list
+     */
     public static String files2CSS(File[] list) {
         if (list == null) {
             return null;
@@ -158,13 +216,32 @@ public class Util {
         return result.substring(0, result.length() - 1);
     }
 
-    // convert a String map to a single comma seperated String
+    /**
+     * convert a string map to a single comma separated String
+     * 
+     * @param map
+     *            the input map
+     * @return a comma separated version of the map
+     */
     public static String toCSString(Map<String, String> map) {
-        return null;
+        String result = "";
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            result += entry.getKey() + "=" + entry.getValue() + ",";
+        }
+        return result;
     }
 
-    // returns a property as a list of strings. Returns null if property not
-    // found
+    /**
+     * Returns a property as a list of strings. Returns null if property not
+     * found
+     * 
+     * @param properties
+     *            the source properties object
+     * @param key
+     *            key of the property to extract
+     * @return the property as a list of strings, or null if the property does
+     *         not exist
+     */
     public static List<String> getStringListProperty(
             TypedProperties properties, String key) {
         if (properties.getProperty(key) == null) {

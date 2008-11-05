@@ -24,8 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Running server/hub
- * 
+ * Server or Hub running on a remote cluster
  */
 public class RemoteServer implements Runnable, MetricListener {
     private static final Logger logger = LoggerFactory
@@ -34,8 +33,6 @@ public class RemoteServer implements Runnable, MetricListener {
     private final boolean hubOnly;
 
     private final String clusterName;
-
-    private final String gridName;
 
     // reference to rootHub so this server can report its address
     private final LocalServer rootHub;
@@ -70,11 +67,11 @@ public class RemoteServer implements Runnable, MetricListener {
      *            if true, only start a smartsockets hub. If false, start the
      *            complete server)
      * @param rootHub
-     *            roothub of this ibis-deploy. Address of this hub is reported
-     *            to root-hub.
+     *            root hub of this ibis-deploy. Address of this hub is reported
+     *            to the root-hub.
      * @param homeDir
-     *            home dir of ibis-deploy. Files used to start server should be
-     *            here.
+     *            home directory of ibis-deploy. Files used to start server
+     *            should be here.
      * 
      */
     RemoteServer(Cluster cluster, boolean hubOnly, LocalServer rootHub,
@@ -82,21 +79,12 @@ public class RemoteServer implements Runnable, MetricListener {
         this.hubOnly = hubOnly;
         this.rootHub = rootHub;
         listeners = new ArrayList<MetricListener>();
-        gridName = cluster.getGridName();
         clusterName = cluster.getName();
 
         address = null;
 
         if (clusterName == null) {
-            throw new Exception(
-                    "cannot start hub on an unnamed cluster. (grid = "
-                            + gridName + ")");
-        }
-
-        if (gridName == null) {
-            throw new Exception(
-                    "cannot start hub on an unnamed grid. (cluster = "
-                            + clusterName + ")");
+            throw new Exception("cannot start hub on an unnamed cluster.");
         }
 
         if (hubOnly) {
@@ -128,10 +116,9 @@ public class RemoteServer implements Runnable, MetricListener {
         if (cluster.getUserName() != null) {
             SecurityContext securityContext = new CertificateSecurityContext(
                     null, null, cluster.getUserName(), null);
-            // securityContext.addNote("adaptors",
-            // "commandlinessh,sshtrilead");
             context.addSecurityContext(securityContext);
         }
+        // FIXME: what's this?
         context.addPreference("file.chmod", "0755");
         if (cluster.getServerAdaptor() == null) {
             throw new Exception("no server adaptor specified for cluster: "
@@ -175,22 +162,21 @@ public class RemoteServer implements Runnable, MetricListener {
 
         // add server libraries to pre-stage
         File serverLibs = new File(homeDir, "lib-server");
-        
+
         org.gridlab.gat.io.File gatFile = GAT.createFile(serverLibs.toString());
         org.gridlab.gat.io.File gatDstFile = GAT.createFile(".");
         sd.addPreStagedFile(gatFile, gatDstFile);
 
         // add server log4j file
         File log4j = new File(homeDir, "log4j.server.properties");
-        org.gridlab.gat.io.File log4JGatFile = GAT.createFile(log4j
-                .toString());
+        org.gridlab.gat.io.File log4JGatFile = GAT.createFile(log4j.toString());
         org.gridlab.gat.io.File log4JgatDstFile = GAT
                 .createFile("log4j.properties");
         sd.addPreStagedFile(log4JGatFile, log4JgatDstFile);
 
-        // set classpath 
+        // set classpath
         sd.setJavaClassPath(".:lib-server:lib-server/*");
-        
+
         sd.getAttributes().put("sandbox.delete", "false");
 
         sd.enableStreamingStdout(true);
@@ -206,7 +192,7 @@ public class RemoteServer implements Runnable, MetricListener {
     }
 
     /**
-     * Geth the address of this server. Also waits until it is running.
+     * Get the address of this server. Also waits until it is running.
      * 
      * @return the address of this server
      * @throws Exception
@@ -217,10 +203,18 @@ public class RemoteServer implements Runnable, MetricListener {
         return address;
     }
 
+    /**
+     * Add a listener to this server which reports the state of the JavaGAT job.
+     * 
+     * @param listener
+     *            the listener to attach
+     * @throws Exception
+     *             in case attaching failed
+     */
     public synchronized void addStateListener(MetricListener listener)
             throws Exception {
         if (gatJob == null) {
-            // listerers added when job is submitted
+            // listeners added when job is submitted
             listeners.add(listener);
         } else {
             Metric metric = gatJob.getMetricDefinitionByName("job.state")
@@ -247,7 +241,7 @@ public class RemoteServer implements Runnable, MetricListener {
             return;
         }
         try {
-            // closing stdin should do it :)
+            // closing standard in should do it :)
             gatJob.getStdin().close();
             // TODO:add smartsockets kill mechanism
         } catch (Exception e) {
@@ -261,10 +255,16 @@ public class RemoteServer implements Runnable, MetricListener {
 
     }
 
+    /**
+     * @see org.gridlab.gat.monitoring.MetricListener#processMetricEvent(org.gridlab.gat.monitoring.MetricEvent)
+     */
     public void processMetricEvent(MetricEvent event) {
         logger.info(this + " status now " + event.getValue());
     }
 
+    /**
+     * @see java.lang.Runnable#run()
+     */
     public void run() {
         try {
             logger.debug("creating resource broker for hub");
@@ -330,13 +330,7 @@ public class RemoteServer implements Runnable, MetricListener {
         }
     }
 
-    public String toString() {
-        if (hubOnly) {
-            return "Remote Hub on " + clusterName + "@" + gridName;
-        } else {
-            return "Remote Server " + clusterName + "@" + gridName;
-        }
-    }
+  
 
     /**
      * Ensure this server is running, wait for it if needed.
@@ -357,7 +351,24 @@ public class RemoteServer implements Runnable, MetricListener {
         }
     }
 
+    /**
+     * Returns if this server is running or not
+     * @return true if this server is running
+     * 
+     * @throws Exception if the state of the job could not be determined
+     */
     public synchronized boolean isRunning() throws Exception {
         return address != null && getState() == JobState.RUNNING;
+    }
+    
+    /**
+     * @see java.lang.Object#toString()
+     */
+    public String toString() {
+        if (hubOnly) {
+            return "Remote Hub on " + clusterName;
+        } else {
+            return "Remote Server " + clusterName;
+        }
     }
 }

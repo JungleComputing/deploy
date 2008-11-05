@@ -7,21 +7,21 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 /**
- * An experiment. Each experiment consists of multiple jobs, running in a single pool
+ * An experiment. Each experiment consists of multiple jobs, usually running in
+ * a single pool.
  * 
- * @author ndrost
+ * @author Niels Drost
  * 
  */
 public class Experiment {
 
-    // name of the experiment (and pool)
+    // name of the experiment (and default pool)
     private String name;
-    
+
     // job representing defaults
     private JobDescription defaults;
 
@@ -53,19 +53,20 @@ public class Experiment {
         properties.loadFromFile(file.getAbsolutePath());
 
         name = properties.getProperty("name");
-        
+
         if (name == null || name.length() == 0) {
             throw new Exception(
                     "no experiment name specified in experiment file: " + file);
         }
 
-        defaults = new JobDescription(properties, null, null);
+        defaults = new JobDescription(properties, "default", "default", this);
 
         jobs = new ArrayList<JobDescription>();
-        String[] jobNames = properties.getStringList("jobs");
-        if (jobNames != null) {
-            for (String jobName : jobNames) {
-                JobDescription job = new JobDescription(properties, jobName, this);
+        String[] jobNames = Util.getElementList(properties);
+        for (String jobName : jobNames) {
+            if (!jobName.equals("name")) {
+                JobDescription job = new JobDescription(properties, jobName,
+                        jobName, this);
                 jobs.add(job);
             }
         }
@@ -89,15 +90,25 @@ public class Experiment {
         defaults = new JobDescription("defaults", null);
     }
 
+    /**
+     * Returns the name of this experiment
+     * 
+     * @return the name of this experiment.
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Sets the name of this experiment
+     * 
+     * @param name
+     *            the new name of this experiment.
+     */
     public void setName(String name) {
         this.name = name;
     }
-    
-    
+
     /**
      * Returns the Jobs in this Experiment.
      * 
@@ -122,9 +133,10 @@ public class Experiment {
      * Creates a new job in this experiment, with a given name.
      * 
      * @param name
-     *            the name of the job
+     *            the name of the job.
+     * @return the new job.
      * @throws Exception
-     *             if the name given is <code>null</code>
+     *             if the name given is <code>null</code>.
      */
     public JobDescription createNewJob(String name) throws Exception {
         JobDescription result = new JobDescription(name, this);
@@ -159,13 +171,14 @@ public class Experiment {
     public JobDescription getDefaults() {
         return defaults;
     }
-    
-    
+
     /**
      * Save this experiment to the given file
      * 
-     * @param file file to save experiment to
-     * @throws Exception in case file cannot be written
+     * @param file
+     *            file to save experiment to
+     * @throws Exception
+     *             in case file cannot be written
      */
     public void save(File file) throws Exception {
         if (!file.exists()) {
@@ -212,10 +225,6 @@ public class Experiment {
         out.close();
     }
 
-    public String toString() {
-        return name;
-    }
-
     /**
      * Returns an info string suitable for printing (with newlines)
      * 
@@ -232,4 +241,10 @@ public class Experiment {
         return result;
     }
 
+    /**
+     * @see java.lang.Object#toString()
+     */
+    public String toString() {
+        return name;
+    }
 }

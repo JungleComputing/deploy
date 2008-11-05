@@ -15,7 +15,6 @@ import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.JavaSoftwareDescription;
-import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.Job.JobState;
@@ -24,6 +23,12 @@ import org.gridlab.gat.security.SecurityContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Running job of an experiment
+ * 
+ * @author Niels Drost
+ * 
+ */
 public class Job implements Runnable, MetricListener {
 
     private static int nextID = 0;
@@ -33,8 +38,6 @@ public class Job implements Runnable, MetricListener {
     }
 
     private static final Logger logger = LoggerFactory.getLogger(Job.class);
-
-    private final String gridName;
 
     private final String clusterName;
 
@@ -69,43 +72,56 @@ public class Job implements Runnable, MetricListener {
     private boolean killed = false;
 
     /**
-     * Creates a job object. Extracts all needed info from the given objects, so
-     * they can be changed after this constructor finishes.
+     * Creates a job object from the given description.
      */
-    public Job(Cluster cluster, int resourceCount, Application application,
-            int processCount, String poolName, int poolSize,
-            String serverAddress, LocalServer rootHub, RemoteServer hub,
-            File homeDir) throws Exception {
-        gridName = cluster.getGridName();
-        clusterName = cluster.getName();
-        this.processCount = processCount;
-        this.resourceCount = resourceCount;
-        this.wrapperScript = cluster.getWrapperScript();
-        this.rootHub = rootHub;
-        listeners = new ArrayList<MetricListener>();
+    public Job(JobDescription description, String serverAddress,
+            LocalServer rootHub, RemoteServer hub, File homeDir)
+            throws Exception {
+        // TODO: check job description for omissions
 
-        jobID = "Job-" + getNextID();
+        context = null;
+        clusterName = null;
+        resourceBrokerURI = null;
+        rootHub = null;
+        listeners = null;
+        wrapperScript = null;
+        processCount = 0;
+        jobID = null;
+        this.rootHub = null;
+        this.hub = null;
+        javaSoftwareDescription = null;
+        resourceCount = 0;
+        globalHub = false;
 
-        if (hub == null) {
-            globalHub = false;
-            hub = new RemoteServer(cluster, true, rootHub, homeDir);
-        } else {
-            globalHub = true;
-        }
-        this.hub = hub;
-
-        context = createGATContext(cluster);
-        resourceBrokerURI = cluster.getJobURI();
-
-        // create java software description. JobDescription created when hub
-        // is started. We need the hub address to complete the description...
-        javaSoftwareDescription = createJavaSoftwareDescription(cluster,
-                resourceCount, application, processCount, poolName, poolSize,
-                serverAddress);
-
-        logger.info("Submitting application \"" + application + "\" to "
-                + clusterName + "@" + gridName + " using "
-                + cluster.getJobAdaptor() + "(" + cluster.getJobURI() + ")");
+        // clusterName = description.
+        // this.processCount = processCount;
+        // this.resourceCount = resourceCount;
+        // this.wrapperScript = cluster.getJobWrapperScript();
+        // this.rootHub = rootHub;
+        // listeners = new ArrayList<MetricListener>();
+        //
+        // jobID = "Job-" + getNextID();
+        //
+        // if (hub == null) {
+        // globalHub = false;
+        // hub = new RemoteServer(cluster, true, rootHub, homeDir);
+        // } else {
+        // globalHub = true;
+        // }
+        // this.hub = hub;
+        //
+        // context = createGATContext(cluster);
+        // resourceBrokerURI = cluster.getJobURI();
+        //
+        // // create java software description. JobDescription created when hub
+        // // is started. We need the hub address to complete the description...
+        // javaSoftwareDescription = createJavaSoftwareDescription(cluster,
+        // resourceCount, application, processCount, poolName, poolSize,
+        // serverAddress);
+        //
+        // logger.info("Submitting application \"" + application + "\" to "
+        // + clusterName + " using "
+        // + cluster.getJobAdaptor() + "(" + cluster.getJobURI() + ")");
 
         // fork thread
         ThreadPool.createNew(this, "ibis deploy job");
@@ -119,10 +135,9 @@ public class Job implements Runnable, MetricListener {
         if (cluster.getUserName() != null) {
             SecurityContext securityContext = new CertificateSecurityContext(
                     null, null, cluster.getUserName(), null);
-            // securityContext.addNote("adaptors",
-            // "commandlinessh,sshtrilead");
             context.addSecurityContext(securityContext);
         }
+        // FIXME: what does this button do?
         context.addPreference("file.chmod", "0755");
         if (cluster.getJobAdaptor() == null) {
             throw new Exception("no job adaptor specified for cluster: "
@@ -287,8 +302,7 @@ public class Job implements Runnable, MetricListener {
         sd.setJavaOptions(application.getJVMOptions());
 
         // ibis stuff
-        sd.addJavaSystemProperty(IbisProperties.LOCATION_POSTFIX, gridName
-                + "@" + clusterName);
+        sd.addJavaSystemProperty(IbisProperties.LOCATION_POSTFIX, clusterName);
         sd.addJavaSystemProperty(IbisProperties.POOL_NAME, poolName);
         sd.addJavaSystemProperty(IbisProperties.POOL_SIZE, "" + poolSize);
         sd.addJavaSystemProperty(IbisProperties.SERVER_ADDRESS, serverAddress);
@@ -353,18 +367,19 @@ public class Job implements Runnable, MetricListener {
         return sd;
     }
 
-    private static JobDescription createJobDescription(
+    private static org.gridlab.gat.resources.JobDescription createJobDescription(
             JavaSoftwareDescription sd, int processCount, int resourceCount,
             File wrapperScript) throws Exception {
-        JobDescription result;
+        org.gridlab.gat.resources.JobDescription result;
 
         if (wrapperScript == null) {
-            result = new JobDescription(sd);
+            result = new org.gridlab.gat.resources.JobDescription(sd);
         } else {
             if (!wrapperScript.exists()) {
-                throw new Exception("wrapper script \"" + wrapperScript + "\" does not exist");
+                throw new Exception("wrapper script \"" + wrapperScript
+                        + "\" does not exist");
             }
-            
+
             // copy all settings from the java description to a "normal"
             // software description
             SoftwareDescription wrapperSd = new SoftwareDescription();
@@ -411,7 +426,7 @@ public class Job implements Runnable, MetricListener {
             wrapperSd.setArguments(argumentList.toArray(new String[argumentList
                     .size()]));
 
-            result = new JobDescription(wrapperSd);
+            result = new org.gridlab.gat.resources.JobDescription(wrapperSd);
         }
 
         result.setProcessCount(processCount);
@@ -420,6 +435,9 @@ public class Job implements Runnable, MetricListener {
         return result;
     }
 
+    /**
+     * @see java.lang.Runnable#run()
+     */
     public void run() {
         try {
             hub.waitUntilRunning();
@@ -439,7 +457,7 @@ public class Job implements Runnable, MetricListener {
             javaSoftwareDescription.addJavaSystemProperty(
                     "ibis.server.hub.addresses", hubList);
 
-            JobDescription jobDescription = createJobDescription(
+            org.gridlab.gat.resources.JobDescription jobDescription = createJobDescription(
                     javaSoftwareDescription, processCount, resourceCount,
                     wrapperScript);
 
@@ -465,6 +483,9 @@ public class Job implements Runnable, MetricListener {
         }
     }
 
+    /**
+     * Kill this job.
+     */
     public void kill() {
         org.gridlab.gat.resources.Job gatJob = null;
 
@@ -482,18 +503,25 @@ public class Job implements Runnable, MetricListener {
         }
     }
 
+    /**
+     * Return the name of the cluster this job is running on
+     * 
+     * @return the name of the cluster this job is running on
+     */
     public String getClusterName() {
         return clusterName;
     }
 
-    public String getGridName() {
-        return gridName;
-    }
-
+    /**
+     * @see org.gridlab.gat.monitoring.MetricListener#processMetricEvent(org.gridlab.gat.monitoring.MetricEvent)
+     */
     public void processMetricEvent(MetricEvent event) {
         logger.info(this + " status now " + event.getValue());
     }
 
+    /**
+     * @see java.lang.Object#toString()
+     */
     public String toString() {
         return jobID;
     }

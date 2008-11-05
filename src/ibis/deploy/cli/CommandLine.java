@@ -46,24 +46,36 @@ public class CommandLine {
             System.err.println("Usage: ibis-deploy-cli [EXPERIMENT_FILE]...");
             System.exit(0);
         }
-
-        Deploy deploy = new Deploy();
         
-        deploy.initialize(null, null);
+        ApplicationGroup applications = new ApplicationGroup(new File("my.applications"));
+        
+        System.out.println(applications.toPrintString());
+        
+        applications.save(new File("his.applications"));
+        
+        Grid grid = new Grid(new File("my.grid"));
+        
+        System.out.println(grid.toPrintString());
+        
+        grid.save(new File("his.grid"));
 
-        List<Experiment> experiments = new ArrayList<Experiment>();
+//        Deploy deploy = new Deploy();
+//        
+//        deploy.initialize(null, null);
+//
+//        List<Experiment> experiments = new ArrayList<Experiment>();
+//
+//        // create experiments from files
+//        for (String argument : arguments) {
+//            File file = new File(argument);
+//            experiments.add(new Experiment(file));
+//        }
+//
+//        for (Experiment experiment : experiments) {
+//            runExperiment(experiment, deploy);
+//        }
 
-        // create experiments from files
-        for (String argument : arguments) {
-            File file = new File(argument);
-            experiments.add(new Experiment(file));
-        }
-
-        for (Experiment experiment : experiments) {
-            runExperiment(experiment, deploy);
-        }
-
-        deploy.end();
+//        deploy.end();
     }
 
 }

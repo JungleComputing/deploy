@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Running server/hub
+ * Server or Hub running on the local machine (inside the deploy jvm)
  * 
  */
 public class LocalServer {
@@ -50,7 +50,7 @@ public class LocalServer {
     }
 
     /**
-     * Geth the address of this server.
+     * Get the address of this server.
      * 
      * @return the address of this server
      */
@@ -71,9 +71,12 @@ public class LocalServer {
     }
 
     void killAll() {
-        // TODO:implement using smartsockets kill mechanism
+        // TODO:implement using Smartsockets kill mechanism
     }
 
+    /**
+     * @see java.lang.Object#toString()
+     */
     public String toString() {
         if (hubOnly) {
             return "Local Hub @ " + getAddress();
