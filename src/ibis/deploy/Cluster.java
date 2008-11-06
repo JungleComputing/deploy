@@ -196,7 +196,7 @@ public class Cluster {
 
         javaPath = properties.getProperty(prefix + "java.path");
         jobWrapperScript = Util.getFileProperty(properties, prefix
-                + "wrapper.script");
+                + "job.wrapper.script");
 
         userName = properties.getProperty(prefix + "user.name");
         nodes = properties.getIntProperty(prefix + "nodes", 0);
@@ -676,6 +676,12 @@ public class Cluster {
             out.println(prefix + "java.path = " + javaPath);
         } else if (printComments) {
             out.println("#" + prefix + "java.path = ");
+        }
+        
+        if (jobWrapperScript != null) {
+            out.println(prefix + "job.wrapper.script = " + jobWrapperScript);
+        } else if (printComments) {
+            out.println("#" + prefix + "job.wrapper.script = ");
         }
 
         if (userName != null) {

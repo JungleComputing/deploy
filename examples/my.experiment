@@ -39,9 +39,9 @@ hello.resource.count = 1
 
 # Details of job "hello2"
 hello2.application.name = RegistryUpcalls
-hello2.process.count = 1
-hello2.cluster.name = local
-hello2.resource.count = 1
+hello2.process.count = 8
+hello2.cluster.name = VU
+hello2.resource.count = 2
 #hello2.pool.name =
 #hello2.pool.size =
 #hello2.shared.hub =

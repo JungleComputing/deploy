@@ -39,31 +39,23 @@ public class Job implements Runnable, MetricListener {
 
     private static final Logger logger = LoggerFactory.getLogger(Job.class);
 
-    private final String clusterName;
-
     private final String jobID;
+
+    private final JobDescription description;
+
+    private final String serverAddress;
 
     private final LocalServer rootHub;
 
-    private final boolean globalHub;
-
+    // shared hub. If null, a local hub is used
     private final RemoteServer hub;
 
-    private final GATContext context;
-
-    private final URI resourceBrokerURI;
-
-    private final JavaSoftwareDescription javaSoftwareDescription;
-
-    private final int processCount;
-
-    private final int resourceCount;
-
-    private final File wrapperScript;
+    private final File deployHomeDir;
 
     // set in case this jobs fails for some reason.
     private Exception error = null;
 
+    // gat job
     private org.gridlab.gat.resources.Job gatJob;
 
     // listeners specified by user
@@ -73,90 +65,40 @@ public class Job implements Runnable, MetricListener {
 
     /**
      * Creates a job object from the given description.
+     * 
+     * @param description
+     *            description of new job
+     * @param serverAddress
+     *            address of server
+     * @param rootHub
+     *            root hub.
+     * @param hub
+     *            shared hub. null for local hub
+     * @param deployHomeDir
+     *            home dir of deploy. Libs of server should be here
      */
-    public Job(JobDescription description, String serverAddress,
-            LocalServer rootHub, RemoteServer hub, File homeDir)
-            throws Exception {
-        // TODO: check job description for omissions
+    Job(JobDescription description, String serverAddress, LocalServer rootHub,
+            RemoteServer hub, File deployHomeDir) {
+        this.description = description;
+        this.serverAddress = serverAddress;
+        this.rootHub = rootHub;
+        this.hub = hub;
+        this.deployHomeDir = deployHomeDir;
+        listeners = new ArrayList<MetricListener>();
 
-        context = null;
-        clusterName = null;
-        resourceBrokerURI = null;
-        rootHub = null;
-        listeners = null;
-        wrapperScript = null;
-        processCount = 0;
-        jobID = null;
-        this.rootHub = null;
-        this.hub = null;
-        javaSoftwareDescription = null;
-        resourceCount = 0;
-        globalHub = false;
-
-        // clusterName = description.
-        // this.processCount = processCount;
-        // this.resourceCount = resourceCount;
-        // this.wrapperScript = cluster.getJobWrapperScript();
-        // this.rootHub = rootHub;
-        // listeners = new ArrayList<MetricListener>();
-        //
-        // jobID = "Job-" + getNextID();
-        //
-        // if (hub == null) {
-        // globalHub = false;
-        // hub = new RemoteServer(cluster, true, rootHub, homeDir);
-        // } else {
-        // globalHub = true;
-        // }
-        // this.hub = hub;
-        //
-        // context = createGATContext(cluster);
-        // resourceBrokerURI = cluster.getJobURI();
-        //
-        // // create java software description. JobDescription created when hub
-        // // is started. We need the hub address to complete the description...
-        // javaSoftwareDescription = createJavaSoftwareDescription(cluster,
-        // resourceCount, application, processCount, poolName, poolSize,
-        // serverAddress);
-        //
-        // logger.info("Submitting application \"" + application + "\" to "
-        // + clusterName + " using "
-        // + cluster.getJobAdaptor() + "(" + cluster.getJobURI() + ")");
-
+        jobID = "Job-" + getNextID();
+        
         // fork thread
-        ThreadPool.createNew(this, "ibis deploy job");
+        ThreadPool.createNew(this, jobID);
     }
 
-    private static GATContext createGATContext(Cluster cluster)
-            throws Exception {
-        logger.debug("creating context");
-
-        GATContext context = new GATContext();
-        if (cluster.getUserName() != null) {
-            SecurityContext securityContext = new CertificateSecurityContext(
-                    null, null, cluster.getUserName(), null);
-            context.addSecurityContext(securityContext);
-        }
-        // FIXME: what does this button do?
-        context.addPreference("file.chmod", "0755");
-        if (cluster.getJobAdaptor() == null) {
-            throw new Exception("no job adaptor specified for cluster: "
-                    + cluster);
-        }
-
-        context.addPreference("resourcebroker.adaptor.name", cluster
-                .getJobAdaptor());
-
-        if (cluster.getFileAdaptors() == null
-                || cluster.getFileAdaptors().length == 0) {
-            throw new Exception("no file adaptors specified for cluster: "
-                    + cluster);
-        }
-
-        context.addPreference("file.adaptor.name", Util.strings2CSS(cluster
-                .getFileAdaptors()));
-
-        return context;
+    /**
+     * Returns the description used to start this job.
+     * 
+     * @return the description used to start this job.
+     */
+    public JobDescription getDescription() {
+        return description;
     }
 
     private synchronized void setError(Exception error) {
@@ -275,13 +217,46 @@ public class Job implements Runnable, MetricListener {
         return result;
     }
 
-    private JavaSoftwareDescription createJavaSoftwareDescription(
-            Cluster cluster, int resourceCount, Application application,
-            int processCount, String poolName, int poolSize,
-            String serverAddress) throws Exception {
+    private GATContext createGATContext() throws Exception {
+        logger.debug("creating context");
+
+        Cluster cluster = description.getClusterSettings();
+
+        GATContext context = new GATContext();
+        if (cluster.getUserName() != null) {
+            SecurityContext securityContext = new CertificateSecurityContext(
+                    null, null, cluster.getUserName(), null);
+            context.addSecurityContext(securityContext);
+        }
+        // FIXME: what does this button do?
+        context.addPreference("file.chmod", "0755");
+        if (cluster.getJobAdaptor() == null) {
+            throw new Exception("no job adaptor specified for cluster: "
+                    + cluster);
+        }
+
+        context.addPreference("resourcebroker.adaptor.name", cluster
+                .getJobAdaptor());
+
+        if (cluster.getFileAdaptors() == null
+                || cluster.getFileAdaptors().length == 0) {
+            throw new Exception("no file adaptors specified for cluster: "
+                    + cluster);
+        }
+
+        context.addPreference("file.adaptor.name", Util.strings2CSS(cluster
+                .getFileAdaptors()));
+
+        return context;
+    }
+
+    private JavaSoftwareDescription createJavaSoftwareDescription(String hubList)
+            throws Exception {
         logger.debug("creating job description");
 
         JavaSoftwareDescription sd = new JavaSoftwareDescription();
+        Cluster cluster = description.getClusterSettings();
+        Application application = description.getApplicationSettings();
 
         if (cluster.getJavaPath() == null) {
             sd.setExecutable("java");
@@ -292,9 +267,6 @@ public class Job implements Runnable, MetricListener {
 
         // basic application properties
 
-        if (application.getMainClass() == null) {
-            throw new Exception("no main class specified for " + application);
-        }
         sd.setJavaMain(application.getMainClass());
 
         sd.setJavaArguments(application.getArguments());
@@ -302,10 +274,19 @@ public class Job implements Runnable, MetricListener {
         sd.setJavaOptions(application.getJVMOptions());
 
         // ibis stuff
-        sd.addJavaSystemProperty(IbisProperties.LOCATION_POSTFIX, clusterName);
-        sd.addJavaSystemProperty(IbisProperties.POOL_NAME, poolName);
-        sd.addJavaSystemProperty(IbisProperties.POOL_SIZE, "" + poolSize);
+        sd.addJavaSystemProperty(IbisProperties.LOCATION_POSTFIX, cluster
+                .getName());
+        sd.addJavaSystemProperty(IbisProperties.POOL_NAME, description
+                .getPoolName());
+        sd.addJavaSystemProperty(IbisProperties.POOL_SIZE, ""
+                + description.getPoolSize());
         sd.addJavaSystemProperty(IbisProperties.SERVER_ADDRESS, serverAddress);
+
+        // add hub list to software description
+        sd.addJavaSystemProperty(IbisProperties.HUB_ADDRESSES, hubList);
+        // some versions of the server expect the hubs to be in
+        // ibis.server.hub.addresses, set this too
+        sd.addJavaSystemProperty("ibis.server.hub.addresses", hubList);
 
         // file referring to lib dir
         org.gridlab.gat.io.File libDir = GAT.createFile(new URI("lib/"));
@@ -364,16 +345,23 @@ public class Job implements Runnable, MetricListener {
         sd.setStdout(GAT.createFile(jobID + ".out"));
         sd.setStderr(GAT.createFile(jobID + ".err"));
 
+        logger.info("Submitting application \"" + application.getName()
+                + "\" to " + cluster.getName() + " using "
+                + cluster.getJobAdaptor() + "(" + cluster.getJobURI() + ")");
+
         return sd;
     }
 
-    private static org.gridlab.gat.resources.JobDescription createJobDescription(
-            JavaSoftwareDescription sd, int processCount, int resourceCount,
-            File wrapperScript) throws Exception {
+    private org.gridlab.gat.resources.JobDescription createJobDescription(
+            JavaSoftwareDescription sd) throws Exception {
         org.gridlab.gat.resources.JobDescription result;
 
+        File wrapperScript = description.getClusterSettings().getJobWrapperScript();
+        
         if (wrapperScript == null) {
             result = new org.gridlab.gat.resources.JobDescription(sd);
+            result.setProcessCount(description.getProcessCount());
+            result.setResourceCount(description.getResourceCount());
         } else {
             if (!wrapperScript.exists()) {
                 throw new Exception("wrapper script \"" + wrapperScript
@@ -415,8 +403,8 @@ public class Job implements Runnable, MetricListener {
             // count
             List<String> argumentList = new ArrayList<String>();
             argumentList.add(wrapperScript.getName());
-            argumentList.add("" + resourceCount);
-            argumentList.add("" + processCount);
+            argumentList.add("" + description.getResourceCount());
+            argumentList.add("" + description.getProcessCount());
             argumentList.add(sd.getExecutable());
             if (sd.getArguments() != null) {
                 for (String arg : sd.getArguments()) {
@@ -427,10 +415,9 @@ public class Job implements Runnable, MetricListener {
                     .size()]));
 
             result = new org.gridlab.gat.resources.JobDescription(wrapperSd);
+            result.setProcessCount(1);
+            result.setResourceCount(1);
         }
-
-        result.setProcessCount(processCount);
-        result.setResourceCount(resourceCount);
 
         return result;
     }
@@ -440,31 +427,32 @@ public class Job implements Runnable, MetricListener {
      */
     public void run() {
         try {
+            RemoteServer hub = this.hub;
+
+            if (hub == null) {
+                //start a hub especially for this job
+                hub = new RemoteServer(description.getClusterSettings(), true,
+                        rootHub, deployHomeDir);
+            }
+            //wait until hub really running
             hub.waitUntilRunning();
-            String hubAddress = hub.getAddress();
 
             // create list of hubs, add to software description
-            String hubList = hubAddress;
-            for (String hub : rootHub.getHubs()) {
-                hubList = hubList + "," + hub;
+            String hubList = hub.getAddress();
+            for (String address : rootHub.getHubs()) {
+                hubList = hubList + "," + address;
             }
+            
+            GATContext context = createGATContext();
 
-            // add hub list to software description
-            javaSoftwareDescription.addJavaSystemProperty(
-                    IbisProperties.HUB_ADDRESSES, hubList);
-            // some versions of the server expect the hubs to be in
-            // ibis.server.hub.addresses, set this too
-            javaSoftwareDescription.addJavaSystemProperty(
-                    "ibis.server.hub.addresses", hubList);
+            JavaSoftwareDescription javaSoftwareDescription = createJavaSoftwareDescription(hubList);
 
-            org.gridlab.gat.resources.JobDescription jobDescription = createJobDescription(
-                    javaSoftwareDescription, processCount, resourceCount,
-                    wrapperScript);
+            org.gridlab.gat.resources.JobDescription jobDescription = createJobDescription(javaSoftwareDescription);
 
             logger.info("job description = " + jobDescription);
-
+            
             ResourceBroker jobBroker = GAT.createResourceBroker(context,
-                    resourceBrokerURI);
+                    description.getClusterSettings().getJobURI());
 
             org.gridlab.gat.resources.Job gatJob = jobBroker.submitJob(
                     jobDescription, this, "job.status");
@@ -477,7 +465,7 @@ public class Job implements Runnable, MetricListener {
             setError(e);
 
         }
-        if (!globalHub) {
+        if (this.hub == null) {
             // kill our local hub
             hub.kill();
         }
@@ -501,15 +489,6 @@ public class Job implements Runnable, MetricListener {
                 logger.warn("error on stopping job", e);
             }
         }
-    }
-
-    /**
-     * Return the name of the cluster this job is running on
-     * 
-     * @return the name of the cluster this job is running on
-     */
-    public String getClusterName() {
-        return clusterName;
     }
 
     /**

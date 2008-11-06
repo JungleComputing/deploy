@@ -502,7 +502,8 @@ public class Application {
      * Checks if this application is suitable for deploying. If not, throws an
      * exception.
      * 
-     * @param jobName name of job 
+     * @param jobName
+     *            name of job
      * 
      * @throws Exception
      *             if this application is incomplete or incorrect.
@@ -519,6 +520,22 @@ public class Application {
 
         if (libs == null | libs.size() == 0) {
             throw new Exception(prefix + "libraries not specified");
+        }
+
+        for (File file : libs) {
+            if (!file.exists()) {
+                throw new Exception(prefix + "library file or dir \"" + file
+                        + "\" does not exist");
+            }
+        }
+
+        if (inputFiles != null) {
+            for (File file : inputFiles) {
+                if (!file.exists()) {
+                    throw new Exception(prefix + " input file \"" + file
+                            + "\" does not exist");
+                }
+            }
         }
     }
 
