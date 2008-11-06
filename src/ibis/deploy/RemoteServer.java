@@ -330,8 +330,6 @@ public class RemoteServer implements Runnable, MetricListener {
         }
     }
 
-  
-
     /**
      * Ensure this server is running, wait for it if needed.
      * 
@@ -353,14 +351,16 @@ public class RemoteServer implements Runnable, MetricListener {
 
     /**
      * Returns if this server is running or not
+     * 
      * @return true if this server is running
      * 
-     * @throws Exception if the state of the job could not be determined
+     * @throws Exception
+     *             if the state of the job could not be determined
      */
     public synchronized boolean isRunning() throws Exception {
         return address != null && getState() == JobState.RUNNING;
     }
-    
+
     /**
      * @see java.lang.Object#toString()
      */

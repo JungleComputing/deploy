@@ -192,8 +192,8 @@ public class Deploy {
      * 
      * @param description
      *            description of the job.
-     * @param applicationGroup
-     *            applicationGroup for job
+     * @param applicationSet
+     *            applicationSet for job
      * @param grid
      *            grid to use
      * @param hubListener
@@ -208,7 +208,7 @@ public class Deploy {
      * @throws Exception
      */
     public synchronized Job submitJob(JobDescription description,
-            ApplicationGroup applicationGroup, Grid grid,
+            ApplicationSet applicationSet, Grid grid,
             MetricListener jobListener, MetricListener hubListener)
             throws Exception {
         if (rootHub == null) {
@@ -219,21 +219,25 @@ public class Deploy {
             throw new Exception("Cannot submit job (yet), server \""
                     + remoteServer + "\" not running");
         }
+
+        // resolve given description into single "independent" description
+        description = description.resolve(applicationSet, grid);
+
+        logger.info("Submitting new job:\n" + description.toPrintString());
         
-        //resolve given description into single "independent" description
-        description = description.resolve(applicationGroup, grid);
+        description.checkSettings();
 
         // waits until server is running
         String serverAddress = getServerAddress();
 
         RemoteServer hub = null;
-        if (description.getSharedHub()) {
-            hub = getHub(description.getClusterOverrides(), false);
+        if (description.getSharedHub() == null || description.getSharedHub()) {
+            hub = getHub(description.getClusterSettings(), false);
             if (hubListener != null) {
                 hub.addStateListener(hubListener);
             }
         }
-        
+
         // start job
         Job job = new Job(description, serverAddress, rootHub, hub, homeDir);
 

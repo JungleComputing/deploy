@@ -23,12 +23,16 @@ public class JobDescription {
         out.println("# KEY                 COMMENT");
         out.println("# application.name    Name of application to run");
         out
-                .println("# application.*       All valid entries for an application, overriding any specified in the application referenced");
+                .println("# application.*       All valid entries for an application, overriding any");
+        out
+                .println("#                     specified in the application referenced");
         out.println("# process.count       Total number of processes started");
         out
                 .println("# cluster.name        Name of cluster to run application on");
         out
-                .println("# cluster.*           All valid entries for clusters, overriding any specified in the cluster referenced");
+                .println("# cluster.*           All valid entries for a cluster, overriding any");
+        out
+                .println("#                     specified in the cluster referenced");
         out
                 .println("# resource.count      Number of machines used on the cluster");
         out
@@ -37,7 +41,10 @@ public class JobDescription {
                 .println("# pool.size           Size of pool. Only used in a closed-world application");
 
         out
-                .println("# shared.hub          if \"true\" (or unset), this job shares a hub with other jobs on this cluster. If \"false\" a hub is started especially for it");
+                .println("# shared.hub          if \"true\" (or unset), this job shares a hub with other");
+        out
+                .println("#                     jobs on this cluster. If \"false\" a hub is started");
+        out.println("#                     especially for it");
     }
 
     // experiment this job belongs to
@@ -64,7 +71,7 @@ public class JobDescription {
 
     private Boolean sharedHub;
 
-    JobDescription() {
+    JobDescription() throws Exception {
         name = null;
         parent = null;
         applicationName = null;
@@ -129,14 +136,14 @@ public class JobDescription {
 
         applicationName = properties.getProperty(prefix + "application.name");
 
-        applicationOverrides = new Application(properties, "overrides", prefix
+        applicationOverrides = new Application(properties, null, prefix
                 + "application", null);
 
         processCount = properties.getIntProperty(prefix + "process.count", 0);
 
         clusterName = properties.getProperty(prefix + "cluster.name");
 
-        clusterOverrides = new Cluster(properties, "overrides", prefix
+        clusterOverrides = new Cluster(properties, null, prefix
                 + "cluster", null);
 
         resourceCount = properties.getIntProperty(prefix + "resource.count", 0);
@@ -254,7 +261,7 @@ public class JobDescription {
      * 
      * @return application object used for "overriding" application settings.
      */
-    public Application getApplicationOverrides() {
+    public Application getApplicationSettings() {
         return applicationOverrides;
     }
 
@@ -301,7 +308,7 @@ public class JobDescription {
      * 
      * @return cluster object used for "overriding" cluster settings.
      */
-    public Cluster getClusterOverrides() {
+    public Cluster getClusterSettings() {
         return clusterOverrides;
     }
 
@@ -390,21 +397,70 @@ public class JobDescription {
     }
 
     /**
+     * Checks if this description is suitable for deploying. If not, throws an
+     * exception.
+     * @throws Exception if this description is incomplete or incorrect.
+     */
+    public void checkSettings() throws Exception {
+        String prefix = "Cannot run job \"" + name + "\": ";
+        
+        if (name == null) {
+            throw new Exception("Cannot run job: Job name unspecified");
+        }
+        
+        if (applicationName == null) {
+            throw new Exception(prefix + "Application name not specified");
+        }
+        
+        if (applicationOverrides == null) {
+            throw new Exception(prefix + "Application overrides not specified");
+        }
+        
+        applicationOverrides.checkSettings(name);
+        
+        if (processCount <= 0) {
+            throw new Exception(prefix + "Process count zero or negative");
+        }
+
+        if (clusterName == null) {
+            throw new Exception(prefix + "Cluster name not specified");
+        }
+
+        if (clusterOverrides == null) {
+            throw new Exception(prefix + "Cluster overrides not specified");
+        }
+        
+        clusterOverrides.checkSettings(name);
+
+        if (resourceCount <= 0) {
+            throw new Exception(prefix + "Resource count zero or negative");
+        }
+
+        if (poolName == null) {
+            throw new Exception(prefix + "Pool name not specified");
+        }
+        
+        if (poolSize < 0) {
+            throw new Exception(prefix + "Pool size negative");
+        }
+    }
+
+    /**
      * Resolves the stack of
-     * JobDescription/Application/ApplicationGroup/Cluster/Grid objects into one
+     * JobDescription/Application/ApplicationSet/Cluster/Grid objects into one
      * new JobDescription with no dependencies and parents. Ordering (highest
      * priority first):
      * 
      * <ol>
      * <li>Overrides and settings in this description</li>
      * <li>Defaults in parent experiment</li>
-     * <li>Application settings in given ApplicationGroup</li>
-     * <li>Default settings in given ApplicationGroup</li>
+     * <li>Application settings in given ApplicationSet</li>
+     * <li>Default settings in given ApplicationSet</li>
      * <li>Cluster settings in given Grid
      * <li>Default settings in given Grid</li>
      * </ol>
      * 
-     * @param applicationGroup
+     * @param applicationSet
      *            applications to use for resolving settings.
      * @param grid
      *            clusters to use for resolving settings.
@@ -412,7 +468,7 @@ public class JobDescription {
      * @return the resulting application, as a new object.
      * @throws Exception
      */
-    public JobDescription resolve(ApplicationGroup applicationGroup, Grid grid)
+    public JobDescription resolve(ApplicationSet applicationSet, Grid grid)
             throws Exception {
         JobDescription result = new JobDescription(name, null);
 
@@ -422,18 +478,18 @@ public class JobDescription {
 
         if (parent != null) {
             result.overwrite(parent.getDefaults());
+            result.setPoolName(parent.getName());
         }
         result.overwrite(this);
 
         // next, get all settings from the specified application and cluster
 
-        if (applicationGroup != null) {
+        if (applicationSet != null) {
             // overwrite application defaults with application group defaults
-            result.applicationOverrides.overwrite(applicationGroup
-                    .getDefaults());
+            result.applicationOverrides.overwrite(applicationSet.getDefaults());
 
             // add application settings
-            Application application = applicationGroup.getApplication(result
+            Application application = applicationSet.getApplication(result
                     .getApplicationName());
             result.applicationOverrides.overwrite(application);
         }
@@ -457,7 +513,9 @@ public class JobDescription {
 
         // add settings from this object
         result.applicationOverrides.overwrite(this.applicationOverrides);
+        result.applicationOverrides.setName(result.getApplicationName());
         result.clusterOverrides.overwrite(this.clusterOverrides);
+        result.clusterOverrides.setName(result.getClusterName());
 
         return result;
     }
@@ -467,29 +525,30 @@ public class JobDescription {
      * 
      * @param out
      *            stream to write this file to
-     * @param prependName
-     *            if true, key/value lines prepended with the job name
+     * @param prefix
+     *            prefix to add to all keys, or null to use name of job.
      * @throws Exception
      *             if this job has no name
      */
-    public void print(PrintWriter out, boolean prependName) throws Exception {
-        String prefix;
+    public void save(PrintWriter out, String prefix) throws Exception {
+        if (prefix == null && (name == null || name.length() == 0)) {
+            throw new Exception("cannot print job description to file,"
+                    + " name is not specified");
+        }
 
-        if (prependName) {
-            if (name == null || name.length() == 0) {
-                throw new Exception("cannot print job to file,"
-                        + " name is not specified");
-            }
+        if (prefix == null) {
             prefix = name + ".";
         } else {
-            prefix = "";
+            prefix = prefix + ".";
         }
 
         if (applicationName == null) {
-            out.println("#" + prefix + "application =");
+            out.println("#" + prefix + "application.name =");
         } else {
-            out.println(prefix + "application = " + applicationName);
+            out.println(prefix + "application.name = " + applicationName);
         }
+
+        applicationOverrides.save(out, prefix + "application", false);
 
         if (processCount == 0) {
             out.println("#" + prefix + "process.count =");
@@ -498,15 +557,29 @@ public class JobDescription {
         }
 
         if (clusterName == null) {
-            out.println("#" + prefix + "cluster =");
+            out.println("#" + prefix + "cluster.name =");
         } else {
-            out.println(prefix + "cluster = " + clusterName);
+            out.println(prefix + "cluster.name = " + clusterName);
         }
+
+        clusterOverrides.save(out, prefix + "cluster", false);
 
         if (resourceCount == 0) {
             out.println("#" + prefix + "resource.count =");
         } else {
             out.println(prefix + "resource.count = " + resourceCount);
+        }
+
+        if (poolName == null) {
+            out.println("#" + prefix + "pool.name =");
+        } else {
+            out.println(prefix + "pool.name = " + poolName);
+        }
+
+        if (poolSize == 0) {
+            out.println("#" + prefix + "pool.size =");
+        } else {
+            out.println(prefix + "pool.size = " + poolSize);
         }
 
         if (sharedHub == null) {
@@ -522,13 +595,17 @@ public class JobDescription {
      * @return a newline separated string useful for printing.
      */
     public String toPrintString() {
-        String result = "Job " + getName() + "\n";
-        result += " Application = " + getApplicationName() + "\n";
-
+        String result = "Job \"" + getName() + "\"\n";
+        result += "Generic Settings:\n";
+        result += " Application Name = " + getApplicationName() + "\n";
         result += " Process Count = " + getProcessCount() + "\n";
-        result += " Cluster = " + getClusterName() + "\n";
+        result += " Cluster Name = " + getClusterName() + "\n";
         result += " Resource Count = " + getResourceCount() + "\n";
+        result += " Pool Name = " + getPoolName() + "\n";
+        result += " Pool Size = " + getPoolSize() + "\n";
         result += " Shared Hub = " + getSharedHub() + "\n";
+        result += applicationOverrides.toPrintString();
+        result += clusterOverrides.toPrintString();
 
         return result;
     }

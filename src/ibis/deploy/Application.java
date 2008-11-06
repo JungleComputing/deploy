@@ -21,24 +21,30 @@ public class Application {
     /**
      * Print a table of valid keys and some explanations to the given stream
      * 
-     * @param out stream used for printing
+     * @param out
+     *            stream used for printing
      */
     public static void printTableOfKeys(PrintWriter out) {
         out.println("# Valid keys for applications:");
         out.println("# KEY                COMMENT");
         out.println("# main.class         Main class of application");
         out.println("# arguments          Arguments of the application(*)");
-        out.println("# libs               Files and directories which need to be in the classpath.");
-        out.println("                     Automatically pre-staged as well(*)");
-        out.println("# input.files        Input files copied to root of sandbox(*)");
-        out.println("# output.files       Output files copied from root of sandbox(*)");
-        out.println("# system.properties  Additional system properties in the form of name=value(*)");
-        out.println("# jvm.options        Additional JVM options, for instance memory options(*)");
+        out
+                .println("# libs               Files and directories which need to be in the classpath.");
+        out.println("#                    Automatically pre-staged as well(*)");
+        out
+                .println("# input.files        Input files copied to root of sandbox(*)");
+        out
+                .println("# output.files       Output files copied from root of sandbox(*)");
+        out
+                .println("# system.properties  Additional system properties in the form of name=value(*)");
+        out
+                .println("# jvm.options        Additional JVM options, for instance memory options(*)");
         out.println("# (* = comma separated list of items)");
     }
 
     // group this application belongs to
-    private final ApplicationGroup parent;
+    private final ApplicationSet parent;
 
     // name of application
     private String name;
@@ -81,30 +87,27 @@ public class Application {
     }
 
     /**
-     * Creates a new application with a given name and parent ApplicationGroup
+     * Creates a new application with a given name and parent ApplicationSet
      * object.
      * 
      * @param name
      *            the name of the application
      * @throws Exception
-     *             if the name given is <code>null</code>
+     *             if name is null or contains periods and/or spaces
      */
-    Application(String name, ApplicationGroup parent) throws Exception {
+    Application(String name, ApplicationSet parent) throws Exception {
         this.parent = parent;
+        this.name = name;
 
-        if (name == null) {
-            throw new Exception("no name specified for application");
-        }
-        if (name.contains(".")) {
+        if (name != null && name.contains(".")) {
             throw new Exception("application name cannot contain periods : \""
                     + name + "\"");
         }
-        if (name.contains(" ")) {
+
+        if (name != null && name.contains(" ")) {
             throw new Exception("application name cannot contain spaces : \""
                     + name + "\"");
         }
-
-        this.name = name;
 
         libs = null;
         mainClass = null;
@@ -129,7 +132,7 @@ public class Application {
      *             if application cannot be read properly
      */
     Application(TypedProperties properties, String name, String prefix,
-            ApplicationGroup parent) {
+            ApplicationSet parent) {
         this.parent = parent;
         this.name = name;
 
@@ -203,7 +206,7 @@ public class Application {
      * 
      * @return group this application belongs to (possibly null).
      */
-    public ApplicationGroup getApplicationGroup() {
+    public ApplicationSet getApplicationSet() {
         return parent;
     }
 
@@ -496,17 +499,44 @@ public class Application {
     }
 
     /**
+     * Checks if this application is suitable for deploying. If not, throws an
+     * exception.
+     * 
+     * @param jobName name of job 
+     * 
+     * @throws Exception
+     *             if this application is incomplete or incorrect.
+     */
+    public void checkSettings(String jobName) throws Exception {
+        String prefix = "Cannot run job \"" + jobName + "\": Application ";
+
+        if (name == null) {
+            throw new Exception(prefix + "name not specified");
+        }
+        if (mainClass == null) {
+            throw new Exception(prefix + "main class not specified");
+        }
+
+        if (libs == null | libs.size() == 0) {
+            throw new Exception(prefix + "libraries not specified");
+        }
+    }
+
+    /**
      * Print the settings of this application to a (properties) file
      * 
      * @param out
      *            stream to write this file to
      * @param prefix
      *            prefix to add to all keys, or null to use name of application.
+     * @param printComments
+     *            if true, comments are added for all null values
      * @throws Exception
      *             if this application has no name
      */
-    void print(PrintWriter out, String prefix) throws Exception {
-        if (name == null || name.length() == 0) {
+    void save(PrintWriter out, String prefix, boolean printComments)
+            throws Exception {
+        if (prefix == null && (name == null || name.length() == 0)) {
             throw new Exception("cannot print application to file,"
                     + " name is not specified");
         }
@@ -517,50 +547,49 @@ public class Application {
             prefix = prefix + ".";
         }
 
-        if (mainClass == null) {
-            out.println("#" + prefix + "main.class =");
-        } else {
+        if (mainClass != null) {
             out.println(prefix + "main.class = " + mainClass);
+        } else if (printComments) {
+            out.println("#" + prefix + "main.class =");
         }
 
-        if (arguments == null) {
-            out.println("#" + prefix + "arguments =");
-        } else {
+        if (arguments != null) {
             out.println(prefix + "arguments = " + Util.strings2CSS(arguments));
+        } else if (printComments) {
+            out.println("#" + prefix + "arguments =");
         }
 
-        if (libs == null) {
-            out.println("#" + prefix + "libs =");
-        } else {
+        if (libs != null) {
             out.println(prefix + "libs = " + Util.files2CSS(libs));
+        } else if (printComments) {
+            out.println("#" + prefix + "libs =");
         }
 
-        if (inputFiles == null) {
-            out.println("#" + prefix + "input.files =");
-        } else {
+        if (inputFiles != null) {
             out.println(prefix + "input.files = " + Util.files2CSS(inputFiles));
+        } else if (printComments) {
+            out.println("#" + prefix + "input.files =");
         }
 
-        if (outputFiles == null) {
-            out.println("#" + prefix + "output.files =");
-        } else {
+        if (outputFiles != null) {
             out.println(prefix + "output.files = "
                     + Util.files2CSS(outputFiles));
+        } else if (printComments) {
+            out.println("#" + prefix + "output.files =");
         }
 
-        if (systemProperties == null) {
-            out.println("#" + prefix + "system.properties =");
-        } else {
-            out.print(prefix + "system.properties = "
+        if (systemProperties != null) {
+            out.println(prefix + "system.properties = "
                     + Util.toCSString(systemProperties));
-            out.println();
+        } else if (printComments) {
+            out.println("#" + prefix + "system.properties =");
         }
 
-        if (jvmOptions == null) {
-            out.println("#" + prefix + "java.options =");
-        } else {
+        if (jvmOptions != null) {
             out.println(prefix + "jvm.options = "
                     + Util.strings2CSS(jvmOptions));
+        } else if (printComments) {
+            out.println("#" + prefix + "java.options =");
         }
     }
 
@@ -570,7 +599,13 @@ public class Application {
      * @return a newline separated string useful for printing.
      */
     public String toPrintString() {
-        String result = "Application \"" + getName() + "\"\n";
+        String result;
+        if (name == null) {
+            result = "Application Settings:\n";
+        } else {
+            result = "Application Settings for \"" + getName() + "\":\n";
+        }
+
         result += " Main class = " + getMainClass() + "\n";
         result += " Arguments = " + Util.strings2CSS(getArguments()) + "\n";
         result += " Libs = " + Util.files2CSS(getLibs()) + "\n";

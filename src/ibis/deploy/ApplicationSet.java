@@ -11,13 +11,13 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Group of applications. Mostly used as a convenient way of specifying defaults
+ * Set of applications. Mostly used as a convenient way of specifying defaults
  * and saving applications to a file.
  * 
  * @author Niels Drost
  * 
  */
-public class ApplicationGroup {
+public class ApplicationSet {
 
     // application representing defaults
     private Application defaults;
@@ -35,8 +35,7 @@ public class ApplicationGroup {
      * @throws IOException
      *             if reading from the given file fails
      */
-    public ApplicationGroup(File file) throws FileNotFoundException,
-            IOException {
+    public ApplicationSet(File file) throws FileNotFoundException, IOException {
         if (!file.exists()) {
             throw new FileNotFoundException("file \"" + file
                     + "\" does not exist");
@@ -45,7 +44,7 @@ public class ApplicationGroup {
         TypedProperties properties = new TypedProperties();
         properties.loadFromFile(file.getAbsolutePath());
 
-        defaults = new Application(properties, "default", "default", this);
+        defaults = new Application(properties, null, "default", this);
 
         applications = new ArrayList<Application>();
 
@@ -63,16 +62,16 @@ public class ApplicationGroup {
      * @throws Exception
      *             if the name is <code>null</code>
      */
-    public ApplicationGroup() throws Exception {
+    public ApplicationSet() throws Exception {
 
         this.applications = new ArrayList<Application>();
         defaults = new Application("default", this);
     }
 
     /**
-     * Returns the Applications in this ApplicationGroup.
+     * Returns the Applications in this ApplicationSet.
      * 
-     * @return the applications in this ApplicationGroup
+     * @return the applications in this ApplicationSet
      */
     public Application[] getApplications() {
         return applications.toArray(new Application[0]);
@@ -107,12 +106,12 @@ public class ApplicationGroup {
     }
 
     /**
-     * Get an application with a given name from this ApplicationGroup
+     * Get an application with a given name from this ApplicationSet
      * 
      * @param applicationName
      *            the name of the application to search for
      * @return the application with the given name, or <code>null</code> if no
-     *         applications with the given name exist in this ApplicationGroup.
+     *         applications with the given name exist in this ApplicationSet.
      */
     public Application getApplication(String applicationName) {
         for (Application application : applications) {
@@ -136,8 +135,10 @@ public class ApplicationGroup {
      * Save this application group and all contained applications to a property
      * file
      * 
-     * @param file file to write to
-     * @throws Exception in case file cannot be written
+     * @param file
+     *            file to write to
+     * @throws Exception
+     *             in case file cannot be written
      */
     public void save(File file) throws Exception {
         if (!file.exists()) {
@@ -156,13 +157,13 @@ public class ApplicationGroup {
 
         out.println();
         out.println("# Default settings:");
-        defaults.print(out, null);
+        defaults.save(out, "default", true);
 
         // write applications
         for (Application application : applications) {
             out.println();
             out.println("# Application \"" + application.getName() + "\"");
-            application.print(out, null);
+            application.save(out, null, true);
 
         }
         out.flush();
@@ -173,7 +174,7 @@ public class ApplicationGroup {
      * @see java.lang.Object#toString()
      */
     public String toString() {
-        return "Application Group";
+        return "Application Set";
     }
 
     /**
@@ -182,8 +183,8 @@ public class ApplicationGroup {
      * @return an info string suitable for printing (with newlines)
      */
     public String toPrintString() {
-        String result = "ApplicationGroup containing " + applications.size()
-                + " applications\n\nDefaults:\n";
+        String result = "ApplicationSet containing " + applications.size()
+                + " applications:\n\nDefault ";
         result += defaults.toPrintString() + "\n";
 
         for (Application application : applications) {

@@ -45,7 +45,7 @@ public class Grid {
 
         properties.loadFromFile(file.getAbsolutePath());
 
-        defaults = new Cluster(properties, "default", "default", this);
+        defaults = new Cluster(properties, null, "default", this);
 
         clusters = new ArrayList<Cluster>();
         String[] clusterNames = Util.getElementList(properties);
@@ -158,13 +158,13 @@ public class Grid {
         Cluster.printTableOfKeys(out);
         out.println();
         out.println("# Default settings:");
-        defaults.print(out, null);
+        defaults.save(out, "default", true);
 
         // write clusters
         for (Cluster cluster : clusters) {
             out.println();
             out.println("# Details of cluster \"" + cluster.getName() + "\"");
-            cluster.print(out, null);
+            cluster.save(out, null, true);
 
         }
         out.flush();
@@ -184,9 +184,9 @@ public class Grid {
      * @return an info string suitable for printing (with newlines)
      */
     public String toPrintString() {
-        String result = "Grid containing "
-                + clusters.size() + " clusters\n\nDefaults:\n";
-        
+        String result = "Grid containing " + clusters.size()
+                + " clusters:\n\nDefault ";
+
         result += defaults.toPrintString() + "\n";
 
         for (Cluster cluster : clusters) {

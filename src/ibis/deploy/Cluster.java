@@ -29,24 +29,37 @@ public class Cluster {
     public static void printTableOfKeys(PrintWriter out) {
         out.println("# Mandatory parameters for clusters:");
         out.println("# KEY                 COMMENT");
-        out.println("# server.adaptor      JavaGAT adaptor used to deploy server");
-        out.println("# server.uri          Contact URI used when deploying server");
-        out.println("# job.adaptor         JavaGAT adaptor used to deploy jobs");
-        out.println("# job.uri             Contact URI used when deploying job");
-        out.println("# file.adaptors       Comma separated list of JavaGAT file adaptors used to");
-        out.println("                      copy files to and from this cluster(*)");
-        out.println();
+        out
+                .println("# server.adaptor      JavaGAT adaptor used to deploy server");
+        out
+                .println("# server.uri          Contact URI used when deploying server");
+        out
+                .println("# job.adaptor         JavaGAT adaptor used to deploy jobs");
+        out
+                .println("# job.uri             Contact URI used when deploying job");
+        out
+                .println("# file.adaptors       Comma separated list of JavaGAT file adaptors used to");
+        out
+                .println("#                     copy files to and from this cluster(*)");
+        out.println("#");
         out.println("# Optional parameters: ");
         out.println("# KEY                 COMMENT");
-        out.println("# java.path           Path to java executable on this cluster.");
+        out
+                .println("# java.path           Path to java executable on this cluster.");
         out.println("#                     If unspecified, \"java\" is used");
-        out.println("# job.wrapper.script  If specified, the given script is copied to the cluster");
+        out
+                .println("# job.wrapper.script  If specified, the given script is copied to the cluster");
         out.println("#                     and run instead of java");
-        out.println("# user.name           User name used for authentication at cluster");
-        out.println("# nodes               Number of nodes(machines) of this cluster (integer)");
-        out.println("# cores               Total number of cores of this cluster (integer)");
-        out.println("# latitude            Latitude position of this cluster (double)");
-        out.println("# longitude           Longitude position of this cluster (double)");
+        out
+                .println("# user.name           User name used for authentication at cluster");
+        out
+                .println("# nodes               Number of nodes(machines) of this cluster (integer)");
+        out
+                .println("# cores               Total number of cores of this cluster (integer)");
+        out
+                .println("# latitude            Latitude position of this cluster (double)");
+        out
+                .println("# longitude           Longitude position of this cluster (double)");
     }
 
     private final Grid parent;
@@ -97,7 +110,7 @@ public class Cluster {
      * @param name
      *            the name of the cluster
      * @throws Exception
-     *             if the name given is <code>null</code>
+     *             if name is null or contains periods and/or spaces
      */
     Cluster(String name, Grid parent) throws Exception {
         this.parent = parent;
@@ -107,6 +120,36 @@ public class Cluster {
             throw new Exception("no name specified for cluster");
         }
 
+        if (name.contains(".")) {
+            throw new Exception("cluster name cannot contain periods : \""
+                    + name + "\"");
+        }
+        if (name.contains(" ")) {
+            throw new Exception("cluster name cannot contain spaces : \""
+                    + name + "\"");
+        }
+
+        serverAdaptor = null;
+        serverURI = null;
+        jobAdaptor = null;
+        jobURI = null;
+        fileAdaptors = null;
+        javaPath = null;
+        jobWrapperScript = null;
+        userName = null;
+        nodes = 0;
+        cores = 0;
+        latitude = 0;
+        longitude = 0;
+    }
+
+    /**
+     * Creates a cluster with no parent or name.
+     * 
+     */
+    Cluster() {
+        name = null;
+        parent = null;
         serverAdaptor = null;
         serverURI = null;
         jobAdaptor = null;
@@ -160,26 +203,6 @@ public class Cluster {
         cores = properties.getIntProperty(prefix + "cores", 0);
         latitude = properties.getDoubleProperty(prefix + "latitude", 0);
         longitude = properties.getDoubleProperty(prefix + "longitude", 0);
-    }
-
-    /**
-     * Creates a cluster with neither name nor parent.
-     */
-    Cluster() {
-        name = null;
-        parent = null;
-        serverAdaptor = null;
-        serverURI = null;
-        jobAdaptor = null;
-        jobURI = null;
-        fileAdaptors = null;
-        javaPath = null;
-        jobWrapperScript = null;
-        userName = null;
-        nodes = 0;
-        cores = 0;
-        latitude = 0;
-        longitude = 0;
     }
 
     /**
@@ -548,17 +571,66 @@ public class Cluster {
     }
 
     /**
+     * Checks if this cluster is suitable for deploying. If not, throws an
+     * exception.
+     * 
+     * @param jobName
+     *            name of job
+     * 
+     * @throws Exception
+     *             if this cluster is incomplete or incorrect.
+     */
+    public void checkSettings(String jobName) throws Exception {
+        String prefix = "Cannot run job \"" + jobName + "\": Cluster ";
+
+        if (name == null) {
+            throw new Exception(prefix + "name not specified");
+        }
+
+        if (serverAdaptor == null) {
+            throw new Exception(prefix + "server adaptor not specified");
+        }
+
+        if (serverURI == null) {
+            throw new Exception(prefix + "server URI not specified");
+        }
+
+        if (jobAdaptor == null) {
+            throw new Exception(prefix + "job adaptor not specified");
+        }
+
+        if (jobURI == null) {
+            throw new Exception(prefix + "job URI not specified");
+        }
+
+        if (fileAdaptors == null || fileAdaptors.size() == 0) {
+            throw new Exception(prefix + "file adaptors not specified");
+        }
+
+        if (cores < 0) {
+            throw new Exception(prefix + "number of cores negative");
+        }
+
+        if (nodes < 0) {
+            throw new Exception(prefix + "number of nodes negative");
+        }
+    }
+
+    /**
      * Print the settings of this cluster to a (properties) file
      * 
      * @param out
      *            stream to write this file to
-     * @param prependName
-     *            if true, key/value lines prepended with the application name
+     * @param prefix
+     *            prefix for key names, or null to use name of cluster
+     * @param printComments
+     *            if true, comments are added for all null values
      * @throws Exception
      *             if this cluster has no name
      */
-    void print(PrintWriter out, String prefix) throws Exception {
-        if (name == null || name.length() == 0) {
+    void save(PrintWriter out, String prefix, boolean printComments)
+            throws Exception {
+        if (prefix == null && (name == null || name.length() == 0)) {
             throw new Exception("cannot print cluster to file,"
                     + " name is not specified");
         }
@@ -569,71 +641,71 @@ public class Cluster {
             prefix = prefix + ".";
         }
 
-        if (serverAdaptor == null) {
-            out.println("#" + prefix + "server.adaptor = ");
-        } else {
+        if (serverAdaptor != null) {
             out.println(prefix + "server.adaptor = " + serverAdaptor);
+        } else if (printComments) {
+            out.println("#" + prefix + "server.adaptor = ");
         }
 
-        if (serverURI == null) {
-            out.println("#" + prefix + "server.uri = ");
-        } else {
+        if (serverURI != null) {
             out.println(prefix + "server.uri = " + serverURI.toASCIIString());
+        } else if (printComments) {
+            out.println("#" + prefix + "server.uri = ");
         }
 
-        if (jobAdaptor == null) {
-            out.println("#" + prefix + "job.adaptor = ");
-        } else {
+        if (jobAdaptor != null) {
             out.println(prefix + "job.adaptor = " + jobAdaptor);
+        } else if (printComments) {
+            out.println("#" + prefix + "job.adaptor = ");
         }
 
-        if (jobURI == null) {
-            out.println("#" + prefix + "job.uri = ");
-        } else {
+        if (jobURI != null) {
             out.println(prefix + "job.uri = " + jobURI.toASCIIString());
+        } else if (printComments) {
+            out.println("#" + prefix + "job.uri = ");
         }
 
-        if (fileAdaptors == null) {
-            out.println("#" + prefix + "file.adaptors = ");
-        } else {
+        if (fileAdaptors != null) {
             out.println(prefix + "file.adaptors = "
                     + Util.strings2CSS(fileAdaptors));
+        } else if (printComments) {
+            out.println("#" + prefix + "file.adaptors = ");
         }
 
-        if (javaPath == null) {
-            out.println("#" + prefix + "java.path = ");
-        } else {
+        if (javaPath != null) {
             out.println(prefix + "java.path = " + javaPath);
+        } else if (printComments) {
+            out.println("#" + prefix + "java.path = ");
         }
 
-        if (userName == null) {
-            out.println("#" + prefix + "user.name = ");
-        } else {
+        if (userName != null) {
             out.println(prefix + "user.name = " + userName);
+        } else if (printComments) {
+            out.println("#" + prefix + "user.name = ");
         }
 
-        if (nodes <= 0) {
-            out.println("#" + prefix + "nodes = ");
-        } else {
+        if (nodes > 0) {
             out.println(prefix + "nodes = " + nodes);
+        } else if (printComments) {
+            out.println("#" + prefix + "nodes = ");
         }
 
-        if (cores <= 0) {
-            out.println("#" + prefix + "cores = ");
-        } else {
+        if (cores > 0) {
             out.println(prefix + "cores = " + cores);
+        } else if (printComments) {
+            out.println("#" + prefix + "cores = ");
         }
 
-        if (latitude == 0) {
-            out.println("#" + prefix + "latitude = ");
-        } else {
+        if (latitude != 0) {
             out.println(prefix + "latitude = " + latitude);
+        } else if (printComments) {
+            out.println("#" + prefix + "latitude = ");
         }
 
-        if (longitude == 0) {
-            out.println("#" + prefix + "longitude = ");
-        } else {
+        if (longitude != 0) {
             out.println(prefix + "longitude = " + longitude);
+        } else if (printComments) {
+            out.println("#" + prefix + "longitude = ");
         }
 
     }
@@ -651,7 +723,13 @@ public class Cluster {
      * @return Returns a new-lined string suitable for printing.
      */
     public String toPrintString() {
-        String result = "Cluster \"" + getName() + "\"\n";
+        String result;
+        if (name == null) {
+            result = "Cluster Settings:\n";
+        } else {
+            result = "Cluster Settings for \"" + getName() + "\":\n";
+        }
+
         result += " Server adaptor = " + getServerAdaptor() + "\n";
         result += " Server URI = " + getServerURI() + "\n";
         result += " Job adaptor = " + getJobAdaptor() + "\n";

@@ -51,8 +51,11 @@ public class Util {
 
     /**
      * Extracts a URI property from a properties object
-     * @param properties source properties object
-     * @param key key of property to extract
+     * 
+     * @param properties
+     *            source properties object
+     * @param key
+     *            key of property to extract
      * @return URI version of property, or null if it does not exist
      * @throws URISyntaxException
      */
@@ -66,8 +69,11 @@ public class Util {
 
     /**
      * Extracts a File property from a properties object
-     * @param properties source properties object
-     * @param key key of property to extract
+     * 
+     * @param properties
+     *            source properties object
+     * @param key
+     *            key of property to extract
      * @return File version of property, or null if it does not exist
      */
     public static File getFileProperty(Properties properties, String key) {
@@ -79,8 +85,11 @@ public class Util {
 
     /**
      * Extracts a list of files from a properties object
-     * @param properties source properties object
-     * @param key key of property to extract
+     * 
+     * @param properties
+     *            source properties object
+     * @param key
+     *            key of property to extract
      * @return List of Files , or null if the property does not exist
      */
     public static List<File> getFileListProperty(TypedProperties properties,
@@ -224,6 +233,10 @@ public class Util {
      * @return a comma separated version of the map
      */
     public static String toCSString(Map<String, String> map) {
+        if (map == null) {
+            return null;
+        }
+
         String result = "";
         for (Map.Entry<String, String> entry : map.entrySet()) {
             result += entry.getKey() + "=" + entry.getValue() + ",";
