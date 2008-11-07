@@ -2,6 +2,10 @@
 
 export SGE_ROOT=/usr/local/Cluster-Apps/sge
 
+PRUN_BIN=/usr/local/VU/reserve.sge/bin/prun
+#PRUN_OPTIONS=-asocial -t 4:00:00
+PRUN_OPTIONS=
+
 NR_NODES=$1
 shift
 NR_PROCS=$1
@@ -12,20 +16,18 @@ ARGS=$*
 
 if [ `expr $NR_NODES \* 4` = "$NR_PROCS" ]; then
 
-echo /usr/local/VU/reserve.sge/bin/prun -4 -asocial -t 4:00:00 -np $NR_NODES $JAVA $ARGS
-/usr/local/VU/reserve.sge/bin/prun -4 -asocial -t 4:00:00 -np $NR_NODES $JAVA $ARGS
+echo $PRUN_BIN $PRUN_OPTIONS -4 --np $NR_NODES $JAVA $ARGS
+$PRUN_BIN $PRUN_OPTIONS -4 --np $NR_NODES $JAVA $ARGS
 
 elif [ `expr $NR_NODES \* 2` = "$NR_PROCS" ]; then
 
-echo /usr/local/VU/reserve.sge/bin/prun -2 -asocial -t 4:00:00 -np $NR_NODES $JAVA $ARGS
-/usr/local/VU/reserve.sge/bin/prun -2 -asocial -t 4:00:00 -np $NR_NODES $JAVA $ARGS
+echo $PRUN_BIN $PRUN_OPTIONS -2 --np $NR_NODES $JAVA $ARGS
+$PRUN_BIN $PRUN_OPTIONS -2 --np $NR_NODES $JAVA $ARGS
 
 else
 
-echo /usr/local/VU/reserve.sge/bin/prun -1 -asocial -t 4:00:00 -np $NR_NODES $JAVA $ARGS
-/usr/local/VU/reserve.sge/bin/prun -1 -asocial -t 4:00:00 -np $NR_NODES $JAVA $ARGS
-
-
+echo $PRUN_BIN $PRUN_OPTIONS -1 --np $NR_NODES $JAVA $ARGS
+$PRUN_BIN $PRUN_OPTIONS -1 --np $NR_NODES $JAVA $ARGS
 
 
 fi

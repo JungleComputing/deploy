@@ -163,6 +163,10 @@ public class Application {
         if (other == null) {
             return;
         }
+        
+        if (other.name != null) {
+            name = other.name;
+        }
 
         if (other.mainClass != null) {
             this.mainClass = other.mainClass;

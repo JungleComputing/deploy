@@ -215,6 +215,10 @@ public class Cluster {
         if (other == null) {
             return;
         }
+        
+        if (other.name != null) {
+            name = other.name;
+        }
 
         if (other.serverAdaptor != null) {
             serverAdaptor = other.serverAdaptor;
@@ -576,11 +580,15 @@ public class Cluster {
      * 
      * @param jobName
      *            name of job
+     * @param serverOnly
+     *            if only the necessary settings for starting a server need to
+     *            be checked
      * 
      * @throws Exception
      *             if this cluster is incomplete or incorrect.
      */
-    public void checkSettings(String jobName) throws Exception {
+    public void checkSettings(String jobName, boolean serverOnly)
+            throws Exception {
         String prefix = "Cannot run job \"" + jobName + "\": Cluster ";
 
         if (name == null) {
@@ -595,12 +603,16 @@ public class Cluster {
             throw new Exception(prefix + "server URI not specified");
         }
 
-        if (jobAdaptor == null) {
-            throw new Exception(prefix + "job adaptor not specified");
-        }
+        if (!serverOnly) {
 
-        if (jobURI == null) {
-            throw new Exception(prefix + "job URI not specified");
+            if (jobAdaptor == null) {
+                throw new Exception(prefix + "job adaptor not specified");
+            }
+
+            if (jobURI == null) {
+                throw new Exception(prefix + "job URI not specified");
+            }
+
         }
 
         if (fileAdaptors == null || fileAdaptors.size() == 0) {
@@ -614,6 +626,21 @@ public class Cluster {
         if (nodes < 0) {
             throw new Exception(prefix + "number of nodes negative");
         }
+    }
+    
+    /**
+     * Resolves cluster and its grid into a single new cluster object.
+     * 
+     * @return a resolved cluster
+     */
+    Cluster resolve() {
+        Cluster result = new Cluster();
+        if (parent != null) {
+        result.overwrite(parent.getDefaults());
+        }
+        result.overwrite(this);
+        
+        return result;
     }
 
     /**
@@ -677,7 +704,7 @@ public class Cluster {
         } else if (printComments) {
             out.println("#" + prefix + "java.path = ");
         }
-        
+
         if (jobWrapperScript != null) {
             out.println(prefix + "job.wrapper.script = " + jobWrapperScript);
         } else if (printComments) {

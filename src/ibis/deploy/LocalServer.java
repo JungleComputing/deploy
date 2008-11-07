@@ -32,21 +32,21 @@ public class LocalServer {
         this.hubOnly = hubOnly;
 
         if (hubOnly) {
-            logger.info("Starting build-in hub");
+            logger.debug("Starting build-in hub");
         } else {
-            logger.info("Starting build-in server");
+            logger.debug("Starting build-in server");
         }
 
         Properties properties = new Properties();
         properties.put(ServerProperties.HUB_ONLY, hubOnly + "");
-        properties.put(ServerProperties.PRINT_ERRORS, "true");
-        properties.put(ServerProperties.PRINT_EVENTS, "true");
-        properties.put(ServerProperties.PRINT_STATS, "true");
+        //properties.put(ServerProperties.PRINT_ERRORS, "true");
+        //properties.put(ServerProperties.PRINT_EVENTS, "true");
+        //properties.put(ServerProperties.PRINT_STATS, "true");
         properties.put(ServerProperties.PORT, "0");
 
         server = new ibis.server.Server(properties);
 
-        logger.info(server.toString());
+        logger.debug(server.toString());
     }
 
     /**

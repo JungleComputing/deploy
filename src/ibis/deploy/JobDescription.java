@@ -430,7 +430,7 @@ public class JobDescription {
             throw new Exception(prefix + "Cluster overrides not specified");
         }
         
-        clusterOverrides.checkSettings(name);
+        clusterOverrides.checkSettings(name, false);
 
         if (resourceCount <= 0) {
             throw new Exception(prefix + "Resource count zero or negative");

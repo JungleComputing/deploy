@@ -1,10 +1,14 @@
 package ibis.deploy;
 
+import ibis.ipl.impl.registry.central.monitor.RegistryMonitorClient;
+import ibis.server.ServerProperties;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.monitoring.MetricListener;
@@ -38,6 +42,8 @@ public class Deploy {
 
     // remote server (if it exists)
     private RemoteServer remoteServer;
+
+    private RegistryMonitorClient registryMonitor;
 
     // home dir of ibis-deploy
     private File homeDir;
@@ -171,7 +177,7 @@ public class Deploy {
         // see if all files we need are there.
         checkFiles(homeDir);
 
-        logger.info("Initializing deploy");
+        logger.debug("Initializing deploy");
 
         if (serverCluster == null) {
             // rootHub includes server
@@ -183,8 +189,14 @@ public class Deploy {
                     homeDir);
 
             hubs.put(serverCluster.getName(), remoteServer);
+
+            if (blocking) {
+                remoteServer.waitUntilRunning();
+            }
         }
-        logger.info("Ibis Deploy initialized successfully");
+
+        logger.info("Ibis Deploy initialized, root hub address is "
+                + rootHub.getAddress());
     }
 
     /**
@@ -223,8 +235,8 @@ public class Deploy {
         // resolve given description into single "independent" description
         description = description.resolve(applicationSet, grid);
 
-        logger.info("Submitting new job:\n" + description.toPrintString());
-        
+        logger.debug("Submitting new job:\n" + description.toPrintString());
+
         description.checkSettings();
 
         // waits until server is running
@@ -288,6 +300,36 @@ public class Deploy {
         }
 
         return result;
+    }
+
+    /**
+     * Returns a map containing the size of each pool at the server
+     * 
+     * @return a map containing the size of each pool at the server
+     * @throws Exception
+     *             if the server is not running yet, or communicating with it
+     *             failed
+     */
+    public synchronized Map<String, Integer> poolSizes() throws Exception {
+        if (rootHub == null) {
+            throw new Exception("Ibis Deploy not initialized, cannot monitor server");
+        }
+
+        if (remoteServer != null && !remoteServer.isRunning()) {
+            throw new Exception("Cannot monitor server \"" + remoteServer
+                    + "\" not running");
+        }
+
+        if (registryMonitor == null) {
+            Properties properties = new Properties();
+            properties.put(ServerProperties.ADDRESS, getServerAddress());
+            properties.put(ServerProperties.HUB_ADDRESSES,
+                getRootHubAddress());
+
+            registryMonitor = new RegistryMonitorClient(properties, false);
+        }
+
+        return registryMonitor.getPoolSizes();
     }
 
     /**

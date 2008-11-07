@@ -42,6 +42,8 @@ public class Job implements Runnable, MetricListener {
     private final String jobID;
 
     private final JobDescription description;
+    private final Cluster cluster;
+    private final Application application;
 
     private final String serverAddress;
 
@@ -80,6 +82,8 @@ public class Job implements Runnable, MetricListener {
     Job(JobDescription description, String serverAddress, LocalServer rootHub,
             RemoteServer hub, File deployHomeDir) {
         this.description = description;
+        this.cluster = description.getClusterSettings();
+        this.application = description.getApplicationSettings();
         this.serverAddress = serverAddress;
         this.rootHub = rootHub;
         this.hub = hub;
@@ -220,8 +224,6 @@ public class Job implements Runnable, MetricListener {
     private GATContext createGATContext() throws Exception {
         logger.debug("creating context");
 
-        Cluster cluster = description.getClusterSettings();
-
         GATContext context = new GATContext();
         if (cluster.getUserName() != null) {
             SecurityContext securityContext = new CertificateSecurityContext(
@@ -255,8 +257,6 @@ public class Job implements Runnable, MetricListener {
         logger.debug("creating job description");
 
         JavaSoftwareDescription sd = new JavaSoftwareDescription();
-        Cluster cluster = description.getClusterSettings();
-        Application application = description.getApplicationSettings();
 
         if (cluster.getJavaPath() == null) {
             sd.setExecutable("java");
@@ -342,8 +342,8 @@ public class Job implements Runnable, MetricListener {
         // class path
         sd.setJavaClassPath(createClassPath(application.getLibs()));
 
-        sd.setStdout(GAT.createFile(jobID + ".out"));
-        sd.setStderr(GAT.createFile(jobID + ".err"));
+        sd.setStdout(GAT.createFile(description.getPoolName() + "." + description.getName() +".out"));
+        sd.setStderr(GAT.createFile(description.getPoolName() + "." + description.getName() + ".err"));
 
         logger.info("Submitting application \"" + application.getName()
                 + "\" to " + cluster.getName() + " using "
@@ -449,7 +449,7 @@ public class Job implements Runnable, MetricListener {
 
             org.gridlab.gat.resources.JobDescription jobDescription = createJobDescription(javaSoftwareDescription);
 
-            logger.info("job description = " + jobDescription);
+            logger.debug("job description = " + jobDescription);
             
             ResourceBroker jobBroker = GAT.createResourceBroker(context,
                     description.getClusterSettings().getJobURI());
@@ -502,7 +502,7 @@ public class Job implements Runnable, MetricListener {
      * @see java.lang.Object#toString()
      */
     public String toString() {
-        return jobID;
+        return jobID + ":" + description.getName() + "/" + description.getPoolName() + "@" + description.getClusterName();
     }
 
 }
