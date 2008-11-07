@@ -1,6 +1,7 @@
 package ibis.deploy.cli;
 
 import ibis.deploy.ApplicationSet;
+import ibis.deploy.Cluster;
 import ibis.deploy.Deploy;
 import ibis.deploy.Experiment;
 import ibis.deploy.Grid;
@@ -25,37 +26,8 @@ public class CommandLine {
     private static final Logger logger = LoggerFactory
             .getLogger(CommandLine.class);
 
-    CommandLine(File gridFile, File applicationsFile, File[] experiments)
-            throws Exception {
-        ApplicationSet applications = new ApplicationSet(applicationsFile);
-        System.out.println(applications.toPrintString());
-        applications.save(new File(applicationsFile.getAbsolutePath()
-                + ".backup"));
-
-        Grid grid = new Grid(gridFile);
-        System.out.println(grid.toPrintString());
-        grid.save(new File(gridFile.getAbsolutePath() + ".backup"));
-
-        Deploy deploy = new Deploy();
-
-        deploy.initialize(null, null);
-
-        for (File file : experiments) {
-            Experiment experiment = new Experiment(file);
-
-            System.out.println(experiment.toPrintString());
-
-            runExperiment(experiment, grid, applications, deploy);
-
-            experiment.save(new File(file.getAbsolutePath() + ".backup"));
-        }
-
-        deploy.end();
-
-    }
-
-    //run a single experiment
-    private void runExperiment(Experiment experiment, Grid grid,
+    // run a single experiment
+    private static void runExperiment(Experiment experiment, Grid grid,
             ApplicationSet applications, Deploy deploy) throws Exception {
         logger.info("Running experiment " + experiment);
 
@@ -80,6 +52,10 @@ public class CommandLine {
         File gridFile = null;
         File applicationsFile = null;
         List<File> experiments = new ArrayList<File>();
+        boolean verbose = false;
+        Grid grid = null;
+        String serverCluster = null;
+        ApplicationSet applications = null;
 
         if (arguments.length == 0) {
             System.err
@@ -94,33 +70,92 @@ public class CommandLine {
             } else if (arguments[i].equals("-a")) {
                 i++;
                 applicationsFile = new File(arguments[i]);
+            } else if (arguments[i].equals("-s")) {
+                i++;
+                serverCluster = arguments[i];
+            } else if (arguments[i].equals("-v")) {
+                verbose = true;
             } else {
                 experiments.add(new File(arguments[i]));
             }
         }
 
-        if (gridFile != null && !gridFile.isFile()) {
-            System.err.println("Specified grid file: \"" + gridFile
-                    + "\" does not exist or is a directory");
-            System.exit(1);
-        }
-
-        if (applicationsFile != null && !applicationsFile.isFile()) {
-            System.err.println("Specified applications file: \""
-                    + applicationsFile + "\" does not exist or is a directory");
-            System.exit(1);
-        }
-
-        if (experiments.size() == 0) {
-            System.err.println("no experiments specified!");
-            System.err
-                    .println("Usage: ibis-deploy-cli [-g GRID_FILE] [-a APPLICATIONS_FILE] [EXPERIMENT_FILE]+...");
-            System.exit(1);
-        }
-
         try {
-            new CommandLine(gridFile, applicationsFile, experiments
-                    .toArray(new File[0]));
+
+            if (gridFile != null) {
+                if (!gridFile.isFile()) {
+                    System.err.println("Specified grid file: \"" + gridFile
+                            + "\" does not exist or is a directory");
+                    System.exit(1);
+                }
+
+                grid = new Grid(gridFile);
+
+                if (verbose) {
+                    System.err.println("Grid:");
+                    System.err.println(grid.toPrintString());
+                }
+            }
+
+            if (applicationsFile != null) {
+                if (!applicationsFile.isFile()) {
+                    System.err.println("Specified applications file: \""
+                            + applicationsFile
+                            + "\" does not exist or is a directory");
+                    System.exit(1);
+
+                }
+
+                applications = new ApplicationSet(applicationsFile);
+
+                if (verbose) {
+                    System.err.println("Applications:");
+                    System.err.println(applications.toPrintString());
+                }
+            }
+
+            if (experiments.size() == 0) {
+                System.err.println("no experiments specified!");
+                System.err
+                        .println("Usage: ibis-deploy-cli [-v] [-s SERVER_CLUSTER] [-g GRID_FILE] [-a APPLICATIONS_FILE] [EXPERIMENT_FILE]+...");
+                System.exit(1);
+            }
+
+            Deploy deploy = new Deploy();
+
+            //initialize deploy, use remote server cluster if specified
+            if (serverCluster == null) {
+                deploy.initialize(null, null);
+            } else {
+                if (grid == null) {
+                    System.err.println("Server cluster " + serverCluster
+                        + " not found, no grid file specified");
+                }
+                
+                Cluster cluster = grid.getCluster(serverCluster);
+
+                if (cluster == null) {
+                    System.err.println("Server cluster " + serverCluster
+                            + " not found in grid");
+                }
+                
+                deploy.initialize(cluster, null);
+            }
+
+            //run experiments
+            for (File file : experiments) {
+                Experiment experiment = new Experiment(file);
+
+                if (verbose) {
+                    System.out.println("Running experiment: "
+                            + experiment.toPrintString());
+                }
+
+                runExperiment(experiment, grid, applications, deploy);
+
+            }
+
+            deploy.end();
         } catch (Exception e) {
             System.err.println("Exception on running experiments");
             e.printStackTrace(System.err);
