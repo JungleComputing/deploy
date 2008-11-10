@@ -94,7 +94,7 @@ public class RemoteServer implements Runnable, MetricListener {
         }
 
         logger.info("Starting " + this + "\" using "
-                + cluster.getServerAdaptor() + "(" + cluster.getServerURI()
+                + this.cluster.getServerAdaptor() + "(" + this.cluster.getServerURI()
                 + ")");
 
         ThreadPool.createNew(this, this.toString());
@@ -108,21 +108,11 @@ public class RemoteServer implements Runnable, MetricListener {
                     null, null, cluster.getUserName(), null);
             context.addSecurityContext(securityContext);
         }
-        // FIXME: what's this?
+        // ensure files are readable on the other side
         context.addPreference("file.chmod", "0755");
-        if (cluster.getServerAdaptor() == null) {
-            throw new Exception("no server adaptor specified for cluster: "
-                    + cluster);
-        }
 
         context.addPreference("resourcebroker.adaptor.name", cluster
                 .getServerAdaptor());
-
-        if (cluster.getFileAdaptors() == null
-                || cluster.getFileAdaptors().length == 0) {
-            throw new Exception("no file adaptors specified for cluster: "
-                    + cluster);
-        }
 
         context.addPreference("file.adaptor.name", Util.strings2CSS(cluster
                 .getFileAdaptors()));
@@ -256,6 +246,7 @@ public class RemoteServer implements Runnable, MetricListener {
      */
     public void processMetricEvent(MetricEvent event) {
         logger.info(this + " status now " + event.getValue());
+        listeners.get(0).processMetricEvent(event);
     }
 
     /**

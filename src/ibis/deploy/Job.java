@@ -230,7 +230,8 @@ public class Job implements Runnable, MetricListener {
                     null, null, cluster.getUserName(), null);
             context.addSecurityContext(securityContext);
         }
-        // FIXME: what does this button do?
+        
+        // make sure files are readable on the other side
         context.addPreference("file.chmod", "0755");
         if (cluster.getJobAdaptor() == null) {
             throw new Exception("no job adaptor specified for cluster: "
@@ -239,12 +240,6 @@ public class Job implements Runnable, MetricListener {
 
         context.addPreference("resourcebroker.adaptor.name", cluster
                 .getJobAdaptor());
-
-        if (cluster.getFileAdaptors() == null
-                || cluster.getFileAdaptors().length == 0) {
-            throw new Exception("no file adaptors specified for cluster: "
-                    + cluster);
-        }
 
         context.addPreference("file.adaptor.name", Util.strings2CSS(cluster
                 .getFileAdaptors()));
@@ -337,7 +332,7 @@ public class Job implements Runnable, MetricListener {
         }
 
         // TODO: add some way of turning this on for debugging
-        sd.getAttributes().put("sandbox.delete", "false");
+        // sd.getAttributes().put("sandbox.delete", "false");
 
         // class path
         sd.setJavaClassPath(createClassPath(application.getLibs()));
