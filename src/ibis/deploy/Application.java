@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Ibis-based Java Application Description.
+ * Ibis-based Java Application Description. Applications are usually part of (and created by) an ApplicationSet.
  * 
  * @author Niels Drost
  * 
