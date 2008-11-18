@@ -157,7 +157,8 @@ public class RemoteServer implements Runnable, MetricListener {
         // set classpath
         sd.setJavaClassPath(".:lib-server:lib-server/*");
 
-        sd.getAttributes().put("sandbox.delete", "false");
+        //keep sandbox after hub is stopped
+        //sd.getAttributes().put("sandbox.delete", "false");
 
         sd.enableStreamingStdout(true);
         sd.enableStreamingStdin(true);
@@ -246,7 +247,6 @@ public class RemoteServer implements Runnable, MetricListener {
      */
     public void processMetricEvent(MetricEvent event) {
         logger.info(this + " status now " + event.getValue());
-        listeners.get(0).processMetricEvent(event);
     }
 
     /**

@@ -54,6 +54,16 @@
         <copy todir="lib/ipl">
             <fileset dir="${ipl-home}/lib" />
         </copy>
+        
+        <copy todir="lib/ipl-apps">
+            <fileset dir="${ipl-home}/benchmarks/lib" />
+        </copy>
+        
+        <copy todir="lib/ipl-apps">
+            <fileset dir="${ipl-home}/examples/lib" />
+        </copy>
+
+
     </target>
 
     <!-- Compile -->

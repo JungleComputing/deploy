@@ -42,7 +42,9 @@ public class Job implements Runnable, MetricListener {
     private final String jobID;
 
     private final JobDescription description;
+
     private final Cluster cluster;
+
     private final Application application;
 
     private final String serverAddress;
@@ -53,6 +55,8 @@ public class Job implements Runnable, MetricListener {
     private final RemoteServer hub;
 
     private final File deployHomeDir;
+
+    private final boolean keepSandbox;
 
     // set in case this jobs fails for some reason.
     private Exception error = null;
@@ -80,7 +84,7 @@ public class Job implements Runnable, MetricListener {
      *            home dir of deploy. Libs of server should be here
      */
     Job(JobDescription description, String serverAddress, LocalServer rootHub,
-            RemoteServer hub, File deployHomeDir) {
+            RemoteServer hub, File deployHomeDir, boolean keepSandbox) {
         this.description = description;
         this.cluster = description.getClusterSettings();
         this.application = description.getApplicationSettings();
@@ -88,10 +92,11 @@ public class Job implements Runnable, MetricListener {
         this.rootHub = rootHub;
         this.hub = hub;
         this.deployHomeDir = deployHomeDir;
+        this.keepSandbox = keepSandbox;
         listeners = new ArrayList<MetricListener>();
 
         jobID = "Job-" + getNextID();
-        
+
         // fork thread
         ThreadPool.createNew(this, jobID);
     }
@@ -149,23 +154,34 @@ public class Job implements Runnable, MetricListener {
     }
 
     /**
+     * Returns if this job is in the "STOPPED" or "SUBMISSION_ERROR" state.
+     * 
+     * @return true if this job is in the "STOPPED" or "SUBMISSION_ERROR" state.
+     * @throws Exception
+     *             in case an error occurs.
+     */
+    public synchronized boolean isFinished() throws Exception {
+        if (error != null) {
+            throw error;
+        }
+
+        JobState state = getState();
+
+        if (state == JobState.STOPPED || state == JobState.SUBMISSION_ERROR) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Wait until this job is in the "STOPPED" or "SUBMISSION_ERROR" state.
      * 
      * @throws Exception
      *             in case an error occurs.
      */
     public synchronized void waitUntilFinished() throws Exception {
-        while (true) {
-            if (error != null) {
-                throw error;
-            }
-
-            JobState state = getState();
-
-            if (state == JobState.STOPPED || state == JobState.SUBMISSION_ERROR) {
-                return;
-            }
-
+        while (!isFinished()) {
             wait(1000);
         }
     }
@@ -230,7 +246,7 @@ public class Job implements Runnable, MetricListener {
                     null, null, cluster.getUserName(), null);
             context.addSecurityContext(securityContext);
         }
-        
+
         // make sure files are readable on the other side
         context.addPreference("file.chmod", "0755");
         if (cluster.getJobAdaptor() == null) {
@@ -283,13 +299,14 @@ public class Job implements Runnable, MetricListener {
         // ibis.server.hub.addresses, set this too
         sd.addJavaSystemProperty("ibis.server.hub.addresses", hubList);
 
-        // file referring to lib dir
-        org.gridlab.gat.io.File libDir = GAT.createFile(new URI("lib/"));
-
         if (application.getLibs() == null) {
             throw new Exception("no library files specified for application "
                     + application);
         }
+        
+        // file referring to libs dir of sandbox
+        org.gridlab.gat.io.File libDir = GAT.createFile(new URI("lib/"));
+
 
         // add library files
         for (File file : application.getLibs()) {
@@ -299,9 +316,9 @@ public class Job implements Runnable, MetricListener {
             }
 
             URI uri = new URI(file.getAbsolutePath());
-            org.gridlab.gat.io.File gatFile = GAT.createFile(uri);
+            org.gridlab.gat.io.File srcFile = GAT.createFile(uri);
 
-            sd.addPreStagedFile(gatFile, libDir);
+            sd.addPreStagedFile(srcFile, libDir);
         }
 
         // file referring to root of sandbox / current directory
@@ -331,14 +348,17 @@ public class Job implements Runnable, MetricListener {
             }
         }
 
-        // TODO: add some way of turning this on for debugging
-        // sd.getAttributes().put("sandbox.delete", "false");
+        if (keepSandbox) {
+            sd.getAttributes().put("sandbox.delete", "false");
+        }
 
         // class path
         sd.setJavaClassPath(createClassPath(application.getLibs()));
 
-        sd.setStdout(GAT.createFile(description.getPoolName() + "." + description.getName() +".out"));
-        sd.setStderr(GAT.createFile(description.getPoolName() + "." + description.getName() + ".err"));
+        sd.setStdout(GAT.createFile(description.getPoolName() + "."
+                + description.getName() + ".out"));
+        sd.setStderr(GAT.createFile(description.getPoolName() + "."
+                + description.getName() + ".err"));
 
         logger.info("Submitting application \"" + application.getName()
                 + "\" to " + cluster.getName() + " using "
@@ -351,8 +371,9 @@ public class Job implements Runnable, MetricListener {
             JavaSoftwareDescription sd) throws Exception {
         org.gridlab.gat.resources.JobDescription result;
 
-        File wrapperScript = description.getClusterSettings().getJobWrapperScript();
-        
+        File wrapperScript = description.getClusterSettings()
+                .getJobWrapperScript();
+
         if (wrapperScript == null) {
             result = new org.gridlab.gat.resources.JobDescription(sd);
             result.setProcessCount(description.getProcessCount());
@@ -388,8 +409,7 @@ public class Job implements Runnable, MetricListener {
 
             // add wrapper to pre-stage files
             wrapperSd.addPreStagedFile(
-                    GAT.createFile(wrapperScript.toString()), GAT
-                            .createFile("."));
+                GAT.createFile(wrapperScript.toString()), GAT.createFile("."));
 
             // set /bin/sh as executable
             wrapperSd.setExecutable("/bin/sh");
@@ -425,11 +445,11 @@ public class Job implements Runnable, MetricListener {
             RemoteServer hub = this.hub;
 
             if (hub == null) {
-                //start a hub especially for this job
+                // start a hub especially for this job
                 hub = new RemoteServer(description.getClusterSettings(), true,
                         rootHub, deployHomeDir);
             }
-            //wait until hub really running
+            // wait until hub really running
             hub.waitUntilRunning();
 
             // create list of hubs, add to software description
@@ -437,7 +457,7 @@ public class Job implements Runnable, MetricListener {
             for (String address : rootHub.getHubs()) {
                 hubList = hubList + "," + address;
             }
-            
+
             GATContext context = createGATContext();
 
             JavaSoftwareDescription javaSoftwareDescription = createJavaSoftwareDescription(hubList);
@@ -445,12 +465,12 @@ public class Job implements Runnable, MetricListener {
             org.gridlab.gat.resources.JobDescription jobDescription = createJobDescription(javaSoftwareDescription);
 
             logger.debug("job description = " + jobDescription);
-            
+
             ResourceBroker jobBroker = GAT.createResourceBroker(context,
-                    description.getClusterSettings().getJobURI());
+                description.getClusterSettings().getJobURI());
 
             org.gridlab.gat.resources.Job gatJob = jobBroker.submitJob(
-                    jobDescription, this, "job.status");
+                jobDescription, this, "job.status");
             setGatJob(gatJob);
 
             waitUntilFinished();
@@ -497,7 +517,9 @@ public class Job implements Runnable, MetricListener {
      * @see java.lang.Object#toString()
      */
     public String toString() {
-        return jobID + ":" + description.getName() + "/" + description.getPoolName() + "@" + description.getClusterName();
+        return jobID + ":" + description.getName() + "/"
+                + description.getPoolName() + "@"
+                + description.getClusterName();
     }
 
 }

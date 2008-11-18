@@ -46,9 +46,8 @@ public class CommandLine {
         }
 
         // wait for all jobs to end
-        for (Job job : jobs) {
-            job.waitUntilFinished();
-        }
+        deploy.waitUntilJobsFinished();
+        
         System.err.println("DEPLOY: Experiment \"" + experiment + "\" done");
     }
 
@@ -61,13 +60,18 @@ public class CommandLine {
         File applicationsFile = null;
         List<File> experimentFiles = new ArrayList<File>();
         boolean verbose = false;
+        boolean keepSandboxes = false;
         Grid grid = null;
         String serverCluster = null;
         ApplicationSet applications = null;
 
         if (arguments.length == 0) {
             System.err
-                    .println("Usage: ibis-deploy-cli [-g GRID_FILE] [-a APPLICATIONS_FILE] [EXPERIMENT_FILE]+...");
+                    .println("Usage: ibis-deploy-cli [-v] [-k] [-g GRID_FILE] [-a APP_FILE] [EXPERIMENT_FILE]+...");
+            System.err.println("Options:");
+            System.err.println("-v\tVerbose mode");
+            System.err.println("-k\tKeep sandboxes");
+            
             System.exit(0);
         }
 
@@ -83,6 +87,8 @@ public class CommandLine {
                 serverCluster = arguments[i];
             } else if (arguments[i].equals("-v")) {
                 verbose = true;
+            } else if (arguments[i].equals("-k")) {
+                keepSandboxes = true;
             } else {
                 experimentFiles.add(new File(arguments[i]));
             }
@@ -130,6 +136,8 @@ public class CommandLine {
             }
 
             Deploy deploy = new Deploy();
+
+            deploy.keepSandboxes(keepSandboxes);
 
             if (serverCluster == null) {
                 System.err

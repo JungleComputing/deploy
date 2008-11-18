@@ -54,6 +54,8 @@ public class Deploy {
     // Map<gridName, Map<clusterName, Server>> with "shared" hubs
     private Map<String, RemoteServer> hubs;
 
+    private boolean keepSandboxes;
+
     /**
      * Create a new (uninitialized) deployment interface.
      */
@@ -61,6 +63,7 @@ public class Deploy {
         rootHub = null;
         remoteServer = null;
         homeDir = null;
+        keepSandboxes = false;
 
         jobs = new ArrayList<Job>();
         hubs = new HashMap<String, RemoteServer>();
@@ -82,6 +85,18 @@ public class Deploy {
                         + "\" not found in ibis deploy home (" + home + ")");
             }
         }
+    }
+
+    /**
+     * If set to true, will keep all sandboxes for jobs (not for hubs and
+     * servers though). This is turned of by default
+     * 
+     * @param keepSandboxes
+     *            if true, ibis-deploy will keep all sandboxes for jobs from
+     *            now on.
+     */
+    public synchronized void keepSandboxes(boolean keepSandboxes) {
+        this.keepSandboxes = keepSandboxes;
     }
 
     /**
@@ -251,7 +266,7 @@ public class Deploy {
         }
 
         // start job
-        Job job = new Job(description, serverAddress, rootHub, hub, homeDir);
+        Job job = new Job(description, serverAddress, rootHub, hub, homeDir, keepSandboxes);
 
         if (jobListener != null) {
             job.addStateListener(jobListener);
@@ -312,7 +327,8 @@ public class Deploy {
      */
     public synchronized Map<String, Integer> poolSizes() throws Exception {
         if (rootHub == null) {
-            throw new Exception("Ibis Deploy not initialized, cannot monitor server");
+            throw new Exception(
+                    "Ibis Deploy not initialized, cannot monitor server");
         }
 
         if (remoteServer != null && !remoteServer.isRunning()) {
@@ -323,13 +339,39 @@ public class Deploy {
         if (registryMonitor == null) {
             Properties properties = new Properties();
             properties.put(ServerProperties.ADDRESS, getServerAddress());
-            properties.put(ServerProperties.HUB_ADDRESSES,
-                getRootHubAddress());
+            properties.put(ServerProperties.HUB_ADDRESSES, getRootHubAddress());
 
             registryMonitor = new RegistryMonitorClient(properties, false);
         }
 
         return registryMonitor.getPoolSizes();
+    }
+
+    /**
+     * Waits until all jobs are finished. If any jobs are submitted while
+     * waiting, will also wait on those.
+     * 
+     * @throws Exception
+     *             if one of the jobs failed.
+     * 
+     */
+    public synchronized void waitUntilJobsFinished() throws Exception {
+        while (true) {
+
+            boolean done = true;
+
+            for (Job job : jobs) {
+                if (!job.isFinished()) {
+                    done = false;
+                }
+            }
+
+            if (done) {
+                return;
+            }
+
+            wait(1000);
+        }
     }
 
     /**

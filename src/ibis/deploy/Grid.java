@@ -40,6 +40,10 @@ public class Grid {
             throw new FileNotFoundException("file \"" + file
                     + "\" does not exist");
         }
+        
+        if(!file.getName().endsWith(".grid")) {
+            throw new Exception("grid files must have a \".grid\" extension");
+        }
 
         TypedProperties properties = new TypedProperties();
 

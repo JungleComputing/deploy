@@ -32,13 +32,19 @@ public class ApplicationSet {
      *            the file containing the properties
      * @throws FileNotFoundException
      *             if the given file cannot be found
-     * @throws IOException
-     *             if reading from the given file fails
+     * @throws Exception
+     *             if reading from the given file fails, or the file has an
+     *             extention other than ".applications"
      */
-    public ApplicationSet(File file) throws FileNotFoundException, IOException {
+    public ApplicationSet(File file) throws FileNotFoundException, Exception {
         if (!file.exists()) {
             throw new FileNotFoundException("file \"" + file
                     + "\" does not exist");
+        }
+
+        if (!file.getName().endsWith(".applications")) {
+            throw new Exception(
+                    "application files must have a \".applications\" extension");
         }
 
         TypedProperties properties = new TypedProperties();

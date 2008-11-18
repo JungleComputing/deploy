@@ -49,15 +49,24 @@ public class Experiment {
                     + "\" does not exist");
         }
 
+        String fileName = file.getName();
+
+        if (!fileName.endsWith(".experiment")) {
+            throw new Exception(
+                    "experiment files must have a \".experiment\" extension");
+        }
+
+        // cut of ".experiment", use the rest as name
+        name = fileName.substring(0, fileName.length() - 11);
+
+        if (name.length() == 0) {
+            throw new Exception(
+                    "no experiment name specified in experiment file name: "
+                            + file);
+        }
+
         TypedProperties properties = new TypedProperties();
         properties.loadFromFile(file.getAbsolutePath());
-
-        name = properties.getProperty("name");
-
-        if (name == null || name.length() == 0) {
-            throw new Exception(
-                    "no experiment name specified in experiment file: " + file);
-        }
 
         defaults = new JobDescription(properties, "default", "default", this);
 
@@ -193,10 +202,6 @@ public class Experiment {
                 + new Date(System.currentTimeMillis()));
         out.println();
         JobDescription.printTableOfKeys(out);
-        out.println();
-        out.println("# Experiment name (also used as default pool name):");
-        out.println("name = " + getName());
-
         out.println();
         out.println("# Default settings:");
         defaults.save(out, "default");
