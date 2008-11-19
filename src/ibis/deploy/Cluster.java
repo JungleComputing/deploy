@@ -53,6 +53,10 @@ public class Cluster {
         out
                 .println("# user.name           User name used for authentication at cluster");
         out
+                .println("# cache.dir           Directory on cluster used to cache pre-stage files");
+        out.println("#                     (updated using rsync)");
+
+        out
                 .println("# nodes               Number of nodes(machines) of this cluster (integer)");
         out
                 .println("# cores               Total number of cores of this cluster (integer)");
@@ -90,6 +94,9 @@ public class Cluster {
 
     // user name to authenticate user with
     private String userName;
+    
+    // cache dir for pre-stage files (updating using rsync)
+    private File cacheDir;
 
     // number of nodes of this cluster
     private int nodes;
@@ -137,6 +144,7 @@ public class Cluster {
         javaPath = null;
         jobWrapperScript = null;
         userName = null;
+        cacheDir = null;
         nodes = 0;
         cores = 0;
         latitude = 0;
@@ -158,6 +166,7 @@ public class Cluster {
         javaPath = null;
         jobWrapperScript = null;
         userName = null;
+        cacheDir = null;
         nodes = 0;
         cores = 0;
         latitude = 0;
@@ -199,6 +208,7 @@ public class Cluster {
                 + "job.wrapper.script");
 
         userName = properties.getProperty(prefix + "user.name");
+        cacheDir = Util.getFileProperty(properties, prefix + "cache.dir");
         nodes = properties.getIntProperty(prefix + "nodes", 0);
         cores = properties.getIntProperty(prefix + "cores", 0);
         latitude = properties.getDoubleProperty(prefix + "latitude", 0);
@@ -215,7 +225,7 @@ public class Cluster {
         if (other == null) {
             return;
         }
-        
+
         if (other.name != null) {
             name = other.name;
         }
@@ -251,6 +261,10 @@ public class Cluster {
 
         if (other.userName != null) {
             userName = other.userName;
+        }
+        
+        if (other.cacheDir != null) {
+            cacheDir = other.cacheDir;
         }
 
         if (other.nodes != 0) {
@@ -497,6 +511,24 @@ public class Cluster {
     public void setUserName(String userName) {
         this.userName = userName;
     }
+    
+    /**
+     * Cache directory used for pre-stage files (updated using rsync)
+     * 
+     * @return directory used as cache
+     */
+    public File getCacheDir() {
+        return cacheDir;
+    }
+    
+    /**
+     * Sets sache directory used for pre-stage files (updated using rsync)
+     * 
+     * @param cacheDir directory used as cache
+     */
+    public void setCacheDir(File cacheDir) {
+        this.cacheDir = cacheDir;
+    }
 
     /**
      * Total number of nodes in this cluster
@@ -618,6 +650,10 @@ public class Cluster {
         if (fileAdaptors == null || fileAdaptors.size() == 0) {
             throw new Exception(prefix + "file adaptors not specified");
         }
+        
+        if (cacheDir != null && !cacheDir.isAbsolute()) {
+            throw new Exception("Cache dir must be absolute");
+        }
 
         if (cores < 0) {
             throw new Exception(prefix + "number of cores negative");
@@ -627,7 +663,7 @@ public class Cluster {
             throw new Exception(prefix + "number of nodes negative");
         }
     }
-    
+
     /**
      * Resolves cluster and its grid into a single new cluster object.
      * 
@@ -636,10 +672,10 @@ public class Cluster {
     Cluster resolve() {
         Cluster result = new Cluster();
         if (parent != null) {
-        result.overwrite(parent.getDefaults());
+            result.overwrite(parent.getDefaults());
         }
         result.overwrite(this);
-        
+
         return result;
     }
 
@@ -716,6 +752,13 @@ public class Cluster {
         } else if (printComments) {
             out.println("#" + prefix + "user.name = ");
         }
+        
+        if (cacheDir != null) {
+            out.println(prefix + "cache.dir = " + cacheDir);
+        } else if (printComments) {
+            out.println("#" + prefix + "cache.dir = ");
+        }
+
 
         if (nodes > 0) {
             out.println(prefix + "nodes = " + nodes);
@@ -771,6 +814,7 @@ public class Cluster {
         result += " Java path = " + getJavaPath() + "\n";
         result += " Wrapper Script = " + getJobWrapperScript() + "\n";
         result += " User name = " + getUserName() + "\n";
+        result += " Cache dir = " + getCacheDir() + "\n";
         result += " Nodes = " + getNodes() + "\n";
         result += " Cores = " + getCores() + "\n";
         result += " Latitude = " + getLatitude() + "\n";

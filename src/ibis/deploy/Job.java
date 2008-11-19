@@ -263,6 +263,40 @@ public class Job implements Runnable, MetricListener {
         return context;
     }
 
+    private void prestage(File src, File dstDir, JavaSoftwareDescription sd)
+            throws Exception {
+        String host = cluster.getServerURI().getHost();
+        String user = cluster.getUserName();
+        File clusterCacheDir = cluster.getCacheDir();
+
+        if (clusterCacheDir == null) {
+            org.gridlab.gat.io.File gatFile = GAT.createFile(src.toString());
+            org.gridlab.gat.io.File gatDstFile = GAT.createFile(dstDir
+                    .getPath());
+            sd.addPreStagedFile(gatFile, gatDstFile);
+            return;
+        }
+        
+        String fileCacheDir = clusterCacheDir + "/" + description.getPoolName() + "/"
+        + description.getName() + "/" + dstDir;
+
+        // create cache dir, and server dir within
+        org.gridlab.gat.io.File gatCacheDirFile = GAT.createFile("any://"
+                + host + "/" + fileCacheDir);
+        gatCacheDirFile.mkdirs();
+
+        // rsync to cluster cache server dir
+        File rsyncLocation = new File(fileCacheDir);
+        Rsync.rsync(src, rsyncLocation, host, user);
+
+        // tell job to pre-stage from cache dir
+        org.gridlab.gat.io.File gatFile = GAT.createFile("any://" + host + "/"
+                + fileCacheDir + "/" + src.getName());
+        org.gridlab.gat.io.File gatDstFile = GAT.createFile(dstDir.getPath());
+        sd.addPreStagedFile(gatFile, gatDstFile);
+        return;
+    }
+
     private JavaSoftwareDescription createJavaSoftwareDescription(String hubList)
             throws Exception {
         logger.debug("creating job description");
@@ -303,10 +337,13 @@ public class Job implements Runnable, MetricListener {
             throw new Exception("no library files specified for application "
                     + application);
         }
+
+        if (cluster.getCacheDir() != null) {
+            logger.info(this + " doing pre-stage using rsync");
+        }
         
         // file referring to libs dir of sandbox
-        org.gridlab.gat.io.File libDir = GAT.createFile(new URI("lib/"));
-
+        File libDir = new File("lib");
 
         // add library files
         for (File file : application.getLibs()) {
@@ -314,15 +351,12 @@ public class Job implements Runnable, MetricListener {
                 throw new Exception("File " + file
                         + " in libs of job does not exist");
             }
-
-            URI uri = new URI(file.getAbsolutePath());
-            org.gridlab.gat.io.File srcFile = GAT.createFile(uri);
-
-            sd.addPreStagedFile(srcFile, libDir);
+            
+            prestage(file, libDir, sd);
         }
 
         // file referring to root of sandbox / current directory
-        org.gridlab.gat.io.File cwd = GAT.createFile(new URI("."));
+        File cwd = new File(".");
 
         if (application.getInputFiles() != null) {
             for (File file : application.getInputFiles()) {
@@ -331,10 +365,7 @@ public class Job implements Runnable, MetricListener {
                             + " in input files of job does not exist");
                 }
 
-                URI uri = new URI(file.getAbsolutePath());
-                org.gridlab.gat.io.File gatFile = GAT.createFile(uri);
-
-                sd.addPreStagedFile(gatFile, cwd);
+                prestage(file, cwd, sd);
             }
         }
 
@@ -409,7 +440,8 @@ public class Job implements Runnable, MetricListener {
 
             // add wrapper to pre-stage files
             wrapperSd.addPreStagedFile(
-                GAT.createFile(wrapperScript.toString()), GAT.createFile("."));
+                    GAT.createFile(wrapperScript.toString()), GAT
+                            .createFile("."));
 
             // set /bin/sh as executable
             wrapperSd.setExecutable("/bin/sh");
@@ -467,10 +499,10 @@ public class Job implements Runnable, MetricListener {
             logger.debug("job description = " + jobDescription);
 
             ResourceBroker jobBroker = GAT.createResourceBroker(context,
-                description.getClusterSettings().getJobURI());
+                    description.getClusterSettings().getJobURI());
 
             org.gridlab.gat.resources.Job gatJob = jobBroker.submitJob(
-                jobDescription, this, "job.status");
+                    jobDescription, this, "job.status");
             setGatJob(gatJob);
 
             waitUntilFinished();
