@@ -28,14 +28,15 @@ public class CommandLine {
             System.out.println("DEPLOY: Running experiment: "
                     + experiment.toPrintString());
         } else {
-            System.err.println("DEPLOY: Running experiment \"" + experiment + "\" with " + experiment.getJobs().length + " jobs");
+            System.err.println("DEPLOY: Running experiment \"" + experiment
+                    + "\" with " + experiment.getJobs().length + " jobs");
         }
 
         // start jobs
         List<Job> jobs = new ArrayList<Job>();
         for (JobDescription jobDescription : experiment.getJobs()) {
             Job job = deploy.submitJob(jobDescription, applications, grid,
-                null, null);
+                    null, null);
             jobs.add(job);
             if (verbose) {
                 System.err.println("DEPLOY: Submitted job "
@@ -47,8 +48,16 @@ public class CommandLine {
 
         // wait for all jobs to end
         deploy.waitUntilJobsFinished();
-        
+
         System.err.println("DEPLOY: Experiment \"" + experiment + "\" done");
+    }
+
+    private static void printUsage() {
+        System.err
+                .println("Usage: ibis-deploy-cli [-v] [-k] [GRID_FILE] [APP_FILE] [EXPERIMENT_FILE]+...");
+        System.err.println("Options:");
+        System.err.println("-v\tVerbose mode");
+        System.err.println("-k\tKeep sandboxes");
     }
 
     /**
@@ -66,40 +75,48 @@ public class CommandLine {
         ApplicationSet applications = null;
 
         if (arguments.length == 0) {
-            System.err
-                    .println("Usage: ibis-deploy-cli [-v] [-k] [-g GRID_FILE] [-a APP_FILE] [EXPERIMENT_FILE]+...");
-            System.err.println("Options:");
-            System.err.println("-v\tVerbose mode");
-            System.err.println("-k\tKeep sandboxes");
-            
+            printUsage();
             System.exit(0);
         }
 
         for (int i = 0; i < arguments.length; i++) {
-            if (arguments[i].equals("-g")) {
-                i++;
-                gridFile = new File(arguments[i]);
-            } else if (arguments[i].equals("-a")) {
-                i++;
-                applicationsFile = new File(arguments[i]);
-            } else if (arguments[i].equals("-s")) {
+            if (arguments[i].equals("-s")) {
                 i++;
                 serverCluster = arguments[i];
             } else if (arguments[i].equals("-v")) {
                 verbose = true;
             } else if (arguments[i].equals("-k")) {
                 keepSandboxes = true;
-            } else {
+            } else if (arguments[i].equals("-h") || arguments[i].equals("--help")) {
+                printUsage();
+                System.exit(0);
+            } else if (arguments[i].endsWith(".grid")) {
+                if (gridFile != null) {
+                    System.err.println("ERROR: can only specify a single grid file");
+                    System.exit(1);
+                }
+                gridFile = new File(arguments[i]);
+            } else if (arguments[i].endsWith(".applications")) {
+                if (applicationsFile != null) {
+                    System.err
+                            .println("ERROR: can only specify a single applications file");
+                    System.exit(1);
+                }
+                applicationsFile = new File(arguments[i]);
+            } else if (arguments[i].endsWith(".experiment")) {
                 experimentFiles.add(new File(arguments[i]));
+            } else {
+                System.err.println("Unknown option: " + arguments[i]);
+                printUsage();
+                System.exit(1);
             }
         }
 
         try {
-
             if (gridFile != null) {
                 if (!gridFile.isFile()) {
-                    System.err.println("DEPLOY: Specified grid file: \"" + gridFile
-                            + "\" does not exist or is a directory");
+                    System.err.println("ERROR: Specified grid file: \""
+                            + gridFile + "\" does not exist or is a directory");
                     System.exit(1);
                 }
 
@@ -113,9 +130,10 @@ public class CommandLine {
 
             if (applicationsFile != null) {
                 if (!applicationsFile.isFile()) {
-                    System.err.println("DEPLOY: Specified applications file: \""
-                            + applicationsFile
-                            + "\" does not exist or is a directory");
+                    System.err
+                            .println("ERROR: Specified applications file: \""
+                                    + applicationsFile
+                                    + "\" does not exist or is a directory");
                     System.exit(1);
 
                 }
@@ -129,7 +147,7 @@ public class CommandLine {
             }
 
             if (experimentFiles.size() == 0) {
-                System.err.println("DEPLOY: no experiments specified!");
+                System.err.println("ERROR: no experiments specified!");
                 System.err
                         .println("Usage: ibis-deploy-cli [-v] [-s SERVER_CLUSTER] [-g GRID_FILE] [-a APPLICATIONS_FILE] [EXPERIMENT_FILE]+...");
                 System.exit(1);
@@ -150,15 +168,17 @@ public class CommandLine {
                                 + serverCluster + "\"");
 
                 if (grid == null) {
-                    System.err.println("Server cluster " + serverCluster
+                    System.err.println("ERROR: Server cluster " + serverCluster
                             + " not found, no grid file specified");
+                    System.exit(1);
                 }
 
                 Cluster cluster = grid.getCluster(serverCluster);
 
                 if (cluster == null) {
-                    System.err.println("DEPLOY: Server cluster " + serverCluster
-                            + " not found in grid");
+                    System.err.println("ERROR: Server cluster "
+                            + serverCluster + " not found in grid");
+                    System.exit(1);
                 }
 
                 deploy.initialize(cluster, null);

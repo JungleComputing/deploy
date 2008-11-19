@@ -123,6 +123,33 @@ public class RemoteServer implements Runnable, MetricListener {
         return context;
 
     }
+    
+    private static void prestage(File src, Cluster cluster, JavaSoftwareDescription sd) throws Exception {
+        String host = cluster.getServerURI().getHost();
+        String user = cluster.getUserName();
+        File cacheDir = cluster.getCacheDir();
+        
+        if (cacheDir == null) {
+            org.gridlab.gat.io.File gatFile = GAT.createFile(src.toString());
+            org.gridlab.gat.io.File gatDstFile = GAT.createFile(".");
+            sd.addPreStagedFile(gatFile, gatDstFile);
+            return;
+        }
+        
+        //create cache dir, and server dir within
+        org.gridlab.gat.io.File gatCacheDirFile = GAT.createFile("any://" + host + "/" + cacheDir + "/server/");
+        gatCacheDirFile.mkdirs();
+
+        //rsync to cluster cache server dir
+        File rsyncLocation = new File (cacheDir + "/server/");
+        Rsync.rsync(src, rsyncLocation, host, user);
+        
+        //tell job to pre-stage from cache dir
+        org.gridlab.gat.io.File gatFile = GAT.createFile("any://" + host + "/" + cacheDir + "/server/" + src.getName());
+        org.gridlab.gat.io.File gatDstFile = GAT.createFile(".");
+        sd.addPreStagedFile(gatFile, gatDstFile);
+        return;
+    }
 
     private static JobDescription createJobDescription(Cluster cluster,
             boolean hubOnly, File homeDir) throws Exception {
@@ -143,19 +170,13 @@ public class RemoteServer implements Runnable, MetricListener {
                     "--events", "--stats" });
         }
 
-        // add server libraries to pre-stage
+        // add server libraries to pre-stage, use rsync if specified
         File serverLibs = new File(homeDir, "lib-server");
-
-        org.gridlab.gat.io.File gatFile = GAT.createFile(serverLibs.toString());
-        org.gridlab.gat.io.File gatDstFile = GAT.createFile(".");
-        sd.addPreStagedFile(gatFile, gatDstFile);
-
+        prestage(serverLibs, cluster, sd);
+        
         // add server log4j file
-        File log4j = new File(homeDir, "log4j.server.properties");
-        org.gridlab.gat.io.File log4JGatFile = GAT.createFile(log4j.toString());
-        org.gridlab.gat.io.File log4JgatDstFile = GAT
-                .createFile("log4j.properties");
-        sd.addPreStagedFile(log4JGatFile, log4JgatDstFile);
+        File log4j = new File(homeDir, "log4j.properties");
+        prestage(log4j, cluster, sd);
 
         // set classpath
         sd.setJavaClassPath(".:lib-server:lib-server/*");

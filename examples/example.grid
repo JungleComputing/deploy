@@ -49,7 +49,7 @@ VU.nodes = 85
 VU.cores = 340
 VU.latitude = 4.872222
 VU.longitude = 52.336062
-VU.cache.dir = /home/ndrost/ibis-deploy-cache
+#VU.cache.dir = /home/ndrost/ibis-deploy-cache
 
 # Details of cluster "MultimediaN"
 #MultimediaN.server.adaptor = 
