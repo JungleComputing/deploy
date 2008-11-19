@@ -10,7 +10,6 @@ import java.util.List;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.URI;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.MetricListener;
@@ -301,7 +300,7 @@ public class Job implements Runnable, MetricListener {
         // tell job to pre-stage from cache dir
         org.gridlab.gat.io.File gatFile = GAT.createFile("any://" + host + "/"
                 + fileCacheDir + "/" + src.getName());
-        org.gridlab.gat.io.File gatDstFile = GAT.createFile(dstDir.getPath());
+        org.gridlab.gat.io.File gatDstFile = GAT.createFile(dstDir.getPath() + "/");
         sd.addPreStagedFile(gatFile, gatDstFile);
         return;
     }
@@ -380,11 +379,9 @@ public class Job implements Runnable, MetricListener {
 
         if (application.getOutputFiles() != null) {
             for (File file : application.getOutputFiles()) {
-                URI uri = new URI(file.getAbsolutePath());
-                org.gridlab.gat.io.File gatFile = GAT.createFile(uri);
+                org.gridlab.gat.io.File gatFile = GAT.createFile(file.getPath());
 
-                // FIXME: check if this actually works, probably not
-                sd.addPostStagedFile(gatFile);
+                sd.addPostStagedFile(gatFile, GAT.createFile("."));
             }
         }
 
