@@ -5,7 +5,7 @@ import org.jdesktop.swingx.mapviewer.TileFactory;
 import org.jdesktop.swingx.mapviewer.TileFactoryInfo;
 
 public class GoogleMapTerrainTileProvider {
-    private static final String VERSION = "app.81";
+    private static final String VERSION = "w2p.87";
 
     private static final int minZoom = 1;
 
@@ -21,6 +21,7 @@ public class GoogleMapTerrainTileProvider {
 
     // old: http://mt2.google.com/mt/v=w2p.81&hl=nl&x=2106&y=1348&zoom=5
     // new: http://mt3.google.com/mt?v=app.81&hl=nl&x=525&y=335&z=10&s=Galile
+    // newer: http://mt3.google.com/mt?v=w2p.87&hl=nl&x=63&y=40&z=7&s=Galil
     private static final String baseURL = "http://mt0.google.com";
 
     private static final TileFactoryInfo GOOGLE_MAPS_TILE_INFO = new GoogleMapTerrainTileFactoryInfo(

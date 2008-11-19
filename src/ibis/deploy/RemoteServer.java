@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
-import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.MetricListener;
@@ -64,24 +63,27 @@ public class RemoteServer implements Runnable, MetricListener {
      * not be available when this constructor completes.
      * 
      * @param cluster
-     *            cluster to start this server on
+     *                cluster to start this server on
      * @param hubOnly
-     *            if true, only start a SmartSockets hub. If false, start the
-     *            complete server)
+     *                if true, only start a SmartSockets hub. If false, start
+     *                the complete server)
      * @param rootHub
-     *            root hub of this ibis-deploy. Address of this hub is reported
-     *            to the root-hub.
+     *                root hub of this ibis-deploy. Address of this hub is
+     *                reported to the root-hub.
      * @param homeDir
-     *            home directory of ibis-deploy. Files used to start server
-     *            should be here.
+     *                home directory of ibis-deploy. Files used to start server
+     *                should be here.
      * 
      */
     RemoteServer(Cluster cluster, boolean hubOnly, LocalServer rootHub,
-            File deployHomeDir) throws Exception {
+            File deployHomeDir, MetricListener hubListener) throws Exception {
         this.hubOnly = hubOnly;
         this.rootHub = rootHub;
         this.deployHomeDir = deployHomeDir;
         listeners = new ArrayList<MetricListener>();
+        if (hubListener != null) {
+            addStateListener(hubListener);
+        }
         address = null;
 
         this.cluster = cluster.resolve();
@@ -95,8 +97,8 @@ public class RemoteServer implements Runnable, MetricListener {
         }
 
         logger.info("Starting " + this + "\" using "
-                + this.cluster.getServerAdaptor() + "(" + this.cluster.getServerURI()
-                + ")");
+                + this.cluster.getServerAdaptor() + "("
+                + this.cluster.getServerURI() + ")");
 
         ThreadPool.createNew(this, this.toString());
     }
@@ -121,33 +123,6 @@ public class RemoteServer implements Runnable, MetricListener {
         return context;
 
     }
-    
-    private static void prestage(File src, Cluster cluster, JavaSoftwareDescription sd) throws Exception {
-        String host = cluster.getServerURI().getHost();
-        String user = cluster.getUserName();
-        File cacheDir = cluster.getCacheDir();
-        
-        if (cacheDir == null) {
-            org.gridlab.gat.io.File gatFile = GAT.createFile(src.toString());
-            org.gridlab.gat.io.File gatDstFile = GAT.createFile(".");
-            sd.addPreStagedFile(gatFile, gatDstFile);
-            return;
-        }
-        
-        //create cache dir, and server dir within
-        org.gridlab.gat.io.File gatCacheDirFile = GAT.createFile("any://" + host + "/" + cacheDir + "/server/");
-        gatCacheDirFile.mkdirs();
-
-        //rsync to cluster cache server dir
-        File rsyncLocation = new File (cacheDir + "/server/");
-        Rsync.rsync(src, rsyncLocation, host, user);
-        
-        //tell job to pre-stage from cache dir
-        org.gridlab.gat.io.File gatFile = GAT.createFile("any://" + host + "/" + cacheDir + "/server/" + src.getName());
-        org.gridlab.gat.io.File gatDstFile = GAT.createFile(".");
-        sd.addPreStagedFile(gatFile, gatDstFile);
-        return;
-    }
 
     private static JobDescription createJobDescription(Cluster cluster,
             boolean hubOnly, File homeDir) throws Exception {
@@ -167,20 +142,25 @@ public class RemoteServer implements Runnable, MetricListener {
             sd.setJavaArguments(new String[] { "--remote", "--port", "0",
                     "--events", "--stats" });
         }
-        
-        // add server libraries to pre-stage, use rsync if specified
+
+        // add server libraries to pre-stage
         File serverLibs = new File(homeDir, "lib-server");
-        prestage(serverLibs, cluster, sd);
-        
+
+        org.gridlab.gat.io.File gatFile = GAT.createFile(serverLibs.toString());
+        org.gridlab.gat.io.File gatDstFile = GAT.createFile(".");
+        sd.addPreStagedFile(gatFile, gatDstFile);
+
         // add server log4j file
-        File log4j = new File(homeDir, "log4j.properties");
-        prestage(log4j, cluster, sd);
-        
+        File log4j = new File(homeDir, "log4j.server.properties");
+        org.gridlab.gat.io.File log4JGatFile = GAT.createFile(log4j.toString());
+        org.gridlab.gat.io.File log4JgatDstFile = GAT
+                .createFile("log4j.properties");
+        sd.addPreStagedFile(log4JGatFile, log4JgatDstFile);
+
         // set classpath
         sd.setJavaClassPath(".:lib-server:lib-server/*");
 
-        //keep sandbox after hub is stopped
-        //sd.getAttributes().put("sandbox.delete", "false");
+        sd.getAttributes().put("sandbox.delete", "false");
 
         sd.enableStreamingStdout(true);
         sd.enableStreamingStdin(true);
@@ -204,7 +184,7 @@ public class RemoteServer implements Runnable, MetricListener {
      * 
      * @return the address of this server
      * @throws Exception
-     *             if the server failed to start
+     *                 if the server failed to start
      */
     public synchronized String getAddress() throws Exception {
         waitUntilRunning();
@@ -213,23 +193,25 @@ public class RemoteServer implements Runnable, MetricListener {
 
     /**
      * Add a listener to this server which reports the state of the JavaGAT job.
+     * Also causes a new {@link MetricEvent} for this listener with the current
+     * state of the job.
      * 
      * @param listener
-     *            the listener to attach
+     *                the listener to attach
      * @throws Exception
-     *             in case attaching failed
+     *                 in case attaching failed
      */
     public synchronized void addStateListener(MetricListener listener)
             throws Exception {
-        
-        if (gatJob == null) {
-            // listeners added when job is submitted
-            listeners.add(listener);
-        } else {
-            Metric metric = gatJob.getMetricDefinitionByName("job.state")
-                    .createMetric(null);
+        listeners.add(listener);
 
-            gatJob.addMetricListener(listener, metric);
+        // causes a new event for this listener with the current state of the
+        // job.
+        if (gatJob != null) {
+            Metric metric = gatJob.getMetricDefinitionByName("job.status")
+                    .createMetric(null);
+            listener.processMetricEvent(new MetricEvent(gatJob, gatJob
+                    .getState(), metric, System.currentTimeMillis()));
         }
     }
 
@@ -267,8 +249,11 @@ public class RemoteServer implements Runnable, MetricListener {
     /**
      * @see org.gridlab.gat.monitoring.MetricListener#processMetricEvent(org.gridlab.gat.monitoring.MetricEvent)
      */
-    public void processMetricEvent(MetricEvent event) {
+    public synchronized void processMetricEvent(MetricEvent event) {
         logger.info(this + " status now " + event.getValue());
+        for (MetricListener listener : listeners) {
+            listener.processMetricEvent(event);
+        }
     }
 
     /**
@@ -277,23 +262,19 @@ public class RemoteServer implements Runnable, MetricListener {
     public void run() {
         try {
             GATContext context = createGATContext(cluster);
-            
-            if (cluster.getCacheDir() != null) {
-                logger.info(this + " doing pre-stage using rsync");
-            }
 
             JobDescription jobDescription = createJobDescription(cluster,
-                hubOnly, deployHomeDir);
+                    hubOnly, deployHomeDir);
 
             logger.debug("creating resource broker for hub");
 
             ResourceBroker jobBroker = GAT.createResourceBroker(context,
-                cluster.getServerURI());
+                    cluster.getServerURI());
 
             logger.debug("submitting job: " + jobDescription.toString());
 
             org.gridlab.gat.resources.Job job = jobBroker.submitJob(
-                jobDescription, this, "job.status");
+                    jobDescription, this, "job.status");
             setGatJob(job);
 
             // TODO: remote remote client stuff
@@ -333,14 +314,6 @@ public class RemoteServer implements Runnable, MetricListener {
             throws Exception {
         this.gatJob = gatJob;
 
-        for (MetricListener listener : listeners) {
-            Metric metric = gatJob.getMetricDefinitionByName("job.state")
-                    .createMetric(null);
-
-            gatJob.addMetricListener(listener, metric);
-        }
-        listeners.clear();
-
         // server already killed before it was submitted :(
         // kill server...
         if (killed) {
@@ -352,7 +325,7 @@ public class RemoteServer implements Runnable, MetricListener {
      * Ensure this server is running, wait for it if needed.
      * 
      * @throws Exception
-     *             when the server could not be started.
+     *                 when the server could not be started.
      */
     public synchronized void waitUntilRunning() throws Exception {
         while (address == null) {
@@ -373,7 +346,7 @@ public class RemoteServer implements Runnable, MetricListener {
      * @return true if this server is running
      * 
      * @throws Exception
-     *             if the state of the job could not be determined
+     *                 if the state of the job could not be determined
      */
     public synchronized boolean isRunning() throws Exception {
         return address != null && getState() == JobState.RUNNING;

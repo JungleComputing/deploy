@@ -71,7 +71,7 @@ public class JobDescription {
 
     private Boolean sharedHub;
 
-    JobDescription() throws Exception {
+    public JobDescription() throws Exception {
         name = null;
         parent = null;
         applicationName = null;

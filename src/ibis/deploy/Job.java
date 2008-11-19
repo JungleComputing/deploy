@@ -52,7 +52,7 @@ public class Job implements Runnable, MetricListener {
     private final LocalServer rootHub;
 
     // shared hub. If null, a local hub is used
-    private final RemoteServer hub;
+    private final RemoteServer sharedHub;
 
     private final File deployHomeDir;
 
@@ -69,31 +69,43 @@ public class Job implements Runnable, MetricListener {
 
     private boolean killed = false;
 
+    // listener used if shared hubs is not used, but a new hub is created for
+    // each job.
+    private final MetricListener hubListener;
+
     /**
      * Creates a job object from the given description.
      * 
      * @param description
-     *            description of new job
+     *                description of new job
      * @param serverAddress
-     *            address of server
+     *                address of server
      * @param rootHub
-     *            root hub.
+     *                root hub.
      * @param hub
-     *            shared hub. null for local hub
+     *                shared hub. null for local hub
      * @param deployHomeDir
-     *            home dir of deploy. Libs of server should be here
+     *                home dir of deploy. Libs of server should be here
+     * @throws Exception
+     *                 if the listener could not be attached to this job
      */
     Job(JobDescription description, String serverAddress, LocalServer rootHub,
-            RemoteServer hub, File deployHomeDir, boolean keepSandbox) {
+            RemoteServer hub, File deployHomeDir, boolean keepSandbox,
+            MetricListener jobListener, MetricListener hubListener)
+            throws Exception {
         this.description = description;
         this.cluster = description.getClusterSettings();
         this.application = description.getApplicationSettings();
         this.serverAddress = serverAddress;
         this.rootHub = rootHub;
-        this.hub = hub;
+        this.sharedHub = hub;
         this.deployHomeDir = deployHomeDir;
         this.keepSandbox = keepSandbox;
         listeners = new ArrayList<MetricListener>();
+        if (jobListener != null) {
+            addStateListener(jobListener);
+        }
+        this.hubListener = hubListener;
 
         jobID = "Job-" + getNextID();
 
@@ -116,22 +128,26 @@ public class Job implements Runnable, MetricListener {
     }
 
     /**
-     * Attach a listener to this job. Will report the job state when it changes.
+     * Add a listener to this server which reports the state of the JavaGAT job.
+     * Also causes a new {@link MetricEvent} for this listener with the current
+     * state of the job.
      * 
      * @param listener
-     *            the listener to attach
+     *                the listener to attach
      * @throws Exception
+     *                 in case attaching failed
      */
     public synchronized void addStateListener(MetricListener listener)
             throws Exception {
-        if (gatJob == null) {
-            listeners.add(listener);
+        listeners.add(listener);
 
-        } else {
-            Metric metric = gatJob.getMetricDefinitionByName("job.state")
+        // causes a new event for this listener with the current state of the
+        // job.
+        if (gatJob != null) {
+            Metric metric = gatJob.getMetricDefinitionByName("job.status")
                     .createMetric(null);
-
-            gatJob.addMetricListener(listener, metric);
+            listener.processMetricEvent(new MetricEvent(gatJob, gatJob
+                    .getState(), metric, System.currentTimeMillis()));
         }
     }
 
@@ -141,7 +157,7 @@ public class Job implements Runnable, MetricListener {
      * @return the state of this job
      * 
      * @throws Exception
-     *             in case the state cannot be retrieved
+     *                 in case the state cannot be retrieved
      */
     public synchronized JobState getState() throws Exception {
         if (error != null) {
@@ -158,7 +174,7 @@ public class Job implements Runnable, MetricListener {
      * 
      * @return true if this job is in the "STOPPED" or "SUBMISSION_ERROR" state.
      * @throws Exception
-     *             in case an error occurs.
+     *                 in case an error occurs.
      */
     public synchronized boolean isFinished() throws Exception {
         if (error != null) {
@@ -178,7 +194,7 @@ public class Job implements Runnable, MetricListener {
      * Wait until this job is in the "STOPPED" or "SUBMISSION_ERROR" state.
      * 
      * @throws Exception
-     *             in case an error occurs.
+     *                 in case an error occurs.
      */
     public synchronized void waitUntilFinished() throws Exception {
         while (!isFinished()) {
@@ -189,13 +205,6 @@ public class Job implements Runnable, MetricListener {
     private synchronized void setGatJob(org.gridlab.gat.resources.Job gatJob)
             throws GATInvocationException {
         this.gatJob = gatJob;
-
-        for (MetricListener listener : listeners) {
-            Metric metric = gatJob.getMetricDefinitionByName("job.state")
-                    .createMetric(null);
-
-            gatJob.addMetricListener(listener, metric);
-        }
 
         // job already killed before it was submitted :(
         // kill job...
@@ -276,9 +285,9 @@ public class Job implements Runnable, MetricListener {
             sd.addPreStagedFile(gatFile, gatDstFile);
             return;
         }
-        
-        String fileCacheDir = clusterCacheDir + "/" + description.getPoolName() + "/"
-        + description.getName() + "/" + dstDir;
+
+        String fileCacheDir = clusterCacheDir + "/" + description.getPoolName()
+                + "/" + description.getName() + "/" + dstDir;
 
         // create cache dir, and server dir within
         org.gridlab.gat.io.File gatCacheDirFile = GAT.createFile("any://"
@@ -341,7 +350,7 @@ public class Job implements Runnable, MetricListener {
         if (cluster.getCacheDir() != null) {
             logger.info(this + " doing pre-stage using rsync");
         }
-        
+
         // file referring to libs dir of sandbox
         File libDir = new File("lib");
 
@@ -351,7 +360,7 @@ public class Job implements Runnable, MetricListener {
                 throw new Exception("File " + file
                         + " in libs of job does not exist");
             }
-            
+
             prestage(file, libDir, sd);
         }
 
@@ -473,13 +482,13 @@ public class Job implements Runnable, MetricListener {
      * @see java.lang.Runnable#run()
      */
     public void run() {
+        RemoteServer hub = this.sharedHub;
         try {
-            RemoteServer hub = this.hub;
 
             if (hub == null) {
                 // start a hub especially for this job
                 hub = new RemoteServer(description.getClusterSettings(), true,
-                        rootHub, deployHomeDir);
+                        rootHub, deployHomeDir, hubListener);
             }
             // wait until hub really running
             hub.waitUntilRunning();
@@ -512,7 +521,7 @@ public class Job implements Runnable, MetricListener {
             setError(e);
 
         }
-        if (this.hub == null) {
+        if (this.sharedHub == null && hub != null) {
             // kill our local hub
             hub.kill();
         }
@@ -541,8 +550,11 @@ public class Job implements Runnable, MetricListener {
     /**
      * @see org.gridlab.gat.monitoring.MetricListener#processMetricEvent(org.gridlab.gat.monitoring.MetricEvent)
      */
-    public void processMetricEvent(MetricEvent event) {
+    public synchronized void processMetricEvent(MetricEvent event) {
         logger.info(this + " status now " + event.getValue());
+        for (MetricListener listener : listeners) {
+            listener.processMetricEvent(event);
+        }
     }
 
     /**
