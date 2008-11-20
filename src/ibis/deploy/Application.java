@@ -11,7 +11,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Ibis-based Java Application Description. Applications are usually part of (and created by) an ApplicationSet.
+ * Ibis-based Java Application Description. Applications are usually part of
+ * (and created by) an ApplicationSet.
  * 
  * @author Niels Drost
  * 
@@ -22,7 +23,7 @@ public class Application {
      * Print a table of valid keys and some explanations to the given stream
      * 
      * @param out
-     *                stream used for printing
+     *            stream used for printing
      */
     public static void printTableOfKeys(PrintWriter out) {
         out.println("# Valid keys for applications:");
@@ -91,9 +92,9 @@ public class Application {
      * object.
      * 
      * @param name
-     *                the name of the application
+     *            the name of the application
      * @throws Exception
-     *                 if name is null or contains periods and/or spaces
+     *             if name is null or contains periods and/or spaces
      */
     Application(String name, ApplicationSet parent) throws Exception {
         this.parent = parent;
@@ -123,13 +124,13 @@ public class Application {
      * application-group file)
      * 
      * @param properties
-     *                properties to load application from
+     *            properties to load application from
      * @param name
-     *                name of this application.
+     *            name of this application.
      * @param prefix
-     *                prefix used for loading application
+     *            prefix used for loading application
      * @throws Exception
-     *                 if application cannot be read properly
+     *             if application cannot be read properly
      */
     Application(TypedProperties properties, String name, String prefix,
             ApplicationSet parent) {
@@ -157,7 +158,7 @@ public class Application {
      * Put all non-null values of given application into this application
      * 
      * @param other
-     *                source application object
+     *            source application object
      */
     void overwrite(Application other) {
         if (other == null) {
@@ -227,7 +228,7 @@ public class Application {
      * Sets name of this application.
      * 
      * @param name
-     *                name of this application.
+     *            name of this application.
      */
     public void setName(String name) {
         this.name = name;
@@ -246,7 +247,7 @@ public class Application {
      * Set main class of this application.
      * 
      * @param mainClass
-     *                main class of this application.
+     *            main class of this application.
      */
     public void setMainClass(String mainClass) {
         this.mainClass = mainClass;
@@ -268,7 +269,7 @@ public class Application {
      * Sets application parameters of this application.
      * 
      * @param arguments
-     *                new application parameters of this application.
+     *            new application parameters of this application.
      */
     public void setArguments(String[] arguments) {
         if (arguments == null) {
@@ -283,7 +284,7 @@ public class Application {
      * will be created if needed.
      * 
      * @param argument
-     *                new application parameter of this application.
+     *            new application parameter of this application.
      */
     public void addArgument(String argument) {
         if (arguments == null) {
@@ -310,7 +311,7 @@ public class Application {
      * include directories and non-jar files.
      * 
      * @param libs
-     *                new list of library files and directories.
+     *            new list of library files and directories.
      */
     public void setLibs(File[] libs) {
         if (libs == null) {
@@ -325,7 +326,7 @@ public class Application {
      * this application.
      * 
      * @param lib
-     *                new library file or directory.
+     *            new library file or directory.
      */
     public void addLib(File lib) {
         if (libs == null) {
@@ -352,7 +353,7 @@ public class Application {
      * pre-staged.
      * 
      * @param inputFiles
-     *                new list of input files
+     *            new list of input files
      */
     public void setInputFiles(File[] inputFiles) {
         if (inputFiles == null) {
@@ -367,7 +368,7 @@ public class Application {
      * list, if needed.
      * 
      * @param inputFile
-     *                new input file
+     *            new input file
      */
     public void addInputFile(File inputFile) {
         if (inputFiles == null) {
@@ -394,7 +395,7 @@ public class Application {
      * the application, to the local file specified.
      * 
      * @param outputFiles
-     *                new list of output files.
+     *            new list of output files.
      */
     public void setOutputFiles(File[] outputFiles) {
         if (outputFiles == null) {
@@ -409,7 +410,7 @@ public class Application {
      * is copied from the root of the application sandbox to the file specified.
      * 
      * @param outputFile
-     *                new output file.
+     *            new output file.
      */
     public void addOutputFile(File outputFile) {
         if (outputFiles == null) {
@@ -434,7 +435,7 @@ public class Application {
      * Sets map of all system properties.
      * 
      * @param systemProperties
-     *                new system properties, or null to unset.
+     *            new system properties, or null to unset.
      */
     public void setSystemProperties(Map<String, String> systemProperties) {
         if (systemProperties == null) {
@@ -449,9 +450,9 @@ public class Application {
      * Sets a single system property. Map will be created if needed.
      * 
      * @param name
-     *                name of new property
+     *            name of new property
      * @param value
-     *                value of new property.
+     *            value of new property.
      */
     public void setSystemProperty(String name, String value) {
         if (systemProperties == null) {
@@ -478,7 +479,7 @@ public class Application {
      * settings and such)
      * 
      * @param jvmOptions
-     *                The new JVM options.
+     *            The new JVM options.
      */
     public void setJVMOptions(String[] jvmOptions) {
         if (jvmOptions == null) {
@@ -493,7 +494,7 @@ public class Application {
      * needed.
      * 
      * @param jvmOption
-     *                The new JVM option.
+     *            The new JVM option.
      */
     public void addJVMOption(String jvmOption) {
         if (jvmOptions == null) {
@@ -507,10 +508,10 @@ public class Application {
      * exception.
      * 
      * @param jobName
-     *                name of job
+     *            name of job
      * 
      * @throws Exception
-     *                 if this application is incomplete or incorrect.
+     *             if this application is incomplete or incorrect.
      */
     public void checkSettings(String jobName) throws Exception {
         String prefix = "Cannot run job \"" + jobName + "\": Application ";
@@ -547,14 +548,13 @@ public class Application {
      * Print the settings of this application to a (properties) file
      * 
      * @param out
-     *                stream to write this file to
+     *            stream to write this file to
      * @param prefix
-     *                prefix to add to all keys, or null to use name of
-     *                application.
+     *            prefix to add to all keys, or null to use name of application.
      * @param printComments
-     *                if true, comments are added for all null values
+     *            if true, comments are added for all null values
      * @throws Exception
-     *                 if this application has no name
+     *             if this application has no name
      */
     void save(PrintWriter out, String prefix, boolean printComments)
             throws Exception {

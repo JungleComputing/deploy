@@ -76,17 +76,17 @@ public class Job implements Runnable, MetricListener {
      * Creates a job object from the given description.
      * 
      * @param description
-     *                description of new job
+     *            description of new job
      * @param serverAddress
-     *                address of server
+     *            address of server
      * @param rootHub
-     *                root hub.
+     *            root hub.
      * @param hub
-     *                shared hub. null for local hub
+     *            shared hub. null for local hub
      * @param deployHomeDir
-     *                home dir of deploy. Libs of server should be here
+     *            home dir of deploy. Libs of server should be here
      * @throws Exception
-     *                 if the listener could not be attached to this job
+     *             if the listener could not be attached to this job
      */
     Job(JobDescription description, String serverAddress, LocalServer rootHub,
             RemoteServer hub, File deployHomeDir, boolean keepSandbox,
@@ -132,9 +132,9 @@ public class Job implements Runnable, MetricListener {
      * state of the job.
      * 
      * @param listener
-     *                the listener to attach
+     *            the listener to attach
      * @throws Exception
-     *                 in case attaching failed
+     *             in case attaching failed
      */
     public synchronized void addStateListener(MetricListener listener)
             throws Exception {
@@ -156,7 +156,7 @@ public class Job implements Runnable, MetricListener {
      * @return the state of this job
      * 
      * @throws Exception
-     *                 in case the state cannot be retrieved
+     *             in case the state cannot be retrieved
      */
     public synchronized JobState getState() throws Exception {
         if (error != null) {
@@ -173,7 +173,7 @@ public class Job implements Runnable, MetricListener {
      * 
      * @return true if this job is in the "STOPPED" or "SUBMISSION_ERROR" state.
      * @throws Exception
-     *                 in case an error occurs.
+     *             in case an error occurs.
      */
     public synchronized boolean isFinished() throws Exception {
         if (error != null) {
@@ -193,7 +193,7 @@ public class Job implements Runnable, MetricListener {
      * Wait until this job is in the "STOPPED" or "SUBMISSION_ERROR" state.
      * 
      * @throws Exception
-     *                 in case an error occurs.
+     *             in case an error occurs.
      */
     public synchronized void waitUntilFinished() throws Exception {
         while (!isFinished()) {
@@ -300,7 +300,8 @@ public class Job implements Runnable, MetricListener {
         // tell job to pre-stage from cache dir
         org.gridlab.gat.io.File gatFile = GAT.createFile("any://" + host + "/"
                 + fileCacheDir + "/" + src.getName());
-        org.gridlab.gat.io.File gatDstFile = GAT.createFile(dstDir.getPath() + "/");
+        org.gridlab.gat.io.File gatDstFile = GAT.createFile(dstDir.getPath()
+                + "/");
         sd.addPreStagedFile(gatFile, gatDstFile);
         return;
     }
@@ -379,7 +380,8 @@ public class Job implements Runnable, MetricListener {
 
         if (application.getOutputFiles() != null) {
             for (File file : application.getOutputFiles()) {
-                org.gridlab.gat.io.File gatFile = GAT.createFile(file.getPath());
+                org.gridlab.gat.io.File gatFile = GAT
+                        .createFile(file.getPath());
 
                 sd.addPostStagedFile(gatFile, GAT.createFile("."));
             }

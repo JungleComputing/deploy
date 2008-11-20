@@ -77,9 +77,9 @@ public class Deploy {
      * Checks if required files are in the specified home dir
      * 
      * @param home
-     *                ibis-deploy home dir
+     *            ibis-deploy home dir
      * @throws Exception
-     *                 if one or more files are missing
+     *             if one or more files are missing
      */
     private static void checkFiles(File home) throws Exception {
         for (String fileName : REQUIRED_FILES) {
@@ -95,8 +95,8 @@ public class Deploy {
      * servers though). This is turned of by default
      * 
      * @param keepSandboxes
-     *            if true, ibis-deploy will keep all sandboxes for jobs from
-     *            now on.
+     *            if true, ibis-deploy will keep all sandboxes for jobs from now
+     *            on.
      */
     public synchronized void keepSandboxes(boolean keepSandboxes) {
         this.keepSandboxes = keepSandboxes;
@@ -107,7 +107,7 @@ public class Deploy {
      * 
      * @return the address of the build-in root hub.
      * @throws Exception
-     *                 if ibis-deploy has not been initialized yet.
+     *             if ibis-deploy has not been initialized yet.
      */
     public synchronized String getRootHubAddress() throws Exception {
         if (rootHub == null) {
@@ -123,7 +123,7 @@ public class Deploy {
      * 
      * @return address of server
      * @throws Exception
-     *                 if server state cannot be retrieved.
+     *             if server state cannot be retrieved.
      */
     public synchronized String getServerAddress() throws Exception {
         if (rootHub == null) {
@@ -142,15 +142,15 @@ public class Deploy {
      * running
      * 
      * @param serverCluster
-     *                cluster where the server should be started, or null for a
-     *                server embedded in this JVM.
+     *            cluster where the server should be started, or null for a
+     *            server embedded in this JVM.
      * @param deployHome
-     *                "home" directory of ibis-deploy. If null, the default
-     *                location is used from the "ibis.deploy.home" system
-     *                property. If this property is unspecified, final default
-     *                value is the current working directory.
+     *            "home" directory of ibis-deploy. If null, the default location
+     *            is used from the "ibis.deploy.home" system property. If this
+     *            property is unspecified, final default value is the current
+     *            working directory.
      * @throws Exception
-     *                 if the server cannot be started
+     *             if the server cannot be started
      */
     public synchronized void initialize(Cluster serverCluster, File deployHome)
             throws Exception {
@@ -162,17 +162,17 @@ public class Deploy {
      * actually running
      * 
      * @param serverCluster
-     *                cluster where the server should be started, or null for a
-     *                server embedded in this JVM.
+     *            cluster where the server should be started, or null for a
+     *            server embedded in this JVM.
      * @param deployHome
-     *                "home" directory of ibis-deploy. If null, the default
-     *                location is used from the "ibis.deploy.home" system
-     *                property. If this property is unspecified, final default
-     *                value is the current working directory.
+     *            "home" directory of ibis-deploy. If null, the default location
+     *            is used from the "ibis.deploy.home" system property. If this
+     *            property is unspecified, final default value is the current
+     *            working directory.
      * @param listener
-     *                callback object for status of server
+     *            callback object for status of server
      * @throws Exception
-     *                 if the server cannot be started
+     *             if the server cannot be started
      */
     public synchronized void initialize(Cluster serverCluster, File deployHome,
             MetricListener listener) throws Exception {
@@ -201,10 +201,12 @@ public class Deploy {
             // rootHub includes server
             rootHub = new LocalServer(false);
             // cause a 'RUNNING' event even if no real job has been submitted
-            // using javagat
-            listener.processMetricEvent(new MetricEvent(rootHub,
+            // using JavaGAT
+            if (listener != null) {
+                listener.processMetricEvent(new MetricEvent(rootHub,
                     org.gridlab.gat.resources.Job.JobState.RUNNING, null,
                     System.currentTimeMillis()));
+            }
             remoteServer = null;
         } else {
             rootHub = new LocalServer(true);
@@ -226,15 +228,15 @@ public class Deploy {
      * Submit a new job.
      * 
      * @param description
-     *                description of the job.
+     *            description of the job.
      * @param applicationSet
-     *                applicationSet for job
+     *            applicationSet for job
      * @param grid
-     *                grid to use
+     *            grid to use
      * @param hubListener
-     *                listener for state of hub
+     *            listener for state of hub
      * @param jobListener
-     *                listener for state of job
+     *            listener for state of job
      * 
      * 
      * 
@@ -271,8 +273,8 @@ public class Deploy {
         }
 
         // start job
-        Job job = new Job(description, serverAddress, rootHub, hub, homeDir, keepSandboxes,
-                jobListener, hubListener);
+        Job job = new Job(description, serverAddress, rootHub, hub, homeDir,
+                keepSandboxes, jobListener, hubListener);
 
         jobs.add(job);
 
@@ -284,12 +286,12 @@ public class Deploy {
      * cluster, one is submitted. May not be running (yet).
      * 
      * @param cluster
-     *                cluster to deploy the hub on
+     *            cluster to deploy the hub on
      * @param waitUntilRunning
-     *                wait until hub is actually running
+     *            wait until hub is actually running
      * @return reference to a hub on the given cluster
      * @throws Exception
-     *                 if the hub cannot be started
+     *             if the hub cannot be started
      */
     public synchronized RemoteServer getHub(Cluster cluster,
             boolean waitUntilRunning, MetricListener hubListener)
@@ -328,8 +330,8 @@ public class Deploy {
      * 
      * @return a map containing the size of each pool at the server
      * @throws Exception
-     *                 if the server is not running yet, or communicating with
-     *                 it failed
+     *             if the server is not running yet, or communicating with it
+     *             failed
      */
     public synchronized Map<String, Integer> poolSizes() throws Exception {
         if (rootHub == null) {
