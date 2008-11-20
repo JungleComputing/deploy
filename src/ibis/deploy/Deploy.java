@@ -2,7 +2,6 @@ package ibis.deploy;
 
 import ibis.ipl.impl.registry.central.monitor.RegistryMonitorClient;
 import ibis.server.ServerProperties;
-import ibis.smartsockets.hub.state.HubList;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -12,7 +11,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.gridlab.gat.GAT;
-import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.slf4j.Logger;
@@ -204,8 +202,8 @@ public class Deploy {
             // using JavaGAT
             if (listener != null) {
                 listener.processMetricEvent(new MetricEvent(rootHub,
-                    org.gridlab.gat.resources.Job.JobState.RUNNING, null,
-                    System.currentTimeMillis()));
+                        org.gridlab.gat.resources.Job.JobState.RUNNING, null,
+                        System.currentTimeMillis()));
             }
             remoteServer = null;
         } else {
@@ -289,6 +287,8 @@ public class Deploy {
      *            cluster to deploy the hub on
      * @param waitUntilRunning
      *            wait until hub is actually running
+     * @param hubListener
+     *            listener for state of hub
      * @return reference to a hub on the given cluster
      * @throws Exception
      *             if the hub cannot be started
@@ -305,7 +305,7 @@ public class Deploy {
         logger.debug("starting hub on " + clusterName);
 
         if (clusterName == null) {
-            throw new Exception("cannot start hub on an unnamed cluster.");
+            throw new Exception("cannot start hub on an unnamed cluster");
         }
 
         RemoteServer result = hubs.get(clusterName);
@@ -314,7 +314,7 @@ public class Deploy {
             result = new RemoteServer(cluster, true, rootHub, homeDir,
                     hubListener);
             hubs.put(clusterName, result);
-        } else {
+        } else if (hubListener != null) {
             result.addStateListener(hubListener);
         }
 

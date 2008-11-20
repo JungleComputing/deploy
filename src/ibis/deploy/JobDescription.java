@@ -35,6 +35,10 @@ public class JobDescription {
                 .println("#                     specified in the cluster referenced");
         out
                 .println("# resource.count      Number of machines used on the cluster");
+
+        out
+                .println("# runtime             Maximum runtime of job (in minutes)");
+
         out
                 .println("# pool.name           Pool name. Defaults to name of experiment if unspecified");
         out
@@ -65,6 +69,8 @@ public class JobDescription {
 
     private int resourceCount;
 
+    private int runtime;
+
     private String poolName;
 
     private int poolSize;
@@ -80,6 +86,7 @@ public class JobDescription {
         clusterName = null;
         clusterOverrides = new Cluster();
         resourceCount = 0;
+        runtime = 0;
         poolName = null;
         poolSize = 0;
         sharedHub = null;
@@ -109,6 +116,7 @@ public class JobDescription {
         clusterName = null;
         clusterOverrides = new Cluster();
         resourceCount = 0;
+        runtime = 0;
         poolName = null;
         poolSize = 0;
         sharedHub = null;
@@ -143,10 +151,12 @@ public class JobDescription {
 
         clusterName = properties.getProperty(prefix + "cluster.name");
 
-        clusterOverrides = new Cluster(properties, null, prefix
-                + "cluster", null);
+        clusterOverrides = new Cluster(properties, null, prefix + "cluster",
+                null);
 
         resourceCount = properties.getIntProperty(prefix + "resource.count", 0);
+
+        runtime = properties.getIntProperty(prefix + "runtime", 0);
 
         poolName = properties.getProperty(prefix + "pool.name");
 
@@ -180,6 +190,10 @@ public class JobDescription {
 
         if (other.resourceCount != 0) {
             this.resourceCount = other.resourceCount;
+        }
+
+        if (other.runtime != 0) {
+            this.runtime = other.runtime;
         }
 
         if (other.poolName != null) {
@@ -334,6 +348,26 @@ public class JobDescription {
     }
 
     /**
+     * Maximum runtime of this job in minutes.
+     * 
+     * @return maximum runtime of this job in minutes. Returns 0 if unset.
+     */
+    public int getRuntime() {
+        return runtime;
+    }
+
+    /**
+     * Sets the maximum runtime of this job in minutes.
+     * 
+     * @param runtime
+     *            maximum runtime of this job in minutes., or 0 for not
+     *            specified.
+     */
+    public void setRuntime(int runtime) {
+        this.runtime = runtime;
+    }
+
+    /**
      * Returns the name of the pool of this job. If null, the name of the
      * experiment is used by default.
      * 
@@ -399,25 +433,27 @@ public class JobDescription {
     /**
      * Checks if this description is suitable for deploying. If not, throws an
      * exception.
-     * @throws Exception if this description is incomplete or incorrect.
+     * 
+     * @throws Exception
+     *             if this description is incomplete or incorrect.
      */
     public void checkSettings() throws Exception {
         String prefix = "Cannot run job \"" + name + "\": ";
-        
+
         if (name == null) {
             throw new Exception("Cannot run job: Job name unspecified");
         }
-        
+
         if (applicationName == null) {
             throw new Exception(prefix + "Application name not specified");
         }
-        
+
         if (applicationOverrides == null) {
             throw new Exception(prefix + "Application overrides not specified");
         }
-        
+
         applicationOverrides.checkSettings(name);
-        
+
         if (processCount <= 0) {
             throw new Exception(prefix + "Process count zero or negative");
         }
@@ -429,17 +465,21 @@ public class JobDescription {
         if (clusterOverrides == null) {
             throw new Exception(prefix + "Cluster overrides not specified");
         }
-        
+
         clusterOverrides.checkSettings(name, false);
 
         if (resourceCount <= 0) {
             throw new Exception(prefix + "Resource count zero or negative");
         }
+        
+        if (runtime < 0) {
+            throw new Exception(prefix + "Runtime negative");
+        }
 
         if (poolName == null) {
             throw new Exception(prefix + "Pool name not specified");
         }
-        
+
         if (poolSize < 0) {
             throw new Exception(prefix + "Pool size negative");
         }
@@ -569,6 +609,12 @@ public class JobDescription {
         } else {
             out.println(prefix + "resource.count = " + resourceCount);
         }
+        
+        if (runtime == 0) {
+            out.println("#" + prefix + "runtime =");
+        } else {
+            out.println(prefix + "runtime = " + runtime);
+        }
 
         if (poolName == null) {
             out.println("#" + prefix + "pool.name =");
@@ -601,6 +647,7 @@ public class JobDescription {
         result += " Process Count = " + getProcessCount() + "\n";
         result += " Cluster Name = " + getClusterName() + "\n";
         result += " Resource Count = " + getResourceCount() + "\n";
+        result += " Runtime = " + getRuntime() + "\n";
         result += " Pool Name = " + getPoolName() + "\n";
         result += " Pool Size = " + getPoolSize() + "\n";
         result += " Shared Hub = " + getSharedHub() + "\n";

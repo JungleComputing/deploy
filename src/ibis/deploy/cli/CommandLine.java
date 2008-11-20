@@ -54,10 +54,12 @@ public class CommandLine {
 
     private static void printUsage() {
         System.err
-                .println("Usage: ibis-deploy-cli [-v] [-k] [GRID_FILE] [APP_FILE] [EXPERIMENT_FILE]+...");
+                .println("Usage: ibis-deploy-cli [OPTIONS] [GRID_FILE] [APP_FILE] [EXPERIMENT_FILE]+...");
         System.err.println("Options:");
+        System.err.println("-s CLUSTER\tRun server on specified cluster");
         System.err.println("-v\tVerbose mode");
         System.err.println("-k\tKeep sandboxes");
+        System.err.println("-h | --help\tThis message");
     }
 
     /**

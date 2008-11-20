@@ -227,6 +227,10 @@ public class RemoteServer implements Runnable, MetricListener {
      */
     public synchronized void addStateListener(MetricListener listener)
             throws Exception {
+        if (listener == null) {
+            throw new Exception("tried to attach null listener");
+        }
+
         listeners.add(listener);
 
         // causes a new event for this listener with the current state of the

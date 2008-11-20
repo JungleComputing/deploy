@@ -55,6 +55,8 @@ public class Cluster {
         out
                 .println("# cache.dir           Directory on cluster used to cache pre-stage files");
         out.println("#                     (updated using rsync)");
+        out
+                .println("# server.output.files Output files copied when server exits (e.g. statistics)");
 
         out
                 .println("# nodes               Number of nodes(machines) of this cluster (integer)");
@@ -94,9 +96,12 @@ public class Cluster {
 
     // user name to authenticate user with
     private String userName;
-    
+
     // cache dir for pre-stage files (updating using rsync)
     private File cacheDir;
+
+    // output files of server (statistics, logs and such)
+    private List<File> serverOutputFiles;
 
     // number of nodes of this cluster
     private int nodes;
@@ -145,6 +150,7 @@ public class Cluster {
         jobWrapperScript = null;
         userName = null;
         cacheDir = null;
+        serverOutputFiles = null;
         nodes = 0;
         cores = 0;
         latitude = 0;
@@ -160,6 +166,7 @@ public class Cluster {
         parent = null;
         serverAdaptor = null;
         serverURI = null;
+        serverOutputFiles = null;
         jobAdaptor = null;
         jobURI = null;
         fileAdaptors = null;
@@ -167,6 +174,7 @@ public class Cluster {
         jobWrapperScript = null;
         userName = null;
         cacheDir = null;
+        serverOutputFiles = null;
         nodes = 0;
         cores = 0;
         latitude = 0;
@@ -209,6 +217,8 @@ public class Cluster {
 
         userName = properties.getProperty(prefix + "user.name");
         cacheDir = Util.getFileProperty(properties, prefix + "cache.dir");
+        serverOutputFiles = Util.getFileListProperty(properties, prefix
+                + "server.output.files");
         nodes = properties.getIntProperty(prefix + "nodes", 0);
         cores = properties.getIntProperty(prefix + "cores", 0);
         latitude = properties.getDoubleProperty(prefix + "latitude", 0);
@@ -262,9 +272,14 @@ public class Cluster {
         if (other.userName != null) {
             userName = other.userName;
         }
-        
+
         if (other.cacheDir != null) {
             cacheDir = other.cacheDir;
+        }
+        
+        if (other.serverOutputFiles != null) {
+            serverOutputFiles = new ArrayList<File>();
+            serverOutputFiles.addAll(other.serverOutputFiles);
         }
 
         if (other.nodes != 0) {
@@ -511,7 +526,7 @@ public class Cluster {
     public void setUserName(String userName) {
         this.userName = userName;
     }
-    
+
     /**
      * Cache directory used for pre-stage files (updated using rsync)
      * 
@@ -520,14 +535,43 @@ public class Cluster {
     public File getCacheDir() {
         return cacheDir;
     }
-    
+
     /**
      * Sets sache directory used for pre-stage files (updated using rsync)
      * 
-     * @param cacheDir directory used as cache
+     * @param cacheDir
+     *            directory used as cache
      */
     public void setCacheDir(File cacheDir) {
         this.cacheDir = cacheDir;
+    }
+    
+    /**
+     * Returns list of server output files. Files are copied from the "root" directory
+     * of the server sandbox to the local file specified.
+     * 
+     * @return list of output files.
+     */
+    public File[] getServerOutputFiles() {
+        if (serverOutputFiles == null) {
+            return null;
+        }
+        return serverOutputFiles.toArray(new File[0]);
+    }
+
+    /**
+     * Sets list of server output files. Files are copied from the "root" directory of
+     * the server sandbox, to the local file specified.
+     * 
+     * @param serverOutputFiles
+     *            new list of output files.
+     */
+    public void setOutputFiles(File[] serverOutputFiles) {
+        if (serverOutputFiles == null) {
+            this.serverOutputFiles = null;
+        } else {
+            this.serverOutputFiles = Arrays.asList(serverOutputFiles.clone());
+        }
     }
 
     /**
@@ -650,7 +694,7 @@ public class Cluster {
         if (fileAdaptors == null || fileAdaptors.size() == 0) {
             throw new Exception(prefix + "file adaptors not specified");
         }
-        
+
         if (cacheDir != null && !cacheDir.isAbsolute()) {
             throw new Exception("Cache dir must be absolute");
         }
@@ -752,13 +796,19 @@ public class Cluster {
         } else if (printComments) {
             out.println("#" + prefix + "user.name = ");
         }
-        
+
         if (cacheDir != null) {
             out.println(prefix + "cache.dir = " + cacheDir);
         } else if (printComments) {
             out.println("#" + prefix + "cache.dir = ");
         }
-
+        
+        if (serverOutputFiles != null) {
+            out.println(prefix + "server.output.files = "
+                    + Util.files2CSS(serverOutputFiles));
+        } else if (printComments) {
+            out.println("#" + prefix + "server.output.files =");
+        }
 
         if (nodes > 0) {
             out.println(prefix + "nodes = " + nodes);
@@ -815,6 +865,7 @@ public class Cluster {
         result += " Wrapper Script = " + getJobWrapperScript() + "\n";
         result += " User name = " + getUserName() + "\n";
         result += " Cache dir = " + getCacheDir() + "\n";
+        result += " Server output files = " + Util.files2CSS(serverOutputFiles) + "\n";
         result += " Nodes = " + getNodes() + "\n";
         result += " Cores = " + getCores() + "\n";
         result += " Latitude = " + getLatitude() + "\n";
