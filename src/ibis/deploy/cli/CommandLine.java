@@ -20,15 +20,18 @@ import java.util.List;
  */
 public class CommandLine {
 
+    private static void println(String message) {
+        System.err.printf("%tT DEPLOY: %s\n", System.currentTimeMillis(), message);
+    }
+
     // run a single experiment
     private static void runExperiment(Experiment experiment, Grid grid,
             ApplicationSet applications, Deploy deploy, boolean verbose)
             throws Exception {
         if (verbose) {
-            System.out.println("DEPLOY: Running experiment: "
-                    + experiment.toPrintString());
+            println("Running experiment: " + experiment.toPrintString());
         } else {
-            System.err.println("DEPLOY: Running experiment \"" + experiment
+            println("Running experiment \"" + experiment
                     + "\" with " + experiment.getJobs().length + " jobs");
         }
 
@@ -39,17 +42,17 @@ public class CommandLine {
                     null, null);
             jobs.add(job);
             if (verbose) {
-                System.err.println("DEPLOY: Submitted job "
+                println("Submitted job "
                         + job.getDescription().toPrintString());
             } else {
-                System.err.println("DEPLOY: Submitted job " + job);
+                println("Submitted job " + job);
             }
         }
 
         // wait for all jobs to end
         deploy.waitUntilJobsFinished();
 
-        System.err.println("DEPLOY: Experiment \"" + experiment + "\" done");
+        println("Experiment \"" + experiment + "\" done");
     }
 
     private static void printUsage() {
@@ -89,12 +92,14 @@ public class CommandLine {
                 verbose = true;
             } else if (arguments[i].equals("-k")) {
                 keepSandboxes = true;
-            } else if (arguments[i].equals("-h") || arguments[i].equals("--help")) {
+            } else if (arguments[i].equals("-h")
+                    || arguments[i].equals("--help")) {
                 printUsage();
                 System.exit(0);
             } else if (arguments[i].endsWith(".grid")) {
                 if (gridFile != null) {
-                    System.err.println("ERROR: can only specify a single grid file");
+                    System.err
+                            .println("ERROR: can only specify a single grid file");
                     System.exit(1);
                 }
                 gridFile = new File(arguments[i]);
@@ -132,10 +137,9 @@ public class CommandLine {
 
             if (applicationsFile != null) {
                 if (!applicationsFile.isFile()) {
-                    System.err
-                            .println("ERROR: Specified applications file: \""
-                                    + applicationsFile
-                                    + "\" does not exist or is a directory");
+                    System.err.println("ERROR: Specified applications file: \""
+                            + applicationsFile
+                            + "\" does not exist or is a directory");
                     System.exit(1);
 
                 }
@@ -143,8 +147,7 @@ public class CommandLine {
                 applications = new ApplicationSet(applicationsFile);
 
                 if (verbose) {
-                    System.err.println("DEPLOY: Applications:");
-                    System.err.println(applications.toPrintString());
+                    println("Applications: " + applications.toPrintString());
                 }
             }
 
@@ -160,13 +163,12 @@ public class CommandLine {
             deploy.keepSandboxes(keepSandboxes);
 
             if (serverCluster == null) {
-                System.err
-                        .println("DEPLOY: Initializing Command Line Ibis Deploy, using build-in server");
+                
+                        println("Initializing Command Line Ibis Deploy, using build-in server");
 
                 deploy.initialize(null, null);
             } else {
-                System.err
-                        .println("DEPLOY: Initializing Command Line Ibis Deploy, using server on cluster \""
+                println("Initializing Command Line Ibis Deploy, using server on cluster \""
                                 + serverCluster + "\"");
 
                 if (grid == null) {
@@ -178,8 +180,8 @@ public class CommandLine {
                 Cluster cluster = grid.getCluster(serverCluster);
 
                 if (cluster == null) {
-                    System.err.println("ERROR: Server cluster "
-                            + serverCluster + " not found in grid");
+                    System.err.println("ERROR: Server cluster " + serverCluster
+                            + " not found in grid");
                     System.exit(1);
                 }
 
@@ -198,7 +200,7 @@ public class CommandLine {
 
             deploy.end();
         } catch (Exception e) {
-            System.err.println("DEPLOY: Exception on running experiments");
+            println("Exception on running experiments");
             e.printStackTrace(System.err);
             System.exit(1);
         }

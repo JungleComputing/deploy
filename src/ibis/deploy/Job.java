@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
  * @author Niels Drost
  * 
  */
-public class Job implements Runnable, MetricListener {
+public class Job implements Runnable {
 
     private static int nextID = 0;
 
@@ -57,6 +57,8 @@ public class Job implements Runnable, MetricListener {
 
     private final boolean keepSandbox;
 
+    private final GATContext context;
+
     // set in case this jobs fails for some reason.
     private Exception error = null;
 
@@ -64,7 +66,7 @@ public class Job implements Runnable, MetricListener {
     private org.gridlab.gat.resources.Job gatJob;
 
     // listeners specified by user
-    private final List<MetricListener> listeners;
+    private final Listeners listeners;
 
     private boolean killed = false;
 
@@ -100,13 +102,16 @@ public class Job implements Runnable, MetricListener {
         this.sharedHub = hub;
         this.deployHomeDir = deployHomeDir;
         this.keepSandbox = keepSandbox;
-        listeners = new ArrayList<MetricListener>();
+        this.hubListener = hubListener;
+
+        this.context = createGATContext();
+
+        jobID = "Job-" + getNextID();
+        
+        listeners = new Listeners(this.toString());
         if (jobListener != null) {
             addStateListener(jobListener);
         }
-        this.hubListener = hubListener;
-
-        jobID = "Job-" + getNextID();
 
         // fork thread
         ThreadPool.createNew(this, jobID);
@@ -136,18 +141,19 @@ public class Job implements Runnable, MetricListener {
      * @throws Exception
      *             in case attaching failed
      */
-    public synchronized void addStateListener(MetricListener listener)
-            throws Exception {
-        listeners.add(listener);
+    public void addStateListener(MetricListener listener) throws Exception {
+        if (listener == null) {
+            throw new Exception("listener cannot be null");
+        }
 
         // causes a new event for this listener with the current state of the
         // job.
-        if (gatJob != null) {
-            Metric metric = gatJob.getMetricDefinitionByName("job.status")
-                    .createMetric(null);
-            listener.processMetricEvent(new MetricEvent(gatJob, gatJob
-                    .getState(), metric, System.currentTimeMillis()));
-        }
+        Metric metric = gatJob.getMetricDefinitionByName("job.status")
+                .createMetric(null);
+        listener.processMetricEvent(new MetricEvent(gatJob, getState(), metric,
+                System.currentTimeMillis()));
+        
+        listeners.addListener(listener);
     }
 
     /**
@@ -249,6 +255,7 @@ public class Job implements Runnable, MetricListener {
         logger.debug("creating context");
 
         GATContext context = new GATContext();
+
         if (cluster.getUserName() != null) {
             SecurityContext securityContext = new CertificateSecurityContext(
                     null, null, cluster.getUserName(), null);
@@ -278,8 +285,9 @@ public class Job implements Runnable, MetricListener {
         File clusterCacheDir = cluster.getCacheDir();
 
         if (clusterCacheDir == null) {
-            org.gridlab.gat.io.File gatFile = GAT.createFile(src.toString());
-            org.gridlab.gat.io.File gatDstFile = GAT.createFile(dstDir
+            org.gridlab.gat.io.File gatFile = GAT.createFile(context, src
+                    .toString());
+            org.gridlab.gat.io.File gatDstFile = GAT.createFile(context, dstDir
                     .getPath());
             sd.addPreStagedFile(gatFile, gatDstFile);
             return;
@@ -289,8 +297,8 @@ public class Job implements Runnable, MetricListener {
                 + "/" + description.getName() + "/" + dstDir;
 
         // create cache dir, and server dir within
-        org.gridlab.gat.io.File gatCacheDirFile = GAT.createFile("any://"
-                + host + "/" + fileCacheDir);
+        org.gridlab.gat.io.File gatCacheDirFile = GAT.createFile(context,
+                "any://" + host + "/" + fileCacheDir);
         gatCacheDirFile.mkdirs();
 
         // rsync to cluster cache server dir
@@ -298,9 +306,10 @@ public class Job implements Runnable, MetricListener {
         Rsync.rsync(src, rsyncLocation, host, user);
 
         // tell job to pre-stage from cache dir
-        org.gridlab.gat.io.File gatFile = GAT.createFile("any://" + host + "/"
-                + fileCacheDir + "/" + src.getName());
-        org.gridlab.gat.io.File gatDstFile = GAT.createFile(dstDir.getPath()
+        org.gridlab.gat.io.File gatFile = GAT.createFile(context, "any://"
+                + host + "/" + fileCacheDir + "/" + src.getName());
+        org.gridlab.gat.io.File gatDstFile = GAT.createFile(context, dstDir
+                .getPath()
                 + "/");
         sd.addPreStagedFile(gatFile, gatDstFile);
         return;
@@ -384,10 +393,10 @@ public class Job implements Runnable, MetricListener {
 
         if (application.getOutputFiles() != null) {
             for (File file : application.getOutputFiles()) {
-                org.gridlab.gat.io.File gatFile = GAT
-                        .createFile(file.getPath());
+                org.gridlab.gat.io.File gatFile = GAT.createFile(context, file
+                        .getPath());
 
-                sd.addPostStagedFile(gatFile, GAT.createFile("."));
+                sd.addPostStagedFile(gatFile, GAT.createFile(context, "."));
             }
         }
 
@@ -398,9 +407,9 @@ public class Job implements Runnable, MetricListener {
         // class path
         sd.setJavaClassPath(createClassPath(application.getLibs()));
 
-        sd.setStdout(GAT.createFile(description.getPoolName() + "."
+        sd.setStdout(GAT.createFile(context, description.getPoolName() + "."
                 + description.getName() + ".out"));
-        sd.setStderr(GAT.createFile(description.getPoolName() + "."
+        sd.setStderr(GAT.createFile(context, description.getPoolName() + "."
                 + description.getName() + ".err"));
 
         logger.info("Submitting application \"" + application.getName()
@@ -451,9 +460,8 @@ public class Job implements Runnable, MetricListener {
             wrapperSd.setStdout(sd.getStdout());
 
             // add wrapper to pre-stage files
-            wrapperSd.addPreStagedFile(
-                    GAT.createFile(wrapperScript.toString()), GAT
-                            .createFile("."));
+            wrapperSd.addPreStagedFile(GAT.createFile(context, wrapperScript
+                    .toString()), GAT.createFile(context, "."));
 
             // set /bin/sh as executable
             wrapperSd.setExecutable("/bin/sh");
@@ -514,7 +522,7 @@ public class Job implements Runnable, MetricListener {
                     description.getClusterSettings().getJobURI());
 
             org.gridlab.gat.resources.Job gatJob = jobBroker.submitJob(
-                    jobDescription, this, "job.status");
+                    jobDescription, listeners, "job.status");
             setGatJob(gatJob);
 
             waitUntilFinished();
@@ -550,15 +558,6 @@ public class Job implements Runnable, MetricListener {
         }
     }
 
-    /**
-     * @see org.gridlab.gat.monitoring.MetricListener#processMetricEvent(org.gridlab.gat.monitoring.MetricEvent)
-     */
-    public synchronized void processMetricEvent(MetricEvent event) {
-        logger.info(this + " status now " + event.getValue());
-        for (MetricListener listener : listeners) {
-            listener.processMetricEvent(event);
-        }
-    }
 
     /**
      * @see java.lang.Object#toString()
