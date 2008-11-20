@@ -320,11 +320,8 @@ public class Job implements Runnable, MetricListener {
         logger.debug("executable: " + sd.getExecutable());
 
         // basic application properties
-
         sd.setJavaMain(application.getMainClass());
-
         sd.setJavaArguments(application.getArguments());
-        sd.setJavaSystemProperties(application.getSystemProperties());
         sd.setJavaOptions(application.getJVMOptions());
 
         // ibis stuff
@@ -341,6 +338,13 @@ public class Job implements Runnable, MetricListener {
         // some versions of the server expect the hubs to be in
         // ibis.server.hub.addresses, set this too
         sd.addJavaSystemProperty("ibis.server.hub.addresses", hubList);
+
+        // set these last so a user can override any
+        // and all settings made by ibis-deploy
+        if (application.getSystemProperties() != null) {
+            sd.getJavaSystemProperties().putAll(
+                    application.getSystemProperties());
+        }
 
         if (application.getLibs() == null) {
             throw new Exception("no library files specified for application "
@@ -487,7 +491,7 @@ public class Job implements Runnable, MetricListener {
             if (hub == null) {
                 // start a hub especially for this job
                 hub = new RemoteServer(description.getClusterSettings(), true,
-                        rootHub, deployHomeDir, hubListener);
+                        rootHub, deployHomeDir, hubListener, keepSandbox);
             }
             // wait until hub really running
             hub.waitUntilRunning();

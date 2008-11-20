@@ -276,7 +276,7 @@ public class Cluster {
         if (other.cacheDir != null) {
             cacheDir = other.cacheDir;
         }
-        
+
         if (other.serverOutputFiles != null) {
             serverOutputFiles = new ArrayList<File>();
             serverOutputFiles.addAll(other.serverOutputFiles);
@@ -545,10 +545,10 @@ public class Cluster {
     public void setCacheDir(File cacheDir) {
         this.cacheDir = cacheDir;
     }
-    
+
     /**
-     * Returns list of server output files. Files are copied from the "root" directory
-     * of the server sandbox to the local file specified.
+     * Returns list of server output files. Files are copied from the "root"
+     * directory of the server sandbox to the local file specified.
      * 
      * @return list of output files.
      */
@@ -560,8 +560,8 @@ public class Cluster {
     }
 
     /**
-     * Sets list of server output files. Files are copied from the "root" directory of
-     * the server sandbox, to the local file specified.
+     * Sets list of server output files. Files are copied from the "root"
+     * directory of the server sandbox, to the local file specified.
      * 
      * @param serverOutputFiles
      *            new list of output files.
@@ -802,7 +802,7 @@ public class Cluster {
         } else if (printComments) {
             out.println("#" + prefix + "cache.dir = ");
         }
-        
+
         if (serverOutputFiles != null) {
             out.println(prefix + "server.output.files = "
                     + Util.files2CSS(serverOutputFiles));
@@ -865,7 +865,8 @@ public class Cluster {
         result += " Wrapper Script = " + getJobWrapperScript() + "\n";
         result += " User name = " + getUserName() + "\n";
         result += " Cache dir = " + getCacheDir() + "\n";
-        result += " Server output files = " + Util.files2CSS(serverOutputFiles) + "\n";
+        result += " Server output files = " + Util.files2CSS(serverOutputFiles)
+                + "\n";
         result += " Nodes = " + getNodes() + "\n";
         result += " Cores = " + getCores() + "\n";
         result += " Latitude = " + getLatitude() + "\n";

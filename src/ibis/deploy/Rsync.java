@@ -3,7 +3,6 @@ package ibis.deploy;
 import java.io.File;
 import java.util.List;
 
-import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.util.OutputForwarder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +14,7 @@ import org.slf4j.LoggerFactory;
  * 
  */
 class Rsync {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(Rsync.class);
 
     private static Process createProcess(File src, File dst, String userName,
@@ -30,19 +29,19 @@ class Rsync {
 
         // command
         command.add("rsync");
-        
+
         // print more output
         // command.add("--verbose");
-        
+
         // recursive
         command.add("--recursive");
-        
+
         // use compression
         command.add("--compress");
-        
+
         // compare files using checksums, not last-modified time and size
         command.add("--checksum");
-        
+
         // use ssh
         command.add("--rsh=ssh");
 
@@ -61,10 +60,10 @@ class Rsync {
         } else {
             command.add(userName + "@" + host + ":" + dst.getAbsolutePath());
         }
-        
+
         if (logger.isDebugEnabled()) {
             String message = "Running rsync:";
-            for (String string: command) {
+            for (String string : command) {
                 message += " " + string;
             }
             logger.debug(message);

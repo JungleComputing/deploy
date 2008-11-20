@@ -209,7 +209,7 @@ public class Deploy {
         } else {
             rootHub = new LocalServer(true);
             remoteServer = new RemoteServer(serverCluster, false, rootHub,
-                    homeDir, blocking ? null : listener);
+                    homeDir, listener, keepSandboxes);
 
             hubs.put(serverCluster.getName(), remoteServer);
 
@@ -312,7 +312,7 @@ public class Deploy {
 
         if (result == null) {
             result = new RemoteServer(cluster, true, rootHub, homeDir,
-                    hubListener);
+                    hubListener, keepSandboxes);
             hubs.put(clusterName, result);
         } else if (hubListener != null) {
             result.addStateListener(hubListener);

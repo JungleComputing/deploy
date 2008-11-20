@@ -39,9 +39,9 @@ public class LocalServer {
 
         Properties properties = new Properties();
         properties.put(ServerProperties.HUB_ONLY, hubOnly + "");
-        //properties.put(ServerProperties.PRINT_ERRORS, "true");
-        //properties.put(ServerProperties.PRINT_EVENTS, "true");
-        //properties.put(ServerProperties.PRINT_STATS, "true");
+        // properties.put(ServerProperties.PRINT_ERRORS, "true");
+        // properties.put(ServerProperties.PRINT_EVENTS, "true");
+        // properties.put(ServerProperties.PRINT_STATS, "true");
         properties.put(ServerProperties.PORT, "0");
 
         server = new ibis.server.Server(properties);

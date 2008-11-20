@@ -77,7 +77,10 @@ public class JobDescription {
 
     private Boolean sharedHub;
 
-    public JobDescription() throws Exception {
+    /**
+     * Create an empty job description
+     */
+    JobDescription() {
         name = null;
         parent = null;
         applicationName = null;
@@ -101,7 +104,6 @@ public class JobDescription {
      * @throws Exception
      *             if the name given is <code>null</code>
      */
-
     JobDescription(String name, Experiment parent) throws Exception {
         this.parent = parent;
 
@@ -133,7 +135,6 @@ public class JobDescription {
      * @throws Exception
      *             if job cannot be read properly
      */
-
     JobDescription(TypedProperties properties, String name, String prefix,
             Experiment parent) throws Exception {
         this.parent = parent;
@@ -471,7 +472,7 @@ public class JobDescription {
         if (resourceCount <= 0) {
             throw new Exception(prefix + "Resource count zero or negative");
         }
-        
+
         if (runtime < 0) {
             throw new Exception(prefix + "Runtime negative");
         }
@@ -609,7 +610,7 @@ public class JobDescription {
         } else {
             out.println(prefix + "resource.count = " + resourceCount);
         }
-        
+
         if (runtime == 0) {
             out.println("#" + prefix + "runtime =");
         } else {

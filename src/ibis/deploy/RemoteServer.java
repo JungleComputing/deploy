@@ -49,6 +49,8 @@ public class RemoteServer implements Runnable, MetricListener {
     // listeners specified by user
     private final List<MetricListener> listeners;
 
+    private final boolean keepSandbox;
+
     private String address;
 
     private org.gridlab.gat.resources.Job gatJob;
@@ -76,10 +78,12 @@ public class RemoteServer implements Runnable, MetricListener {
      * 
      */
     RemoteServer(Cluster cluster, boolean hubOnly, LocalServer rootHub,
-            File deployHomeDir, MetricListener hubListener) throws Exception {
+            File deployHomeDir, MetricListener hubListener, boolean keepSandbox)
+            throws Exception {
         this.hubOnly = hubOnly;
         this.rootHub = rootHub;
         this.deployHomeDir = deployHomeDir;
+        this.keepSandbox = keepSandbox;
         listeners = new ArrayList<MetricListener>();
         if (hubListener != null) {
             addStateListener(hubListener);
@@ -103,8 +107,7 @@ public class RemoteServer implements Runnable, MetricListener {
         ThreadPool.createNew(this, this.toString());
     }
 
-    private static GATContext createGATContext(Cluster cluster)
-            throws Exception {
+    private GATContext createGATContext() throws Exception {
         GATContext context = new GATContext();
         if (cluster.getUserName() != null) {
             SecurityContext securityContext = new CertificateSecurityContext(
@@ -154,8 +157,7 @@ public class RemoteServer implements Runnable, MetricListener {
         return;
     }
 
-    private static JobDescription createJobDescription(Cluster cluster,
-            boolean hubOnly, File homeDir) throws Exception {
+    private JobDescription createJobDescription() throws Exception {
         logger.debug("creating job description");
 
         JavaSoftwareDescription sd = new JavaSoftwareDescription();
@@ -174,17 +176,29 @@ public class RemoteServer implements Runnable, MetricListener {
         }
 
         // add server libraries to pre-stage, use rsync if specified
-        File serverLibs = new File(homeDir, "lib-server");
+        File serverLibs = new File(deployHomeDir, "lib-server");
         prestage(serverLibs, cluster, sd);
 
         // add server log4j file
-        File log4j = new File(homeDir, "log4j.properties");
+        File log4j = new File(deployHomeDir, "log4j.properties");
         prestage(log4j, cluster, sd);
+
+        // add server output files to post-stage
+        if (cluster.getServerOutputFiles() != null) {
+            for (File file : cluster.getServerOutputFiles()) {
+                org.gridlab.gat.io.File gatFile = GAT
+                        .createFile(file.getPath());
+
+                sd.addPostStagedFile(gatFile, GAT.createFile("."));
+            }
+        }
 
         // set classpath
         sd.setJavaClassPath(".:lib-server:lib-server/*");
 
-        sd.getAttributes().put("sandbox.delete", "false");
+        if (keepSandbox) {
+            sd.getAttributes().put("sandbox.delete", "false");
+        }
 
         sd.enableStreamingStdout(true);
         sd.enableStreamingStdin(true);
@@ -289,14 +303,13 @@ public class RemoteServer implements Runnable, MetricListener {
      */
     public void run() {
         try {
-            GATContext context = createGATContext(cluster);
+            GATContext context = createGATContext();
 
             if (cluster.getCacheDir() != null) {
                 logger.info(this + " doing pre-stage using rsync");
             }
 
-            JobDescription jobDescription = createJobDescription(cluster,
-                    hubOnly, deployHomeDir);
+            JobDescription jobDescription = createJobDescription();
 
             logger.debug("creating resource broker for hub");
 
