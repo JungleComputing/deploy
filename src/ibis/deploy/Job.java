@@ -78,17 +78,17 @@ public class Job implements Runnable {
      * Creates a job object from the given description.
      * 
      * @param description
-     *            description of new job
+     *                description of new job
      * @param serverAddress
-     *            address of server
+     *                address of server
      * @param rootHub
-     *            root hub.
+     *                root hub.
      * @param hub
-     *            shared hub. null for local hub
+     *                shared hub. null for local hub
      * @param deployHomeDir
-     *            home dir of deploy. Libs of server should be here
+     *                home dir of deploy. Libs of server should be here
      * @throws Exception
-     *             if the listener could not be attached to this job
+     *                 if the listener could not be attached to this job
      */
     Job(JobDescription description, String serverAddress, LocalServer rootHub,
             RemoteServer hub, File deployHomeDir, boolean keepSandbox,
@@ -107,7 +107,7 @@ public class Job implements Runnable {
         this.context = createGATContext();
 
         jobID = "Job-" + getNextID();
-        
+
         listeners = new Listeners(this.toString());
         if (jobListener != null) {
             addStateListener(jobListener);
@@ -137,9 +137,9 @@ public class Job implements Runnable {
      * state of the job.
      * 
      * @param listener
-     *            the listener to attach
+     *                the listener to attach
      * @throws Exception
-     *             in case attaching failed
+     *                 in case attaching failed
      */
     public void addStateListener(MetricListener listener) throws Exception {
         if (listener == null) {
@@ -148,11 +148,13 @@ public class Job implements Runnable {
 
         // causes a new event for this listener with the current state of the
         // job.
-        Metric metric = gatJob.getMetricDefinitionByName("job.status")
-                .createMetric(null);
-        listener.processMetricEvent(new MetricEvent(gatJob, getState(), metric,
-                System.currentTimeMillis()));
-        
+        if (gatJob != null) {
+            Metric metric = gatJob.getMetricDefinitionByName("job.status")
+                    .createMetric(null);
+            listener.processMetricEvent(new MetricEvent(gatJob, gatJob
+                    .getState(), metric, System.currentTimeMillis()));
+        }
+
         listeners.addListener(listener);
     }
 
@@ -162,7 +164,7 @@ public class Job implements Runnable {
      * @return the state of this job
      * 
      * @throws Exception
-     *             in case the state cannot be retrieved
+     *                 in case the state cannot be retrieved
      */
     public synchronized JobState getState() throws Exception {
         if (error != null) {
@@ -179,7 +181,7 @@ public class Job implements Runnable {
      * 
      * @return true if this job is in the "STOPPED" or "SUBMISSION_ERROR" state.
      * @throws Exception
-     *             in case an error occurs.
+     *                 in case an error occurs.
      */
     public synchronized boolean isFinished() throws Exception {
         if (error != null) {
@@ -199,7 +201,7 @@ public class Job implements Runnable {
      * Wait until this job is in the "STOPPED" or "SUBMISSION_ERROR" state.
      * 
      * @throws Exception
-     *             in case an error occurs.
+     *                 in case an error occurs.
      */
     public synchronized void waitUntilFinished() throws Exception {
         while (!isFinished()) {
@@ -557,7 +559,6 @@ public class Job implements Runnable {
             }
         }
     }
-
 
     /**
      * @see java.lang.Object#toString()

@@ -253,10 +253,12 @@ public class RemoteServer implements Runnable {
 
         // causes a new event for this listener with the current state of the
         // job.
-        Metric metric = gatJob.getMetricDefinitionByName("job.status")
-                .createMetric(null);
-        listener.processMetricEvent(new MetricEvent(gatJob, getState(), metric,
-                System.currentTimeMillis()));
+        if (gatJob != null) {
+            Metric metric = gatJob.getMetricDefinitionByName("job.status")
+                    .createMetric(null);
+            listener.processMetricEvent(new MetricEvent(gatJob, gatJob
+                    .getState(), metric, System.currentTimeMillis()));
+        }
         
         listeners.addListener(listener);
     }
