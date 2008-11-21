@@ -63,15 +63,17 @@ public class ApplicationSet {
     }
 
     /**
-     * Constructs a application-group with the given name.
+     * Constructs an empty application-group
      * 
-     * @throws Exception
-     *             if the name is <code>null</code>
      */
-    public ApplicationSet() throws Exception {
-
+    public ApplicationSet() {
         this.applications = new ArrayList<Application>();
-        defaults = new Application("default", this);
+        try {
+            defaults = new Application("default", this);
+        } catch (Exception e) {
+            // should not happen, but just in case
+            throw new RuntimeException(e);
+        }
     }
 
     /**

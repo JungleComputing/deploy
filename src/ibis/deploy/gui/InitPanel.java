@@ -29,7 +29,7 @@ public class InitPanel extends JPanel {
                     initButton.setEnabled(false);
                     listener.init();
                     gui.getDeploy().initialize(worldMap.getSelectedCluster(),
-                            gui.getDeployHome(), listener);
+                            null, listener);
 
                 } catch (Exception e) {
                     JOptionPane.showMessageDialog(getRootPane(),

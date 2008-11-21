@@ -90,7 +90,9 @@ public class GUI {
             }
         }
 
-        if (gridFile != null) {
+        if (gridFile == null) {
+            grid = new Grid();
+        } else {
             if (!gridFile.isFile()) {
                 System.err.println("DEPLOY: Specified grid file: \"" + gridFile
                         + "\" does not exist or is a directory");
@@ -113,7 +115,9 @@ public class GUI {
             }
         }
 
-        if (applicationsFile != null) {
+        if (applicationsFile == null) {
+            applications = new ApplicationSet();
+        } else {
             if (!applicationsFile.isFile()) {
                 System.err.println("DEPLOY: Specified applications file: \""
                         + applicationsFile
@@ -177,10 +181,6 @@ public class GUI {
 
     protected Deploy getDeploy() {
         return deploy;
-    }
-
-    protected File getDeployHome() {
-        return new File(System.getenv("DEPLOY_HOME"));
     }
 
     protected Grid getGrid() {

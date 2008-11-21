@@ -64,13 +64,14 @@ public class Grid {
 
     /**
      * Constructs a new empty grid.
-     * 
-     * @throws Exception
-     *             if the name is <code>null</code>
      */
-    public Grid() throws Exception {
+    public Grid() {
         this.clusters = new ArrayList<Cluster>();
-        defaults = new Cluster("defaults", null);
+        try {
+            defaults = new Cluster("defaults", null);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
