@@ -1,5 +1,7 @@
 package ibis.deploy.gui;
 
+import ibis.deploy.JobDescription;
+
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 
@@ -22,19 +24,18 @@ public class ProcessCountPanel extends JPanel {
         add(new JLabel("x"));
         final JSpinner processCountSpinner = new JSpinner(
                 new SpinnerNumberModel(1, 1, Integer.MAX_VALUE, 1));
-        processCountSpinner.addChangeListener(new ChangeListener() {
 
-            public void stateChanged(ChangeEvent arg0) {
-                gui.getCurrentJobDescription().setProcessCount(
-                        ((SpinnerNumberModel) processCountSpinner.getModel())
-                                .getNumber().intValue());
+        gui.addSubmitJobListener(new SubmitJobListener() {
 
+            public void modify(JobDescription jobDescription) {
+                jobDescription
+                        .setProcessCount(((SpinnerNumberModel) processCountSpinner
+                                .getModel()).getNumber().intValue());
             }
 
         });
         processCountSpinner.setPreferredSize(new Dimension(50,
                 processCountSpinner.getPreferredSize().height));
-        gui.getCurrentJobDescription().setProcessCount(1);
         add(processCountSpinner);
 
     }

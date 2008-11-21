@@ -11,16 +11,27 @@ import java.awt.Dimension;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.UIManager;
 
 public class GUI {
 
     private Deploy deploy;
+
+    private List<WorkSpaceChangedListener> gridListeners = new ArrayList<WorkSpaceChangedListener>();
+
+    private List<WorkSpaceChangedListener> applicationSetListeners = new ArrayList<WorkSpaceChangedListener>();
+
+    private List<WorkSpaceChangedListener> experimentListeners = new ArrayList<WorkSpaceChangedListener>();
+
+    private List<SubmitJobListener> submitJobListeners = new ArrayList<SubmitJobListener>();
 
     private Grid grid = null;
 
@@ -31,6 +42,8 @@ public class GUI {
     private JMenuBar menuBar = null;
 
     private Boolean sharedHubs;
+
+    // private JobDescription currentJobDescription = new JobDescription();
 
     /**
      * @param args
@@ -49,15 +62,42 @@ public class GUI {
 
     }
 
-    protected static void createAndShowGUI(GUI gui) {
+    protected static void createAndShowGUI(final GUI gui) {
         UIManager.put("swing.boldMetal", Boolean.FALSE);
-        JFrame frame = new JFrame("Ibis Deploy");
+        final JFrame frame = new JFrame("Ibis Deploy");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setIconImage(GUIUtils.createImageIcon(
+                "images/ibis-logo-left.png", null).getImage());
 
         gui.menuBar = new JMenuBar();
         JMenu menu = new JMenu("File");
         menu.add("Exit");
         gui.menuBar.add(menu);
+        menu = new JMenu("Workspaces");
+        menu.add("Save workspace as ...");
+        menu.add("Switch workspace");
+        menu.add(new JSeparator());
+        JMenu subMenu = new JMenu("Grid workspace");
+        subMenu.add(new SaveGridWorkSpaceAction("Save workspace as ...", frame,
+                gui));
+        subMenu.add(new SwitchGridWorkSpaceAction("Switch workspace", frame,
+                gui));
+
+        menu.add(subMenu);
+        subMenu = new JMenu("Application workspace");
+        subMenu.add(new SaveApplicationSetWorkSpaceAction(
+                "Save workspace as ...", frame, gui));
+        subMenu.add(new SwitchApplicationSetWorkSpaceAction("Switch workspace",
+                frame, gui));
+        menu.add(subMenu);
+        subMenu = new JMenu("Experiment workspace");
+        subMenu.add(new SaveExperimentWorkSpaceAction("Save workspace as ...",
+                frame, gui));
+        subMenu.add(new SwitchExperimentWorkSpaceAction("Switch workspace",
+                frame, gui));
+        menu.add(subMenu);
+        gui.menuBar.add(menu);
+
         frame.setJMenuBar(gui.menuBar);
 
         frame.getContentPane().setLayout(new BorderLayout());
@@ -168,7 +208,6 @@ public class GUI {
         } else {
             try {
                 experiment = new Experiment("default");
-                experiment.createNewJob("default");
             } catch (Exception e) {
                 // ignore will always work!
                 e.printStackTrace();
@@ -187,17 +226,31 @@ public class GUI {
         return grid;
     }
 
+    protected void setGrid(Grid grid) {
+        this.grid = grid;
+    }
+
     protected ApplicationSet getApplicationSet() {
         return applications;
+    }
+
+    protected void setApplicationSet(ApplicationSet applications) {
+        this.applications = applications;
+
     }
 
     protected Experiment getExperiment() {
         return experiment;
     }
 
-    protected JobDescription getCurrentJobDescription() {
-        return experiment.getJobs()[experiment.getJobs().length - 1];
+    protected void setExperiment(Experiment experiment) {
+        this.experiment = experiment;
+
     }
+
+    // protected JobDescription getCurrentJobDescription() {
+    // return currentJobDescription;
+    // }
 
     public JMenuBar getMenuBar() {
         return menuBar;
@@ -209,6 +262,53 @@ public class GUI {
 
     public void setSharedHubs(boolean sharedHubs) {
         this.sharedHubs = sharedHubs;
+    }
+
+    protected void fireSubmitJob(JobDescription jobDescription) {
+        for (SubmitJobListener listener : submitJobListeners) {
+            listener.modify(jobDescription);
+        }
+    }
+
+    protected void fireWorkSpaceUpdated() {
+        fireGridUpdated();
+        fireApplicationSetUpdated();
+        fireExperimentUpdated();
+    }
+
+    protected void fireGridUpdated() {
+        for (WorkSpaceChangedListener listener : gridListeners) {
+            listener.workSpaceChanged(this);
+        }
+    }
+
+    protected void fireApplicationSetUpdated() {
+        for (WorkSpaceChangedListener listener : applicationSetListeners) {
+            listener.workSpaceChanged(this);
+        }
+    }
+
+    protected void fireExperimentUpdated() {
+        for (WorkSpaceChangedListener listener : experimentListeners) {
+            listener.workSpaceChanged(this);
+        }
+    }
+
+    public void addSubmitJobListener(SubmitJobListener listener) {
+        submitJobListeners.add(listener);
+    }
+
+    public void addGridWorkSpaceListener(WorkSpaceChangedListener listener) {
+        gridListeners.add(listener);
+    }
+
+    public void addApplicationSetWorkSpaceListener(
+            WorkSpaceChangedListener listener) {
+        applicationSetListeners.add(listener);
+    }
+
+    public void addExperimentWorkSpaceListener(WorkSpaceChangedListener listener) {
+        experimentListeners.add(listener);
     }
 
 }

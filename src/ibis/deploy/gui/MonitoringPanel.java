@@ -36,7 +36,7 @@ public class MonitoringPanel extends JPanel {
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 smartSocketsPanel, new JobTablePanel(gui, model));
         splitPane.setOneTouchExpandable(true);
-        splitPane.setDividerLocation(400);
+        splitPane.setDividerLocation(350);
         add(splitPane, BorderLayout.CENTER);
     }
 }

@@ -1,6 +1,7 @@
 package ibis.deploy.gui;
 
 import ibis.deploy.Application;
+import ibis.deploy.JobDescription;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -19,24 +20,34 @@ public class ApplicationSelectionPanel extends JPanel {
 
     public ApplicationSelectionPanel(final GUI gui) {
         final JComboBox applicationComboBox = new JComboBox();
+
+        gui.addApplicationSetWorkSpaceListener(new WorkSpaceChangedListener() {
+
+            public void workSpaceChanged(GUI gui) {
+                applicationComboBox.removeAllItems();
+                for (Application application : gui.getApplicationSet()
+                        .getApplications()) {
+                    applicationComboBox.addItem(application);
+                }
+                ApplicationSelectionPanel.this.repaint();
+            }
+
+        });
+
+        gui.addSubmitJobListener(new SubmitJobListener() {
+
+            public void modify(JobDescription jobDescription) {
+                jobDescription.setApplicationName(applicationComboBox
+                        .getSelectedItem().toString());
+            }
+
+        });
+
         setLayout(new BorderLayout());
 
         for (Application application : gui.getApplicationSet()
                 .getApplications()) {
             applicationComboBox.addItem(application);
-        }
-        applicationComboBox.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent actionEvent) {
-                gui.getCurrentJobDescription().setApplicationName(
-                        applicationComboBox.getSelectedItem().toString());
-
-            }
-
-        });
-        if (gui.getCurrentJobDescription().getApplicationName() == null) {
-            gui.getCurrentJobDescription().setApplicationName(
-                    applicationComboBox.getSelectedItem().toString());
         }
         JPanel titlePanel = new JPanel(new BorderLayout());
         titlePanel.add(new JLabel("Select Application"), BorderLayout.WEST);

@@ -1,6 +1,7 @@
 package ibis.deploy.gui;
 
 import java.awt.BorderLayout;
+import java.awt.geom.Point2D;
 
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -64,9 +65,9 @@ public class InitializingPanel implements MetricListener {
         dialog = new JDialog(
                 SwingUtilities.getWindowAncestor(experimentsPanel),
                 "Ibis Server Status");
-        dialog.setLocationRelativeTo(experimentsPanel);
         dialog.setContentPane(panel);
         dialog.pack();
+        dialog.setLocationRelativeTo(experimentsPanel);
         dialog.setVisible(true);
     }
 

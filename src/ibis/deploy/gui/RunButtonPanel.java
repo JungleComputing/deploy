@@ -3,13 +3,11 @@ package ibis.deploy.gui;
 import ibis.deploy.Job;
 import ibis.deploy.JobDescription;
 
-import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.event.TableModelEvent;
@@ -24,7 +22,10 @@ public class RunButtonPanel extends JPanel {
      */
     private static final long serialVersionUID = 5177904946395126314L;
 
+    private static int id = 0;
+
     public RunButtonPanel(final GUI gui, final MyTableModel model) {
+
         setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
 
         JButton createButton = GUIUtils.createImageButton("images/go-down.png",
@@ -35,8 +36,11 @@ public class RunButtonPanel extends JPanel {
 
             public void actionPerformed(ActionEvent event) {
                 try {
-                    JobDescription result = gui.getCurrentJobDescription()
-                            .resolve(gui.getApplicationSet(), gui.getGrid());
+                    JobDescription result = gui.getExperiment().createNewJob(
+                            "job-" + (id++));
+                    gui.fireSubmitJob(result);
+                    result = result.resolve(gui.getApplicationSet(), gui
+                            .getGrid());
                     result.checkSettings();
                     model.addRow(result);
                     model.fireTableChanged(new TableModelEvent(model));
@@ -53,8 +57,11 @@ public class RunButtonPanel extends JPanel {
 
             public void actionPerformed(ActionEvent event) {
                 try {
-                    JobDescription result = gui.getCurrentJobDescription()
-                            .resolve(gui.getApplicationSet(), gui.getGrid());
+                    JobDescription result = gui.getExperiment().createNewJob(
+                            "job-" + (id++));
+                    gui.fireSubmitJob(result);
+                    result = result.resolve(gui.getApplicationSet(), gui
+                            .getGrid());
                     result.checkSettings();
                     result.setSharedHub(gui.getSharedHubs());
                     final int row = model.getRowCount();

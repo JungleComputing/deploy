@@ -1,13 +1,14 @@
 package ibis.deploy.gui;
 
+import ibis.deploy.JobDescription;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
+import java.nio.ByteOrder;
 import java.util.EventObject;
-import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -49,13 +50,28 @@ public class JobTablePanel extends JPanel {
             }
         }
 
-        // table.setPreferredScrollableViewportSize(new Dimension(300, 70));
-        // table.setFillsViewportHeight(true);
+        for (JobDescription jobDescription : gui.getExperiment().getJobs()) {
+            model.addRow(jobDescription);
+        }
+
+        gui.addExperimentWorkSpaceListener(new WorkSpaceChangedListener() {
+
+            public void workSpaceChanged(GUI gui) {
+                model.clear();
+                for (JobDescription jobDescription : gui.getExperiment()
+                        .getJobs()) {
+                    model.addRow(jobDescription);
+                }
+                model.fireTableDataChanged();
+            }
+
+        });
 
         // Create the scroll pane and add the table to it.
         JScrollPane scrollPane = new JScrollPane(table);
 
         add(scrollPane, BorderLayout.CENTER);
+        add(new JobTableControlPanel(gui, table), BorderLayout.SOUTH);
     }
 
     private static class ButtonEditor implements TableCellEditor,

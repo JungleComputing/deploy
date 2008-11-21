@@ -94,4 +94,10 @@ class MyTableModel extends AbstractTableModel {
     public void setRow(Object value, int row) {
         jobs.set(row, value);
     }
+
+    public void clear() {
+        jobs.clear();
+        jobStates.clear();
+        hubStates.clear();
+    }
 }

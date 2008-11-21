@@ -4,6 +4,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import javax.swing.AbstractButton;
+import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -13,6 +14,22 @@ public class GUIUtils {
     /** Returns an JLabel, or null if the path was invalid. */
     protected static JLabel createImageLabel(String path, String description) {
         JLabel result = new JLabel(createImageIcon(path, description));
+        result.setToolTipText(description);
+        return result;
+    }
+
+    /**
+     * Returns an JButton, or null if the path was invalid.
+     * 
+     * @param buttonText
+     */
+    protected static JButton createImageButton(Action action, String path,
+            String description, String buttonText) {
+        JButton result = new JButton(action);
+        result.setText(buttonText);
+        result.setIcon(createImageIcon(path, description));
+        result.setVerticalTextPosition(AbstractButton.CENTER);
+        result.setHorizontalTextPosition(AbstractButton.TRAILING);
         result.setToolTipText(description);
         return result;
     }

@@ -8,8 +8,6 @@ import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import org.gridlab.gat.monitoring.MetricListener;
-
 public class InitPanel extends JPanel {
 
     /**

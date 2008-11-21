@@ -1,5 +1,7 @@
 package ibis.deploy.gui;
 
+import ibis.deploy.JobDescription;
+
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 
@@ -27,12 +29,19 @@ public class ResourceCountPanel extends JPanel {
         setLayout(new FlowLayout(FlowLayout.LEFT));
         add(new JLabel("x"));
 
+        gui.addSubmitJobListener(new SubmitJobListener() {
+
+            public void modify(JobDescription jobDescription) {
+                jobDescription
+                        .setResourceCount(((SpinnerNumberModel) resourceCountSpinner
+                                .getModel()).getNumber().intValue());
+            }
+
+        });
+
         resourceCountSpinner.addChangeListener(new ChangeListener() {
 
             public void stateChanged(ChangeEvent arg0) {
-                gui.getCurrentJobDescription().setResourceCount(
-                        ((SpinnerNumberModel) resourceCountSpinner.getModel())
-                                .getNumber().intValue());
                 worldMapPanel
                         .setResourceCount(((SpinnerNumberModel) resourceCountSpinner
                                 .getModel()).getNumber().intValue());
@@ -43,15 +52,11 @@ public class ResourceCountPanel extends JPanel {
         resourceCountSpinner.setPreferredSize(new Dimension(50,
                 resourceCountSpinner.getPreferredSize().height));
         add(resourceCountSpinner);
-        gui.getCurrentJobDescription().setResourceCount(1);
     }
 
     protected void setResourceCount(int i) {
         ((SpinnerNumberModel) resourceCountSpinner.getModel())
                 .setValue(new Integer(i));
-        gui.getCurrentJobDescription().setResourceCount(
-                ((SpinnerNumberModel) resourceCountSpinner.getModel())
-                        .getNumber().intValue());
     }
 
 }

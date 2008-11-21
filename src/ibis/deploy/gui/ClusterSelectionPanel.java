@@ -1,6 +1,7 @@
 package ibis.deploy.gui;
 
 import ibis.deploy.Cluster;
+import ibis.deploy.JobDescription;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -25,6 +26,25 @@ public class ClusterSelectionPanel extends JPanel {
 
     public ClusterSelectionPanel(final GUI gui,
             final WorldMapPanel worldMapPanel) {
+        gui.addGridWorkSpaceListener(new WorkSpaceChangedListener() {
+            public void workSpaceChanged(GUI gui) {
+                clusterComboBox.removeAllItems();
+                for (Cluster cluster : gui.getGrid().getClusters()) {
+                    clusterComboBox.addItem(cluster);
+                }
+                clusterComboBox.repaint();
+            }
+        });
+
+        gui.addSubmitJobListener(new SubmitJobListener() {
+
+            public void modify(JobDescription jobDescription) {
+                jobDescription.setClusterName(clusterComboBox.getSelectedItem()
+                        .toString());
+            }
+
+        });
+
         this.gui = gui;
         // register by world map panel
         if (worldMapPanel != null) {
@@ -38,8 +58,6 @@ public class ClusterSelectionPanel extends JPanel {
         clusterComboBox.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent actionEvent) {
-                gui.getCurrentJobDescription().setClusterName(
-                        clusterComboBox.getSelectedItem().toString());
                 if (worldMapPanel != null) {
                     worldMapPanel.setSelected((Cluster) clusterComboBox
                             .getSelectedItem());
@@ -50,10 +68,6 @@ public class ClusterSelectionPanel extends JPanel {
             }
 
         });
-        if (gui.getCurrentJobDescription().getClusterName() == null) {
-            gui.getCurrentJobDescription().setClusterName(
-                    clusterComboBox.getSelectedItem().toString());
-        }
         JPanel titlePanel = new JPanel(new BorderLayout());
         titlePanel.add(new JLabel("Select Cluster"), BorderLayout.WEST);
         titlePanel.add(GUIUtils.createImageLabel("images/network-server.png",
@@ -72,8 +86,6 @@ public class ClusterSelectionPanel extends JPanel {
 
     protected void setSelected(Cluster cluster) {
         clusterComboBox.setSelectedItem(cluster);
-        gui.getCurrentJobDescription().setClusterName(
-                clusterComboBox.getSelectedItem().toString());
     }
 
     protected void setResourceCount(int i) {

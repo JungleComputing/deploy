@@ -9,14 +9,9 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.UIManager;
-import javax.swing.event.TableModelEvent;
 import javax.swing.table.TableCellRenderer;
-
-import org.gridlab.gat.monitoring.MetricEvent;
-import org.gridlab.gat.monitoring.MetricListener;
 
 class MyTableRenderer extends JLabel implements TableCellRenderer {
 
@@ -55,59 +50,9 @@ class MyTableRenderer extends JLabel implements TableCellRenderer {
             } else {
                 // job not yet submitted or stopped
                 final JButton startButton = GUIUtils.createImageButton(
+                        new SubmitExistingJobAction(row, false, false, table,
+                                gui, getRootPane()),
                         "images/media-playback-start.png", null, null);
-                startButton.addActionListener(new ActionListener() {
-
-                    public void actionPerformed(ActionEvent arg0) {
-                        startButton.setEnabled(false);
-                        JobDescription jd = null;
-                        if (object instanceof Job) {
-                            // stopped job
-                            jd = ((Job) object).getDescription();
-                        } else {
-                            // not yet submitted job
-                            jd = (JobDescription) object;
-                        }
-                        try {
-                            Job job = gui.getDeploy().submitJob(jd,
-                                    gui.getApplicationSet(), gui.getGrid(),
-                                    new MetricListener() {
-
-                                        public void processMetricEvent(
-                                                MetricEvent event) {
-                                            table
-                                                    .getModel()
-                                                    .setValueAt(
-                                                            event.getValue()
-                                                                    .toString(),
-                                                            row, 2);
-                                        }
-
-                                    }, new MetricListener() {
-
-                                        public void processMetricEvent(
-                                                MetricEvent event) {
-                                            table
-                                                    .getModel()
-                                                    .setValueAt(
-                                                            event.getValue()
-                                                                    .toString(),
-                                                            row, 3);
-                                        }
-
-                                    });
-                            ((MyTableModel) table.getModel()).setRow(job, row);
-                            ((MyTableModel) table.getModel())
-                                    .fireTableChanged(new TableModelEvent(
-                                            ((MyTableModel) table.getModel())));
-                        } catch (Exception e) {
-                            JOptionPane.showMessageDialog(getRootPane(), e
-                                    .getMessage(), "Job creation failed",
-                                    JOptionPane.PLAIN_MESSAGE);
-                            e.printStackTrace(System.err);
-                        }
-                    }
-                });
                 return startButton;
             }
         } else if (column == 1) {

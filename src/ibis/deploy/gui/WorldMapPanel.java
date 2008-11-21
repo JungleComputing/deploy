@@ -137,6 +137,11 @@ public class WorldMapPanel extends JPanel {
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
         final JXMapKit mapKit = new JXMapKit() {
 
+            /**
+             * 
+             */
+            private static final long serialVersionUID = -6194956781979564591L;
+
             private boolean initialized = false;
 
             private static final int MAX_DEPTH = 3;
@@ -225,6 +230,17 @@ public class WorldMapPanel extends JPanel {
             waypoints.add(new ClusterWaypoint(cluster, false));
 
         }
+
+        gui.addGridWorkSpaceListener(new WorkSpaceChangedListener() {
+            public void workSpaceChanged(GUI gui) {
+                waypoints.clear();
+                for (Cluster cluster : gui.getGrid().getClusters()) {
+                    waypoints.add(new ClusterWaypoint(cluster, false));
+                }
+                mapKit.setZoom(INITIAL_MAP_ZOOM);
+                mapKit.getMainMap().repaint();
+            }
+        });
         WaypointPainter<JXMapViewer> painter = new WaypointPainter<JXMapViewer>();
         painter.setRenderer(new ClusterWaypointRenderer());
         painter.setWaypoints(waypoints);
