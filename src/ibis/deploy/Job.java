@@ -346,9 +346,6 @@ public class Job implements Runnable {
 
         // add hub list to software description
         sd.addJavaSystemProperty(IbisProperties.HUB_ADDRESSES, hubList);
-        // some versions of the server expect the hubs to be in
-        // ibis.server.hub.addresses, set this too
-        sd.addJavaSystemProperty("ibis.server.hub.addresses", hubList);
 
         // set these last so a user can override any
         // and all settings made by ibis-deploy
