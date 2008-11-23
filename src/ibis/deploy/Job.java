@@ -290,7 +290,7 @@ public class Job implements Runnable {
             org.gridlab.gat.io.File gatFile = GAT.createFile(context, src
                     .toString());
             org.gridlab.gat.io.File gatDstFile = GAT.createFile(context, dstDir
-                    .getPath());
+                    .getPath() + "/");
             sd.addPreStagedFile(gatFile, gatDstFile);
             return;
         }
