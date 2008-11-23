@@ -309,9 +309,9 @@ public class RemoteServer implements Runnable {
 
             ResourceBroker jobBroker = GAT.createResourceBroker(context,
                     cluster.getServerURI());
-
-            logger.debug("submitting job: " + jobDescription.toString());
-
+            
+            logger.info("JavaGAT job description for " + this + " = " + jobDescription);
+            
             org.gridlab.gat.resources.Job job = jobBroker.submitJob(
                     jobDescription, listeners, "job.status");
             setGatJob(job);

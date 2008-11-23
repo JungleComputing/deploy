@@ -124,7 +124,9 @@ public class Util {
         Map<String, String> result = new HashMap<String, String>();
         for (String string : properties.getStringList(key)) {
             String[] keyValue = string.split("=", 2);
-            if (keyValue.length == 2) {
+            if (keyValue.length == 2 && keyValue[1].equals("")) {
+                result.put(keyValue[0], null);
+            } else if (keyValue.length == 2) {
                 result.put(keyValue[0], keyValue[1]);
             } else if (keyValue.length == 1) {
                 result.put(keyValue[0], null);

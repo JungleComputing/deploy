@@ -518,7 +518,7 @@ public class Job implements Runnable {
 
             org.gridlab.gat.resources.JobDescription jobDescription = createJobDescription(javaSoftwareDescription);
 
-            logger.debug("job description = " + jobDescription);
+            logger.info("JavaGAT job description for " + this + " = " + jobDescription);
 
             ResourceBroker jobBroker = GAT.createResourceBroker(context,
                     description.getClusterSettings().getJobURI());
