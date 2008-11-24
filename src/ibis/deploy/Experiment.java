@@ -105,12 +105,11 @@ public class Experiment {
         jobs = new ArrayList<JobDescription>();
         String[] jobNames = Util.getElementList(properties, prefix);
         for (String jobName : jobNames) {
-            if (!jobName.equals("name")) {
-                JobDescription job = new JobDescription(properties, jobName,
-                        prefix + jobName, this);
-                jobs.add(job);
-            }
+            JobDescription job = new JobDescription(properties, jobName, prefix
+                    + jobName, this);
+            jobs.add(job);
         }
+
     }
 
     /**
