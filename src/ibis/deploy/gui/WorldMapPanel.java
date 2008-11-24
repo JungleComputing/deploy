@@ -4,8 +4,10 @@ import ibis.deploy.Cluster;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -468,31 +470,65 @@ public class WorldMapPanel extends JPanel {
 
             // draw cluster name
             String clusterName = cwp.getCluster().getName();
+            Font original = g.getFont();
+            g.setFont(original.deriveFont(Font.BOLD));
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+
+            g.setRenderingHint(RenderingHints.KEY_RENDERING,
+                    RenderingHints.VALUE_RENDER_QUALITY);
+
             int width = (int) g.getFontMetrics()
                     .getStringBounds(clusterName, g).getWidth();
             int height = (int) g.getFontMetrics().getStringBounds(clusterName,
                     g).getHeight();
+
+            // if (cwp.isSelected()) {
+            // g.setPaint(new Color(255, 100, 100, 100));
+            // } else {
+            // g.setPaint(new Color(100, 100, 255, 100));
+            // }
+            // g.fillRoundRect(x + -width / 2 - 5, y + -height / 2 + 8 + radius,
+            // width + 10, height + 6, 10, 10);
+            // if (cwp.isSelected()) {
+            // g.setPaint(new Color(255, 100, 100, 255));
+            // } else {
+            // g.setPaint(new Color(100, 100, 255, 255));
+            // }
+            // g.drawRoundRect(x + -width / 2 - 5, y + -height / 2 + 8 + radius,
+            // width + 10, height + 6, 10, 10);
+
+            // draw text w/ shadow
+
+            g.setPaint(Color.BLACK);
+            g.drawString(clusterName, x + -width / 2 - 1, y + height / 2 + 8
+                    - 1 + radius); // shadow
+            g.drawString(clusterName, x + -width / 2 + 1, y + height / 2 + 8
+                    - 1 + radius); // shadow
+            g.drawString(clusterName, x + -width / 2 + 1, y + height / 2 + 8
+                    + 1 + radius); // shadow
+            g.drawString(clusterName, x + -width / 2 - 1, y + height / 2 + 8
+                    + 1 + radius); // shadow
+            g.drawString(clusterName, x + -width / 2 - 1, y + height / 2 + 8
+                    - 0 + radius); // shadow
+            g.drawString(clusterName, x + -width / 2 + 1, y + height / 2 + 8
+                    - 0 + radius); // shadow
+            g.drawString(clusterName, x + -width / 2 + 0, y + height / 2 + 8
+                    + 1 + radius); // shadow
+            g.drawString(clusterName, x + -width / 2 - 0, y + height / 2 + 8
+                    - 1 + radius); // shadow
+
+            g.setPaint(Color.WHITE);
+
+            g.drawString(clusterName, x + -width / 2, y + height / 2 + 8
+                    + radius); // text
 
             if (cwp.isSelected()) {
                 g.setPaint(new Color(255, 100, 100, 100));
             } else {
                 g.setPaint(new Color(100, 100, 255, 100));
             }
-            g.fillRoundRect(x + -width / 2 - 5, y + -height / 2 + 8 + radius,
-                    width + 10, height + 6, 10, 10);
-            if (cwp.isSelected()) {
-                g.setPaint(new Color(255, 100, 100, 255));
-            } else {
-                g.setPaint(new Color(100, 100, 255, 255));
-            }
-            g.drawRoundRect(x + -width / 2 - 5, y + -height / 2 + 8 + radius,
-                    width + 10, height + 6, 10, 10);
 
-            // draw text w/ shadow
-            g.setPaint(Color.BLACK);
-            g.drawString(clusterName, x + -width / 2 - 1, y + height / 2 + 8
-                    - 1 + radius); // shadow
-            g.setPaint(Color.WHITE);
             g.drawString(clusterName, x + -width / 2, y + height / 2 + 8
                     + radius); // text
 
@@ -509,9 +545,31 @@ public class WorldMapPanel extends JPanel {
                 g.setPaint(Color.BLACK);
                 g.drawString(usageString, x + -width / 2 - 1, y + height / 2
                         - 3 - 1); // shadow
+                g.drawString(usageString, x + -width / 2 + 1, y + height / 2
+                        - 3 - 1); // shadow
+                g.drawString(usageString, x + -width / 2 + 1, y + height / 2
+                        - 3 + 1); // shadow
+                g.drawString(usageString, x + -width / 2 - 1, y + height / 2
+                        - 3 + 1); // shadow
+                g.drawString(usageString, x + -width / 2 - 1, y + height / 2
+                        - 3 - 0); // shadow
+                g.drawString(usageString, x + -width / 2 + 1, y + height / 2
+                        - 3 - 0); // shadow
+                g.drawString(usageString, x + -width / 2 + 0, y + height / 2
+                        - 3 - 1); // shadow
+                g.drawString(usageString, x + -width / 2 + 0, y + height / 2
+                        - 3 + 1); // shadow
                 g.setPaint(Color.WHITE);
                 g.drawString(usageString, x + -width / 2, y + height / 2 - 3); // text
+                if (cwp.isSelected()) {
+                    g.setPaint(new Color(255, 100, 100, 100));
+                } else {
+                    g.setPaint(new Color(100, 100, 255, 100));
+                }
+
+                g.drawString(usageString, x + -width / 2, y + height / 2 - 3); // text
             }
+            g.setFont(original);
             return false;
         }
 
