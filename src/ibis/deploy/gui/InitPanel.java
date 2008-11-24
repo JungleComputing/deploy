@@ -27,7 +27,7 @@ public class InitPanel extends JPanel {
                     initButton.setEnabled(false);
                     listener.init();
                     gui.getDeploy().initialize(worldMap.getSelectedCluster(),
-                            null, listener);
+                            listener);
 
                 } catch (Exception e) {
                     JOptionPane.showMessageDialog(getRootPane(),

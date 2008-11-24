@@ -47,7 +47,7 @@ public class Deploy {
     private RegistryMonitorClient registryMonitor;
 
     // home dir of ibis-deploy
-    private File homeDir;
+    private final File home;
 
     // submitted jobs
     private List<Job> jobs;
@@ -59,16 +59,44 @@ public class Deploy {
 
     /**
      * Create a new (uninitialized) deployment interface.
+     * 
+     * @param home
+     *            "home" directory of ibis-deploy. If null, the default location
+     *            is used from the "ibis.deploy.home" system property. If this
+     *            property is unspecified, final default value is the current
+     *            working directory.
+     * @throws Exception
+     *             if required files cannot be found in home
      */
-    public Deploy() {
+    public Deploy(File home) throws Exception {
         rootHub = null;
         remoteServer = null;
-        homeDir = null;
         keepSandboxes = false;
 
         jobs = new ArrayList<Job>();
         hubs = new HashMap<String, RemoteServer>();
 
+        if (home == null) {
+            String homeProperty = System.getProperty(HOME_PROPERTY);
+            if (homeProperty == null || homeProperty.length() == 0) {
+                homeProperty = System.getProperty("user.dir");
+            }
+            this.home = new File(homeProperty);
+        } else {
+            this.home = home;
+        }
+
+        checkFiles();
+    }
+
+    /**
+     * Returns the home directory of ibis-deploy used to fetch server libraries,
+     * images, etc.
+     * 
+     * @return the home directory of ibis-deploy
+     */
+    public File getHome() {
+        return home;
     }
 
     /**
@@ -79,7 +107,7 @@ public class Deploy {
      * @throws Exception
      *             if one or more files are missing
      */
-    private static void checkFiles(File home) throws Exception {
+    private void checkFiles() throws Exception {
         for (String fileName : REQUIRED_FILES) {
             if (!new File(home, fileName).exists()) {
                 throw new Exception("required file/dir \"" + fileName
@@ -142,17 +170,12 @@ public class Deploy {
      * @param serverCluster
      *            cluster where the server should be started, or null for a
      *            server embedded in this JVM.
-     * @param deployHome
-     *            "home" directory of ibis-deploy. If null, the default location
-     *            is used from the "ibis.deploy.home" system property. If this
-     *            property is unspecified, final default value is the current
-     *            working directory.
+     * 
      * @throws Exception
      *             if the server cannot be started
      */
-    public synchronized void initialize(Cluster serverCluster, File deployHome)
-            throws Exception {
-        initialize(serverCluster, deployHome, null, true);
+    public synchronized void initialize(Cluster serverCluster) throws Exception {
+        initialize(serverCluster, null, true);
     }
 
     /**
@@ -162,36 +185,18 @@ public class Deploy {
      * @param serverCluster
      *            cluster where the server should be started, or null for a
      *            server embedded in this JVM.
-     * @param deployHome
-     *            "home" directory of ibis-deploy. If null, the default location
-     *            is used from the "ibis.deploy.home" system property. If this
-     *            property is unspecified, final default value is the current
-     *            working directory.
      * @param listener
      *            callback object for status of server
      * @throws Exception
      *             if the server cannot be started
      */
-    public synchronized void initialize(Cluster serverCluster, File deployHome,
+    public synchronized void initialize(Cluster serverCluster,
             MetricListener listener) throws Exception {
-        initialize(serverCluster, deployHome, listener, false);
+        initialize(serverCluster, listener, false);
     }
 
     private synchronized void initialize(Cluster serverCluster,
-            File deployHome, MetricListener listener, boolean blocking)
-            throws Exception {
-        if (deployHome == null) {
-            String homeProperty = System.getProperty(HOME_PROPERTY);
-            if (homeProperty == null || homeProperty.length() == 0) {
-                homeProperty = System.getProperty("user.dir");
-            }
-            homeDir = new File(homeProperty);
-        } else {
-            homeDir = deployHome;
-        }
-
-        // see if all files we need are there.
-        checkFiles(homeDir);
+            MetricListener listener, boolean blocking) throws Exception {
 
         logger.debug("Initializing deploy");
 
@@ -209,7 +214,7 @@ public class Deploy {
         } else {
             rootHub = new LocalServer(true);
             remoteServer = new RemoteServer(serverCluster, false, rootHub,
-                    homeDir, listener, keepSandboxes);
+                    home, listener, keepSandboxes);
 
             hubs.put(serverCluster.getName(), remoteServer);
 
@@ -271,7 +276,7 @@ public class Deploy {
         }
 
         // start job
-        Job job = new Job(description, serverAddress, rootHub, hub, homeDir,
+        Job job = new Job(description, serverAddress, rootHub, hub, home,
                 keepSandboxes, jobListener, hubListener);
 
         jobs.add(job);
@@ -311,7 +316,7 @@ public class Deploy {
         RemoteServer result = hubs.get(clusterName);
 
         if (result == null) {
-            result = new RemoteServer(cluster, true, rootHub, homeDir,
+            result = new RemoteServer(cluster, true, rootHub, home,
                     hubListener, keepSandboxes);
             hubs.put(clusterName, result);
         } else if (hubListener != null) {

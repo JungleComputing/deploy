@@ -158,7 +158,7 @@ public class CommandLine {
                 System.exit(1);
             }
 
-            Deploy deploy = new Deploy();
+            Deploy deploy = new Deploy(null);
 
             deploy.keepSandboxes(keepSandboxes);
 
@@ -185,7 +185,7 @@ public class CommandLine {
                     System.exit(1);
                 }
 
-                deploy.initialize(cluster, null);
+                deploy.initialize(cluster);
             }
 
             // print pool size statistics

@@ -67,7 +67,7 @@ public class GUI {
         final JFrame frame = new JFrame("Ibis Deploy");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setIconImage(GUIUtils.createImageIcon(
-                "images/ibis-logo-left.png", null).getImage());
+            "images/ibis-logo-left.png", null).getImage());
 
         gui.menuBar = new JMenuBar();
         JMenu menu = new JMenu("File");
@@ -214,7 +214,12 @@ public class GUI {
             }
         }
 
-        deploy = new Deploy();
+        try {
+            deploy = new Deploy(null);
+        } catch (Exception e) {
+            System.err.println("Could not initialize ibis-deploy: " + e);
+            System.exit(1);
+        }
 
     }
 
