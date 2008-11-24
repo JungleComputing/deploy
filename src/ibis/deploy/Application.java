@@ -558,16 +558,12 @@ public class Application {
      */
     void save(PrintWriter out, String prefix, boolean printComments)
             throws Exception {
-        if (prefix == null && (name == null || name.length() == 0)) {
+        if (prefix == null) {
             throw new Exception("cannot print application to file,"
-                    + " name is not specified");
+                    + " prefix is not specified");
         }
 
-        if (prefix == null) {
-            prefix = name + ".";
-        } else {
-            prefix = prefix + ".";
-        }
+        prefix = prefix + ".";
 
         if (mainClass != null) {
             out.println(prefix + "main.class = " + mainClass);

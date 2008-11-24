@@ -737,16 +737,12 @@ public class Cluster {
      */
     void save(PrintWriter out, String prefix, boolean printComments)
             throws Exception {
-        if (prefix == null && (name == null || name.length() == 0)) {
+        if (prefix == null) {
             throw new Exception("cannot print cluster to file,"
-                    + " name is not specified");
+                    + " prefix is not specified");
         }
 
-        if (prefix == null) {
-            prefix = name + ".";
-        } else {
-            prefix = prefix + ".";
-        }
+        prefix = prefix + ".";
 
         if (serverAdaptor != null) {
             out.println(prefix + "server.adaptor = " + serverAdaptor);

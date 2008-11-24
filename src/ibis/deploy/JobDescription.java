@@ -101,14 +101,14 @@ public class JobDescription {
      * 
      * @param name
      *            the name of the job
-     * @throws Exception
+     * @throws NullPointerException
      *             if the name given is <code>null</code>
      */
-    JobDescription(String name, Experiment parent) throws Exception {
+    JobDescription(String name, Experiment parent) throws NullPointerException {
         this.parent = parent;
 
         if (name == null) {
-            throw new Exception("no name specified for job");
+            throw new NullPointerException("no name specified for job");
         }
         this.name = name;
 
@@ -572,16 +572,12 @@ public class JobDescription {
      *             if this job has no name
      */
     public void save(PrintWriter out, String prefix) throws Exception {
-        if (prefix == null && (name == null || name.length() == 0)) {
+        if (prefix == null) {
             throw new Exception("cannot print job description to file,"
                     + " name is not specified");
         }
 
-        if (prefix == null) {
-            prefix = name + ".";
-        } else {
-            prefix = prefix + ".";
-        }
+        prefix = prefix + ".";
 
         if (applicationName == null) {
             out.println("#" + prefix + "application.name =");

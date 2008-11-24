@@ -50,6 +50,37 @@ public class Util {
     }
 
     /**
+     * Finds a list of clusters, jobs or application in a list of properties
+     * 
+     * Each unique string in the set of keys(cut on the first ".") starting with
+     * the given prefix is returned, except for "default"
+     * 
+     * @param properties
+     *            to search for elements in.
+     * 
+     * @param prefix
+     *            prefix to filter on
+     * 
+     * @return the set of elements
+     */
+    public static String[] getElementList(Properties properties, String prefix) {
+        Set<String> result = new HashSet<String>();
+
+        for (String key : properties.stringPropertyNames()) {
+            if (key.startsWith(prefix)) {
+                key = key.substring(prefix.length());
+                // add part of key before the first period to the result
+                result.add(key.split("\\.")[0]);
+            }
+        }
+
+        // make sure "default" is not in the list
+        result.remove("default");
+
+        return result.toArray(new String[0]);
+    }
+
+    /**
      * Extracts a URI property from a properties object
      * 
      * @param properties
