@@ -95,6 +95,8 @@ public class Experiment {
      */
     public Experiment(TypedProperties properties, String name, String prefix)
             throws Exception {
+        this.name = name;
+        
         if (prefix != null) {
             prefix = prefix + ".";
         }
