@@ -70,6 +70,7 @@ public class Grid {
      *            properties of the grid
      * @param prefix
      *            prefix to use on all keys
+     * @throws Exception if cluster cannot be read properly
      * 
      */
     public Grid(TypedProperties properties, String prefix) throws Exception {

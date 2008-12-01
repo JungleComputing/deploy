@@ -276,7 +276,7 @@ public class JobDescription {
      * 
      * @return application object used for "overriding" application settings.
      */
-    public Application getApplicationSettings() {
+    public Application getApplicationOverrides() {
         return applicationOverrides;
     }
 
@@ -323,7 +323,7 @@ public class JobDescription {
      * 
      * @return cluster object used for "overriding" cluster settings.
      */
-    public Cluster getClusterSettings() {
+    public Cluster getClusterOverrides() {
         return clusterOverrides;
     }
 

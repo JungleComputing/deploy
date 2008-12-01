@@ -4,8 +4,6 @@ import ibis.server.remote.RemoteClient;
 import ibis.util.ThreadPool;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;

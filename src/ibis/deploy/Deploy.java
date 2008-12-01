@@ -272,7 +272,7 @@ public class Deploy {
 
         RemoteServer hub = null;
         if (description.getSharedHub() == null || description.getSharedHub()) {
-            hub = getHub(description.getClusterSettings(), false, hubListener);
+            hub = getHub(description.getClusterOverrides(), false, hubListener);
         }
 
         // start job

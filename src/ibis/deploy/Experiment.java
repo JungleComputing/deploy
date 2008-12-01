@@ -91,6 +91,7 @@ public class Experiment {
      *            name of the experiment
      * @param prefix
      *            prefix to use on all keys
+     * @throws Exception if job cannot be read properly
      * 
      */
     public Experiment(TypedProperties properties, String name, String prefix)

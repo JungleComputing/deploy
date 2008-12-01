@@ -95,8 +95,8 @@ public class Job implements Runnable {
             MetricListener jobListener, MetricListener hubListener)
             throws Exception {
         this.description = description;
-        this.cluster = description.getClusterSettings();
-        this.application = description.getApplicationSettings();
+        this.cluster = description.getClusterOverrides();
+        this.application = description.getApplicationOverrides();
         this.serverAddress = serverAddress;
         this.rootHub = rootHub;
         this.sharedHub = hub;
@@ -422,7 +422,7 @@ public class Job implements Runnable {
             JavaSoftwareDescription sd) throws Exception {
         org.gridlab.gat.resources.JobDescription result;
 
-        File wrapperScript = description.getClusterSettings()
+        File wrapperScript = description.getClusterOverrides()
                 .getJobWrapperScript();
 
         if (wrapperScript == null) {
@@ -497,7 +497,7 @@ public class Job implements Runnable {
 
             if (hub == null) {
                 // start a hub especially for this job
-                hub = new RemoteServer(description.getClusterSettings(), true,
+                hub = new RemoteServer(description.getClusterOverrides(), true,
                         rootHub, deployHomeDir, hubListener, keepSandbox);
             }
             // wait until hub really running
@@ -518,7 +518,7 @@ public class Job implements Runnable {
             logger.info("JavaGAT job description for " + this + " =" + jobDescription);
 
             ResourceBroker jobBroker = GAT.createResourceBroker(context,
-                    description.getClusterSettings().getJobURI());
+                    description.getClusterOverrides().getJobURI());
 
             org.gridlab.gat.resources.Job gatJob = jobBroker.submitJob(
                     jobDescription, listeners, "job.status");
