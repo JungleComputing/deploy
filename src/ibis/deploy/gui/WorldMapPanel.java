@@ -58,59 +58,6 @@ public class WorldMapPanel extends JPanel {
 
     private Set<Waypoint> waypoints = new HashSet<Waypoint>();
 
-    private static List<JXMapKit> mapKits = new ArrayList<JXMapKit>();
-
-    private static TileFactory defaultTileFactory = GoogleMapTerrainTileProvider
-            .getDefaultTileFactory();
-
-    private static JMenu mapMenu = new JMenu("Map Tile Provider");
-
-    static {
-
-        ButtonGroup group = new ButtonGroup();
-        JRadioButtonMenuItem mapMenuItem = new JRadioButtonMenuItem(
-                "Google Terrain", true);
-        mapMenuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                defaultTileFactory = GoogleMapTerrainTileProvider
-                        .getDefaultTileFactory();
-                updateMapTileFactory();
-            }
-        });
-        group.add(mapMenuItem);
-        mapMenu.add(mapMenuItem);
-        mapMenuItem = new JRadioButtonMenuItem("Google Street");
-        mapMenuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                defaultTileFactory = GoogleMapStreetTileProvider
-                        .getDefaultTileFactory();
-                updateMapTileFactory();
-            }
-        });
-        group.add(mapMenuItem);
-        mapMenu.add(mapMenuItem);
-        mapMenuItem = new JRadioButtonMenuItem("Microsoft");
-        mapMenuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                defaultTileFactory = MicrosoftMapTileProvider
-                        .getDefaultTileFactory();
-                updateMapTileFactory();
-            }
-        });
-        group.add(mapMenuItem);
-        mapMenu.add(mapMenuItem);
-        mapMenuItem = new JRadioButtonMenuItem("Open Street Maps");
-        mapMenuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                defaultTileFactory = OpenStreetMapTileProvider
-                        .getDefaultTileFactory();
-                updateMapTileFactory();
-            }
-        });
-        group.add(mapMenuItem);
-        mapMenu.add(mapMenuItem);
-    }
-
     public WorldMapPanel(final GUI gui) {
         JMenuBar menuBar = gui.getMenuBar();
         JMenu menu = null;
@@ -121,18 +68,18 @@ public class WorldMapPanel extends JPanel {
         }
         if (menu == null) {
             menu = new JMenu("View");
-            menu.add(mapMenu);
-            menuBar.add(menu);
+            menu.add(MapUtilities.getMapMenu());
+            menuBar.add(menu, Math.max(0, menuBar.getMenuCount() - 1));
         } else {
             boolean found = false;
             for (int i = 0; i < menu.getComponentCount(); i++) {
-                if (menu.getComponent(i) == mapMenu) {
+                if (menu.getComponent(i) == MapUtilities.getMapMenu()) {
                     found = true;
                     break;
                 }
             }
             if (!found) {
-                menu.add(mapMenu);
+                menu.add(MapUtilities.getMapMenu());
             }
         }
 
@@ -220,13 +167,13 @@ public class WorldMapPanel extends JPanel {
                 }
             }
         };
-        mapKits.add(mapKit);
+        MapUtilities.register(mapKit);
         add(mapKit);
-        mapKit.setTileFactory(defaultTileFactory);
+        mapKit.setTileFactory(MapUtilities.getDefaultTileFactory());
         mapKit.setMiniMapVisible(false);
         mapKit.setAddressLocationShown(false);
-        mapKit.getMainMap().setZoom(INITIAL_MAP_ZOOM);
-        mapKit.getMainMap().setCenterPosition(INITIAL_MAP_CENTER);
+        mapKit.getMainMap().setZoom(MapUtilities.INITIAL_MAP_ZOOM);
+        mapKit.getMainMap().setCenterPosition(MapUtilities.INITIAL_MAP_CENTER);
 
         for (Cluster cluster : gui.getGrid().getClusters()) {
             waypoints.add(new ClusterWaypoint(cluster, false));
@@ -323,16 +270,6 @@ public class WorldMapPanel extends JPanel {
 
     }
 
-    protected static void updateMapTileFactory() {
-        for (JXMapKit mapKit : mapKits) {
-
-            GeoPosition position = mapKit.getMainMap().getCenterPosition();
-            mapKit.setTileFactory(defaultTileFactory);
-            mapKit.getMainMap().setCenterPosition(position);
-        }
-
-    }
-
     protected void setResourceCount(int resourceCount) {
         if (selectedWaypoint != null) {
             selectedWaypoint.setResourceCount(resourceCount);
@@ -378,7 +315,7 @@ public class WorldMapPanel extends JPanel {
         private Dimension offset = new Dimension(0, 0);
 
         public ClusterWaypoint(Cluster cluster, boolean selected) {
-            super(cluster.getLongitude(), cluster.getLatitude());
+            super(cluster.getLatitude(), cluster.getLongitude());
             this.selected = selected;
             this.cluster = cluster;
             this.resourceCount = 1;
@@ -576,7 +513,11 @@ public class WorldMapPanel extends JPanel {
     }
 
     public int getResourceCount() {
-        return selectedWaypoint.getResourceCount();
+        if (selectedWaypoint != null) {
+            return selectedWaypoint.getResourceCount();
+        } else {
+            return 1;
+        }
     }
 
 }

@@ -14,19 +14,21 @@ public class RootPanel extends JPanel {
 
     public RootPanel(GUI gui) {
         setLayout(new BorderLayout());
-        add(new ToolBar(gui), BorderLayout.NORTH);
         JTabbedPane tabs = new JTabbedPane();
-        tabs.add("experiments", new ExperimentsPanel(gui));
-        tabs.add("applications", new ApplicationEditorPanel(gui));
-        tabs.add("clusters", new ClusterEditorPanel(gui));
+        tabs.add(new ExperimentsPanel(gui));
+        tabs.setTabComponentAt(0, new TabTitlePanel("Experiment", GUIUtils
+                .createImageIcon("images/utilities-system-monitor.png",
+                        "Experiment Tab")));
+        tabs.add(new ApplicationEditorPanel(gui));
+        tabs.setTabComponentAt(1, new TabTitlePanel("Applications", GUIUtils
+                .createImageIcon("images/applications-other.png",
+                        "Applications Tab")));
+        tabs.add(new ClusterEditorPanel(gui));
+        tabs.setTabComponentAt(2, new TabTitlePanel("Clusters", GUIUtils
+                .createImageIcon("images/network-transmit-receive.png",
+                        "Clusters Tab")));
         add(tabs, BorderLayout.CENTER);
 
     }
-
-    // menu bar
-
-    // tool bar (with icons)
-
-    // tabbed pane
 
 }

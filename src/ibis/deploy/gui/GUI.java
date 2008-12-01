@@ -5,9 +5,12 @@ import ibis.deploy.Deploy;
 import ibis.deploy.Experiment;
 import ibis.deploy.Grid;
 import ibis.deploy.JobDescription;
+import ibis.deploy.Workspace;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -17,8 +20,8 @@ import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.JSeparator;
 import javax.swing.UIManager;
 
 public class GUI {
@@ -43,7 +46,7 @@ public class GUI {
 
     private Boolean sharedHubs;
 
-    // private JobDescription currentJobDescription = new JobDescription();
+    private static final File DEFAULT_WORKSPACE = new File("default.workspace");
 
     /**
      * @param args
@@ -52,6 +55,17 @@ public class GUI {
         JPopupMenu.setDefaultLightWeightPopupEnabled(false);
 
         final GUI gui = new GUI(args);
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                try {
+                    gui.getWorkSpace().save(DEFAULT_WORKSPACE);
+                    gui.getDeploy().end();
+                } catch (Exception e) {
+                    e.printStackTrace(System.err);
+                }
+            }
+        });
+
         // Schedule a job for the event-dispatching thread:
         // creating and showing this application's GUI.
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
@@ -67,36 +81,47 @@ public class GUI {
         final JFrame frame = new JFrame("Ibis Deploy");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setIconImage(GUIUtils.createImageIcon(
-            "images/ibis-logo-left.png", null).getImage());
+                "images/ibis-logo-left.png", null).getImage());
 
         gui.menuBar = new JMenuBar();
         JMenu menu = new JMenu("File");
-        menu.add("Exit");
+        JMenuItem menuItem = new JMenuItem("Exit");
+        menu.add(menuItem);
+        menuItem.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent arg0) {
+                System.exit(0);
+            }
+        });
+
         gui.menuBar.add(menu);
         menu = new JMenu("Workspaces");
-        menu.add("Save workspace as ...");
-        menu.add("Switch workspace");
-        menu.add(new JSeparator());
-        JMenu subMenu = new JMenu("Grid workspace");
-        subMenu.add(new SaveGridWorkSpaceAction("Save workspace as ...", frame,
-                gui));
-        subMenu.add(new SwitchGridWorkSpaceAction("Switch workspace", frame,
-                gui));
 
-        menu.add(subMenu);
-        subMenu = new JMenu("Application workspace");
+        JMenu subMenu = new JMenu("Save as ...");
+        subMenu.add(new SaveWorkSpaceAction("Entire Workspace", frame, gui));
+        subMenu.add(new SaveGridWorkSpaceAction("Grid Workspace", frame, gui));
         subMenu.add(new SaveApplicationSetWorkSpaceAction(
-                "Save workspace as ...", frame, gui));
-        subMenu.add(new SwitchApplicationSetWorkSpaceAction("Switch workspace",
+                "Application Workspace", frame, gui));
+        subMenu.add(new SaveExperimentWorkSpaceAction("Experiment Workspace",
                 frame, gui));
         menu.add(subMenu);
-        subMenu = new JMenu("Experiment workspace");
-        subMenu.add(new SaveExperimentWorkSpaceAction("Save workspace as ...",
-                frame, gui));
-        subMenu.add(new SwitchExperimentWorkSpaceAction("Switch workspace",
+
+        subMenu = new JMenu("Switch");
+        subMenu.add(new SwitchWorkSpaceAction("Entire Workspace", frame, gui));
+        subMenu
+                .add(new SwitchGridWorkSpaceAction("Grid Workspace", frame, gui));
+        subMenu.add(new SwitchApplicationSetWorkSpaceAction(
+                "Application Workspace", frame, gui));
+        subMenu.add(new SwitchExperimentWorkSpaceAction("Experiment Workspace",
                 frame, gui));
         menu.add(subMenu);
+
         gui.menuBar.add(menu);
+
+        menu = new JMenu("Help");
+        menu.add(new AboutAction(frame));
+
+        gui.menuBar.add(menu, -1);
 
         frame.setJMenuBar(gui.menuBar);
 
@@ -114,7 +139,14 @@ public class GUI {
         File gridFile = null;
         File applicationsFile = null;
         File experimentFile = null;
+        File workSpaceFile = null;
         boolean verbose = false;
+
+        if (arguments.length == 0) {
+            if (DEFAULT_WORKSPACE.exists()) {
+                workSpaceFile = DEFAULT_WORKSPACE;
+            }
+        }
 
         for (int i = 0; i < arguments.length; i++) {
             if (arguments[i].equals("-g")) {
@@ -125,13 +157,51 @@ public class GUI {
                 applicationsFile = new File(arguments[i]);
             } else if (arguments[i].equals("-v")) {
                 verbose = true;
+            } else if (arguments[i].equals("-w")) {
+                i++;
+                workSpaceFile = new File(arguments[i]);
             } else {
                 experimentFile = new File(arguments[i]);
             }
         }
 
+        if (workSpaceFile == null) {
+            // do nothing, there might be separate grid, applications and
+            // experiment files
+        } else {
+            if (!workSpaceFile.isFile()) {
+                System.err
+                        .println("DEPLOY: Specified workspace file: \""
+                                + workSpaceFile
+                                + "\" does not exist or is a directory");
+                System.exit(1);
+            }
+
+            try {
+                Workspace workSpace = new Workspace(workSpaceFile);
+                grid = workSpace.getGrid();
+                applications = workSpace.getApplications();
+                experiment = workSpace.getExperiment();
+            } catch (FileNotFoundException e) {
+                System.err.println("Exception for file '" + workSpaceFile
+                        + "': " + e);
+            } catch (Exception e) {
+                System.err.println("Exception for file '" + workSpaceFile
+                        + "': " + e);
+            }
+
+            if (verbose) {
+                System.err.println("Workspace:");
+                System.err.println(grid.toPrintString());
+                System.err.println(applications.toPrintString());
+                System.err.println(experiment.toPrintString());
+            }
+        }
+
         if (gridFile == null) {
-            grid = new Grid();
+            if (grid == null) {
+                grid = new Grid();
+            }
         } else {
             if (!gridFile.isFile()) {
                 System.err.println("DEPLOY: Specified grid file: \"" + gridFile
@@ -156,7 +226,9 @@ public class GUI {
         }
 
         if (applicationsFile == null) {
-            applications = new ApplicationSet();
+            if (applications == null) {
+                applications = new ApplicationSet();
+            }
         } else {
             if (!applicationsFile.isFile()) {
                 System.err.println("DEPLOY: Specified applications file: \""
@@ -205,7 +277,7 @@ public class GUI {
                 System.err.println("DEPLOY: Experiment:");
                 System.err.println(experiment.toPrintString());
             }
-        } else {
+        } else if (experiment == null) {
             try {
                 experiment = new Experiment("default");
             } catch (Exception e) {
@@ -253,9 +325,13 @@ public class GUI {
 
     }
 
-    // protected JobDescription getCurrentJobDescription() {
-    // return currentJobDescription;
-    // }
+    protected Workspace getWorkSpace() {
+        Workspace wp = new Workspace(getExperiment().getName());
+        wp.setExperiment(getExperiment());
+        wp.setApplications(getApplicationSet());
+        wp.setGrid(getGrid());
+        return wp;
+    }
 
     public JMenuBar getMenuBar() {
         return menuBar;

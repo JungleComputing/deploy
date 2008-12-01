@@ -1,5 +1,7 @@
 package ibis.deploy.gui;
 
+import ibis.deploy.Application;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -29,6 +31,7 @@ public class AdvancedSettingsPanel extends JPanel {
             }
 
         });
+
         final JButton closeButton = new JButton("close");
         closeButton.addActionListener(new ActionListener() {
 

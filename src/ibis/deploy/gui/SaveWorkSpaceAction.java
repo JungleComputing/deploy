@@ -8,13 +8,13 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
-public class SaveExperimentWorkSpaceAction extends AbstractAction {
+public class SaveWorkSpaceAction extends AbstractAction {
 
     private JFrame frame;
 
     private GUI gui;
 
-    public SaveExperimentWorkSpaceAction(String label, JFrame frame, GUI gui) {
+    public SaveWorkSpaceAction(String label, JFrame frame, GUI gui) {
         super(label);
         this.frame = frame;
         this.gui = gui;
@@ -27,17 +27,17 @@ public class SaveExperimentWorkSpaceAction extends AbstractAction {
                 if (chooser.getSelectedFile() != null) {
                     String fileName = chooser.getSelectedFile().getName();
                     if (fileName != null) {
-                        if (!fileName.endsWith(".experiment")) {
-                            fileName = fileName + ".experiment";
+                        if (!fileName.endsWith(".workspace")) {
+                            fileName = fileName + ".workspace";
                         }
-                        gui.getExperiment().save(new File(fileName));
+                        gui.getWorkSpace().save(new File(fileName));
                     }
                 } else {
                     throw new Exception("Please enter or select a file name!");
                 }
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(frame, e.getMessage(),
-                        "Saving experiment workspace failed",
+                        "Saving entire workspace failed",
                         JOptionPane.PLAIN_MESSAGE);
                 e.printStackTrace(System.err);
             }
