@@ -343,7 +343,12 @@ public class GUI {
     }
 
     protected Workspace getWorkSpace() {
-        Workspace wp = new Workspace(getExperiment().getName());
+        Workspace wp = null;
+        try {
+            wp = new Workspace(getExperiment().getName());
+        } catch (Exception e) {
+            // ignore experiment name will never be invalid
+        }
         wp.setExperiment(getExperiment());
         wp.setApplications(getApplicationSet());
         wp.setGrid(getGrid());

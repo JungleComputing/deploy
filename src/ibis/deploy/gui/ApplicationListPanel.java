@@ -27,7 +27,11 @@ public class ApplicationListPanel extends JPanel {
 
         setLayout(new BorderLayout());
         DefaultListModel model = new DefaultListModel();
-        gui.getApplicationSet().getDefaults().setName(DEFAULTS);
+        try {
+            gui.getApplicationSet().getDefaults().setName(DEFAULTS);
+        } catch (Exception e) {
+            // ignore
+        }
         model.addElement(gui.getApplicationSet().getDefaults());
 
         for (Application application : gui.getApplicationSet()

@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
@@ -77,9 +78,17 @@ public class ApplicationEditorTabPanel extends JPanel {
 
         applyButton.addActionListener(new ActionListener() {
 
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent event) {
                 if (!noNameEditor) {
-                    source.setName(nameEditor.getText());
+                    try {
+                        source.setName(nameEditor.getText());
+                    } catch (Exception e) {
+                        JOptionPane.showMessageDialog(getRootPane(), e
+                                .getMessage(), "Unable to apply changes",
+                                JOptionPane.PLAIN_MESSAGE);
+                        e.printStackTrace(System.err);
+                        return;
+                    }
                 }
                 source.setMainClass(mainEditor.getText());
                 source.setArguments(argumentsEditor.getTextArray());

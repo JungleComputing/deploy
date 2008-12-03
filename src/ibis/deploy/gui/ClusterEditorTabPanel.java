@@ -140,7 +140,15 @@ public class ClusterEditorTabPanel extends JPanel {
 
             public void actionPerformed(ActionEvent event) {
                 if (!defaultsEditor) {
-                    source.setName(nameEditor.getText());
+                    try {
+                        source.setName(nameEditor.getText());
+                    } catch (Exception e) {
+                        JOptionPane.showMessageDialog(getRootPane(), e
+                                .getMessage(), "Unable to apply changes",
+                                JOptionPane.PLAIN_MESSAGE);
+                        e.printStackTrace(System.err);
+                        return;
+                    }
                 }
                 source.setUserName(userNameEditor.getText());
                 if (jobURIEditor.getText() != null) {

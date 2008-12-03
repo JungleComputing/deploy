@@ -27,7 +27,11 @@ public class ClusterListPanel extends JPanel {
 
         setLayout(new BorderLayout());
         DefaultListModel model = new DefaultListModel();
-        gui.getGrid().getDefaults().setName(DEFAULTS);
+        try {
+            gui.getGrid().getDefaults().setName(DEFAULTS);
+        } catch (Exception e) {
+            // ignore
+        }
         model.addElement(gui.getGrid().getDefaults());
 
         for (Cluster cluster : gui.getGrid().getClusters()) {
