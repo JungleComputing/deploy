@@ -126,20 +126,8 @@ public class Cluster {
      */
     Cluster(String name, Grid parent) throws Exception {
         this.parent = parent;
-        this.name = name;
-
-        if (name == null) {
-            throw new Exception("no name specified for cluster");
-        }
-
-        if (name.contains(".")) {
-            throw new Exception("cluster name cannot contain periods : \""
-                    + name + "\"");
-        }
-        if (name.contains(" ")) {
-            throw new Exception("cluster name cannot contain spaces : \""
-                    + name + "\"");
-        }
+        
+        setName(name);
 
         serverAdaptor = null;
         serverURI = null;
@@ -162,7 +150,7 @@ public class Cluster {
      * 
      */
     Cluster() {
-        name = null;
+        name = "anonymous";
         parent = null;
         serverAdaptor = null;
         serverURI = null;
@@ -192,12 +180,12 @@ public class Cluster {
      *            prefix used for all keys
      * 
      * @throws Exception
-     *             if cluster cannot be read properly
+     *             if cluster cannot be read properly, or its name is invalid
      */
     Cluster(TypedProperties properties, String name, String prefix, Grid parent)
             throws Exception {
         this.parent = parent;
-        this.name = name;
+        setName(name);
 
         // add separator to prefix
         prefix = prefix + ".";
@@ -323,8 +311,23 @@ public class Cluster {
      * 
      * @param name
      *            the new name of this cluster
+     *            
+     * @throws Exception if the name is invalid
      */
-    public void setName(String name) {
+    public void setName(String name) throws Exception {
+        if (name == null) {
+            throw new Exception("no name specified for cluster");
+        }
+
+        if (name.contains(".")) {
+            throw new Exception("cluster name cannot contain periods : \""
+                    + name + "\"");
+        }
+        if (name.contains(" ")) {
+            throw new Exception("cluster name cannot contain spaces : \""
+                    + name + "\"");
+        }
+        
         this.name = name;
     }
 

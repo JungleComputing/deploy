@@ -81,7 +81,7 @@ public class JobDescription {
      * Create an empty job description
      */
     JobDescription() {
-        name = null;
+        name = "anonymous";
         parent = null;
         applicationName = null;
         applicationOverrides = new Application();
@@ -101,22 +101,23 @@ public class JobDescription {
      * 
      * @param name
      *            the name of the job
-     * @throws NullPointerException
-     *             if the name given is <code>null</code>
+     * @throws Exception if name is unspecified, or contains periods or spaces
      */
-    JobDescription(String name, Experiment parent) throws NullPointerException {
+    JobDescription(String name, Experiment parent) throws Exception {
         this.parent = parent;
 
-        if (name == null) {
-            throw new NullPointerException("no name specified for job");
-        }
-        this.name = name;
+        setName(name);
 
         applicationName = null;
         applicationOverrides = new Application();
         processCount = 0;
         clusterName = null;
-        clusterOverrides = new Cluster();
+        try {
+            clusterOverrides = new Cluster("overrides", null);
+        } catch (Exception e) {
+            //should not happen
+            throw new RuntimeException(e);
+        }
         resourceCount = 0;
         runtime = 0;
         poolName = null;
@@ -138,7 +139,8 @@ public class JobDescription {
     JobDescription(TypedProperties properties, String name, String prefix,
             Experiment parent) throws Exception {
         this.parent = parent;
-        this.name = name;
+        
+        setName(name);
 
         // add separator to prefix
         prefix = prefix + ".";
@@ -247,8 +249,23 @@ public class JobDescription {
      * 
      * @param name
      *            the name of this job.
+     *            
+     * @throws Exception if name is null, or contains periods or spaces
      */
-    public void setName(String name) {
+    public void setName(String name) throws Exception {
+        if (name == null) {
+            throw new Exception("no name specified for job");
+        }
+
+        if (name.contains(".")) {
+            throw new Exception("job name cannot contain periods : \""
+                    + name + "\"");
+        }
+        if (name.contains(" ")) {
+            throw new Exception("job name cannot contain spaces : \""
+                    + name + "\"");
+        }
+        
         this.name = name;
     }
 

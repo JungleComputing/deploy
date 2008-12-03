@@ -27,10 +27,10 @@ public class Workspace {
      * 
      * @param experimentName
      *                the name of the experiment in the workspace.
-     * @throws NullPointerException
-     *                 if the experiment name is <code>null</code>
+     * @throws Exception
+     *                 if the experiment name is <code>null</code>, or contains periods or spaces
      */
-    public Workspace(String experimentName) {
+    public Workspace(String experimentName) throws Exception {
         grid = new Grid();
         applications = new ApplicationSet();
         experiment = new Experiment(experimentName);

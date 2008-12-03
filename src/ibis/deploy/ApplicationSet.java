@@ -70,13 +70,14 @@ public class ApplicationSet {
      *            properties of the applicationSet
      * @param prefix
      *            prefix to use on all keys
+     * @throws Exception if the applications cannot be initialized
      */
-    public ApplicationSet(TypedProperties properties, String prefix) {
+    public ApplicationSet(TypedProperties properties, String prefix) throws Exception {
         if (prefix != null) {
             prefix = prefix + ".";
         }
         
-        defaults = new Application(properties, null, prefix + "default", this);
+        defaults = new Application(properties, "defaults", prefix + "default", this);
 
         applications = new ArrayList<Application>();
 

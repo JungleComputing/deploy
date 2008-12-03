@@ -77,7 +77,7 @@ public class Application {
      */
     Application() {
         parent = null;
-        name = null;
+        name = "anonymous";
         libs = null;
         mainClass = null;
         arguments = null;
@@ -98,17 +98,8 @@ public class Application {
      */
     Application(String name, ApplicationSet parent) throws Exception {
         this.parent = parent;
-        this.name = name;
+        setName(name);
 
-        if (name != null && name.contains(".")) {
-            throw new Exception("application name cannot contain periods : \""
-                    + name + "\"");
-        }
-
-        if (name != null && name.contains(" ")) {
-            throw new Exception("application name cannot contain spaces : \""
-                    + name + "\"");
-        }
 
         libs = null;
         mainClass = null;
@@ -130,12 +121,12 @@ public class Application {
      * @param prefix
      *            prefix used for loading application
      * @throws Exception
-     *             if application cannot be read properly
+     *             if application cannot be read properly, or its name is invalid
      */
     Application(TypedProperties properties, String name, String prefix,
-            ApplicationSet parent) {
+            ApplicationSet parent) throws Exception {
         this.parent = parent;
-        this.name = name;
+        setName(name);
 
         // add separator to prefix
         prefix = prefix + ".";
@@ -229,8 +220,23 @@ public class Application {
      * 
      * @param name
      *            name of this application.
+     * @throws Exception if the name contains spaces or periods
      */
-    public void setName(String name) {
+    public void setName(String name) throws Exception {
+        if (name == null) {
+            throw new Exception("application name cannot be null");
+        }
+        
+        if (name.contains(".")) {
+            throw new Exception("application name cannot contain periods : \""
+                    + name + "\"");
+        }
+
+        if (name.contains(" ")) {
+            throw new Exception("application name cannot contain spaces : \""
+                    + name + "\"");
+        }
+
         this.name = name;
     }
 

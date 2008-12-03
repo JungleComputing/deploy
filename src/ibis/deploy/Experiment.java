@@ -120,10 +120,10 @@ public class Experiment {
      * 
      * @param name
      *            the name of the experiment
-     * @throws NullPointerException
-     *             if the name is <code>null</code>
+     * @throws Exception
+     *             if the name is <code>null</code>, or contains periods or spaces
      */
-    public Experiment(String name) throws NullPointerException {
+    public Experiment(String name) throws Exception {
         if (name == null) {
             throw new NullPointerException("no name specified for experiment");
         }
