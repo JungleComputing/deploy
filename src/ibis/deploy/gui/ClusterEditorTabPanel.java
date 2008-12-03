@@ -9,6 +9,7 @@ import java.net.URISyntaxException;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -33,7 +34,7 @@ public class ClusterEditorTabPanel extends JPanel {
 
     public ClusterEditorTabPanel(final Cluster source,
             final ClusterEditorPanel clusterEditorPanel, final GUI gui,
-            final boolean noNameEditor) {
+            final boolean defaultsEditor) {
         setLayout(new BorderLayout());
 
         Cluster defaults = source.getGrid().getDefaults();
@@ -43,8 +44,8 @@ public class ClusterEditorTabPanel extends JPanel {
         JPanel formPanel = new JPanel();
         formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.PAGE_AXIS));
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
-        final TextEditor nameEditor = (noNameEditor) ? null : new TextEditor(
-                formPanel, "Name: ", source.getName(), defaults.getName());
+        final TextEditor nameEditor = (defaultsEditor) ? null : new TextEditor(
+                formPanel, "Name: ", source.getName(), "");
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
         final NumberEditor nodesEditor = new NumberEditor(formPanel, "Nodes: ",
                 source.getNodes(), defaults.getNodes());
@@ -104,9 +105,9 @@ public class ClusterEditorTabPanel extends JPanel {
                 "Job Wrapper Script: ", source.getJobWrapperScript(), defaults
                         .getJobWrapperScript());
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
-        final TextComboBoxEditor serverAdaptorEditor = new TextComboBoxEditor(formPanel,
-                "Server Adaptor: ", source.getServerAdaptor(), defaults
-                        .getServerAdaptor(), jobAdaptors);
+        final TextComboBoxEditor serverAdaptorEditor = new TextComboBoxEditor(
+                formPanel, "Server Adaptor: ", source.getServerAdaptor(),
+                defaults.getServerAdaptor(), jobAdaptors);
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
 
         final TextEditor serverURIEditor = new TextEditor(formPanel,
@@ -127,6 +128,8 @@ public class ClusterEditorTabPanel extends JPanel {
                 JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
+        add(new JLabel("check to overwrite the default values"),
+                BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
 
         JButton applyButton = new JButton("Apply");
@@ -136,7 +139,7 @@ public class ClusterEditorTabPanel extends JPanel {
         applyButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                if (!noNameEditor) {
+                if (!defaultsEditor) {
                     source.setName(nameEditor.getText());
                 }
                 source.setUserName(userNameEditor.getText());
@@ -181,4 +184,5 @@ public class ClusterEditorTabPanel extends JPanel {
 
         });
     }
+
 }

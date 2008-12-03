@@ -44,9 +44,6 @@ public class SubmitExistingJobAction extends AbstractAction {
     public void actionPerformed(ActionEvent event) {
         int endRow = untilLastRow ? model.getRowCount() - 1 : startRow;
         int[] selectedRows = table.getSelectedRows();
-        for (int selectedRow : selectedRows) {
-            System.out.println("selected row: " + selectedRow);
-        }
         for (int row = startRow; row <= endRow; row++) {
             if (onlySelectedRows) {
                 // ! selected
@@ -54,17 +51,14 @@ public class SubmitExistingJobAction extends AbstractAction {
                 for (int selectedRow : selectedRows) {
                     selected = (selectedRow == row);
                     if (selected) {
-                        System.out.println("found for row: " + row);
                         break;
                     }
                 }
                 if (!selected) {
-                    System.out.println("stop for row: " + row);
                     continue;
                 }
 
             }
-            System.out.println("go on for row: " + row);
             Object object = model.getValueAt(row, 0);
             JobDescription jd = null;
             if (object instanceof Job) {
@@ -82,14 +76,14 @@ public class SubmitExistingJobAction extends AbstractAction {
 
                             public void processMetricEvent(MetricEvent event) {
                                 model.setValueAt(event.getValue().toString(),
-                                        rowValue, 2);
+                                        rowValue, 3);
                             }
 
                         }, new MetricListener() {
 
                             public void processMetricEvent(MetricEvent event) {
                                 model.setValueAt(event.getValue().toString(),
-                                        rowValue, 3);
+                                        rowValue, 4);
                             }
 
                         });

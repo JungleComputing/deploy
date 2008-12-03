@@ -4,8 +4,6 @@ import ibis.deploy.Application;
 import ibis.deploy.JobDescription;
 
 import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.JComboBox;
 import javax.swing.JLabel;

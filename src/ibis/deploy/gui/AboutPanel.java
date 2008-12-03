@@ -1,18 +1,85 @@
 package ibis.deploy.gui;
 
-import javax.swing.JLabel;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+
+import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 public class AboutPanel extends JPanel {
 
     public AboutPanel() {
-        add(new JLabel("Ibis Deploy"));
-        add(GUIUtils.createImageLabel("images/ibis-logo-left.png",
-                "www.cs.vu.nl/ibis"));
-        add(GUIUtils.createImageLabel("images/ibis-logo-right.png",
-                "www.cs.vu.nl"));
-        add(GUIUtils.createImageLabel("images/JavaGAT.png",
-                "www.cs.vu.nl/javagat"));
-    }
+        JButton button = GUIUtils.createImageButton(
+                "images/ibis-logo-left.png", "www.cs.vu.nl/ibis", null);
+        add(button);
+        button.addActionListener(new ActionListener() {
 
+            public void actionPerformed(ActionEvent arg0) {
+                try {
+                    java.awt.Desktop.getDesktop().browse(
+                            new URI("http://www.cs.vu.nl/ibis"));
+                } catch (IOException e) {
+                    JOptionPane.showMessageDialog(AboutPanel.this, e
+                            .getMessage(),
+                            "Failed to open http://www.cs.vu.nl/ibis",
+                            JOptionPane.PLAIN_MESSAGE);
+                    e.printStackTrace(System.err);
+                } catch (URISyntaxException e) {
+                    // ignore
+                }
+
+            }
+
+        });
+        button = GUIUtils.createImageButton("images/ibis-logo-middle.png",
+                "www.cs.vu.nl/ibis", null);
+        add(button);
+        button.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent arg0) {
+                try {
+                    java.awt.Desktop.getDesktop().browse(
+                            new URI("http://www.cs.vu.nl/ibis/contact.html"));
+                } catch (IOException e) {
+                    JOptionPane
+                            .showMessageDialog(
+                                    AboutPanel.this,
+                                    e.getMessage(),
+                                    "Failed to open http://www.cs.vu.nl/ibis/contact.html",
+                                    JOptionPane.PLAIN_MESSAGE);
+                    e.printStackTrace(System.err);
+                } catch (URISyntaxException e) {
+                    // ignore
+                }
+            }
+        });
+
+        button = GUIUtils.createImageButton("images/ibis-logo-right.png",
+                "www.cs.vu.nl", null);
+        add(button);
+        button.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent arg0) {
+                try {
+                    java.awt.Desktop.getDesktop().browse(
+                            new URI("http://www.cs.vu.nl/"));
+                } catch (IOException e) {
+                    JOptionPane.showMessageDialog(AboutPanel.this, e
+                            .getMessage(),
+                            "Failed to open http://www.cs.vu.nl/",
+                            JOptionPane.PLAIN_MESSAGE);
+                    e.printStackTrace(System.err);
+                } catch (URISyntaxException e) {
+                    // ignore
+                }
+
+            }
+
+        });
+        add(button);
+    }
 }

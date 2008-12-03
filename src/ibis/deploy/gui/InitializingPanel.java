@@ -1,7 +1,6 @@
 package ibis.deploy.gui;
 
 import java.awt.BorderLayout;
-import java.awt.geom.Point2D;
 
 import javax.swing.JDialog;
 import javax.swing.JLabel;

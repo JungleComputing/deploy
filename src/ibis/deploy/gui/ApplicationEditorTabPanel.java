@@ -21,12 +21,12 @@ public class ApplicationEditorTabPanel extends JPanel {
     private static final long serialVersionUID = 1085273687721913236L;
 
     public ApplicationEditorTabPanel(final Application source,
-            final ApplicationEditorPanel applicationEditorPanel) {
-        this(source, applicationEditorPanel, false);
+            final ApplicationEditorPanel applicationEditorPanel, final GUI gui) {
+        this(source, applicationEditorPanel, gui, false);
     }
 
     public ApplicationEditorTabPanel(final Application source,
-            final ApplicationEditorPanel applicationEditorPanel,
+            final ApplicationEditorPanel applicationEditorPanel, final GUI gui,
             final boolean noNameEditor) {
         setLayout(new BorderLayout());
         Application defaults = source.getApplicationSet().getDefaults();
@@ -37,7 +37,7 @@ public class ApplicationEditorTabPanel extends JPanel {
         formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.PAGE_AXIS));
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
         final TextEditor nameEditor = (noNameEditor) ? null : new TextEditor(
-                formPanel, "Name: ", source.getName(), defaults.getName());
+                formPanel, "Name: ", source.getName(), "");
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
         final TextEditor mainEditor = new TextEditor(formPanel, "Main Class: ",
                 source.getMainClass(), defaults.getMainClass());
@@ -67,6 +67,8 @@ public class ApplicationEditorTabPanel extends JPanel {
                 JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
+        add(new JLabel("check to overwrite the default values"),
+                BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
 
         JButton applyButton = new JButton("Apply");

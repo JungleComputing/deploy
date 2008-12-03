@@ -1,7 +1,5 @@
 package ibis.deploy.gui;
 
-import ibis.deploy.Application;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 

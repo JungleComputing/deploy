@@ -13,11 +13,6 @@ import org.jdesktop.swingx.JXMapKit;
 import org.jdesktop.swingx.mapviewer.GeoPosition;
 import org.jdesktop.swingx.mapviewer.TileFactory;
 
-import deployer.gui.GoogleMapStreetTileProvider;
-import deployer.gui.GoogleMapTerrainTileProvider;
-import deployer.gui.MicrosoftMapTileProvider;
-import deployer.gui.OpenStreetMapTileProvider;
-
 public class MapUtilities {
 
     private static List<JXMapKit> mapKits = new ArrayList<JXMapKit>();

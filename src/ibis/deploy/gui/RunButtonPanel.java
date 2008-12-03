@@ -44,6 +44,7 @@ public class RunButtonPanel extends JPanel {
                     result = result.resolve(gui.getApplicationSet(), gui
                             .getGrid());
                     result.checkSettings();
+                    result.setSharedHub(gui.getSharedHubs());
                     model.addRow(result);
                     model.fireTableChanged(new TableModelEvent(model));
                 } catch (Exception e) {
@@ -73,14 +74,14 @@ public class RunButtonPanel extends JPanel {
 
                                 public void processMetricEvent(MetricEvent event) {
                                     model.setValueAt(event.getValue()
-                                            .toString(), row, 2);
+                                            .toString(), row, 3);
                                 }
 
                             }, new MetricListener() {
 
                                 public void processMetricEvent(MetricEvent event) {
                                     model.setValueAt(event.getValue()
-                                            .toString(), row, 3);
+                                            .toString(), row, 4);
                                 }
 
                             });

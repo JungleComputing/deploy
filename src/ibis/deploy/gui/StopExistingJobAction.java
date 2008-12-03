@@ -6,13 +6,8 @@ import ibis.deploy.JobDescription;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
-import javax.swing.JOptionPane;
 import javax.swing.JRootPane;
 import javax.swing.JTable;
-import javax.swing.event.TableModelEvent;
-
-import org.gridlab.gat.monitoring.MetricEvent;
-import org.gridlab.gat.monitoring.MetricListener;
 
 public class StopExistingJobAction extends AbstractAction {
 
@@ -44,9 +39,7 @@ public class StopExistingJobAction extends AbstractAction {
     public void actionPerformed(ActionEvent event) {
         int endRow = untilLastRow ? model.getRowCount() - 1 : startRow;
         int[] selectedRows = table.getSelectedRows();
-        for (int selectedRow : selectedRows) {
-            System.out.println("selected row: " + selectedRow);
-        }
+
         for (int row = startRow; row <= endRow; row++) {
             if (onlySelectedRows) {
                 // ! selected
@@ -54,12 +47,10 @@ public class StopExistingJobAction extends AbstractAction {
                 for (int selectedRow : selectedRows) {
                     selected = (selectedRow == row);
                     if (selected) {
-                        System.out.println("found for row: " + row);
                         break;
                     }
                 }
                 if (!selected) {
-                    System.out.println("stop for row: " + row);
                     continue;
                 }
             }

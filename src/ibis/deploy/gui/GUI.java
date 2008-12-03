@@ -17,11 +17,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.ButtonGroup;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.UIManager;
 
 public class GUI {
@@ -116,6 +118,21 @@ public class GUI {
                 frame, gui));
         menu.add(subMenu);
 
+        gui.menuBar.add(menu);
+
+        menu = new JMenu("Options");
+        subMenu = new JMenu("Hub Policy");
+        ButtonGroup hubPolicy = new ButtonGroup();
+        menuItem = new JRadioButtonMenuItem(new HubPolicyAction("Shared hubs",
+                true, gui));
+        menuItem.setSelected(true);
+        hubPolicy.add(menuItem);
+        subMenu.add(menuItem);
+        menuItem = new JRadioButtonMenuItem(new HubPolicyAction(
+                "One hub per job", false, gui));
+        hubPolicy.add(menuItem);
+        subMenu.add(menuItem);
+        menu.add(subMenu);
         gui.menuBar.add(menu);
 
         menu = new JMenu("Help");

@@ -1,7 +1,6 @@
 package ibis.deploy.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -10,114 +9,94 @@ import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 public class TextArrayEditor {
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 7635144209006171177L;
-
     private final List<JTextField> textFields = new ArrayList<JTextField>();
 
     private final List<JButton> removeButtons = new ArrayList<JButton>();
 
-    private boolean usingDefault;
+    private final JCheckBox useDefaultCheckBox = new JCheckBox();
+
+    private final JPanel arrayPanel = new JPanel();
+
+    private final JPanel addPanel = new JPanel(new BorderLayout());
+
+    private final JButton addButton = GUIUtils.createImageButton(
+            "images/list-add-small.png", "add a new item", null);
+
+    private final JLabel label = new JLabel("", JLabel.TRAILING);
+
+    private final String[] defaultValues;
+
+    private JPanel parent;
 
     public TextArrayEditor(final JPanel form, final String text,
             String[] values, String[] defaultValues) {
+        this.parent = form;
+        this.defaultValues = defaultValues;
+
         // determine whether this text editor holds a default value
-        usingDefault = (values == null && defaultValues != null);
+        boolean useDefault = (values == null && defaultValues != null);
 
-        // create the label
-        final JLabel label = new JLabel(text, JLabel.TRAILING);
-        if (usingDefault) {
-            label.setText("<html><i>" + text + "</i></html>");
-        }
-        // add a background color, which can only been seen if the default is
-        // used
-        label.setBackground(Color.lightGray);
-        label.setOpaque(usingDefault);
-
-        final ActionListener textFieldActionListener = new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                if (!usingDefault) {
-                    return;
-                }
-                // no longer using the default
-                usingDefault = false;
-                // and change the background of this label
-                label.setOpaque(usingDefault);
-                label.setText(text);
-                label.repaint();
-                // and remove all action listeners too
-                for (JTextField textField : textFields) {
-                    textField.removeActionListener(this);
-                }
+        // set the check box
+        useDefaultCheckBox
+                .setToolTipText("<html>enable for <code><i>default</i></code> value</html>");
+        // if the value is 'nullified' or 'denullified' enable or disable the
+        // editing components and invoke the edited method
+        useDefaultCheckBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                setUseDefault(!useDefaultCheckBox.isSelected());
             }
+        });
 
-        };
+        // initialize the components in enabled or disabled state
+        setUseDefault(useDefault);
 
         // set the text of the text fields to the appropriate values
-        final JPanel arrayPanel = new JPanel();
         arrayPanel.setLayout(new BoxLayout(arrayPanel, BoxLayout.PAGE_AXIS));
 
-        if (usingDefault) {
-            if (defaultValues != null) {
-                for (String value : defaultValues) {
-                    addField(value, arrayPanel, textFieldActionListener,
-                            usingDefault);
-                }
-            }
-        } else {
+        if (!useDefault) {
             if (values != null) {
                 for (String value : values) {
-                    addField(value, arrayPanel, textFieldActionListener,
-                            usingDefault);
+                    addField(value, arrayPanel);
                 }
             }
         }
 
-        JPanel container = new JPanel(new BorderLayout());
-
-        label.setPreferredSize(new Dimension(150,
-                label.getPreferredSize().height));
-
-        container.add(label, BorderLayout.WEST);
-        arrayPanel.setLayout(new BoxLayout(arrayPanel, BoxLayout.PAGE_AXIS));
-
-        JButton addButton = GUIUtils.createImageButton(
-                "images/list-add-small.png", "add a new item", null);
         addButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                addField(null, arrayPanel, textFieldActionListener,
-                        usingDefault);
-                form.getRootPane().repaint();
+                addField(null, arrayPanel);
+                setUseDefault(false);
+                arrayPanel.getRootPane().repaint();
             }
 
         });
-        addButton.addActionListener(textFieldActionListener);
 
-        JPanel newItemPanel = new JPanel(new BorderLayout());
-        newItemPanel.add(addButton, BorderLayout.WEST);
-        arrayPanel.add(newItemPanel);
+        addPanel.add(addButton, BorderLayout.WEST);
+        arrayPanel.add(addPanel);
+
+        JPanel container = new JPanel(new BorderLayout());
+        JPanel labelPanel = new JPanel(new BorderLayout());
+        labelPanel.add(useDefaultCheckBox, BorderLayout.WEST);
+        labelPanel.add(label, BorderLayout.EAST);
+        container.add(labelPanel, BorderLayout.WEST);
+        label.setText(text);
         label.setLabelFor(arrayPanel);
-        container.add(arrayPanel);
-        form.add(container, BorderLayout.CENTER);
+        label.setPreferredSize(new Dimension(150,
+                label.getPreferredSize().height));
+        container.add(arrayPanel, BorderLayout.CENTER);
+        form.add(container);
     }
 
-    private void addField(String value, final JPanel panel,
-            ActionListener listener, boolean usingDefault) {
+    private void addField(String value, final JPanel panel) {
         final JPanel arrayItemPanel = new JPanel(new BorderLayout());
         final JTextField textField = new JTextField(value);
-        if (usingDefault) {
-            textField.addActionListener(listener);
-        }
-        textField.setPreferredSize(new Dimension(Integer.MAX_VALUE, 12));
         textFields.add(textField);
         arrayItemPanel.add(textField, BorderLayout.CENTER);
 
@@ -128,22 +107,18 @@ public class TextArrayEditor {
 
             public void actionPerformed(ActionEvent arg0) {
                 textFields.remove(textField);
-                arrayItemPanel.remove(textField);
                 arrayItemPanel.remove(removeButton);
                 panel.remove(arrayItemPanel);
                 panel.getRootPane().repaint();
 
             }
         });
-        if (usingDefault) {
-            removeButton.addActionListener(listener);
-        }
         arrayItemPanel.add(removeButton, BorderLayout.WEST);
         panel.add(arrayItemPanel, panel.getComponentCount() - 1);
     }
 
     public String[] getTextArray() {
-        if (usingDefault) {
+        if (useDefaultCheckBox.isSelected()) {
             return null;
         } else {
             if (textFields.size() > 0) {
@@ -158,6 +133,34 @@ public class TextArrayEditor {
                 return null;
             }
         }
+    }
 
+    private void setUseDefault(boolean useDefault) {
+        useDefaultCheckBox.setSelected(!useDefault);
+
+        // if default is true, remove everything from the arraypanel and add the
+        // defaults
+        if (useDefault) {
+            arrayPanel.removeAll();
+            arrayPanel.add(addPanel);
+
+            if (defaultValues != null) {
+                for (String value : defaultValues) {
+                    addField(value, arrayPanel);
+                }
+            }
+            arrayPanel.repaint();
+        }
+        for (JTextField textField : textFields) {
+            textField.setEnabled(!useDefault);
+        }
+        for (JButton button : removeButtons) {
+            button.setEnabled(!useDefault);
+        }
+        addButton.setEnabled(!useDefault);
+        label.setEnabled(!useDefault);
+        if (parent.getRootPane() != null) {
+            parent.getRootPane().repaint();
+        }
     }
 }

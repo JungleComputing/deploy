@@ -266,6 +266,9 @@ public class Job implements Runnable {
 
         // make sure files are readable on the other side
         context.addPreference("file.chmod", "0755");
+        // make sure non existing files/dirs will be created on the fly during a
+        // copy
+        context.addPreference("file.create", "true");
         if (cluster.getJobAdaptor() == null) {
             throw new Exception("no job adaptor specified for cluster: "
                     + cluster);
@@ -290,7 +293,8 @@ public class Job implements Runnable {
             org.gridlab.gat.io.File gatFile = GAT.createFile(context, src
                     .toString());
             org.gridlab.gat.io.File gatDstFile = GAT.createFile(context, dstDir
-                    .getPath() + "/");
+                    .getPath()
+                    + "/");
             sd.addPreStagedFile(gatFile, gatDstFile);
             return;
         }
@@ -515,7 +519,8 @@ public class Job implements Runnable {
 
             org.gridlab.gat.resources.JobDescription jobDescription = createJobDescription(javaSoftwareDescription);
 
-            logger.info("JavaGAT job description for " + this + " =" + jobDescription);
+            logger.info("JavaGAT job description for " + this + " ="
+                    + jobDescription);
 
             ResourceBroker jobBroker = GAT.createResourceBroker(context,
                     description.getClusterOverrides().getJobURI());
@@ -564,6 +569,19 @@ public class Job implements Runnable {
         return jobID + ":" + description.getName() + "/"
                 + description.getPoolName() + "@"
                 + description.getClusterName();
+    }
+
+    /**
+     * Returns the exit value of this job.
+     * 
+     * @return the exit value
+     */
+    public String getExitValue() {
+        try {
+            return "" + gatJob.getExitStatus();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
 }

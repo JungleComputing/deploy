@@ -33,9 +33,12 @@ class MyTableRenderer extends JLabel implements TableCellRenderer {
         setText("N.A.");
         setOpaque(isSelected);
         setBackground(UIManager.getColor("Table.selectionBackground"));
+        final Job job = (object instanceof Job) ? (Job) object : null;
+        final JobDescription jobDescription = (object instanceof JobDescription) ? (JobDescription) object
+                : (object instanceof Job) ? ((Job) object).getDescription()
+                        : null;
         if (column == 0) {
-            if (object instanceof Job
-                    && !table.getValueAt(row, 2).equals("STOPPED")) {
+            if (job != null && !table.getValueAt(row, 3).equals("STOPPED")) {
                 // job submitted, not yet stopped
                 final JButton stopButton = GUIUtils.createImageButton(
                         "images/media-playback-stop.png", null, null);
@@ -43,7 +46,7 @@ class MyTableRenderer extends JLabel implements TableCellRenderer {
 
                     public void actionPerformed(ActionEvent arg0) {
                         stopButton.setEnabled(false);
-                        ((Job) object).kill();
+                        job.kill();
                     }
                 });
                 return stopButton;
@@ -56,45 +59,43 @@ class MyTableRenderer extends JLabel implements TableCellRenderer {
                 return startButton;
             }
         } else if (column == 1) {
-            if (object instanceof Job) {
-                setText(((Job) object).getDescription().getName());
-            } else {
-                setText(((JobDescription) object).getName());
-            }
+            setText(jobDescription.getPoolName());
         } else if (column == 2) {
-            setText(object.toString());
+            setText(jobDescription.getName());
         } else if (column == 3) {
             setText(object.toString());
         } else if (column == 4) {
-            if (object instanceof Job) {
-                setText(((Job) object).getDescription().getClusterName());
-            } else {
-                setText(((JobDescription) object).getClusterName());
-            }
+            setText(object.toString());
         } else if (column == 5) {
-            if (object instanceof Job) {
-                setText(((Job) object).getDescription().getApplicationName());
-            } else {
-                setText(((JobDescription) object).getApplicationName());
-            }
+            setText(jobDescription.getClusterName());
         } else if (column == 6) {
-            if (object instanceof Job) {
-                setText("" + ((Job) object).getDescription().getProcessCount());
-            } else {
-                setText("" + ((JobDescription) object).getProcessCount());
-            }
+            setText(jobDescription.getApplicationName());
         } else if (column == 7) {
-            if (object instanceof Job) {
-                setText("" + ((Job) object).getDescription().getResourceCount());
-            } else {
-                setText("" + ((JobDescription) object).getResourceCount());
-            }
+            setText("" + jobDescription.getProcessCount());
         } else if (column == 8) {
-            setText("stdout");
+            setText("" + jobDescription.getResourceCount());
         } else if (column == 9) {
-            setText("stderr");
+            String stdout = jobDescription.getPoolName() + "."
+                    + jobDescription.getName() + ".out";
+            setName(stdout);
+            if (job != null && table.getValueAt(row, 3).equals("STOPPED")) {
+                setText("<html><a href=.>" + stdout + "</a></html>");
+            } else {
+                setText(null);
+            }
         } else if (column == 10) {
-            setText("?");
+            String stderr = jobDescription.getPoolName() + "."
+                    + jobDescription.getName() + ".err";
+            setName(stderr);
+            if (job != null && table.getValueAt(row, 3).equals("STOPPED")) {
+                setText("<html><a href=.>" + stderr + "</a></html>");
+            } else {
+                setText(null);
+            }
+        } else if (column == 11) {
+            if (job != null && table.getValueAt(row, 3).equals("STOPPED")) {
+                setText(job.getExitValue());
+            }
         }
         return this;
     }

@@ -1,4 +1,4 @@
-package deployer.gui;
+package ibis.deploy.gui;
 
 import org.jdesktop.swingx.mapviewer.DefaultTileFactory;
 import org.jdesktop.swingx.mapviewer.TileFactory;

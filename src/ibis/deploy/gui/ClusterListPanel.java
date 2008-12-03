@@ -5,12 +5,12 @@ import ibis.deploy.Cluster;
 import java.awt.BorderLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.HashMap;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
 import javax.swing.ListSelectionModel;
 
 public class ClusterListPanel extends JPanel {
@@ -20,16 +20,31 @@ public class ClusterListPanel extends JPanel {
      */
     private static final long serialVersionUID = -7171659896010561242L;
 
-    public ClusterListPanel(final GUI gui, final JTabbedPane clusterTabs,
+    private static final String DEFAULTS = "<html><i>defaults</i></html>";
+
+    public ClusterListPanel(final GUI gui, final JPanel editPanel,
             final ClusterEditorPanel clusterEditorPanel) {
 
         setLayout(new BorderLayout());
         DefaultListModel model = new DefaultListModel();
+        gui.getGrid().getDefaults().setName(DEFAULTS);
+        model.addElement(gui.getGrid().getDefaults());
+
         for (Cluster cluster : gui.getGrid().getClusters()) {
             model.addElement(cluster);
         }
         final JList clusterList = new JList(model);
-        add(new ClusterListTopPanel(gui, clusterList, clusterTabs,
+        // create a hash map with all the panels
+        final HashMap<Cluster, JPanel> editClusterPanels = new HashMap<Cluster, JPanel>();
+        editClusterPanels.put(gui.getGrid().getDefaults(),
+                new ClusterEditorTabPanel(gui.getGrid().getDefaults(),
+                        clusterEditorPanel, gui, true));
+        for (Cluster cluster : gui.getGrid().getClusters()) {
+            editClusterPanels.put(cluster, new ClusterEditorTabPanel(cluster,
+                    clusterEditorPanel, gui, false));
+        }
+
+        add(new ClusterListTopPanel(gui, clusterList, editClusterPanels,
                 clusterEditorPanel), BorderLayout.NORTH);
 
         clusterList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -37,41 +52,12 @@ public class ClusterListPanel extends JPanel {
 
         clusterList.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
-                    for (int i = 0; i < clusterTabs.getTabCount(); i++) {
-                        if (clusterTabs.getTabComponentAt(i).getName().equals(
-                                ((Cluster) clusterList.getSelectedValue())
-                                        .getName())) {
-                            clusterTabs.setSelectedIndex(i);
-                            return;
-                        }
-                    }
-                    final Cluster selectedCluster = (Cluster) clusterList
-                            .getSelectedValue();
-                    ClusterEditorTabPanel newTab = new ClusterEditorTabPanel(
-                            selectedCluster, clusterEditorPanel, gui);
-
-                    final ClosableTabTitlePanel titlePanel = new ClosableTabTitlePanel(
-                            selectedCluster.getName(), clusterTabs);
-
-                    clusterEditorPanel.addEditorListener(new EditorListener() {
-
-                        public void edited(Object object) {
-                            // only change text if the application of
-                            // this tab has changed
-                            if (object == selectedCluster) {
-                                titlePanel
-                                        .setText(((Cluster) object).getName());
-                            }
-                        }
-
-                    });
-
-                    clusterTabs.addTab(null, newTab);
-                    clusterTabs.setTabComponentAt(
-                            clusterTabs.getTabCount() - 1, titlePanel);
-                    clusterTabs.setSelectedComponent(newTab);
-                }
+                final Cluster selectedCluster = (Cluster) clusterList
+                        .getSelectedValue();
+                editPanel.removeAll();
+                editPanel.add(editClusterPanels.get(selectedCluster),
+                        BorderLayout.CENTER);
+                editPanel.getRootPane().repaint();
             }
         });
 

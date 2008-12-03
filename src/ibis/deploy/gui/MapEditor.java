@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -25,7 +26,14 @@ public class MapEditor {
         JLabel label = new JLabel(text, JLabel.TRAILING);
         label.setPreferredSize(new Dimension(150,
                 label.getPreferredSize().height));
-        container.add(label, BorderLayout.WEST);
+        JPanel labelPanel = new JPanel(new BorderLayout());
+        JCheckBox dummy = new JCheckBox();
+        dummy.setSelected(true);
+        dummy.setEnabled(false);
+        labelPanel.add(dummy, BorderLayout.WEST);
+        labelPanel.add(label, BorderLayout.EAST);
+        container.add(labelPanel, BorderLayout.WEST);
+
         MapUtilities.register(mapKit);
         mapKit.setTileFactory(MapUtilities.getDefaultTileFactory());
         mapKit.setMiniMapVisible(false);

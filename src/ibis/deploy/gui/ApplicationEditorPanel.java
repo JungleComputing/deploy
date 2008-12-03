@@ -8,7 +8,6 @@ import java.util.List;
 
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
 
 public class ApplicationEditorPanel extends JPanel {
 
@@ -21,14 +20,16 @@ public class ApplicationEditorPanel extends JPanel {
 
     private GUI gui;
 
+    private JSplitPane splitPane;
+
     public ApplicationEditorPanel(GUI gui) {
         this.gui = gui;
         setLayout(new BorderLayout());
-        JTabbedPane applicationTabs = new JTabbedPane();
+        JPanel editPanel = new JPanel(new BorderLayout());
         ApplicationListPanel applicationListPanel = new ApplicationListPanel(
-                gui, applicationTabs, this);
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                applicationListPanel, applicationTabs);
+                gui, editPanel, this);
+        splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                applicationListPanel, editPanel);
         splitPane.setOneTouchExpandable(true);
         splitPane.setDividerLocation(250);
         add(splitPane, BorderLayout.CENTER);
