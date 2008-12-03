@@ -49,7 +49,7 @@ public class Grid {
 
         properties.loadFromFile(file.getAbsolutePath());
 
-        defaults = new Cluster(properties, null, "default", this);
+        defaults = new Cluster(properties, "defaults", "default", this);
 
         clusters = new ArrayList<Cluster>();
         String[] clusterNames = Util.getElementList(properties);
@@ -80,7 +80,7 @@ public class Grid {
             prefix = prefix + ".";
         }
 
-        defaults = new Cluster(properties, null, prefix + "default", this);
+        defaults = new Cluster(properties, "defaults", prefix + "default", this);
 
         clusters = new ArrayList<Cluster>();
         String[] clusterNames = Util.getElementList(properties, prefix);
@@ -211,6 +211,8 @@ public class Grid {
     public void save(PrintWriter out, String prefix) throws Exception {
         if (prefix != null) {
             prefix = prefix + ".";
+        } else {
+            prefix = "";
         }
 
         // write defaults

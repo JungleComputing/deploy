@@ -113,7 +113,7 @@ public class CommandLine {
             } else if (arguments[i].endsWith(".experiment")) {
                 experimentFiles.add(new File(arguments[i]));
             } else {
-                System.err.println("Unknown option: " + arguments[i]);
+                System.err.println("Unknown option or file type: " + arguments[i]);
                 printUsage();
                 System.exit(1);
             }

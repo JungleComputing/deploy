@@ -24,7 +24,7 @@ public class Cluster {
      * Print a table of valid keys and some explanations to the given stream
      * 
      * @param out
-     *                stream used for printing
+     *            stream used for printing
      */
     public static void printTableOfKeys(PrintWriter out) {
         out.println("# Mandatory parameters for clusters:");
@@ -120,9 +120,9 @@ public class Cluster {
      * directly, but are constructed by a parent Grid object.
      * 
      * @param name
-     *                the name of the cluster
+     *            the name of the cluster
      * @throws Exception
-     *                 if name is null or contains periods and/or spaces
+     *             if name is null or contains periods and/or spaces
      */
     Cluster(String name, Grid parent) throws Exception {
         this.parent = parent;
@@ -185,14 +185,14 @@ public class Cluster {
      * Load cluster from the given properties (usually loaded from a grid file)
      * 
      * @param properties
-     *                properties to load cluster from
+     *            properties to load cluster from
      * @param name
-     *                name of this cluster
+     *            name of this cluster
      * @param prefix
-     *                prefix used for all keys
+     *            prefix used for all keys
      * 
      * @throws Exception
-     *                 if cluster cannot be read properly
+     *             if cluster cannot be read properly
      */
     Cluster(TypedProperties properties, String name, String prefix, Grid parent)
             throws Exception {
@@ -229,7 +229,7 @@ public class Cluster {
      * Write all non-null values of given cluster into this cluster.
      * 
      * @param other
-     *                source application object
+     *            source application object
      */
     void overwrite(Cluster other) {
         if (other == null) {
@@ -322,7 +322,7 @@ public class Cluster {
      * Sets the name of this cluster
      * 
      * @param name
-     *                the new name of this cluster
+     *            the new name of this cluster
      */
     public void setName(String name) {
         this.name = name;
@@ -342,7 +342,7 @@ public class Cluster {
      * Sets the JavaGAT adaptor used to start servers and hubs on this cluster.
      * 
      * @param serverAdaptor
-     *                the new JavaGAT adaptor used to start servers and hubs.
+     *            the new JavaGAT adaptor used to start servers and hubs.
      */
     public void setServerAdaptor(String serverAdaptor) {
         this.serverAdaptor = serverAdaptor;
@@ -363,8 +363,8 @@ public class Cluster {
      * ssh://machine.domain.com)
      * 
      * @param serverURI
-     *                the new contact uri for starting servers and hubs of this
-     *                cluster.
+     *            the new contact uri for starting servers and hubs of this
+     *            cluster.
      */
     public void setServerURI(URI serverURI) {
         this.serverURI = serverURI;
@@ -383,7 +383,7 @@ public class Cluster {
      * Sets the JavaGAT adaptor used to start jobs on this cluster.
      * 
      * @param jobAdaptor
-     *                the new JavaGAT adaptor used to start jobs.
+     *            the new JavaGAT adaptor used to start jobs.
      */
     public void setJobAdaptor(String jobAdaptor) {
         this.jobAdaptor = jobAdaptor;
@@ -404,7 +404,7 @@ public class Cluster {
      * globus://machine.domain.com/some-local-broker)
      * 
      * @param jobURI
-     *                the new contact uri for starting jobs.
+     *            the new contact uri for starting jobs.
      */
     public void setJobURI(URI jobURI) {
         this.jobURI = jobURI;
@@ -426,8 +426,8 @@ public class Cluster {
      * Sets the list of adaptors used to copy files to and from this cluster.
      * 
      * @param fileAdaptors
-     *                the new list of adaptors used to copy files to and from
-     *                this cluster.
+     *            the new list of adaptors used to copy files to and from this
+     *            cluster.
      */
     public void setFileAdaptors(String[] fileAdaptors) {
         if (fileAdaptors == null) {
@@ -442,8 +442,7 @@ public class Cluster {
      * this cluster. The list is created if needed.
      * 
      * @param fileAdaptor
-     *                the new adaptors used to copy files to and from this
-     *                cluster.
+     *            the new adaptors used to copy files to and from this cluster.
      */
     public void addFileAdaptor(String fileAdaptor) {
         if (fileAdaptors == null) {
@@ -468,7 +467,7 @@ public class Cluster {
      * "java" is used by default.
      * 
      * @param javaPath
-     *                the new path of the java executable on this cluster.
+     *            the new path of the java executable on this cluster.
      */
     public void setJavaPath(String javaPath) {
         this.javaPath = javaPath;
@@ -503,7 +502,7 @@ public class Cluster {
      * </ol>
      * 
      * @param wrapperScript
-     *                the job wrapper script.
+     *            the job wrapper script.
      */
     public void setJobWrapperScript(File wrapperScript) {
         this.jobWrapperScript = wrapperScript;
@@ -522,7 +521,7 @@ public class Cluster {
      * Sets username used to authenticate at this cluster
      * 
      * @param userName
-     *                username used to authenticate at this cluster
+     *            username used to authenticate at this cluster
      */
     public void setUserName(String userName) {
         this.userName = userName;
@@ -541,7 +540,7 @@ public class Cluster {
      * Sets sache directory used for pre-stage files (updated using rsync)
      * 
      * @param cacheDir
-     *                directory used as cache
+     *            directory used as cache
      */
     public void setCacheDir(File cacheDir) {
         this.cacheDir = cacheDir;
@@ -565,7 +564,7 @@ public class Cluster {
      * directory of the server sandbox, to the local file specified.
      * 
      * @param serverOutputFiles
-     *                new list of output files.
+     *            new list of output files.
      */
     public void setOutputFiles(File[] serverOutputFiles) {
         if (serverOutputFiles == null) {
@@ -588,7 +587,7 @@ public class Cluster {
      * Sets total number of nodes in this cluster
      * 
      * @param nodes
-     *                total number of nodes in this cluster. 0 for unknown
+     *            total number of nodes in this cluster. 0 for unknown
      */
     public void setNodes(int nodes) {
         this.nodes = nodes;
@@ -607,7 +606,7 @@ public class Cluster {
      * Sets total number of cores in this cluster
      * 
      * @param cores
-     *                total number of cores in this cluster. 0 for unknown
+     *            total number of cores in this cluster. 0 for unknown
      */
     public void setCores(int cores) {
         this.cores = cores;
@@ -626,7 +625,7 @@ public class Cluster {
      * Sets latitude position of this cluster
      * 
      * @param latitude
-     *                Latitude position of this cluster. Use 0 for unknown.
+     *            Latitude position of this cluster. Use 0 for unknown.
      */
     public void setLatitude(double latitude) {
         this.latitude = latitude;
@@ -645,7 +644,7 @@ public class Cluster {
      * Sets longitude position of this cluster
      * 
      * @param longitude
-     *                Longitude position of this cluster. Use 0 for unknown.
+     *            Longitude position of this cluster. Use 0 for unknown.
      */
     public void setLongitude(double longitude) {
         this.longitude = longitude;
@@ -656,13 +655,13 @@ public class Cluster {
      * exception.
      * 
      * @param jobName
-     *                name of job
+     *            name of job
      * @param serverOnly
-     *                if only the necessary settings for starting a server need
-     *                to be checked
+     *            if only the necessary settings for starting a server need to
+     *            be checked
      * 
      * @throws Exception
-     *                 if this cluster is incomplete or incorrect.
+     *             if this cluster is incomplete or incorrect.
      */
     public void checkSettings(String jobName, boolean serverOnly)
             throws Exception {
@@ -728,120 +727,139 @@ public class Cluster {
      * Print the settings of this cluster to a (properties) file
      * 
      * @param out
-     *                stream to write this file to
+     *            stream to write this file to
      * @param prefix
-     *                prefix for key names, or null to use name of cluster
+     *            prefix for key names, or null to use name of cluster
      * @param printComments
-     *                if true, comments are added for all null values
+     *            if true, comments are added for all null values
      * @throws Exception
-     *                 if this cluster has no name
+     *             if this cluster has no name
      */
     void save(PrintWriter out, String prefix, boolean printComments)
             throws Exception {
+        boolean empty = true;
+
         if (prefix == null) {
             throw new Exception("cannot print cluster to file,"
                     + " prefix is not specified");
         }
 
-        prefix = prefix + ".";
+        String dotPrefix = prefix + ".";
 
         if (serverAdaptor != null) {
-            out.println(prefix + "server.adaptor = " + serverAdaptor);
+            out.println(dotPrefix + "server.adaptor = " + serverAdaptor);
+            empty = false;
         } else if (printComments) {
-            out.println("#" + prefix + "server.adaptor = ");
+            out.println("#" + dotPrefix + "server.adaptor = ");
         }
 
         if (serverURI != null) {
-            out.println(prefix + "server.uri = " + serverURI.toASCIIString());
+            out
+                    .println(dotPrefix + "server.uri = "
+                            + serverURI.toASCIIString());
+            empty = false;
         } else if (printComments) {
-            out.println("#" + prefix + "server.uri = ");
+            out.println("#" + dotPrefix + "server.uri = ");
         }
 
         if (jobAdaptor != null) {
-            out.println(prefix + "job.adaptor = " + jobAdaptor);
+            out.println(dotPrefix + "job.adaptor = " + jobAdaptor);
+            empty = false;
         } else if (printComments) {
-            out.println("#" + prefix + "job.adaptor = ");
+            out.println("#" + dotPrefix + "job.adaptor = ");
         }
 
         if (jobURI != null) {
-            out.println(prefix + "job.uri = " + jobURI.toASCIIString());
+            out.println(dotPrefix + "job.uri = " + jobURI.toASCIIString());
+            empty = false;
         } else if (printComments) {
-            out.println("#" + prefix + "job.uri = ");
+            out.println("#" + dotPrefix + "job.uri = ");
         }
 
         if (fileAdaptors != null) {
-            out.println(prefix + "file.adaptors = "
+            out.println(dotPrefix + "file.adaptors = "
                     + Util.strings2CSS(fileAdaptors));
+            empty = false;
         } else if (printComments) {
-            out.println("#" + prefix + "file.adaptors = ");
+            out.println("#" + dotPrefix + "file.adaptors = ");
         }
 
         if (javaPath != null) {
-            out.println(prefix + "java.path = " + javaPath);
+            out.println(dotPrefix + "java.path = " + javaPath);
+            empty = false;
         } else if (printComments) {
-            out.println("#" + prefix + "java.path = ");
+            out.println("#" + dotPrefix + "java.path = ");
         }
 
         if (jobWrapperScript != null) {
-            out.println(prefix + "job.wrapper.script = " + jobWrapperScript);
+            out.println(dotPrefix + "job.wrapper.script = " + jobWrapperScript);
+            empty = false;
         } else if (printComments) {
-            out.println("#" + prefix + "job.wrapper.script = ");
+            out.println("#" + dotPrefix + "job.wrapper.script = ");
         }
 
         if (userName != null) {
-            out.println(prefix + "user.name = " + userName);
+            out.println(dotPrefix + "user.name = " + userName);
+            empty = false;
         } else if (printComments) {
-            out.println("#" + prefix + "user.name = ");
+            out.println("#" + dotPrefix + "user.name = ");
         }
 
         if (cacheDir != null) {
-            out.println(prefix + "cache.dir = " + cacheDir);
+            out.println(dotPrefix + "cache.dir = " + cacheDir);
+            empty = false;
         } else if (printComments) {
-            out.println("#" + prefix + "cache.dir = ");
+            out.println("#" + dotPrefix + "cache.dir = ");
         }
 
         if (serverOutputFiles != null) {
-            out.println(prefix + "server.output.files = "
+            out.println(dotPrefix + "server.output.files = "
                     + Util.files2CSS(serverOutputFiles));
+            empty = false;
         } else if (printComments) {
-            out.println("#" + prefix + "server.output.files =");
+            out.println("#" + dotPrefix + "server.output.files =");
         }
 
         if (nodes > 0) {
-            out.println(prefix + "nodes = " + nodes);
+            out.println(dotPrefix + "nodes = " + nodes);
+            empty = false;
         } else if (printComments) {
-            out.println("#" + prefix + "nodes = ");
+            out.println("#" + dotPrefix + "nodes = ");
         }
 
         if (cores > 0) {
-            out.println(prefix + "cores = " + cores);
+            out.println(dotPrefix + "cores = " + cores);
+            empty = false;
         } else if (printComments) {
-            out.println("#" + prefix + "cores = ");
+            out.println("#" + dotPrefix + "cores = ");
         }
 
         if (latitude != 0) {
-            out.println(prefix + "latitude = " + latitude);
+            out.println(dotPrefix + "latitude = " + latitude);
+            empty = false;
         } else if (printComments) {
-            out.println("#" + prefix + "latitude = ");
+            out.println("#" + dotPrefix + "latitude = ");
         }
 
         if (longitude != 0) {
-            out.println(prefix + "longitude = " + longitude);
+            out.println(dotPrefix + "longitude = " + longitude);
+            empty = false;
         } else if (printComments) {
-            out.println("#" + prefix + "longitude = ");
+            out.println("#" + dotPrefix + "longitude = ");
         }
 
+        if (empty && printComments) {
+            out
+                    .println("#Dummy property to make sure cluster is actually defined");
+            out.println(prefix);
+        }
     }
 
     /**
      * @see java.lang.Object#toString()
      */
     public String toString() {
-        if (name == null) {
-            return "defaults";
-        } else {
-            return name;
-        }
+        return name;
     }
 
     /**

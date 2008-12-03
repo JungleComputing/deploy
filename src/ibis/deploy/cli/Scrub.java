@@ -3,6 +3,7 @@ package ibis.deploy.cli;
 import ibis.deploy.ApplicationSet;
 import ibis.deploy.Experiment;
 import ibis.deploy.Grid;
+import ibis.deploy.Workspace;
 
 import java.io.File;
 
@@ -22,37 +23,40 @@ public class Scrub {
     public static void main(String[] arguments) {
         if (arguments.length == 0) {
             System.err
-                    .println("Usage: scrub [-g GRID_FILE] [-a APPLICATIONS_FILE] [-e EXPERIMENT_FILE]");
+                    .println("Usage: scrub [GRID_FILE] [APPLICATIONS_FILE] [EXPERIMENT_FILE]");
             System.exit(0);
         }
 
         try {
             for (int i = 0; i < arguments.length; i++) {
-                if (arguments[i].equals("-g")) {
-                    i++;
+                if (arguments[i].endsWith(".grid")) {
                     File file = new File(arguments[i]);
                     System.err.println("Scrubbing GRID file \"" + file + "\"");
                     Grid grid = new Grid(file);
                     file.renameTo(new File(file.getPath() + ".backup"));
                     grid.save(file);
-                } else if (arguments[i].equals("-a")) {
-                    i++;
+                } else if (arguments[i].endsWith(".applications")) {
                     File file = new File(arguments[i]);
                     System.err.println("Scrubbing APPLICATION file \"" + file + "\"");
                     ApplicationSet applications = new ApplicationSet(file);
                     file.renameTo(new File(file.getPath() + ".backup"));
                     applications.save(file);
-                } else if (arguments[i].equals("-e")) {
-                    i++;
+                } else if (arguments[i].endsWith(".experiment")) {
                     File file = new File(arguments[i]);
                     System.err.println("Scrubbing EXPERIMENT file \"" + file + "\"");
                     Experiment experiment = new Experiment(file);
                     file.renameTo(new File(file.getPath() + ".backup"));
                     experiment.save(file);
+                } else if (arguments[i].endsWith(".workspace")) {
+                    File file = new File(arguments[i]);
+                    System.err.println("Scrubbing WORKSPACE file \"" + file + "\"");
+                    Workspace workspace = new Workspace(file);
+                    file.renameTo(new File(file.getPath() + ".backup"));
+                    workspace.save(file);
                 } else {
-                    System.err.println("unknown argument: " + arguments[i]);
+                    System.err.println("unknown file type: " + arguments[i]);
                     System.err
-                            .println("Usage: scrub [-g GRID_FILE] [-a APPLICATIONS_FILE] [-e EXPERIMENT_FILE]");
+                            .println("Usage: scrub [GRID_FILE] [APPLICATIONS_FILE] [EXPERIMENT_FILE]");
                     System.exit(1);
                 }
             }

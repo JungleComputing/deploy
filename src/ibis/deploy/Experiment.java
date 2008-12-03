@@ -255,18 +255,20 @@ public class Experiment {
     public void save(PrintWriter out, String prefix) throws Exception {
         if (prefix != null) {
             prefix = prefix + ".";
+        } else {
+            prefix = "";
         }
 
         JobDescription.printTableOfKeys(out);
         out.println();
         out.println("# Default settings:");
-        defaults.save(out, prefix + "default");
+        defaults.save(out, prefix + "default", false);
 
         // write jobs
         for (JobDescription job : jobs) {
             out.println();
             out.println("# Details of job \"" + job.getName() + "\"");
-            job.save(out, prefix + job.getName());
+            job.save(out, prefix + job.getName(), true);
         }
     }
 

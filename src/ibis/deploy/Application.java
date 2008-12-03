@@ -558,56 +558,70 @@ public class Application {
      */
     void save(PrintWriter out, String prefix, boolean printComments)
             throws Exception {
+        boolean empty = true;
+        
         if (prefix == null) {
             throw new Exception("cannot print application to file,"
                     + " prefix is not specified");
         }
 
-        prefix = prefix + ".";
+        String dotPrefix = prefix + ".";
 
         if (mainClass != null) {
-            out.println(prefix + "main.class = " + mainClass);
+            out.println(dotPrefix + "main.class = " + mainClass);
+            empty = false;
         } else if (printComments) {
-            out.println("#" + prefix + "main.class =");
+            out.println("#" + dotPrefix + "main.class =");
         }
 
         if (arguments != null) {
-            out.println(prefix + "arguments = " + Util.strings2CSS(arguments));
+            out.println(dotPrefix + "arguments = " + Util.strings2CSS(arguments));
+            empty = false;
         } else if (printComments) {
-            out.println("#" + prefix + "arguments =");
+            out.println("#" + dotPrefix + "arguments =");
         }
 
         if (libs != null) {
-            out.println(prefix + "libs = " + Util.files2CSS(libs));
+            out.println(dotPrefix + "libs = " + Util.files2CSS(libs));
+            empty = false;
         } else if (printComments) {
-            out.println("#" + prefix + "libs =");
+            out.println("#" + dotPrefix + "libs =");
         }
 
         if (inputFiles != null) {
-            out.println(prefix + "input.files = " + Util.files2CSS(inputFiles));
+            out.println(dotPrefix + "input.files = " + Util.files2CSS(inputFiles));
+            empty = false;
         } else if (printComments) {
-            out.println("#" + prefix + "input.files =");
+            out.println("#" + dotPrefix + "input.files =");
         }
 
         if (outputFiles != null) {
-            out.println(prefix + "output.files = "
+            out.println(dotPrefix + "output.files = "
                     + Util.files2CSS(outputFiles));
+            empty = false;
         } else if (printComments) {
-            out.println("#" + prefix + "output.files =");
+            out.println("#" + dotPrefix + "output.files =");
         }
 
         if (systemProperties != null) {
-            out.println(prefix + "system.properties = "
+            out.println(dotPrefix + "system.properties = "
                     + Util.toCSString(systemProperties));
+            empty = false;
         } else if (printComments) {
-            out.println("#" + prefix + "system.properties =");
+            out.println("#" + dotPrefix + "system.properties =");
         }
 
         if (jvmOptions != null) {
-            out.println(prefix + "jvm.options = "
+            out.println(dotPrefix + "jvm.options = "
                     + Util.strings2CSS(jvmOptions));
+            empty = false;
         } else if (printComments) {
-            out.println("#" + prefix + "java.options =");
+            out.println("#" + dotPrefix + "java.options =");
+        }
+        
+        if (empty && printComments) {
+            out.println("#Dummy property to make sure application is actually defined");
+            out.println(dotPrefix);
         }
     }
 

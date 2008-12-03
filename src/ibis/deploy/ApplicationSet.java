@@ -44,7 +44,7 @@ public class ApplicationSet {
 
         if (!file.getName().endsWith(".applications")) {
             throw new Exception(
-                    "application files must have a \".applications\" extension");
+                    "application files must have a \".applications\" extension (not: " + file + ")");
         }
 
         TypedProperties properties = new TypedProperties();
@@ -206,6 +206,8 @@ public class ApplicationSet {
     public void save(PrintWriter out, String prefix) throws Exception {
         if (prefix != null) {
             prefix = prefix + ".";
+        } else {
+            prefix = "";
         }
         
         Application.printTableOfKeys(out);

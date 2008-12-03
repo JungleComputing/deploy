@@ -571,64 +571,79 @@ public class JobDescription {
      * @throws Exception
      *             if this job has no name
      */
-    public void save(PrintWriter out, String prefix) throws Exception {
+    public void save(PrintWriter out, String prefix, boolean ensureExists) throws Exception {
+        boolean empty = true;
+        
         if (prefix == null) {
             throw new Exception("cannot print job description to file,"
                     + " name is not specified");
         }
 
-        prefix = prefix + ".";
+        String dotPrefix = prefix + ".";
 
         if (applicationName == null) {
-            out.println("#" + prefix + "application.name =");
+            out.println("#" + dotPrefix + "application.name =");
         } else {
-            out.println(prefix + "application.name = " + applicationName);
+            out.println(dotPrefix + "application.name = " + applicationName);
+            empty = false;
         }
 
-        applicationOverrides.save(out, prefix + "application", false);
+        applicationOverrides.save(out, dotPrefix + "application", false);
 
         if (processCount == 0) {
-            out.println("#" + prefix + "process.count =");
+            out.println("#" + dotPrefix + "process.count =");
         } else {
-            out.println(prefix + "process.count = " + processCount);
+            out.println(dotPrefix + "process.count = " + processCount);
+            empty = false;
         }
 
         if (clusterName == null) {
-            out.println("#" + prefix + "cluster.name =");
+            out.println("#" + dotPrefix + "cluster.name =");
         } else {
-            out.println(prefix + "cluster.name = " + clusterName);
+            out.println(dotPrefix + "cluster.name = " + clusterName);
+            empty = false;
         }
 
-        clusterOverrides.save(out, prefix + "cluster", false);
+        clusterOverrides.save(out, dotPrefix + "cluster", false);
 
         if (resourceCount == 0) {
-            out.println("#" + prefix + "resource.count =");
+            out.println("#" + dotPrefix + "resource.count =");
         } else {
-            out.println(prefix + "resource.count = " + resourceCount);
+            out.println(dotPrefix + "resource.count = " + resourceCount);
+            empty = false;
         }
 
         if (runtime == 0) {
-            out.println("#" + prefix + "runtime =");
+            out.println("#" + dotPrefix + "runtime =");
         } else {
-            out.println(prefix + "runtime = " + runtime);
+            out.println(dotPrefix + "runtime = " + runtime);
+            empty = false;
         }
 
         if (poolName == null) {
-            out.println("#" + prefix + "pool.name =");
+            out.println("#" + dotPrefix + "pool.name =");
         } else {
-            out.println(prefix + "pool.name = " + poolName);
+            out.println(dotPrefix + "pool.name = " + poolName);
+            empty = false;
         }
 
         if (poolSize == 0) {
-            out.println("#" + prefix + "pool.size =");
+            out.println("#" + dotPrefix + "pool.size =");
         } else {
-            out.println(prefix + "pool.size = " + poolSize);
+            out.println(dotPrefix + "pool.size = " + poolSize);
+            empty = false;
         }
 
         if (sharedHub == null) {
-            out.println("#" + prefix + "shared.hub =");
+            out.println("#" + dotPrefix + "shared.hub =");
         } else {
-            out.println(prefix + "shared.hub = " + sharedHub);
+            out.println(dotPrefix + "shared.hub = " + sharedHub);
+            empty = false;
+        }
+        
+        if (empty && ensureExists) {
+            out.println("#Dummy property to make sure job is actually defined");
+            out.println(prefix);
         }
     }
 
