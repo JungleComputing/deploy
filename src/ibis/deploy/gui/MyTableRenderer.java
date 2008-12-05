@@ -3,13 +3,17 @@ package ibis.deploy.gui;
 import ibis.deploy.Job;
 import ibis.deploy.JobDescription;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
 
@@ -75,27 +79,28 @@ class MyTableRenderer extends JLabel implements TableCellRenderer {
         } else if (column == 8) {
             setText("" + jobDescription.getResourceCount());
         } else if (column == 9) {
-            String stdout = jobDescription.getPoolName() + "."
-                    + jobDescription.getName() + ".out";
-            setName(stdout);
+            JButton button = new JButton("output");
+            button.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent arg0) {
+                    JDialog dialog = new JDialog(SwingUtilities
+                            .getWindowAncestor(table), "Output Files for "
+                            + job.getDescription().getName());
+                    dialog.setContentPane(new OutputPanel(job));
+                    dialog.pack();
+                    dialog.setLocationRelativeTo(SwingUtilities
+                            .getWindowAncestor(table));
+                    dialog.setVisible(true);
+
+                }
+
+            });
             if (job != null && table.getValueAt(row, 3).equals("STOPPED")) {
-                setText("<html><a href=.>" + stdout + "</a></html>");
+                button.setEnabled(true);
             } else {
-                setText(null);
+                button.setEnabled(false);
             }
-        } else if (column == 10) {
-            String stderr = jobDescription.getPoolName() + "."
-                    + jobDescription.getName() + ".err";
-            setName(stderr);
-            if (job != null && table.getValueAt(row, 3).equals("STOPPED")) {
-                setText("<html><a href=.>" + stderr + "</a></html>");
-            } else {
-                setText(null);
-            }
-        } else if (column == 11) {
-            if (job != null && table.getValueAt(row, 3).equals("STOPPED")) {
-                setText(job.getExitValue());
-            }
+            return button;
         }
         return this;
     }

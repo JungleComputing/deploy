@@ -15,7 +15,7 @@ class MyTableModel extends AbstractTableModel {
 
     private String[] columnNames = new String[] { "", "pool", "name", "status",
             "hub", "cluster", "application", "process count", "resource count",
-            "stdout", "stderr", "exit value" };
+            "output" };
 
     private List<Object> jobs = new ArrayList<Object>();
 
@@ -52,7 +52,7 @@ class MyTableModel extends AbstractTableModel {
     }
 
     public boolean isCellEditable(int row, int col) {
-        return col == 0 || col == 9 || col == 10;
+        return col == 0 || col == 9;
     }
 
     public Class<?> getColumnClass(int column) {
@@ -69,12 +69,8 @@ class MyTableModel extends AbstractTableModel {
             }
             // the start/stop button
             fireTableCellUpdated(row, 0);
-            // the stdout value
+            // the output value
             fireTableCellUpdated(row, 9);
-            // the stderr value
-            fireTableCellUpdated(row, 10);
-            // the exit value
-            fireTableCellUpdated(row, 11);
         } else if (col == 4) {
             if (row == hubStates.size()) {
                 hubStates.add(value);

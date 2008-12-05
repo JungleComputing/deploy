@@ -91,7 +91,7 @@ public class FileEditor {
     }
 
     public File getFile() {
-        if (useDefaultCheckBox.isSelected()) {
+        if (!useDefaultCheckBox.isSelected()) {
             return null;
         } else {
             return new File(textField.getText());

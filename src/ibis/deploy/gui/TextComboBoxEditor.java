@@ -73,7 +73,7 @@ public class TextComboBoxEditor {
     }
 
     public String getText() {
-        if (useDefaultCheckBox.isSelected()) {
+        if (!useDefaultCheckBox.isSelected()) {
             return null;
         } else {
             return comboBox.getSelectedItem().toString();

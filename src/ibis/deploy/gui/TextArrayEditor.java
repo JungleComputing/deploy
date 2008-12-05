@@ -118,7 +118,7 @@ public class TextArrayEditor {
     }
 
     public String[] getTextArray() {
-        if (useDefaultCheckBox.isSelected()) {
+        if (!useDefaultCheckBox.isSelected()) {
             return null;
         } else {
             if (textFields.size() > 0) {

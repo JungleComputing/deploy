@@ -47,8 +47,8 @@ public class JobTablePanel extends JPanel {
             if (i == 0) {
                 column.setCellEditor(new ButtonEditor());
                 column.setPreferredWidth(30); // first column is smaller
-            } else if (i == 9 || i == 10) {
-                column.setCellEditor(new HyperLinkLabelEditor());
+            } else if (i == 9) {
+                column.setCellEditor(new ButtonEditor());
             } else {
                 column.setPreferredWidth(80);
             }
@@ -132,73 +132,6 @@ public class JobTablePanel extends JPanel {
             ((JButton) arg0.getSource()).removeActionListener(this);
             stopCellEditing();
         }
-    }
-
-    private static class HyperLinkLabelEditor implements TableCellEditor {
-        /**
-         * 
-         */
-        private static final long serialVersionUID = 1L;
-
-        private Object object;
-
-        private CellEditorListener listener;
-
-        public Component getTableCellEditorComponent(JTable table,
-                Object object, boolean isSelected, int row, int column) {
-            this.object = object;
-            final Component component = table.getCellRenderer(row, column)
-                    .getTableCellRendererComponent(table, object, isSelected,
-                            true, row, column);
-            if (component.getName() != null) {
-                new Thread() {
-                    public void run() {
-                        try {
-                            java.awt.Desktop.getDesktop().browse(
-                                    new File(component.getName()).toURI());
-                        } catch (IOException e) {
-                            JOptionPane.showMessageDialog(component, e
-                                    .getMessage(), "Failed to open file",
-                                    JOptionPane.PLAIN_MESSAGE);
-                            e.printStackTrace(System.err);
-                        }
-                        stopCellEditing();
-                    }
-
-                }.start();
-            }
-            return component;
-        }
-
-        public Object getCellEditorValue() {
-            return object;
-        }
-
-        public void addCellEditorListener(CellEditorListener listener) {
-            this.listener = listener;
-        }
-
-        public void cancelCellEditing() {
-            this.listener.editingCanceled(new ChangeEvent(object));
-        }
-
-        public boolean isCellEditable(EventObject eventObject) {
-            return true;
-        }
-
-        public void removeCellEditorListener(CellEditorListener listener) {
-            listener = null;
-        }
-
-        public boolean shouldSelectCell(EventObject arg0) {
-            return false;
-        }
-
-        public synchronized boolean stopCellEditing() {
-            this.listener.editingStopped(new ChangeEvent(object));
-            return true;
-        }
-
     }
 
 }

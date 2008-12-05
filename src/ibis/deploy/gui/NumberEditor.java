@@ -66,7 +66,7 @@ public class NumberEditor {
     }
 
     public int getValue() {
-        if (useDefaultCheckBox.isSelected()) {
+        if (!useDefaultCheckBox.isSelected()) {
             return -1;
         } else {
             return ((SpinnerNumberModel) spinner.getModel()).getNumber()

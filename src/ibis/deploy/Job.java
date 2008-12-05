@@ -584,4 +584,13 @@ public class Job implements Runnable {
         }
     }
 
+    /**
+     * Returns the application of this job.
+     * 
+     * @return the application of this job.
+     */
+    public Application getApplication() {
+        return application;
+    }
+
 }

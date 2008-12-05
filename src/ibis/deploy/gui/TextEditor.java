@@ -70,7 +70,7 @@ public class TextEditor {
     }
 
     public String getText() {
-        if (useDefaultCheckBox.isSelected()) {
+        if (!useDefaultCheckBox.isSelected()) {
             return null;
         } else {
             return textField.getText();

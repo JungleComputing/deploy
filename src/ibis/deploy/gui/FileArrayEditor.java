@@ -153,7 +153,7 @@ public class FileArrayEditor {
     }
 
     public File[] getFileArray() {
-        if (useDefaultCheckBox.isSelected()) {
+        if (!useDefaultCheckBox.isSelected()) {
             return null;
         } else {
             if (textFields.size() > 0) {

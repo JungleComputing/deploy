@@ -126,7 +126,7 @@ public class TextArrayComboBoxEditor {
     }
 
     public String[] getTextArray() {
-        if (useDefaultCheckBox.isSelected()) {
+        if (!useDefaultCheckBox.isSelected()) {
             return null;
         } else {
             if (comboBoxes.size() > 0) {
