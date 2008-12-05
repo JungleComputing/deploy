@@ -30,7 +30,8 @@ public class ApplicationEditorTabPanel extends JPanel {
             final ApplicationEditorPanel applicationEditorPanel, final GUI gui,
             final boolean noNameEditor) {
         setLayout(new BorderLayout());
-        Application defaults = source.getApplicationSet().getDefaults();
+        Application defaults = (source.getApplicationSet() == null) ? null
+                : source.getApplicationSet().getDefaults();
 
         JPanel container = new JPanel(new BorderLayout());
 
@@ -41,25 +42,28 @@ public class ApplicationEditorTabPanel extends JPanel {
                 formPanel, "Name: ", source.getName(), "");
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
         final TextEditor mainEditor = new TextEditor(formPanel, "Main Class: ",
-                source.getMainClass(), defaults.getMainClass());
+                source.getMainClass(), defaults == null ? null : defaults
+                        .getMainClass());
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
         final TextArrayEditor argumentsEditor = new TextArrayEditor(formPanel,
-                "Arguments: ", source.getArguments(), defaults.getArguments());
+                "Arguments: ", source.getArguments(), defaults == null ? null
+                        : defaults.getArguments());
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
         final TextArrayEditor jvmOptionsEditor = new TextArrayEditor(formPanel,
-                "JVM Options: ", source.getJVMOptions(), defaults
-                        .getJVMOptions());
+                "JVM Options: ", source.getJVMOptions(),
+                defaults == null ? null : defaults.getJVMOptions());
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
         final FileArrayEditor libsEditor = new FileArrayEditor(formPanel,
-                "Libraries: ", source.getLibs(), defaults.getLibs());
+                "Libraries: ", source.getLibs(), defaults == null ? null
+                        : defaults.getLibs());
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
         final FileArrayEditor inputFilesEditor = new FileArrayEditor(formPanel,
-                "Input Files: ", source.getInputFiles(), defaults
-                        .getInputFiles());
+                "Input Files: ", source.getInputFiles(),
+                defaults == null ? null : defaults.getInputFiles());
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
         final FileArrayEditor outputFilesEditor = new FileArrayEditor(
-                formPanel, "Output Files: ", source.getOutputFiles(), defaults
-                        .getOutputFiles());
+                formPanel, "Output Files: ", source.getOutputFiles(),
+                defaults == null ? null : defaults.getOutputFiles());
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
 
         container.add(formPanel, BorderLayout.NORTH);

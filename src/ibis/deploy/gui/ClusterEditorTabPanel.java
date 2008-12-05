@@ -37,7 +37,8 @@ public class ClusterEditorTabPanel extends JPanel {
             final boolean defaultsEditor) {
         setLayout(new BorderLayout());
 
-        Cluster defaults = source.getGrid().getDefaults();
+        Cluster defaults = (source.getGrid() == null) ? null : source.getGrid()
+                .getDefaults();
 
         JPanel container = new JPanel(new BorderLayout());
 
@@ -48,13 +49,15 @@ public class ClusterEditorTabPanel extends JPanel {
                 formPanel, "Name: ", source.getName(), "");
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
         final NumberEditor nodesEditor = new NumberEditor(formPanel, "Nodes: ",
-                source.getNodes(), defaults.getNodes());
+                source.getNodes(), defaults == null ? 1 : defaults.getNodes());
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
         final NumberEditor coresEditor = new NumberEditor(formPanel, "Cores: ",
-                source.getCores(), defaults.getCores());
+                source.getCores(), defaults == null ? 1 : defaults
+                        .getCores());
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
         final TextEditor jobURIEditor = new TextEditor(formPanel, "Job URI: ",
-                source.getJobURI(), defaults.getJobURI());
+                source.getJobURI(), defaults == null ? null : defaults
+                        .getJobURI());
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
 
         AdaptorInfo[] jobAdaptorInfos = new AdaptorInfo[0];
@@ -70,8 +73,8 @@ public class ClusterEditorTabPanel extends JPanel {
                     "ResourceBrokerAdaptor", "");
         }
         final TextComboBoxEditor jobAdaptorEditor = new TextComboBoxEditor(
-                formPanel, "Job Adaptor: ", source.getJobAdaptor(), defaults
-                        .getJobAdaptor(), jobAdaptors);
+                formPanel, "Job Adaptor: ", source.getJobAdaptor(),
+                defaults == null ? null : defaults.getJobAdaptor(), jobAdaptors);
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
 
         AdaptorInfo[] fileAdaptorInfos = new AdaptorInfo[0];
@@ -88,35 +91,40 @@ public class ClusterEditorTabPanel extends JPanel {
         }
         final TextArrayComboBoxEditor fileAdaptorsEditor = new TextArrayComboBoxEditor(
                 formPanel, "File Adaptors: ", source.getFileAdaptors(),
-                defaults.getFileAdaptors(), fileAdaptors);
+                defaults == null ? null : defaults.getFileAdaptors(),
+                fileAdaptors);
 
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
         final TextEditor userNameEditor = new TextEditor(formPanel,
-                "User Name: ", source.getUserName(), defaults.getUserName());
+                "User Name: ", source.getUserName(), defaults == null ? null
+                        : defaults.getUserName());
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
         final TextEditor javaPathEditor = new TextEditor(formPanel,
-                "Java Path: ", source.getJavaPath(), defaults.getJavaPath());
+                "Java Path: ", source.getJavaPath(), defaults == null ? null
+                        : defaults.getJavaPath());
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
         final FileEditor cacheDirEditor = new FileEditor(formPanel,
-                "Cache Directory: ", source.getCacheDir(), defaults
-                        .getCacheDir());
+                "Cache Directory: ", source.getCacheDir(),
+                defaults == null ? null : defaults.getCacheDir());
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
         final FileEditor jobWrapperScriptEditor = new FileEditor(formPanel,
-                "Job Wrapper Script: ", source.getJobWrapperScript(), defaults
-                        .getJobWrapperScript());
+                "Job Wrapper Script: ", source.getJobWrapperScript(),
+                defaults == null ? null : defaults.getJobWrapperScript());
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
         final TextComboBoxEditor serverAdaptorEditor = new TextComboBoxEditor(
                 formPanel, "Server Adaptor: ", source.getServerAdaptor(),
-                defaults.getServerAdaptor(), jobAdaptors);
+                defaults == null ? null : defaults.getServerAdaptor(),
+                jobAdaptors);
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
 
         final TextEditor serverURIEditor = new TextEditor(formPanel,
-                "Server URI: ", source.getServerURI(), defaults.getServerURI());
+                "Server URI: ", source.getServerURI(), defaults == null ? null
+                        : defaults.getServerURI());
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
         final FileArrayEditor serverOutputFilesEditor = new FileArrayEditor(
                 formPanel, "Server Output Files: ", source
-                        .getServerOutputFiles(), defaults
-                        .getServerOutputFiles());
+                        .getServerOutputFiles(), defaults == null ? null
+                        : defaults.getServerOutputFiles());
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
         final MapEditor geoPositionEditor = new MapEditor(formPanel,
                 "Geo Position: ", source.getLatitude(), source.getLongitude());
