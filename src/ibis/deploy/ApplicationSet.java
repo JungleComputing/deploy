@@ -50,7 +50,7 @@ public class ApplicationSet {
         TypedProperties properties = new TypedProperties();
         properties.loadFromFile(file.getAbsolutePath());
 
-        defaults = new Application(properties, null, "default", this);
+        defaults = new Application(properties, "defaults", "default", this);
 
         applications = new ArrayList<Application>();
 
