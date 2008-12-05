@@ -96,7 +96,7 @@ public class ApplicationSet {
     public ApplicationSet() {
         this.applications = new ArrayList<Application>();
         try {
-            defaults = new Application("default", this);
+            defaults = new Application("defaults", this);
         } catch (Exception e) {
             // should not happen, but just in case
             throw new RuntimeException(e);

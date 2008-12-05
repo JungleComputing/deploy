@@ -209,9 +209,15 @@ public class GUI {
 
             if (verbose) {
                 System.err.println("Workspace:");
-                System.err.println(grid.toPrintString());
-                System.err.println(applications.toPrintString());
-                System.err.println(experiment.toPrintString());
+                if (grid != null) {
+                    System.err.println(grid.toPrintString());
+                }
+                if (applications != null) {
+                    System.err.println(applications.toPrintString());
+                }
+                if (experiment != null) {
+                    System.err.println(experiment.toPrintString());
+                }
             }
         }
 
