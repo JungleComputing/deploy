@@ -16,7 +16,7 @@ public class JobDescription {
      * Print a table of valid keys and some explanations to the given stream
      * 
      * @param out
-     *                stream used for printing
+     *            stream used for printing
      */
     public static void printTableOfKeys(PrintWriter out) {
         out.println("# Valid parameters for jobs:");
@@ -100,9 +100,9 @@ public class JobDescription {
      * but are constructed by a parent Experiment object.
      * 
      * @param name
-     *                the name of the job
+     *            the name of the job
      * @throws Exception
-     *                 if name is unspecified, or contains periods or spaces
+     *             if name is unspecified, or contains periods or spaces
      */
     JobDescription(String name, Experiment parent) throws Exception {
         this.parent = parent;
@@ -131,11 +131,11 @@ public class JobDescription {
      * file)
      * 
      * @param properties
-     *                properties to load job from
+     *            properties to load job from
      * @param object
-     *                name of this job, or null to load "defaults" job
+     *            name of this job, or null to load "defaults" job
      * @throws Exception
-     *                 if job cannot be read properly
+     *             if job cannot be read properly
      */
     JobDescription(TypedProperties properties, String name, String prefix,
             Experiment parent) throws Exception {
@@ -249,10 +249,10 @@ public class JobDescription {
      * Sets the name of this job.
      * 
      * @param name
-     *                the name of this job.
+     *            the name of this job.
      * 
      * @throws Exception
-     *                 if name is null, or contains periods or spaces
+     *             if name is null, or contains periods or spaces
      */
     public void setName(String name) throws Exception {
         if (name == null) {
@@ -284,7 +284,7 @@ public class JobDescription {
      * Sets the name of the application run.
      * 
      * @param applicationName
-     *                the name of the application run.
+     *            the name of the application run.
      */
     public void setApplicationName(String applicationName) {
         this.applicationName = applicationName;
@@ -312,7 +312,7 @@ public class JobDescription {
      * Sets total number of times application is started.
      * 
      * @param processCount
-     *                total number of processes in this job, 0 for unknown.
+     *            total number of processes in this job, 0 for unknown.
      */
     public void setProcessCount(int processCount) {
         this.processCount = processCount;
@@ -331,7 +331,7 @@ public class JobDescription {
      * Sets the name of the cluster used.
      * 
      * @param cluster
-     *                the name of the cluster used.
+     *            the name of the cluster used.
      */
     public void setClusterName(String cluster) {
         this.clusterName = cluster;
@@ -360,8 +360,8 @@ public class JobDescription {
      * Sets total number of resources used for this job.
      * 
      * @param resourceCount
-     *                number of machines used on the specified cluster, or 0 for
-     *                unknown.
+     *            number of machines used on the specified cluster, or 0 for
+     *            unknown.
      */
     public void setResourceCount(int resourceCount) {
         this.resourceCount = resourceCount;
@@ -380,8 +380,8 @@ public class JobDescription {
      * Sets the maximum runtime of this job in minutes.
      * 
      * @param runtime
-     *                maximum runtime of this job in minutes., or 0 for not
-     *                specified.
+     *            maximum runtime of this job in minutes., or 0 for not
+     *            specified.
      */
     public void setRuntime(int runtime) {
         this.runtime = runtime;
@@ -402,7 +402,7 @@ public class JobDescription {
      * experiment is used by default.
      * 
      * @param poolName
-     *                the new name of the pool of this job.
+     *            the new name of the pool of this job.
      */
     public void setPoolName(String poolName) {
         this.poolName = poolName;
@@ -423,7 +423,7 @@ public class JobDescription {
      * applications, defaults to 0 for "unknown"
      * 
      * @param poolSize
-     *                the new size of the pool of this job.
+     *            the new size of the pool of this job.
      */
     public void setPoolSize(int poolSize) {
         this.poolSize = poolSize;
@@ -444,8 +444,7 @@ public class JobDescription {
      * Sets if this job uses a shared hub, or one is started especially for it.
      * 
      * @param sharedHub
-     *                Does this job use a shared hub or not. Use null for
-     *                "unknown"
+     *            Does this job use a shared hub or not. Use null for "unknown"
      */
     public void setSharedHub(Boolean sharedHub) {
         this.sharedHub = sharedHub;
@@ -456,7 +455,7 @@ public class JobDescription {
      * exception.
      * 
      * @throws Exception
-     *                 if this description is incomplete or incorrect.
+     *             if this description is incomplete or incorrect.
      */
     public void checkSettings() throws Exception {
         String prefix = "Cannot run job \"" + name + "\": ";
@@ -522,9 +521,9 @@ public class JobDescription {
      * </ol>
      * 
      * @param applicationSet
-     *                applications to use for resolving settings.
+     *            applications to use for resolving settings.
      * @param grid
-     *                clusters to use for resolving settings.
+     *            clusters to use for resolving settings.
      * 
      * @return the resulting application, as a new object.
      * @throws Exception
@@ -574,9 +573,13 @@ public class JobDescription {
 
         // add settings from this object
         result.applicationOverrides.overwrite(this.applicationOverrides);
-        result.applicationOverrides.setName(result.getApplicationName());
+        if (result.getApplicationName() != null) {
+            result.applicationOverrides.setName(result.getApplicationName());
+        }
         result.clusterOverrides.overwrite(this.clusterOverrides);
-        result.clusterOverrides.setName(result.getClusterName());
+        if (result.getClusterName() != null) {
+            result.clusterOverrides.setName(result.getClusterName());
+        }
 
         return result;
     }
@@ -585,11 +588,11 @@ public class JobDescription {
      * Print the settings of this job to a (properties) file
      * 
      * @param out
-     *                stream to write this file to
+     *            stream to write this file to
      * @param prefix
-     *                prefix to add to all keys, or null to use name of job.
+     *            prefix to add to all keys, or null to use name of job.
      * @throws Exception
-     *                 if this job has no name
+     *             if this job has no name
      */
     public void save(PrintWriter out, String prefix, boolean ensureExists)
             throws Exception {
