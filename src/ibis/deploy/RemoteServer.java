@@ -102,7 +102,7 @@ public class RemoteServer implements Runnable {
             addStateListener(hubListener);
         }
 
-        logger.info("Starting " + this + "\" using "
+        logger.info("Starting " + this + " using "
                 + this.cluster.getServerAdaptor() + "("
                 + this.cluster.getServerURI() + ")");
 
