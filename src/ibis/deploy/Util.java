@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.gridlab.gat.URI;
 import org.slf4j.Logger;
@@ -28,7 +29,7 @@ public class Util {
      * Finds a list of clusters, jobs or application in a list of properties
      * 
      * Each unique string in the set of keys(cut on the first ".") is returned,
-     * except for "default"
+     * except for "default". The list is sorted by alphabet.
      * 
      * @param properties
      *            to search for elements in.
@@ -36,7 +37,7 @@ public class Util {
      * @return the set of elements
      */
     public static String[] getElementList(Properties properties) {
-        Set<String> result = new HashSet<String>();
+        Set<String> result = new TreeSet<String>();
 
         for (String key : properties.stringPropertyNames()) {
             // add part of key before the first period to the result
@@ -45,7 +46,7 @@ public class Util {
 
         // make sure "default" is not in the list
         result.remove("default");
-
+        
         return result.toArray(new String[0]);
     }
 

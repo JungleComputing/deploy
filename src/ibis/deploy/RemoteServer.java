@@ -119,6 +119,9 @@ public class RemoteServer implements Runnable {
         }
         // ensure files are readable on the other side
         context.addPreference("file.chmod", "0755");
+        // make sure non existing files/dirs will be created on the 
+        // fly during a copy
+        context.addPreference("file.create", "true");
 
         context.addPreference("resourcebroker.adaptor.name", cluster
                 .getServerAdaptor());
