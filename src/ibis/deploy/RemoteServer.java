@@ -197,7 +197,7 @@ public class RemoteServer implements Runnable {
             }
         }
 
-        sd.addJavaSystemProperty("log4j.prefix", "\"REMOTE OUTPUT FROM '" + toString() + "': \"");
+        sd.addJavaSystemProperty("log4j.prefix", "REMOTE_OUTPUT_FROM_" + id + "@" + cluster.getName());
 
         // set classpath
         sd.setJavaClassPath(".:lib-server:lib-server/*");
