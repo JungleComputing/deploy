@@ -347,6 +347,9 @@ public class Job implements Runnable {
         sd.addJavaSystemProperty(IbisProperties.POOL_SIZE, ""
                 + description.getPoolSize());
         sd.addJavaSystemProperty(IbisProperties.SERVER_ADDRESS, serverAddress);
+        
+        sd.addJavaSystemProperty("ibis.deploy.job.id", jobID);
+        sd.addJavaSystemProperty("ibis.deploy.job.size", Integer.toString(description.getProcessCount()));
 
         // add hub list to software description
         sd.addJavaSystemProperty(IbisProperties.HUB_ADDRESSES, hubList);
