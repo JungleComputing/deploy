@@ -33,12 +33,12 @@
     <!-- copy included IPL -->
     <target name="copy-included-ipl">
         <copy todir="lib/ipl">
-		<fileset dir="external/ipl" />
+            <fileset dir="external/ipl" />
         </copy>
-        
+
         <copy todir="lib/ipl-apps">
-		<fileset dir="external/ipl-apps" />
-    	</copy>
+            <fileset dir="external/ipl-apps" />
+        </copy>
     </target>
 
     <!-- copy IPL specified by $IPL_HOME  -->
@@ -46,11 +46,11 @@
         <copy todir="lib/ipl">
             <fileset dir="${ipl-home}/lib" />
         </copy>
-        
+
         <copy todir="lib/ipl-apps">
             <fileset dir="${ipl-home}/benchmarks/lib" />
         </copy>
-        
+
         <copy todir="lib/ipl-apps">
             <fileset dir="${ipl-home}/examples/lib" />
         </copy>
@@ -61,14 +61,14 @@
     <!-- copy included JavaGAT -->
     <target name="copy-included-javagat">
         <copy todir="lib/javagat">
-		<fileset dir="external/javagat" />
+            <fileset dir="external/javagat" />
         </copy>
     </target>
 
     <!-- copy javaGAT specified by $GAT_LOCATION -->
     <target name="copy-external-javagat">
         <copy todir="lib/javagat">
-		<fileset dir="${gat-location}/lib" />
+            <fileset dir="${gat-location}/lib" />
         </copy>
     </target>
 
@@ -100,18 +100,25 @@
         </jar>
 
         <!-- Generate javadoc -->
-        <javadoc destdir="javadoc" access="public" classpathref="default.classpath" packagenames="*" sourcepath="src" windowtitle="Ibis ${ant.project.name} Documentation" doctitle="Ibis ${ant.project.name} Documentation" bottom="The Ibis project">
+        <javadoc 
+            destdir="javadoc" 
+            access="public" 
+            classpathref="default.classpath" 
+            packagenames="ibis.deploy" 
+            sourcepath="src" 
+            windowtitle="Ibis ${ant.project.name} Documentation" 
+            doctitle="Ibis ${ant.project.name} Documentation" 
+            bottom="The Ibis project">
             <link href="http://java.sun.com/j2se/1.5.0/docs/api/" />
         </javadoc>
-        
-	<delete dir="tmp" />
+
+        <delete dir="tmp" />
 
         <mkdir dir="lib-server" />
 
         <copy todir="lib-server">
-		<fileset dir="lib/ipl" 
-			includes="commons*,ibis*,ipl*,jstun*,log4j*,sbbi*,slf4j*,smartsockets*,trilead*" />
-	</copy>
+            <fileset dir="lib/ipl" includes="commons*,ibis*,ipl*,jstun*,log4j*,sbbi*,slf4j*,smartsockets*,trilead*" />
+        </copy>
     </target>
 
     <!-- Clean up everything -->
