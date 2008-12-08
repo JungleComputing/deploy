@@ -55,8 +55,8 @@ grid.VU.job.wrapper.script = examples/das3.script
 #grid.VU.server.output.files =
 grid.VU.nodes = 85
 grid.VU.cores = 340
-grid.VU.latitude = 4.872222
-grid.VU.longitude = 52.336062
+grid.VU.latitude = 52.336062
+grid.VU.longitude = 4.872222
 
 # Details of cluster "MultimediaN"
 #grid.MultimediaN.server.adaptor = 
@@ -71,8 +71,8 @@ grid.MultimediaN.job.uri = any://fs4.das3.science.uva.nl/jobmanager-sge
 #grid.MultimediaN.server.output.files =
 grid.MultimediaN.nodes = 46
 grid.MultimediaN.cores = 92
-grid.MultimediaN.latitude = 5.336797
-grid.MultimediaN.longitude = 52.37719
+grid.MultimediaN.latitude = 52.37719
+grid.MultimediaN.longitude = 5.336797
 
 # Details of cluster "Delft"
 #grid.Delft.server.adaptor = 
@@ -87,8 +87,8 @@ grid.Delft.job.uri = any://fs3.das3.tudelft.nl/jobmanager-sge
 #grid.Delft.server.output.files =
 grid.Delft.nodes = 68
 grid.Delft.cores = 136
-grid.Delft.latitude = 4.356667
-grid.Delft.longitude = 52.015
+grid.Delft.latitude = 52.015
+grid.Delft.longitude = 4.356667
 
 # Details of cluster "UvA"
 #grid.UvA.server.adaptor = 
@@ -103,8 +103,8 @@ grid.UvA.job.uri = any://fs2.das3.science.uva.nl/jobmanager-sge
 #grid.UvA.server.output.files =
 grid.UvA.nodes = 41
 grid.UvA.cores = 164
-grid.UvA.latitude = 4.779656
-grid.UvA.longitude = 52.568436
+grid.UvA.latitude = 52.568436
+grid.UvA.longitude = 4.779656
 
 # Details of cluster "Leiden"
 #grid.Leiden.server.adaptor = 
@@ -119,8 +119,8 @@ grid.Leiden.job.uri = any://fs1.das3.liacs.nl/jobmanager-sge
 #grid.Leiden.server.output.files =
 grid.Leiden.nodes = 32
 grid.Leiden.cores = 64
-grid.Leiden.latitude = 4.49
-grid.Leiden.longitude = 52.16
+grid.Leiden.latitude = 52.16
+grid.Leiden.longitude = 4.49
 
 # Details of cluster "local"
 grid.local.server.adaptor = local

@@ -118,6 +118,15 @@ public class GUI {
                 frame, gui));
         menu.add(subMenu);
 
+        subMenu = new JMenu("Reset");
+        subMenu.add(new ResetWorkSpaceAction("Entire Workspace", frame, gui));
+        subMenu.add(new ResetGridWorkSpaceAction("Grid Workspace", frame, gui));
+        subMenu.add(new ResetApplicationSetWorkSpaceAction(
+                "Application Workspace", frame, gui));
+        subMenu.add(new ResetExperimentWorkSpaceAction("Experiment Workspace",
+                frame, gui));
+        menu.add(subMenu);
+
         gui.menuBar.add(menu);
 
         menu = new JMenu("Options");
