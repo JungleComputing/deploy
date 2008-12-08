@@ -30,18 +30,17 @@ public class Application {
         out.println("# KEY                COMMENT");
         out.println("# main.class         Main class of application");
         out.println("# arguments          Arguments of the application(*)");
-        out
-                .println("# libs               Files and directories which need to be in the classpath.");
+        out.println("# libs               Files and directories which need to be in the classpath.");
         out.println("#                    Automatically pre-staged as well(*)");
-        out
-                .println("# input.files        Input files copied to root of sandbox(*)");
-        out
-                .println("# output.files       Output files copied from root of sandbox(*)");
-        out
-                .println("# system.properties  Additional system properties in the form of name=value(*)");
-        out
-                .println("# jvm.options        Additional JVM options, for instance memory options(*)");
+        out.println("# input.files        Input files copied to root of sandbox(*)");
+        out.println("# output.files       Output files copied from root of sandbox(*)");
+        out.println("# system.properties  Additional system properties in the form of name=value(*)");
+        out.println("# jvm.options        Additional JVM options, for instance memory options(*)");
+        out.println("# log4j.file         Log4j properties file used for the application.");
+        out.println("#                    Defaults to log4j of ibis-deploy itself.");
         out.println("# (* = comma separated list of items)");
+        
+        
     }
 
     // group this application belongs to
@@ -71,6 +70,8 @@ public class Application {
 
     // additional JVM options
     private List<String> jvmOptions;
+    
+    private File log4jFile;
 
     /**
      * Creates an empty application object, with no name or parent
@@ -85,6 +86,7 @@ public class Application {
         outputFiles = null;
         systemProperties = null;
         jvmOptions = null;
+        log4jFile = null;
     }
 
     /**
@@ -108,6 +110,7 @@ public class Application {
         outputFiles = null;
         systemProperties = null;
         jvmOptions = null;
+        log4jFile = null;
     }
 
     /**
@@ -143,6 +146,7 @@ public class Application {
                 + "system.properties");
         jvmOptions = Util.getStringListProperty(properties, prefix
                 + "jvm.options");
+        log4jFile = Util.getFileProperty(properties, prefix + "log4j.file");
     }
 
     /**
@@ -194,6 +198,10 @@ public class Application {
         if (other.jvmOptions != null) {
             jvmOptions = new ArrayList<String>();
             jvmOptions.addAll(other.jvmOptions);
+        }
+        
+        if (other.log4jFile != null) {
+            this.log4jFile = other.log4jFile;
         }
     }
 
@@ -508,6 +516,25 @@ public class Application {
         }
         jvmOptions.add(jvmOption);
     }
+    
+    /**
+     * Log4j properties file used for application.
+     * 
+     * @return Log4j properties file used for application.
+     */
+    public File getLog4jFile() {
+        return log4jFile;
+    }
+
+    /**
+     * Sets Log4j properties file used for application.
+     * 
+     * @param log4jFile
+     *            Log4j properties file used for application.
+     */
+    public void setLog4jFile(File log4jFile) {
+        this.log4jFile = log4jFile;
+    }
 
     /**
      * Checks if this application is suitable for deploying. If not, throws an
@@ -629,6 +656,13 @@ public class Application {
             out.println("#Dummy property to make sure application is actually defined");
             out.println(dotPrefix);
         }
+        
+        if (log4jFile != null) {
+            out.println(dotPrefix + "log4j.file = " + log4jFile);
+            empty = false;
+        } else if (printComments) {
+            out.println("#" + dotPrefix + "log4j.file =");
+        }
     }
 
     /**
@@ -652,6 +686,7 @@ public class Application {
         result += " System properties = "
                 + Util.toCSString(getSystemProperties()) + "\n";
         result += " JVM Options = " + Util.strings2CSS(getJVMOptions()) + "\n";
+        result += " Log4j File = " + getLog4jFile() + "\n";
 
         return result;
     }

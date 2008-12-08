@@ -240,7 +240,7 @@ public class Job implements Runnable {
         return result;
     }
 
-    // classpath made up of all directories, as well as
+    // classpath made up of all directories, as well as jar
     private static String createClassPath(File[] libs) {
         // start with lib directory
         String result = "lib" + File.pathSeparator + "lib" + File.separator
@@ -353,6 +353,9 @@ public class Job implements Runnable {
 
         // add hub list to software description
         sd.addJavaSystemProperty(IbisProperties.HUB_ADDRESSES, hubList);
+
+        //Also set old property name for hub addresses
+        sd.addJavaSystemProperty("ibis.server.hub.addresses", hubList);
 
         // set these last so a user can override any
         // and all settings made by ibis-deploy

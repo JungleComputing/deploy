@@ -7,6 +7,7 @@ import java.io.File;
 
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
+import org.gridlab.gat.engine.util.OutputForwarder;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.MetricListener;
@@ -96,7 +97,7 @@ public class RemoteServer implements Runnable {
         } else {
             id = "Server-" + getNextID();
         }
-        
+
         listeners = new Listeners(this.toString());
         if (hubListener != null) {
             addStateListener(hubListener);
@@ -146,7 +147,7 @@ public class RemoteServer implements Runnable {
 
         // create cache dir, and server dir within
         org.gridlab.gat.io.File gatCacheDirFile = GAT.createFile(context,
-                "any://" + host + "/" + cacheDir + "/server/");
+            "any://" + host + "/" + cacheDir + "/server/");
         gatCacheDirFile.mkdirs();
 
         // rsync to cluster cache server dir
@@ -170,12 +171,12 @@ public class RemoteServer implements Runnable {
 
         // main class and options
         sd.setJavaMain("ibis.server.Server");
+
         if (hubOnly) {
-            sd.setJavaArguments(new String[] { "--hub-only", "--remote",
+            sd.setJavaArguments(new String[] {"--hub-only", "--remote",
                     "--port", "0" });
         } else {
-            sd.setJavaArguments(new String[] { "--remote", "--port", "0",
-                    "--events", "--stats" });
+            sd.setJavaArguments(new String[] {"--remote", "--port", "0"});
         }
 
         // add server libraries to pre-stage, use rsync if specified
@@ -196,6 +197,8 @@ public class RemoteServer implements Runnable {
             }
         }
 
+        sd.addJavaSystemProperty("log4j.prefix", "\"REMOTE OUTPUT FROM '" + toString() + "': \"");
+
         // set classpath
         sd.setJavaClassPath(".:lib-server:lib-server/*");
 
@@ -204,15 +207,8 @@ public class RemoteServer implements Runnable {
         }
 
         sd.enableStreamingStdout(true);
+        sd.enableStreamingStderr(true);
         sd.enableStreamingStdin(true);
-
-        if (hubOnly) {
-            sd.setStderr(GAT
-                    .createFile(context, cluster.getName() + ".hub.err"));
-        } else {
-            sd.setStderr(GAT.createFile(context, cluster.getName()
-                    + ".server.err"));
-        }
 
         JobDescription result = new JobDescription(sd);
 
@@ -257,7 +253,7 @@ public class RemoteServer implements Runnable {
             listener.processMetricEvent(new MetricEvent(gatJob, gatJob
                     .getState(), metric, System.currentTimeMillis()));
         }
-        
+
         listeners.addListener(listener);
     }
 
@@ -306,13 +302,17 @@ public class RemoteServer implements Runnable {
             logger.debug("creating resource broker for hub");
 
             ResourceBroker jobBroker = GAT.createResourceBroker(context,
-                    cluster.getServerURI());
-            
-            logger.info("JavaGAT job description for " + this + " =" + jobDescription);
-            
+                cluster.getServerURI());
+
+            logger.info("JavaGAT job description for " + this + " ="
+                    + jobDescription);
+
             org.gridlab.gat.resources.Job job = jobBroker.submitJob(
-                    jobDescription, listeners, "job.status");
+                jobDescription, listeners, "job.status");
             setGatJob(job);
+            
+            //forward error to deploy console
+             new OutputForwarder(job.getStderr(), System.err);
 
             // TODO: remote remote client stuff
             logger.debug("starting remote client");
