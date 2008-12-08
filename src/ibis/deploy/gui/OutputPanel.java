@@ -95,7 +95,7 @@ public class OutputPanel extends JPanel {
         container.add(Box.createVerticalStrut(20));
         container.add(new JLabel("Other Files: "));
         if (job.getApplication().getOutputFiles() == null) {
-            add(new JLabel("No other output files"));
+            container.add(new JLabel("No other output files"));
         } else {
             for (final File outputFile : job.getApplication().getOutputFiles()) {
                 JLabel outputFileLabel = new JLabel("<html><a href=.>"

@@ -49,6 +49,11 @@ public class ApplicationEditorTabPanel extends JPanel {
                 "Arguments: ", source.getArguments(), defaults == null ? null
                         : defaults.getArguments());
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
+        final TextMapArrayEditor systemPropertiesEditor = new TextMapArrayEditor(
+                formPanel, "JVM System Properties: ", source
+                        .getSystemProperties(), defaults == null ? null
+                        : defaults.getSystemProperties());
+        formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
         final TextArrayEditor jvmOptionsEditor = new TextArrayEditor(formPanel,
                 "JVM Options: ", source.getJVMOptions(),
                 defaults == null ? null : defaults.getJVMOptions());
@@ -96,6 +101,7 @@ public class ApplicationEditorTabPanel extends JPanel {
                 }
                 source.setMainClass(mainEditor.getText());
                 source.setArguments(argumentsEditor.getTextArray());
+                source.setSystemProperties(systemPropertiesEditor.getTextMap());
                 source.setJVMOptions(jvmOptionsEditor.getTextArray());
                 source.setLibs(libsEditor.getFileArray());
                 source.setInputFiles(inputFilesEditor.getFileArray());
