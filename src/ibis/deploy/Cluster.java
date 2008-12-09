@@ -698,9 +698,9 @@ public class Cluster {
             throw new Exception(prefix + "file adaptors not specified");
         }
 
-        if (cacheDir != null && !cacheDir.isAbsolute()) {
-            throw new Exception("Cache dir must be absolute");
-        }
+//        if (cacheDir != null && !cacheDir.isAbsolute()) {
+//            throw new Exception("Cache dir must be absolute");
+//        }
 
         if (cores < 0) {
             throw new Exception(prefix + "number of cores negative");

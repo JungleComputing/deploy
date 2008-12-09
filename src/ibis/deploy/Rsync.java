@@ -19,10 +19,6 @@ class Rsync {
 
     private static Process createProcess(File src, File dst, String userName,
             String host) throws Exception {
-        if (!dst.isAbsolute()) {
-            throw new Exception("destination must be absolute, not: " + dst);
-        }
-
         ProcessBuilder builder = new ProcessBuilder();
 
         List<String> command = builder.command();
@@ -56,9 +52,9 @@ class Rsync {
 
         // destination file
         if (userName == null) {
-            command.add(host + ":" + dst.getAbsolutePath());
+            command.add(host + ":" + dst.getPath());
         } else {
-            command.add(userName + "@" + host + ":" + dst.getAbsolutePath());
+            command.add(userName + "@" + host + ":" + dst.getPath());
         }
 
         if (logger.isDebugEnabled()) {
