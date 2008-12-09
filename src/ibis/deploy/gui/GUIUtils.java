@@ -51,14 +51,14 @@ public class GUIUtils {
 
     /** Returns an ImageIcon, or null if the path was invalid. */
     protected static ImageIcon createImageIcon(String path, String description) {
-        // java.net.URL imgURL = GUIUtils.class.getResource(path);
-        URL imgURL = null;
-        try {
-            imgURL = new URL("file:" + path);
-        } catch (MalformedURLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        java.net.URL imgURL = GUIUtils.class.getResource(path);
+        // URL imgURL = null;
+        // try {
+        // imgURL = new URL("file:" + path);
+        // } catch (MalformedURLException e) {
+        // // TODO Auto-generated catch block
+        // e.printStackTrace();
+        // }
         if (imgURL != null) {
             return new ImageIcon(imgURL, description);
         } else {

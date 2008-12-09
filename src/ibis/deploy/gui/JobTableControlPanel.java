@@ -14,19 +14,19 @@ public class JobTableControlPanel extends JPanel {
     public JobTableControlPanel(final GUI gui, final JTable table) {
         JButton runAllButton = GUIUtils.createImageButton(
                 new SubmitExistingJobAction(0, true, false, table, gui,
-                        getRootPane()), "images/go-next.png",
+                        getRootPane()), "/images/go-next.png",
                 "Runs all jobs of this expirement", "Start All");
         JButton runSelectedButton = GUIUtils.createImageButton(
                 new SubmitExistingJobAction(0, true, true, table, gui,
-                        getRootPane()), "images/go-next.png",
+                        getRootPane()), "/images/go-next.png",
                 "Runs selected jobs of this expirement", "Start Selected");
         JButton stopAllButton = GUIUtils.createImageButton(
                 new StopExistingJobAction(0, true, false, table, gui,
-                        getRootPane()), "images/process-stop.png",
+                        getRootPane()), "/images/process-stop.png",
                 "Stops all jobs of this expirement", "Stop All");
         JButton stopSelectedButton = GUIUtils.createImageButton(
                 new StopExistingJobAction(0, true, true, table, gui,
-                        getRootPane()), "images/process-stop.png",
+                        getRootPane()), "/images/process-stop.png",
                 "Stops selected jobs of this expirement", "Stop Selected");
 
         add(runAllButton);

@@ -22,7 +22,7 @@ public class NumberEditor {
     private final int defaultValue;
 
     private final JButton openButton = GUIUtils.createImageButton(
-            "images/document-open.png", "select a file", null);
+            "/images/document-open.png", "select a file", null);
 
     private final JLabel label = new JLabel("", JLabel.TRAILING);
 

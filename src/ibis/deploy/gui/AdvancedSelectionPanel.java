@@ -21,7 +21,7 @@ public class AdvancedSelectionPanel extends JPanel {
         setLayout(new BorderLayout(5, 5));
         add(new JLabel("Advanced settings"), BorderLayout.NORTH);
         JButton overwritesButton = GUIUtils.createImageButton(
-                "images/preferences-system.png",
+                "/images/preferences-system.png",
                 "set the overwrite values and/or ibis parameters for this job",
                 "Advanced ...");
         overwritesButton.addActionListener(new ActionListener() {

@@ -45,7 +45,7 @@ class MyTableRenderer extends JLabel implements TableCellRenderer {
             if (job != null && !table.getValueAt(row, 3).equals("STOPPED")) {
                 // job submitted, not yet stopped
                 final JButton stopButton = GUIUtils.createImageButton(
-                        "images/media-playback-stop.png", null, null);
+                        "/images/media-playback-stop.png", null, null);
                 stopButton.addActionListener(new ActionListener() {
 
                     public void actionPerformed(ActionEvent arg0) {
@@ -59,7 +59,7 @@ class MyTableRenderer extends JLabel implements TableCellRenderer {
                 final JButton startButton = GUIUtils.createImageButton(
                         new SubmitExistingJobAction(row, false, false, table,
                                 gui, getRootPane()),
-                        "images/media-playback-start.png", null, null);
+                        "/images/media-playback-start.png", null, null);
                 return startButton;
             }
         } else if (column == 1) {

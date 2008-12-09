@@ -62,7 +62,14 @@ public class SubmitExistingJobAction extends AbstractAction {
             Object object = model.getValueAt(row, 0);
             JobDescription jd = null;
             if (object instanceof Job) {
-                // stopped job
+                try {
+                    // continue for non stopped jobs
+                    if (((Job) object).getState() != org.gridlab.gat.resources.Job.JobState.STOPPED) {
+                        continue;
+                    }
+                } catch (Exception e) {
+                    // ignore
+                }
                 jd = ((Job) object).getDescription();
             } else {
                 // not yet submitted job

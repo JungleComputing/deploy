@@ -50,7 +50,7 @@ public class ApplicationSelectionPanel extends JPanel {
         JPanel titlePanel = new JPanel(new BorderLayout());
         titlePanel.add(new JLabel("Select Application"), BorderLayout.WEST);
         titlePanel.add(GUIUtils.createImageLabel(
-                "images/applications-system.png", "process count"),
+                "/images/applications-system.png", "process count"),
                 BorderLayout.EAST);
 
         add(titlePanel, BorderLayout.NORTH);

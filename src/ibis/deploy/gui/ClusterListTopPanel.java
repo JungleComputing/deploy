@@ -30,7 +30,7 @@ public class ClusterListTopPanel extends JPanel {
         // add(label);
         JPanel buttonPanel = new JPanel();
         JButton addButton = GUIUtils.createImageButton(
-                "images/list-add-small.png", "add cluster", null);
+                "/images/list-add-small.png", "add cluster", null);
         addButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent arg0) {
@@ -50,7 +50,7 @@ public class ClusterListTopPanel extends JPanel {
         });
         buttonPanel.add(addButton);
         JButton removeButton = GUIUtils.createImageButton(
-                "images/list-remove-small.png", "remove cluster", null);
+                "/images/list-remove-small.png", "remove cluster", null);
         removeButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent arg0) {

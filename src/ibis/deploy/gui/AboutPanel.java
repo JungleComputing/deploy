@@ -14,7 +14,7 @@ public class AboutPanel extends JPanel {
 
     public AboutPanel() {
         JButton button = GUIUtils.createImageButton(
-                "images/ibis-logo-left.png", "www.cs.vu.nl/ibis", null);
+                "/images/ibis-logo-left.png", "www.cs.vu.nl/ibis", null);
         add(button);
         button.addActionListener(new ActionListener() {
 
@@ -35,7 +35,7 @@ public class AboutPanel extends JPanel {
             }
 
         });
-        button = GUIUtils.createImageButton("images/ibis-logo-middle.png",
+        button = GUIUtils.createImageButton("/images/ibis-logo-middle.png",
                 "www.cs.vu.nl/ibis", null);
         add(button);
         button.addActionListener(new ActionListener() {
@@ -58,7 +58,7 @@ public class AboutPanel extends JPanel {
             }
         });
 
-        button = GUIUtils.createImageButton("images/ibis-logo-right.png",
+        button = GUIUtils.createImageButton("/images/ibis-logo-right.png",
                 "www.cs.vu.nl", null);
         add(button);
         button.addActionListener(new ActionListener() {

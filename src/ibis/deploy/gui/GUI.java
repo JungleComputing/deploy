@@ -82,8 +82,8 @@ public class GUI {
         UIManager.put("swing.boldMetal", Boolean.FALSE);
         final JFrame frame = new JFrame("Ibis Deploy");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setIconImage(GUIUtils.createImageIcon("images/favicon.ico", null)
-                .getImage());
+        frame.setIconImage(GUIUtils
+                .createImageIcon("/images/favicon.ico", null).getImage());
 
         gui.menuBar = new JMenuBar();
         JMenu menu = new JMenu("File");
