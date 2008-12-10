@@ -52,6 +52,10 @@ public class Grid {
         defaults = new Cluster(properties, "defaults", "default", this);
 
         clusters = new ArrayList<Cluster>();
+
+        //add a default local cluster.
+        clusters.add(Cluster.getLocalCluster());
+        
         String[] clusterNames = Util.getElementList(properties);
         if (clusterNames != null) {
             for (String clusterName : clusterNames) {

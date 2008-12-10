@@ -211,6 +211,7 @@ public class Deploy {
                         System.currentTimeMillis()));
             }
             remoteServer = null;
+            
         } else {
             rootHub = new LocalServer(true);
             remoteServer = new RemoteServer(serverCluster, false, rootHub,
@@ -222,7 +223,7 @@ public class Deploy {
                 remoteServer.waitUntilRunning();
             }
         }
-
+        
         logger.info("Ibis Deploy initialized, root hub address is "
                 + rootHub.getAddress());
     }

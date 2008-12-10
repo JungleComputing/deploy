@@ -285,7 +285,7 @@ public class Application {
      * @param arguments
      *            new application parameters of this application.
      */
-    public void setArguments(String[] arguments) {
+    public void setArguments(String...arguments) {
         if (arguments == null) {
             this.arguments = null;
         } else {
@@ -327,7 +327,7 @@ public class Application {
      * @param libs
      *            new list of library files and directories.
      */
-    public void setLibs(File[] libs) {
+    public void setLibs(File... libs) {
         if (libs == null) {
             this.libs = null;
         } else {
@@ -369,7 +369,7 @@ public class Application {
      * @param inputFiles
      *            new list of input files
      */
-    public void setInputFiles(File[] inputFiles) {
+    public void setInputFiles(File... inputFiles) {
         if (inputFiles == null) {
             this.inputFiles = null;
         } else {
@@ -411,7 +411,7 @@ public class Application {
      * @param outputFiles
      *            new list of output files.
      */
-    public void setOutputFiles(File[] outputFiles) {
+    public void setOutputFiles(File... outputFiles) {
         if (outputFiles == null) {
             this.outputFiles = null;
         } else {
@@ -495,7 +495,7 @@ public class Application {
      * @param jvmOptions
      *            The new JVM options.
      */
-    public void setJVMOptions(String[] jvmOptions) {
+    public void setJVMOptions(String... jvmOptions) {
         if (jvmOptions == null) {
             this.jvmOptions = null;
         } else {

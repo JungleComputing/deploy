@@ -67,6 +67,29 @@ public class Cluster {
         out
                 .println("# longitude           Longitude position of this cluster (double)");
     }
+    
+    /**
+     * @return a Cluster representing the local machine
+     */    
+    public static Cluster getLocalCluster() throws Exception {
+        Cluster result = new Cluster();
+        
+        result.setName("local");
+        result.setServerAdaptor("local");
+        result.setServerURI(new URI("any://localhost"));
+        result.setJobAdaptor("local");
+        result.setJobURI(new URI("any://localhost"));
+        result.setFileAdaptors("local");
+        result.setJavaPath(System.getProperty("java.home") + File.separator + "bin" + File.separator + "java");
+        result.setNodes(1);
+        result.setCores(Runtime.getRuntime().availableProcessors());
+        
+        result.setLatitude(52.332933);
+        result.setLongitude(4.866064);
+
+        return result;
+    }
+
 
     private final Grid parent;
 
@@ -432,7 +455,7 @@ public class Cluster {
      *            the new list of adaptors used to copy files to and from this
      *            cluster.
      */
-    public void setFileAdaptors(String[] fileAdaptors) {
+    public void setFileAdaptors(String... fileAdaptors) {
         if (fileAdaptors == null) {
             this.fileAdaptors = null;
         } else {
@@ -569,7 +592,7 @@ public class Cluster {
      * @param serverOutputFiles
      *            new list of output files.
      */
-    public void setOutputFiles(File[] serverOutputFiles) {
+    public void setOutputFiles(File... serverOutputFiles) {
         if (serverOutputFiles == null) {
             this.serverOutputFiles = null;
         } else {
@@ -897,4 +920,5 @@ public class Cluster {
         return result;
     }
 
+   
 }
