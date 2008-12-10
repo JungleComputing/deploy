@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Server or Hub running on a remote cluster
  */
-public class RemoteServer implements Runnable {
+public class RemoteServer implements Runnable, Hub {
 
     private static int nextID = 0;
 

@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
  * Server or Hub running on the local machine (inside the deploy jvm)
  * 
  */
-public class LocalServer {
+public class LocalServer implements Hub {
     private static final Logger logger = LoggerFactory
             .getLogger(LocalServer.class);
 
@@ -53,7 +53,10 @@ public class LocalServer {
      * Get the address of this server.
      * 
      * @return the address of this server
+     * 
+     * 
      */
+    @Override
     public String getAddress() {
         return server.getLocalAddress();
     }
@@ -72,6 +75,10 @@ public class LocalServer {
 
     void killAll() {
         // TODO:implement using Smartsockets kill mechanism
+    }
+    
+    public void waitUntilRunning() {
+        //NOTHING
     }
 
     /**

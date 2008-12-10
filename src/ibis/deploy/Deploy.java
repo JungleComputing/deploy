@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.gridlab.gat.GAT;
+import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.slf4j.Logger;
@@ -211,7 +212,7 @@ public class Deploy {
                         System.currentTimeMillis()));
             }
             remoteServer = null;
-            
+
         } else {
             rootHub = new LocalServer(true);
             remoteServer = new RemoteServer(serverCluster, false, rootHub,
@@ -223,7 +224,7 @@ public class Deploy {
                 remoteServer.waitUntilRunning();
             }
         }
-        
+
         logger.info("Ibis Deploy initialized, root hub address is "
                 + rootHub.getAddress());
     }
@@ -271,7 +272,7 @@ public class Deploy {
         // waits until server is running
         String serverAddress = getServerAddress();
 
-        RemoteServer hub = null;
+        Hub hub = null;
         if (description.getSharedHub() == null || description.getSharedHub()) {
             hub = getHub(description.getClusterOverrides(), false, hubListener);
         }
@@ -299,9 +300,8 @@ public class Deploy {
      * @throws Exception
      *             if the hub cannot be started
      */
-    public synchronized RemoteServer getHub(Cluster cluster,
-            boolean waitUntilRunning, MetricListener hubListener)
-            throws Exception {
+    public synchronized Hub getHub(Cluster cluster, boolean waitUntilRunning,
+            MetricListener hubListener) throws Exception {
         if (rootHub == null) {
             throw new Exception("Ibis Deploy not initialized, cannot get hub");
         }
@@ -312,6 +312,14 @@ public class Deploy {
 
         if (clusterName == null) {
             throw new Exception("cannot start hub on an unnamed cluster");
+        }
+
+        if (clusterName.equals("local")) {
+            // fake event to notify it is running already
+            hubListener.processMetricEvent(new MetricEvent(this,
+                    org.gridlab.gat.resources.Job.JobState.RUNNING, null,
+                    System.currentTimeMillis()));
+            return rootHub;
         }
 
         RemoteServer result = hubs.get(clusterName);

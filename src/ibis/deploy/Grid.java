@@ -10,9 +10,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Grid containing clusters. Also has a list of default values.
  * 
@@ -20,8 +17,6 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class Grid {
-
-    private static final Logger logger = LoggerFactory.getLogger(Grid.class);
 
     // cluster representing defaults
     private Cluster defaults;
