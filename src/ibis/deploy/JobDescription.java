@@ -555,12 +555,17 @@ public class JobDescription {
         }
 
         if (grid != null) {
-            // overwrite cluster with defaults from grid
-            result.clusterOverrides.overwrite(grid.getDefaults());
-
             // add cluster settings
             Cluster cluster = grid.getCluster(result.getClusterName());
-            result.clusterOverrides.overwrite(cluster);
+
+            if (cluster == null) {
+                // overwrite cluster with defaults from grid
+                result.clusterOverrides.overwrite(grid.getDefaults());
+            } else {
+                // use resolved cluster settings (may include some grid
+                // settings)
+                result.clusterOverrides.overwrite(cluster.resolve());
+            }
         }
 
         // add defaults from parent

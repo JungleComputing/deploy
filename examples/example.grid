@@ -119,19 +119,3 @@ Leiden.nodes = 32
 Leiden.cores = 64
 Leiden.latitude = 52.16
 Leiden.longitude = 4.49
-
-# Details of cluster "local"
-local.server.adaptor = local
-local.server.uri = any://localhost
-local.job.adaptor = local
-local.job.uri = any://localhost
-local.file.adaptors = local
-local.java.path = java
-#local.job.wrapper.script = 
-#local.user.name = 
-#local.cache.dir = 
-#local.server.output.files =
-local.nodes = 1
-local.cores = 2
-local.latitude = 52.332933
-local.longitude = 4.866064
