@@ -6,7 +6,9 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.gridlab.gat.URI;
 
@@ -55,8 +57,9 @@ public class Cluster {
         out
                 .println("# cache.dir           Directory on cluster used to cache pre-stage files");
         out.println("#                     (updated using rsync)");
-        out
-                .println("# server.output.files Output files copied when server exits (e.g. statistics)");
+        out.println("# server.output.files Output files copied when server exits (e.g. statistics)");
+
+        out.println("# server.system.properties system properties for the server (e.g. smartsocekts settings)");
 
         out
                 .println("# nodes               Number of nodes(machines) of this cluster (integer)");
@@ -125,6 +128,9 @@ public class Cluster {
 
     // output files of server (statistics, logs and such)
     private List<File> serverOutputFiles;
+    
+    // custom system properties for a server (e.g. smartsockets settings)
+    private Map<String, String> serverSystemProperties; 
 
     // number of nodes of this cluster
     private int nodes;
@@ -162,6 +168,7 @@ public class Cluster {
         userName = null;
         cacheDir = null;
         serverOutputFiles = null;
+        serverSystemProperties = null;
         nodes = 0;
         cores = 0;
         latitude = 0;
@@ -186,6 +193,7 @@ public class Cluster {
         userName = null;
         cacheDir = null;
         serverOutputFiles = null;
+        serverSystemProperties = null;
         nodes = 0;
         cores = 0;
         latitude = 0;
@@ -230,6 +238,9 @@ public class Cluster {
         cacheDir = Util.getFileProperty(properties, prefix + "cache.dir");
         serverOutputFiles = Util.getFileListProperty(properties, prefix
                 + "server.output.files");
+        serverSystemProperties = Util.getStringMapProperty(properties, prefix
+                                                     + "server.system.properties");
+        
         nodes = properties.getIntProperty(prefix + "nodes", 0);
         cores = properties.getIntProperty(prefix + "cores", 0);
         latitude = properties.getDoubleProperty(prefix + "latitude", 0);
@@ -291,6 +302,13 @@ public class Cluster {
         if (other.serverOutputFiles != null) {
             serverOutputFiles = new ArrayList<File>();
             serverOutputFiles.addAll(other.serverOutputFiles);
+        }
+        
+        if (other.serverSystemProperties != null) {
+            for (Map.Entry<String, String> entry : other.serverSystemProperties
+                    .entrySet()) {
+                setServerSystemProperty(entry.getKey(), entry.getValue());
+            }
         }
 
         if (other.nodes != 0) {
@@ -599,6 +617,49 @@ public class Cluster {
             this.serverOutputFiles = Arrays.asList(serverOutputFiles.clone());
         }
     }
+    
+    /**
+     * Returns (copy of) map of all system properties for the server.
+     * 
+     * @return all system properties of the server, or null if unset.
+     */
+    public Map<String, String> getServerSystemProperties() {
+        if (serverSystemProperties == null) {
+            return null;
+        }
+        return new HashMap<String, String>(serverSystemProperties);
+    }
+
+    
+    /**
+     * Sets map of all system properties for the server.
+     * 
+     * @param systemProperties
+     *            new system properties for the server, or null to unset.
+     */
+    public void setServerSystemProperties(Map<String, String> systemProperties) {
+        if (systemProperties == null) {
+            this.serverSystemProperties = null;
+        } else {
+            this.serverSystemProperties = new HashMap<String, String>(
+                    systemProperties);
+        }
+    }
+
+    /**
+     * Sets a single system property for the server. Map will be created if needed.
+     * 
+     * @param name
+     *            name of new property
+     * @param value
+     *            value of new property.
+     */
+    public void setServerSystemProperty(String name, String value) {
+        if (serverSystemProperties == null) {
+            serverSystemProperties = new HashMap<String, String>();
+        }
+        serverSystemProperties.put(name, value);
+    }
 
     /**
      * Total number of nodes in this cluster
@@ -845,6 +906,14 @@ public class Cluster {
         } else if (printComments) {
             out.println("#" + dotPrefix + "server.output.files =");
         }
+        
+        if (serverSystemProperties != null) {
+            out.println(dotPrefix + "server.system.properties = "
+                    + Util.toCSString(serverSystemProperties));
+            empty = false;
+        } else if (printComments) {
+            out.println("#" + dotPrefix + "server.system.properties =");
+        }
 
         if (nodes > 0) {
             out.println(dotPrefix + "nodes = " + nodes);
@@ -912,6 +981,8 @@ public class Cluster {
         result += " Cache dir = " + getCacheDir() + "\n";
         result += " Server output files = " + Util.files2CSS(serverOutputFiles)
                 + "\n";
+        result += " Server system properties = "
+            + Util.toCSString(getServerSystemProperties()) + "\n";
         result += " Nodes = " + getNodes() + "\n";
         result += " Cores = " + getCores() + "\n";
         result += " Latitude = " + getLatitude() + "\n";

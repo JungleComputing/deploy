@@ -201,6 +201,13 @@ public class RemoteServer implements Runnable {
         }
 
         sd.addJavaSystemProperty("log4j.prefix", "REMOTE_OUTPUT_FROM_" + id + "@" + cluster.getName());
+        
+        // set these last so a user can override any
+        // and all settings made by ibis-deploy
+        if (cluster.getServerSystemProperties() != null) {
+            sd.getJavaSystemProperties().putAll(
+                    cluster.getServerSystemProperties());
+        }
 
         // set classpath
         sd.setJavaClassPath(".:lib-server:lib-server/*");
@@ -333,9 +340,9 @@ public class RemoteServer implements Runnable {
                 rootHub.addHubs(this.getAddress());
             }
 
-            logger.debug(this + " now running");
+            logger.info(this + " now running (address = " + getAddress() + ")");
         } catch (Exception e) {
-            logger.error("cannot start hub", e);
+            logger.error("cannot start hub/server", e);
             setError(e);
         }
     }
