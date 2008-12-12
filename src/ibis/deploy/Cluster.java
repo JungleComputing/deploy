@@ -251,6 +251,16 @@ public class Cluster {
         longitude = properties.getDoubleProperty(prefix + "longitude", 0);
     }
 
+    public boolean isEmpty() {
+        return serverAdaptor == null && serverURI == null
+                && serverOutputFiles == null && jobAdaptor == null
+                && jobURI == null && fileAdaptors == null && javaPath == null
+                && jobWrapperScript == null && userName == null
+                && cacheDir == null && serverOutputFiles == null
+                && serverSystemProperties == null && nodes == 0 && cores == 0
+                && latitude == 0 && longitude == 0;
+    }
+
     /**
      * Write all non-null values of given cluster into this cluster.
      * 
@@ -368,6 +378,10 @@ public class Cluster {
         if (name.equals(this.name)) {
             // name unchanged
             return;
+        }
+        
+        if (this.name != null && this.name.equals("local")) {
+            throw new Exception("cannot rename local cluster");
         }
 
         if (name.contains(".")) {
@@ -823,6 +837,7 @@ public class Cluster {
         Cluster result = new Cluster();
         if (parent != null) {
             if (getName().equals("local")) {
+                //local cluster has different defaults
                 result.overwrite(parent.getLocalDefaults());
             } else {
                 result.overwrite(parent.getDefaults());

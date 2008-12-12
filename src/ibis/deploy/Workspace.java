@@ -26,9 +26,10 @@ public class Workspace {
      * Constructs a workspace
      * 
      * @param experimentName
-     *                the name of the experiment in the workspace.
+     *            the name of the experiment in the workspace.
      * @throws Exception
-     *                 if the experiment name is <code>null</code>, or contains periods or spaces
+     *             if the experiment name is <code>null</code>, or contains
+     *             periods or spaces
      */
     public Workspace(String experimentName) throws Exception {
         grid = new Grid();
@@ -42,13 +43,13 @@ public class Workspace {
      * workspace.
      * 
      * @param file
-     *                the file containing the properties
+     *            the file containing the properties
      * @throws FileNotFoundException
-     *                 if the given file cannot be found
+     *             if the given file cannot be found
      * @throws Exception
      * @throws Exception
-     *                 if reading from the given file fails, or the file
-     *                 contains invalid properties
+     *             if reading from the given file fails, or the file contains
+     *             invalid properties
      */
     public Workspace(File file) throws Exception {
         if (!file.exists()) {
@@ -80,10 +81,10 @@ public class Workspace {
      * Save this grid and all contained clusters to a property file
      * 
      * @param file
-     *                file to save grid to
+     *            file to save grid to
      * 
      * @throws Exception
-     *                 in case file cannot be written
+     *             in case file cannot be written
      */
     public void save(File file) throws Exception {
         if (!file.exists()) {
@@ -125,7 +126,7 @@ public class Workspace {
 
     /**
      * @param applications
-     *                the applications to set
+     *            the applications to set
      */
     public void setApplications(ApplicationSet applications) {
         this.applications = applications;
@@ -140,7 +141,7 @@ public class Workspace {
 
     /**
      * @param experiment
-     *                the experiment to set
+     *            the experiment to set
      */
     public void setExperiment(Experiment experiment) {
         this.experiment = experiment;
@@ -155,10 +156,29 @@ public class Workspace {
 
     /**
      * @param grid
-     *                the grid to set
+     *            the grid to set
      */
     public void setGrid(Grid grid) {
         this.grid = grid;
+    }
+
+    public String toPrintString() {
+        String result = "Workspace: \n\n";
+        if (grid != null) {
+            result += grid.toPrintString();
+            result += "\n";
+        }
+        if (applications != null) {
+            result += applications.toPrintString();
+            result += "\n";
+        }
+
+        if (experiment != null) {
+            result += experiment.toPrintString();
+            result += "\n";
+        }
+        
+        return result;
     }
 
 }

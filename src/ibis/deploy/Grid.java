@@ -66,8 +66,8 @@ public class Grid {
                 clusters.add(cluster);
             }
         }
-        
-        //add "local" cluster if it doesn't exist yet
+
+        // add "local" cluster if it doesn't exist yet
         if (!hasCluster("local")) {
             createNewCluster("local");
         }
@@ -98,22 +98,18 @@ public class Grid {
 
         localDefaults = Cluster.getLocalCluster();
 
-        // add a default local cluster.
-        Cluster local = Cluster.getLocalCluster();
-        clusters.add(local);
-
         String[] clusterNames = Util.getElementList(properties, prefix);
         if (clusterNames != null) {
             for (String clusterName : clusterNames) {
                 Cluster cluster = new Cluster(properties, clusterName, prefix
                         + clusterName, null);
-                if (clusterName.equals("local")) {
-                    // add settings to local cluster
-                    local.overwrite(cluster);
-                } else {
-                    clusters.add(cluster);
-                }
+                clusters.add(cluster);
             }
+        }
+
+        // add "local" cluster if it doesn't exist yet
+        if (!hasCluster("local")) {
+            createNewCluster("local");
         }
     }
 
@@ -281,9 +277,19 @@ public class Grid {
 
         // write clusters
         for (Cluster cluster : clusters) {
-            out.println();
-            out.println("# Details of cluster \"" + cluster.getName() + "\"");
-            cluster.save(out, prefix + cluster.getName(), true);
+            if (cluster.getName().equals("local")) {
+                if (!cluster.isEmpty()) {
+                    out.println();
+                    out
+                            .println("# Settings overriding default \"local\" cluster");
+                    cluster.save(out, prefix + cluster.getName(), false);
+                }
+            } else {
+                out.println();
+                out.println("# Details of cluster \"" + cluster.getName()
+                        + "\"");
+                cluster.save(out, prefix + cluster.getName(), true);
+            }
         }
     }
 
