@@ -243,7 +243,7 @@ public class Application {
             throw new Exception("application name cannot be null");
         }
 
-        if (this.name.equals(name)) {
+        if (name.equals(this.name)) {
             // name unchanged
             return;
         }

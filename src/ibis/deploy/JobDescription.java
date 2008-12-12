@@ -260,7 +260,7 @@ public class JobDescription {
             throw new Exception("no name specified for job");
         }
 
-        if (this.name.equals(name)) {
+        if (name.equals(this.name)) {
             // name unchanged
             return;
         }

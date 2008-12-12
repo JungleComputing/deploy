@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.gridlab.gat.GAT;
-import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.slf4j.Logger;

@@ -365,7 +365,7 @@ public class Cluster {
             throw new Exception("no name specified for cluster");
         }
 
-        if (this.name.equals(name)) {
+        if (name.equals(this.name)) {
             // name unchanged
             return;
         }
