@@ -252,11 +252,17 @@ public class JobDescription {
      *            the name of this job.
      * 
      * @throws Exception
-     *             if name is null, or contains periods or spaces
+     *             if name is null, or contains periods or spaces, or a job with
+     *             the given name already exists.
      */
     public void setName(String name) throws Exception {
         if (name == null) {
             throw new Exception("no name specified for job");
+        }
+
+        if (this.name.equals(name)) {
+            // name unchanged
+            return;
         }
 
         if (name.contains(".")) {
@@ -266,6 +272,14 @@ public class JobDescription {
         if (name.contains(" ")) {
             throw new Exception("job name cannot contain spaces : \"" + name
                     + "\"");
+        }
+
+        if (parent != null) {
+            if (parent.hasJob(name)) {
+                throw new Exception("cannot set Job name to \"" + name
+                        + "\", parent Experiment already contains "
+                        + "a Job with that name");
+            }
         }
 
         this.name = name;

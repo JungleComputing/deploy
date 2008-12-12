@@ -133,11 +133,30 @@ public class ApplicationSet {
      *             if the name given is <code>null</code>
      */
     public Application createNewApplication(String name) throws Exception {
+        if(hasApplication(name)) {
+            throw new Exception("Cannot add application, application \"" + name + "\" already exists");
+        }
+        
         Application result = new Application(name, this);
 
         applications.add(result);
 
         return result;
+    }
+    
+    /**
+     * Returns if an Application with the given name exists.
+     * 
+     * @param name name of the Application.
+     * @return if a Application with the given name exists.
+     */
+    public boolean hasApplication(String name) {
+        for (Application Application : applications) {
+            if (Application.getName().equals(name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

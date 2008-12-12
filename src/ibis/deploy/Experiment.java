@@ -179,14 +179,33 @@ public class Experiment {
      *            the name of the job.
      * @return the new job.
      * @throws Exception
-     *             if the name given is <code>null</code>.
+     *             if the name given is <code>null</code>, or the job already exists.
      */
     public JobDescription createNewJob(String name) throws Exception {
+        if (hasJob(name)) {
+            throw new Exception("Cannot add job, job \"" + name + "\" already exists");
+        }
+        
         JobDescription result = new JobDescription(name, this);
 
         jobs.add(result);
 
         return result;
+    }
+    
+    /**
+     * Returns if a Job with the given name exists.
+     * 
+     * @param name name of the Job.
+     * @return if a Job with the given name exists.
+     */
+    public boolean hasJob(String name) {
+        for (JobDescription job : jobs) {
+            if (job.getName().equals(name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

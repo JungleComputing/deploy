@@ -57,9 +57,11 @@ public class Cluster {
         out
                 .println("# cache.dir           Directory on cluster used to cache pre-stage files");
         out.println("#                     (updated using rsync)");
-        out.println("# server.output.files Output files copied when server exits (e.g. statistics)");
+        out
+                .println("# server.output.files Output files copied when server exits (e.g. statistics)");
 
-        out.println("# server.system.properties system properties for the server (e.g. smartsocekts settings)");
+        out
+                .println("# server.system.properties system properties for the server (e.g. smartsocekts settings)");
 
         out
                 .println("# nodes               Number of nodes(machines) of this cluster (integer)");
@@ -70,29 +72,29 @@ public class Cluster {
         out
                 .println("# longitude           Longitude position of this cluster (double)");
     }
-    
+
     /**
      * @return a Cluster representing the local machine
-     */    
-    public static Cluster getLocalCluster() throws Exception {
+     */
+    static Cluster getLocalCluster() throws Exception {
         Cluster result = new Cluster();
-        
+
         result.setName("local");
         result.setServerAdaptor("local");
         result.setServerURI(new URI("any://localhost"));
         result.setJobAdaptor("local");
         result.setJobURI(new URI("any://localhost"));
         result.setFileAdaptors("local");
-        result.setJavaPath(System.getProperty("java.home") + File.separator + "bin" + File.separator + "java");
+        result.setJavaPath(System.getProperty("java.home") + File.separator
+                + "bin" + File.separator + "java");
         result.setNodes(1);
         result.setCores(Runtime.getRuntime().availableProcessors());
-        
+
         result.setLatitude(52.332933);
         result.setLongitude(4.866064);
 
         return result;
     }
-
 
     private final Grid parent;
 
@@ -128,9 +130,9 @@ public class Cluster {
 
     // output files of server (statistics, logs and such)
     private List<File> serverOutputFiles;
-    
+
     // custom system properties for a server (e.g. smartsockets settings)
-    private Map<String, String> serverSystemProperties; 
+    private Map<String, String> serverSystemProperties;
 
     // number of nodes of this cluster
     private int nodes;
@@ -155,7 +157,7 @@ public class Cluster {
      */
     Cluster(String name, Grid parent) throws Exception {
         this.parent = parent;
-        
+
         setName(name);
 
         serverAdaptor = null;
@@ -209,6 +211,8 @@ public class Cluster {
      *            name of this cluster
      * @param prefix
      *            prefix used for all keys
+     * @param defaults
+     *            cluster containing default values for this cluster
      * 
      * @throws Exception
      *             if cluster cannot be read properly, or its name is invalid
@@ -239,8 +243,8 @@ public class Cluster {
         serverOutputFiles = Util.getFileListProperty(properties, prefix
                 + "server.output.files");
         serverSystemProperties = Util.getStringMapProperty(properties, prefix
-                                                     + "server.system.properties");
-        
+                + "server.system.properties");
+
         nodes = properties.getIntProperty(prefix + "nodes", 0);
         cores = properties.getIntProperty(prefix + "cores", 0);
         latitude = properties.getDoubleProperty(prefix + "latitude", 0);
@@ -303,7 +307,7 @@ public class Cluster {
             serverOutputFiles = new ArrayList<File>();
             serverOutputFiles.addAll(other.serverOutputFiles);
         }
-        
+
         if (other.serverSystemProperties != null) {
             for (Map.Entry<String, String> entry : other.serverSystemProperties
                     .entrySet()) {
@@ -329,8 +333,7 @@ public class Cluster {
     }
 
     /**
-     * Returns grid this cluster belongs to, or null if it does not belong to
-     * any grid.
+     * Returns grid of this cluster.
      * 
      * @return parent grid of this cluster.
      */
@@ -352,12 +355,19 @@ public class Cluster {
      * 
      * @param name
      *            the new name of this cluster
-     *            
-     * @throws Exception if the name is invalid
+     * 
+     * @throws Exception
+     *             if the name is invalid, or a cluster with the given name
+     *             already exists in the parent grid of this cluster.
      */
     public void setName(String name) throws Exception {
         if (name == null) {
             throw new Exception("no name specified for cluster");
+        }
+
+        if (this.name.equals(name)) {
+            // name unchanged
+            return;
         }
 
         if (name.contains(".")) {
@@ -368,7 +378,15 @@ public class Cluster {
             throw new Exception("cluster name cannot contain spaces : \""
                     + name + "\"");
         }
-        
+
+        if (parent != null) {
+            if (parent.hasCluster(name)) {
+                throw new Exception("cannot set Cluster name to \"" + name
+                        + "\", parent Grid already contains "
+                        + "a Cluster with that name");
+            }
+        }
+
         this.name = name;
     }
 
@@ -617,7 +635,7 @@ public class Cluster {
             this.serverOutputFiles = Arrays.asList(serverOutputFiles.clone());
         }
     }
-    
+
     /**
      * Returns (copy of) map of all system properties for the server.
      * 
@@ -630,7 +648,6 @@ public class Cluster {
         return new HashMap<String, String>(serverSystemProperties);
     }
 
-    
     /**
      * Sets map of all system properties for the server.
      * 
@@ -647,7 +664,8 @@ public class Cluster {
     }
 
     /**
-     * Sets a single system property for the server. Map will be created if needed.
+     * Sets a single system property for the server. Map will be created if
+     * needed.
      * 
      * @param name
      *            name of new property
@@ -782,9 +800,9 @@ public class Cluster {
             throw new Exception(prefix + "file adaptors not specified");
         }
 
-//        if (cacheDir != null && !cacheDir.isAbsolute()) {
-//            throw new Exception("Cache dir must be absolute");
-//        }
+        // if (cacheDir != null && !cacheDir.isAbsolute()) {
+        // throw new Exception("Cache dir must be absolute");
+        // }
 
         if (cores < 0) {
             throw new Exception(prefix + "number of cores negative");
@@ -796,14 +814,19 @@ public class Cluster {
     }
 
     /**
-     * Resolves cluster and its grid into a single new cluster object.
+     * Resolves cluster and its defaults into a single new cluster object
+     * recursively.
      * 
      * @return a resolved cluster
      */
     Cluster resolve() {
         Cluster result = new Cluster();
         if (parent != null) {
-            result.overwrite(parent.getDefaults());
+            if (getName().equals("local")) {
+                result.overwrite(parent.getLocalDefaults());
+            } else {
+                result.overwrite(parent.getDefaults());
+            }
         }
         result.overwrite(this);
 
@@ -906,7 +929,7 @@ public class Cluster {
         } else if (printComments) {
             out.println("#" + dotPrefix + "server.output.files =");
         }
-        
+
         if (serverSystemProperties != null) {
             out.println(dotPrefix + "server.system.properties = "
                     + Util.toCSString(serverSystemProperties));
@@ -982,7 +1005,7 @@ public class Cluster {
         result += " Server output files = " + Util.files2CSS(serverOutputFiles)
                 + "\n";
         result += " Server system properties = "
-            + Util.toCSString(getServerSystemProperties()) + "\n";
+                + Util.toCSString(getServerSystemProperties()) + "\n";
         result += " Nodes = " + getNodes() + "\n";
         result += " Cores = " + getCores() + "\n";
         result += " Latitude = " + getLatitude() + "\n";
@@ -991,5 +1014,4 @@ public class Cluster {
         return result;
     }
 
-   
 }

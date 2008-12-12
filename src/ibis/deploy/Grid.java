@@ -19,9 +19,12 @@ import java.util.List;
 public class Grid {
 
     // cluster representing defaults
-    private Cluster defaults;
+    private final Cluster defaults;
 
-    private List<Cluster> clusters;
+    // cluster representing defaults for local machine.
+    private final Cluster localDefaults;
+
+    private final List<Cluster> clusters;
 
     /**
      * Constructs a grid object from properties stored in the given file. Also
@@ -49,12 +52,13 @@ public class Grid {
 
         properties.loadFromFile(file.getAbsolutePath());
 
-        defaults = new Cluster(properties, "defaults", "default", this);
+        defaults = new Cluster(properties, "defaults", "default", null);
+
+        localDefaults = Cluster.getLocalCluster();
 
         clusters = new ArrayList<Cluster>();
 
-        // add a default local cluster.
-        Cluster local = Cluster.getLocalCluster();
+        Cluster local = new Cluster(properties, "local", "local", this);
         clusters.add(local);
 
         String[] clusterNames = Util.getElementList(properties);
@@ -91,7 +95,9 @@ public class Grid {
             prefix = prefix + ".";
         }
 
-        defaults = new Cluster(properties, "defaults", prefix + "default", this);
+        defaults = new Cluster(properties, "defaults", prefix + "default", null);
+
+        localDefaults = Cluster.getLocalCluster();
 
         clusters = new ArrayList<Cluster>();
 
@@ -103,7 +109,7 @@ public class Grid {
         if (clusterNames != null) {
             for (String clusterName : clusterNames) {
                 Cluster cluster = new Cluster(properties, clusterName, prefix
-                        + clusterName, this);
+                        + clusterName, null);
                 if (clusterName.equals("local")) {
                     // add settings to local cluster
                     local.overwrite(cluster);
@@ -122,7 +128,8 @@ public class Grid {
         try {
             defaults = new Cluster("defaults", null);
             // add a default local cluster.
-            Cluster local = Cluster.getLocalCluster();
+            localDefaults = Cluster.getLocalCluster();
+            Cluster local = new Cluster("local", this);
             clusters.add(local);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -161,11 +168,30 @@ public class Grid {
      *             if the name given is <code>null</code>
      */
     public Cluster createNewCluster(String name) throws Exception {
+        if (hasCluster(name)) {
+            throw new Exception("Cannot add cluster, cluster \"" + name + "\" already exists");
+        }
+
         Cluster result = new Cluster(name, this);
 
         clusters.add(result);
 
         return result;
+    }
+
+    /**
+     * Returns if a cluster with the given name exists.
+     * 
+     * @param name name of the cluster.
+     * @return if a cluster with the given name exists.
+     */
+    public boolean hasCluster(String name) {
+        for (Cluster cluster : clusters) {
+            if (cluster.getName().equals(name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -192,6 +218,15 @@ public class Grid {
      */
     public Cluster getDefaults() {
         return defaults;
+    }
+    
+    /**
+     * Returns cluster representing defaults of this machine.
+     * 
+     * @return cluster representing defaults of this machine.
+     */
+    public Cluster getLocalDefaults() {
+        return localDefaults;
     }
 
     /**
@@ -250,7 +285,6 @@ public class Grid {
             out.println();
             out.println("# Details of cluster \"" + cluster.getName() + "\"");
             cluster.save(out, prefix + cluster.getName(), true);
-
         }
     }
 

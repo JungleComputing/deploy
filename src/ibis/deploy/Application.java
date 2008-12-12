@@ -30,17 +30,23 @@ public class Application {
         out.println("# KEY                COMMENT");
         out.println("# main.class         Main class of application");
         out.println("# arguments          Arguments of the application(*)");
-        out.println("# libs               Files and directories which need to be in the classpath.");
+        out
+                .println("# libs               Files and directories which need to be in the classpath.");
         out.println("#                    Automatically pre-staged as well(*)");
-        out.println("# input.files        Input files copied to root of sandbox(*)");
-        out.println("# output.files       Output files copied from root of sandbox(*)");
-        out.println("# system.properties  Additional system properties in the form of name=value(*)");
-        out.println("# jvm.options        Additional JVM options, for instance memory options(*)");
-        out.println("# log4j.file         Log4j properties file used for the application.");
-        out.println("#                    Defaults to log4j of ibis-deploy itself.");
+        out
+                .println("# input.files        Input files copied to root of sandbox(*)");
+        out
+                .println("# output.files       Output files copied from root of sandbox(*)");
+        out
+                .println("# system.properties  Additional system properties in the form of name=value(*)");
+        out
+                .println("# jvm.options        Additional JVM options, for instance memory options(*)");
+        out
+                .println("# log4j.file         Log4j properties file used for the application.");
+        out
+                .println("#                    Defaults to log4j of ibis-deploy itself.");
         out.println("# (* = comma separated list of items)");
-        
-        
+
     }
 
     // group this application belongs to
@@ -70,7 +76,7 @@ public class Application {
 
     // additional JVM options
     private List<String> jvmOptions;
-    
+
     private File log4jFile;
 
     /**
@@ -102,7 +108,6 @@ public class Application {
         this.parent = parent;
         setName(name);
 
-
         libs = null;
         mainClass = null;
         arguments = null;
@@ -124,7 +129,8 @@ public class Application {
      * @param prefix
      *            prefix used for loading application
      * @throws Exception
-     *             if application cannot be read properly, or its name is invalid
+     *             if application cannot be read properly, or its name is
+     *             invalid
      */
     Application(TypedProperties properties, String name, String prefix,
             ApplicationSet parent) throws Exception {
@@ -199,7 +205,7 @@ public class Application {
             jvmOptions = new ArrayList<String>();
             jvmOptions.addAll(other.jvmOptions);
         }
-        
+
         if (other.log4jFile != null) {
             this.log4jFile = other.log4jFile;
         }
@@ -228,13 +234,20 @@ public class Application {
      * 
      * @param name
      *            name of this application.
-     * @throws Exception if the name contains spaces or periods
+     * @throws Exception
+     *             if the name contains spaces or periods, or an application
+     *             with the given name already exists in the applicationSet
      */
     public void setName(String name) throws Exception {
         if (name == null) {
             throw new Exception("application name cannot be null");
         }
-        
+
+        if (this.name.equals(name)) {
+            // name unchanged
+            return;
+        }
+
         if (name.contains(".")) {
             throw new Exception("application name cannot contain periods : \""
                     + name + "\"");
@@ -243,6 +256,14 @@ public class Application {
         if (name.contains(" ")) {
             throw new Exception("application name cannot contain spaces : \""
                     + name + "\"");
+        }
+
+        if (parent != null) {
+            if (parent.hasApplication(name)) {
+                throw new Exception("cannot set application name to \"" + name
+                        + "\", parent ApplicationSet already contains "
+                        + "an application with that name");
+            }
         }
 
         this.name = name;
@@ -285,7 +306,7 @@ public class Application {
      * @param arguments
      *            new application parameters of this application.
      */
-    public void setArguments(String...arguments) {
+    public void setArguments(String... arguments) {
         if (arguments == null) {
             this.arguments = null;
         } else {
@@ -516,7 +537,7 @@ public class Application {
         }
         jvmOptions.add(jvmOption);
     }
-    
+
     /**
      * Log4j properties file used for application.
      * 
@@ -592,7 +613,7 @@ public class Application {
     void save(PrintWriter out, String prefix, boolean printComments)
             throws Exception {
         boolean empty = true;
-        
+
         if (prefix == null) {
             throw new Exception("cannot print application to file,"
                     + " prefix is not specified");
@@ -608,7 +629,8 @@ public class Application {
         }
 
         if (arguments != null) {
-            out.println(dotPrefix + "arguments = " + Util.strings2CSS(arguments));
+            out.println(dotPrefix + "arguments = "
+                    + Util.strings2CSS(arguments));
             empty = false;
         } else if (printComments) {
             out.println("#" + dotPrefix + "arguments =");
@@ -622,7 +644,8 @@ public class Application {
         }
 
         if (inputFiles != null) {
-            out.println(dotPrefix + "input.files = " + Util.files2CSS(inputFiles));
+            out.println(dotPrefix + "input.files = "
+                    + Util.files2CSS(inputFiles));
             empty = false;
         } else if (printComments) {
             out.println("#" + dotPrefix + "input.files =");
@@ -651,12 +674,13 @@ public class Application {
         } else if (printComments) {
             out.println("#" + dotPrefix + "java.options =");
         }
-        
+
         if (empty && printComments) {
-            out.println("#Dummy property to make sure application is actually defined");
+            out
+                    .println("#Dummy property to make sure application is actually defined");
             out.println(dotPrefix);
         }
-        
+
         if (log4jFile != null) {
             out.println(dotPrefix + "log4j.file = " + log4jFile);
             empty = false;
