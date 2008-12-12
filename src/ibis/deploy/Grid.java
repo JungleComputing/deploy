@@ -58,22 +58,18 @@ public class Grid {
 
         localDefaults = Cluster.getLocalCluster();
 
-
-        Cluster local = new Cluster(properties, "local", "local", this);
-        clusters.add(local);
-
         String[] clusterNames = Util.getElementList(properties);
         if (clusterNames != null) {
             for (String clusterName : clusterNames) {
                 Cluster cluster = new Cluster(properties, clusterName,
                         clusterName, this);
-                if (clusterName.equals("local")) {
-                    // add settings to local cluster
-                    local.overwrite(cluster);
-                } else {
-                    clusters.add(cluster);
-                }
+                clusters.add(cluster);
             }
+        }
+        
+        //add "local" cluster if it doesn't exist yet
+        if (!hasCluster("local")) {
+            createNewCluster("local");
         }
     }
 
@@ -101,7 +97,6 @@ public class Grid {
         defaults = new Cluster(properties, "defaults", prefix + "default", null);
 
         localDefaults = Cluster.getLocalCluster();
-
 
         // add a default local cluster.
         Cluster local = Cluster.getLocalCluster();
@@ -171,7 +166,8 @@ public class Grid {
      */
     public Cluster createNewCluster(String name) throws Exception {
         if (hasCluster(name)) {
-            throw new Exception("Cannot add cluster, cluster \"" + name + "\" already exists");
+            throw new Exception("Cannot add cluster, cluster \"" + name
+                    + "\" already exists");
         }
 
         Cluster result = new Cluster(name, this);
@@ -184,7 +180,8 @@ public class Grid {
     /**
      * Returns if a cluster with the given name exists.
      * 
-     * @param name name of the cluster.
+     * @param name
+     *            name of the cluster.
      * @return if a cluster with the given name exists.
      */
     public boolean hasCluster(String name) {
@@ -221,7 +218,7 @@ public class Grid {
     public Cluster getDefaults() {
         return defaults;
     }
-    
+
     /**
      * Returns cluster representing defaults of this machine.
      * 
