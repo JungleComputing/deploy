@@ -1,9 +1,11 @@
 package ibis.deploy;
 
+import ibis.server.ServerProperties;
 import ibis.server.remote.RemoteClient;
 import ibis.util.ThreadPool;
 
 import java.io.File;
+import java.util.Arrays;
 
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -119,7 +121,7 @@ public class RemoteServer implements Runnable, Hub {
         }
         // ensure files are readable on the other side
         context.addPreference("file.chmod", "0755");
-        // make sure non existing files/dirs will be created on the 
+        // make sure non existing files/dirs will be created on the
         // fly during a copy
         context.addPreference("file.create", "true");
 
@@ -150,7 +152,7 @@ public class RemoteServer implements Runnable, Hub {
 
         // create cache dir, and server dir within
         org.gridlab.gat.io.File gatCacheDirFile = GAT.createFile(context,
-            "any://" + host + "/" + cacheDir + "/server/");
+                "any://" + host + "/" + cacheDir + "/server/");
         gatCacheDirFile.mkdirs();
 
         // rsync to cluster cache server dir
@@ -176,10 +178,10 @@ public class RemoteServer implements Runnable, Hub {
         sd.setJavaMain("ibis.server.Server");
 
         if (hubOnly) {
-            sd.setJavaArguments(new String[] {"--hub-only", "--remote",
+            sd.setJavaArguments(new String[] { "--hub-only", "--remote",
                     "--port", "0" });
         } else {
-            sd.setJavaArguments(new String[] {"--remote", "--port", "0"});
+            sd.setJavaArguments(new String[] { "--remote", "--port", "0" });
         }
 
         // add server libraries to pre-stage, use rsync if specified
@@ -200,8 +202,13 @@ public class RemoteServer implements Runnable, Hub {
             }
         }
 
-        sd.addJavaSystemProperty("log4j.prefix", "REMOTE_OUTPUT_FROM_" + id + "@" + cluster.getName());
-        
+        sd.addJavaSystemProperty("log4j.prefix", "REMOTE_OUTPUT_FROM_" + id
+                + "@" + cluster.getName());
+
+        // give list of know hubs to the new hub
+        sd.addJavaSystemProperty(ServerProperties.HUB_ADDRESSES, Util
+                .strings2CSS(rootHub.getHubs()));
+
         // set these last so a user can override any
         // and all settings made by ibis-deploy
         if (cluster.getServerSystemProperties() != null) {
@@ -312,17 +319,17 @@ public class RemoteServer implements Runnable, Hub {
             logger.debug("creating resource broker for hub");
 
             ResourceBroker jobBroker = GAT.createResourceBroker(context,
-                cluster.getServerURI());
+                    cluster.getServerURI());
 
             logger.info("JavaGAT job description for " + this + " ="
                     + jobDescription);
 
             org.gridlab.gat.resources.Job job = jobBroker.submitJob(
-                jobDescription, listeners, "job.status");
+                    jobDescription, listeners, "job.status");
             setGatJob(job);
-            
-            //forward error to deploy console
-             new OutputForwarder(job.getStderr(), System.err);
+
+            // forward error to deploy console
+            new OutputForwarder(job.getStderr(), System.err);
 
             // TODO: remote remote client stuff
             logger.debug("starting remote client");
