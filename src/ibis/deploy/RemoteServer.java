@@ -5,7 +5,9 @@ import ibis.server.remote.RemoteClient;
 import ibis.util.ThreadPool;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -177,12 +179,21 @@ public class RemoteServer implements Runnable, Hub {
         // main class and options
         sd.setJavaMain("ibis.server.Server");
 
+        List<String> arguments = new ArrayList<String>();
+
+        arguments.add("--remote");
+        arguments.add("--port");
+        arguments.add("0");
+
         if (hubOnly) {
-            sd.setJavaArguments(new String[] { "--hub-only", "--remote",
-                    "--port", "0" });
-        } else {
-            sd.setJavaArguments(new String[] { "--remote", "--port", "0" });
+            arguments.add("--hub-only");
         }
+
+        //list of other hubs
+        arguments.add("--hub-addresses");
+        arguments.add(Util.strings2CSS(rootHub.getHubs()));
+        
+        sd.setJavaArguments(arguments.toArray(new String[0]));
 
         // add server libraries to pre-stage, use rsync if specified
         File serverLibs = new File(deployHomeDir, "lib-server");
@@ -204,10 +215,6 @@ public class RemoteServer implements Runnable, Hub {
 
         sd.addJavaSystemProperty("log4j.prefix", "REMOTE_OUTPUT_FROM_" + id
                 + "@" + cluster.getName());
-
-        // give list of know hubs to the new hub
-        sd.addJavaSystemProperty(ServerProperties.HUB_ADDRESSES, Util
-                .strings2CSS(rootHub.getHubs()));
 
         // set these last so a user can override any
         // and all settings made by ibis-deploy
