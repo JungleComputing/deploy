@@ -44,6 +44,8 @@ public class Experiment {
      */
     public Experiment(File file) throws FileNotFoundException, IOException,
             Exception {
+        jobs = new ArrayList<JobDescription>();
+
         if (!file.exists()) {
             throw new FileNotFoundException("file \"" + file
                     + "\" does not exist");
@@ -70,7 +72,6 @@ public class Experiment {
 
         defaults = new JobDescription(properties, "default", "default", this);
 
-        jobs = new ArrayList<JobDescription>();
         String[] jobNames = Util.getElementList(properties);
         for (String jobName : jobNames) {
             if (!jobName.equals("name")) {
@@ -96,6 +97,8 @@ public class Experiment {
      */
     public Experiment(TypedProperties properties, String name, String prefix)
             throws Exception {
+        jobs = new ArrayList<JobDescription>();
+
         this.name = name;
         
         if (prefix != null) {
@@ -105,7 +108,6 @@ public class Experiment {
         defaults = new JobDescription(properties, "default",
                 prefix + "default", this);
 
-        jobs = new ArrayList<JobDescription>();
         String[] jobNames = Util.getElementList(properties, prefix);
         for (String jobName : jobNames) {
             JobDescription job = new JobDescription(properties, jobName, prefix
@@ -124,12 +126,13 @@ public class Experiment {
      *             if the name is <code>null</code>, or contains periods or spaces
      */
     public Experiment(String name) throws Exception {
+        jobs = new ArrayList<JobDescription>();
+
         if (name == null) {
             throw new NullPointerException("no name specified for experiment");
         }
 
         this.name = name;
-        this.jobs = new ArrayList<JobDescription>();
         defaults = new JobDescription("defaults", null);
     }
 

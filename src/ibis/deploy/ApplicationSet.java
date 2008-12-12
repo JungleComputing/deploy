@@ -37,6 +37,9 @@ public class ApplicationSet {
      *             extention other than ".applications"
      */
     public ApplicationSet(File file) throws FileNotFoundException, Exception {
+        applications = new ArrayList<Application>();
+
+
         if (!file.exists()) {
             throw new FileNotFoundException("file \"" + file
                     + "\" does not exist");
@@ -51,8 +54,6 @@ public class ApplicationSet {
         properties.loadFromFile(file.getAbsolutePath());
 
         defaults = new Application(properties, "defaults", "default", this);
-
-        applications = new ArrayList<Application>();
 
         String[] applicationNames = Util.getElementList(properties);
         for (String applicationName : applicationNames) {
@@ -73,13 +74,14 @@ public class ApplicationSet {
      * @throws Exception if the applications cannot be initialized
      */
     public ApplicationSet(TypedProperties properties, String prefix) throws Exception {
+        applications = new ArrayList<Application>();
+
         if (prefix != null) {
             prefix = prefix + ".";
         }
         
         defaults = new Application(properties, "defaults", prefix + "default", this);
 
-        applications = new ArrayList<Application>();
 
         String[] applicationNames = Util.getElementList(properties, prefix);
         for (String applicationName : applicationNames) {
@@ -94,7 +96,7 @@ public class ApplicationSet {
      * 
      */
     public ApplicationSet() {
-        this.applications = new ArrayList<Application>();
+        applications = new ArrayList<Application>();
         try {
             defaults = new Application("defaults", this);
         } catch (Exception e) {

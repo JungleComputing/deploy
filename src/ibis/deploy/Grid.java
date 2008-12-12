@@ -39,6 +39,8 @@ public class Grid {
      *             invalid properties
      */
     public Grid(File file) throws FileNotFoundException, Exception {
+        clusters = new ArrayList<Cluster>();
+
         if (!file.exists()) {
             throw new FileNotFoundException("file \"" + file
                     + "\" does not exist");
@@ -56,7 +58,6 @@ public class Grid {
 
         localDefaults = Cluster.getLocalCluster();
 
-        clusters = new ArrayList<Cluster>();
 
         Cluster local = new Cluster(properties, "local", "local", this);
         clusters.add(local);
@@ -89,6 +90,8 @@ public class Grid {
      * 
      */
     public Grid(TypedProperties properties, String prefix) throws Exception {
+        clusters = new ArrayList<Cluster>();
+
         if (prefix == null) {
             prefix = "";
         } else {
@@ -99,7 +102,6 @@ public class Grid {
 
         localDefaults = Cluster.getLocalCluster();
 
-        clusters = new ArrayList<Cluster>();
 
         // add a default local cluster.
         Cluster local = Cluster.getLocalCluster();
