@@ -314,10 +314,12 @@ public class Deploy {
         }
 
         if (clusterName.equals("local")) {
-            // fake event to notify it is running already
-            hubListener.processMetricEvent(new MetricEvent(this,
-                    org.gridlab.gat.resources.Job.JobState.RUNNING, null,
-                    System.currentTimeMillis()));
+            if (hubListener != null) {
+                // fake event to notify it is running already
+                hubListener.processMetricEvent(new MetricEvent(this,
+                        org.gridlab.gat.resources.Job.JobState.RUNNING, null,
+                        System.currentTimeMillis()));
+            }
             return rootHub;
         }
 

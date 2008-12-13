@@ -1,17 +1,14 @@
 package ibis.deploy;
 
-import ibis.server.ServerProperties;
-import ibis.server.remote.RemoteClient;
+import ibis.server.RemoteClient;
 import ibis.util.ThreadPool;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
-import org.gridlab.gat.engine.util.OutputForwarder;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.MetricListener;
@@ -28,6 +25,8 @@ import org.slf4j.LoggerFactory;
  * Server or Hub running on a remote cluster
  */
 public class RemoteServer implements Runnable, Hub {
+
+    public static final long TIMEOUT = 30000;
 
     private static int nextID = 0;
 
@@ -56,6 +55,8 @@ public class RemoteServer implements Runnable, Hub {
     private String address;
 
     private org.gridlab.gat.resources.Job gatJob;
+
+    private RemoteClient remoteClient;
 
     // in case this hub/server dies or fails to start, the error will be here
     private Exception error = null;
@@ -89,6 +90,8 @@ public class RemoteServer implements Runnable, Hub {
         this.deployHomeDir = deployHomeDir;
         this.keepSandbox = keepSandbox;
         address = null;
+        gatJob = null;
+        remoteClient = null;
 
         this.cluster = cluster.resolve();
 
@@ -123,7 +126,7 @@ public class RemoteServer implements Runnable, Hub {
         }
         // ensure files are readable on the other side
         context.addPreference("file.chmod", "0755");
-        // make sure non existing files/dirs will be created on the
+        // make sure non existing files/directories will be created on the
         // fly during a copy
         context.addPreference("file.create", "true");
 
@@ -189,10 +192,10 @@ public class RemoteServer implements Runnable, Hub {
             arguments.add("--hub-only");
         }
 
-        //list of other hubs
+        // list of other hubs
         arguments.add("--hub-addresses");
         arguments.add(Util.strings2CSS(rootHub.getHubs()));
-        
+
         sd.setJavaArguments(arguments.toArray(new String[0]));
 
         // add server libraries to pre-stage, use rsync if specified
@@ -213,14 +216,8 @@ public class RemoteServer implements Runnable, Hub {
             }
         }
 
-        sd.addJavaSystemProperty("log4j.prefix", "REMOTE_OUTPUT_FROM_" + id
-                + "@" + cluster.getName());
-
-        // set these last so a user can override any
-        // and all settings made by ibis-deploy
         if (cluster.getServerSystemProperties() != null) {
-            sd.getJavaSystemProperties().putAll(
-                    cluster.getServerSystemProperties());
+            sd.setJavaSystemProperties(cluster.getServerSystemProperties());
         }
 
         // set classpath
@@ -293,23 +290,20 @@ public class RemoteServer implements Runnable, Hub {
 
     synchronized void kill() {
         killed = true;
-        if (gatJob == null) {
-            // nothing to do :)
-            return;
-        }
-        try {
-            // closing standard in should do it :)
-            gatJob.getStdin().close();
-            // TODO:add SmartSockets kill mechanism
-        } catch (Exception e) {
-            logger.warn("error on stopping hub", e);
-        }
-        try {
-            gatJob.stop();
-        } catch (Exception e) {
-            logger.warn("error on stopping hub", e);
+
+        if (remoteClient != null) {
+            // will close standard in, killing server
+            remoteClient.end();
         }
 
+        if (gatJob != null) {
+            try {
+                // in case stopping fails, kill gat job
+                gatJob.stop();
+            } catch (Exception e) {
+                logger.warn("error on stopping hub", e);
+            }
+        }
     }
 
     /**
@@ -336,16 +330,18 @@ public class RemoteServer implements Runnable, Hub {
             setGatJob(job);
 
             // forward error to deploy console
-            new OutputForwarder(job.getStderr(), System.err);
+            new OutputPrefixForwarder(job.getStderr(), System.err,
+                    "STDERR FROM " + toString() + ": ");
 
-            // TODO: remote remote client stuff
+            // fetch server address, forward output to deploy console
             logger.debug("starting remote client");
             RemoteClient client = new RemoteClient(job.getStdout(), job
-                    .getStdin());
+                    .getStdin(), System.out, "STDOUT FROM " + toString() + ": ");
+            setRemoteClient(client);
 
             logger.debug("getting address via remote client");
 
-            setAddress(client.getLocalAddress());
+            setAddress(client.getAddress(TIMEOUT));
 
             logger.debug("address is " + getAddress());
 
@@ -363,11 +359,25 @@ public class RemoteServer implements Runnable, Hub {
 
     private synchronized void setAddress(String address) {
         this.address = address;
+
+        // server already killed before it was submitted :(
+        // kill server...
+        if (killed) {
+            kill();
+        }
+
         notifyAll();
     }
 
     private synchronized void setError(Exception error) {
         this.error = error;
+
+        // server already killed before it was submitted :(
+        // kill server...
+        if (killed) {
+            kill();
+        }
+
         notifyAll();
     }
 
@@ -378,8 +388,20 @@ public class RemoteServer implements Runnable, Hub {
         // server already killed before it was submitted :(
         // kill server...
         if (killed) {
-            gatJob.stop();
+            kill();
         }
+    }
+
+    private synchronized void setRemoteClient(RemoteClient client) {
+        this.remoteClient = client;
+
+        // server already killed before it was submitted :(
+        // kill server...
+        if (killed) {
+            kill();
+        }
+
+        notifyAll();
     }
 
     /**
