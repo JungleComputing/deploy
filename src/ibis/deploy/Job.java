@@ -10,13 +10,9 @@ import java.util.List;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.monitoring.Metric;
-import org.gridlab.gat.monitoring.MetricEvent;
-import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.JavaSoftwareDescription;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.SoftwareDescription;
-import org.gridlab.gat.resources.Job.JobState;
 import org.gridlab.gat.security.CertificateSecurityContext;
 import org.gridlab.gat.security.SecurityContext;
 import org.slf4j.Logger;
@@ -66,13 +62,12 @@ public class Job implements Runnable {
     private org.gridlab.gat.resources.Job gatJob;
 
     // listeners specified by user
-    private final Listeners listeners;
+    private final StateForwarder forwarder;
+
+    // listener for hub
+    private final StateListener hubListener;
 
     private boolean killed = false;
-
-    // listener used if shared hubs is not used, but a new hub is created for
-    // each job.
-    private final MetricListener hubListener;
 
     /**
      * Creates a job object from the given description.
@@ -92,7 +87,7 @@ public class Job implements Runnable {
      */
     Job(JobDescription description, String serverAddress, LocalServer rootHub,
             Hub hub, File deployHomeDir, boolean keepSandbox,
-            MetricListener jobListener, MetricListener hubListener)
+            StateListener jobListener, StateListener hubListener)
             throws Exception {
         this.description = description;
         this.cluster = description.getClusterOverrides();
@@ -108,10 +103,8 @@ public class Job implements Runnable {
 
         jobID = "Job-" + getNextID();
 
-        listeners = new Listeners(this.toString());
-        if (jobListener != null) {
-            addStateListener(jobListener);
-        }
+        forwarder = new StateForwarder(this.toString());
+        forwarder.addListener(jobListener);
 
         // fork thread
         ThreadPool.createNew(this, jobID);
@@ -132,30 +125,14 @@ public class Job implements Runnable {
     }
 
     /**
-     * Add a listener to this server which reports the state of the JavaGAT job.
-     * Also causes a new {@link MetricEvent} for this listener with the current
-     * state of the job.
+     * Add a listener to this server which reports the state of the Job. Also
+     * causes a new event for this listener with the current state of the job.
      * 
      * @param listener
      *            the listener to attach
-     * @throws Exception
-     *             in case attaching failed
      */
-    public void addStateListener(MetricListener listener) throws Exception {
-        if (listener == null) {
-            throw new Exception("listener cannot be null");
-        }
-
-        // causes a new event for this listener with the current state of the
-        // job.
-        if (gatJob != null) {
-            Metric metric = gatJob.getMetricDefinitionByName("job.status")
-                    .createMetric(null);
-            listener.processMetricEvent(new MetricEvent(gatJob, gatJob
-                    .getState(), metric, System.currentTimeMillis()));
-        }
-
-        listeners.addListener(listener);
+    public void addStateListener(StateListener listener) {
+        forwarder.addListener(listener);
     }
 
     /**
@@ -163,17 +140,9 @@ public class Job implements Runnable {
      * 
      * @return the state of this job
      * 
-     * @throws Exception
-     *             in case the state cannot be retrieved
      */
-    public synchronized JobState getState() throws Exception {
-        if (error != null) {
-            throw error;
-        }
-        if (gatJob == null) {
-            return JobState.UNKNOWN;
-        }
-        return gatJob.getState();
+    public State getState() throws Exception {
+        return forwarder.getState();
     }
 
     /**
@@ -188,9 +157,9 @@ public class Job implements Runnable {
             throw error;
         }
 
-        JobState state = getState();
+        State state = getState();
 
-        if (state == JobState.STOPPED || state == JobState.SUBMISSION_ERROR) {
+        if (state == State.STOPPED || state == State.ERROR) {
             return true;
         }
 
@@ -266,7 +235,7 @@ public class Job implements Runnable {
 
         // make sure files are readable on the other side
         context.addPreference("file.chmod", "0755");
-        // make sure non existing files/dirs will be created on the fly during a
+        // make sure non existing files/directories will be created on the fly during a
         // copy
         context.addPreference("file.create", "true");
         // make ssh jobs stoppable, we lose the difference between stdout and
@@ -306,8 +275,8 @@ public class Job implements Runnable {
                 + "/" + description.getName() + "/" + dstDir;
 
         // create cache dir, and server dir within
-        org.gridlab.gat.io.File gatCacheDirFile = GAT
-                .createFile(context, "any://" + host + "/" + fileCacheDir);
+        org.gridlab.gat.io.File gatCacheDirFile = GAT.createFile(context,
+                "any://" + host + "/" + fileCacheDir);
         gatCacheDirFile.mkdirs();
 
         // rsync to cluster cache server dir
@@ -364,8 +333,7 @@ public class Job implements Runnable {
         // and all settings made by ibis-deploy
         if (application.getSystemProperties() != null) {
             sd.getJavaSystemProperties().putAll(
-                                                application
-                                                        .getSystemProperties());
+                    application.getSystemProperties());
         }
 
         if (application.getLibs() == null) {
@@ -374,6 +342,7 @@ public class Job implements Runnable {
         }
 
         if (cluster.getCacheDir() != null) {
+            forwarder.setState(State.PRE_STAGE_RSYNC);
             logger.info(this + " doing pre-stage using rsync");
         }
 
@@ -412,8 +381,8 @@ public class Job implements Runnable {
         }
 
         // add log4j file to pre-stage, and add log4j property to use it
-        org.gridlab.gat.io.File log4jGatFile = GAT
-                .createFile(context, log4jFile.getPath());
+        org.gridlab.gat.io.File log4jGatFile = GAT.createFile(context,
+                log4jFile.getPath());
         sd.addPreStagedFile(log4jGatFile, gatCwd);
         sd.addJavaSystemProperty("log4j.configuration", "file:"
                 + log4jFile.getName());
@@ -525,6 +494,7 @@ public class Job implements Runnable {
         try {
             String hubList;
 
+            forwarder.setState(State.WAITING);
             if (sharedHub == null) {
                 // start a hub especially for this job
                 localHub = new RemoteServer(description.getClusterOverrides(),
@@ -547,6 +517,7 @@ public class Job implements Runnable {
 
             GATContext context = createGATContext();
 
+            //Creating software description also does rsync of files to cluster.
             JavaSoftwareDescription javaSoftwareDescription = createJavaSoftwareDescription(hubList);
 
             org.gridlab.gat.resources.JobDescription jobDescription = createJobDescription(javaSoftwareDescription);
@@ -554,18 +525,23 @@ public class Job implements Runnable {
             logger.info("JavaGAT job description for " + this + " ="
                     + jobDescription);
 
-            ResourceBroker jobBroker = GAT
-                    .createResourceBroker(context, description
-                            .getClusterOverrides().getJobURI());
+            forwarder.setState(State.SUBMITTING);
+            
+            ResourceBroker jobBroker = GAT.createResourceBroker(context,
+                    description.getClusterOverrides().getJobURI());
 
-            org.gridlab.gat.resources.Job gatJob = jobBroker
-                    .submitJob(jobDescription, listeners, "job.status");
+            org.gridlab.gat.resources.Job gatJob = jobBroker.submitJob(
+                    jobDescription, forwarder, "job.status");
             setGatJob(gatJob);
+            
+            //TODO: implement waiting until job has joined pool
+           
 
             waitUntilFinished();
 
         } catch (Exception e) {
             logger.error("Error on running job: ", e);
+            forwarder.setState(State.ERROR);
             setError(e);
 
         }

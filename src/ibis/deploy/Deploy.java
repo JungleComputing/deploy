@@ -11,8 +11,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.gridlab.gat.GAT;
-import org.gridlab.gat.monitoring.MetricEvent;
-import org.gridlab.gat.monitoring.MetricListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -191,25 +189,19 @@ public class Deploy {
      *             if the server cannot be started
      */
     public synchronized void initialize(Cluster serverCluster,
-            MetricListener listener) throws Exception {
+            StateListener listener) throws Exception {
         initialize(serverCluster, listener, false);
     }
 
     private synchronized void initialize(Cluster serverCluster,
-            MetricListener listener, boolean blocking) throws Exception {
+            StateListener listener, boolean blocking) throws Exception {
 
         logger.debug("Initializing deploy");
 
         if (serverCluster == null) {
             // rootHub includes server
             rootHub = new LocalServer(false);
-            // cause a 'RUNNING' event even if no real job has been submitted
-            // using JavaGAT
-            if (listener != null) {
-                listener.processMetricEvent(new MetricEvent(rootHub,
-                        org.gridlab.gat.resources.Job.JobState.RUNNING, null,
-                        System.currentTimeMillis()));
-            }
+            rootHub.addListener(listener);
             remoteServer = null;
 
         } else {
@@ -250,7 +242,7 @@ public class Deploy {
      */
     public synchronized Job submitJob(JobDescription description,
             ApplicationSet applicationSet, Grid grid,
-            MetricListener jobListener, MetricListener hubListener)
+            StateListener jobListener, StateListener hubListener)
             throws Exception {
         if (rootHub == null) {
             throw new Exception("Ibis-deploy not initialized yet");
@@ -300,7 +292,7 @@ public class Deploy {
      *             if the hub cannot be started
      */
     public synchronized Hub getHub(Cluster cluster, boolean waitUntilRunning,
-            MetricListener hubListener) throws Exception {
+            StateListener listener) throws Exception {
         if (rootHub == null) {
             throw new Exception("Ibis Deploy not initialized, cannot get hub");
         }
@@ -314,12 +306,7 @@ public class Deploy {
         }
 
         if (clusterName.equals("local")) {
-            if (hubListener != null) {
-                // fake event to notify it is running already
-                hubListener.processMetricEvent(new MetricEvent(this,
-                        org.gridlab.gat.resources.Job.JobState.RUNNING, null,
-                        System.currentTimeMillis()));
-            }
+            rootHub.addListener(listener);
             return rootHub;
         }
 
@@ -327,10 +314,10 @@ public class Deploy {
 
         if (result == null) {
             result = new RemoteServer(cluster, true, rootHub, home,
-                    hubListener, keepSandboxes);
+                    listener, keepSandboxes);
             hubs.put(clusterName, result);
-        } else if (hubListener != null) {
-            result.addStateListener(hubListener);
+        } else {
+            result.addStateListener(listener);
         }
 
         if (waitUntilRunning) {

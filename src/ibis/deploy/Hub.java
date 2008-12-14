@@ -18,5 +18,9 @@ public interface Hub {
      *             if the server failed to start
      */
     String getAddress() throws Exception;
+    
+    public void addListener(StateListener listener);
+    
+    public State getState();
 
 }

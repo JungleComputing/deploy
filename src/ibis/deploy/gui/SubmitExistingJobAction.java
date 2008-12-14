@@ -2,6 +2,8 @@ package ibis.deploy.gui;
 
 import ibis.deploy.Job;
 import ibis.deploy.JobDescription;
+import ibis.deploy.State;
+import ibis.deploy.StateListener;
 
 import java.awt.event.ActionEvent;
 
@@ -64,7 +66,7 @@ public class SubmitExistingJobAction extends AbstractAction {
             if (object instanceof Job) {
                 try {
                     // continue for non stopped jobs
-                    if (((Job) object).getState() != org.gridlab.gat.resources.Job.JobState.STOPPED) {
+                    if (!((Job) object).isFinished()) {
                         continue;
                     }
                 } catch (Exception e) {
@@ -79,18 +81,16 @@ public class SubmitExistingJobAction extends AbstractAction {
             try {
                 Job job = gui.getDeploy().submitJob(jd,
                         gui.getApplicationSet(), gui.getGrid(),
-                        new MetricListener() {
+                        new StateListener() {
 
-                            public void processMetricEvent(MetricEvent event) {
-                                model.setValueAt(event.getValue().toString(),
-                                        rowValue, 3);
+                            public void stateUpdated(State state) {
+                                model.setValueAt(state.toString(), rowValue, 3);
                             }
 
-                        }, new MetricListener() {
+                        }, new StateListener() {
 
-                            public void processMetricEvent(MetricEvent event) {
-                                model.setValueAt(event.getValue().toString(),
-                                        rowValue, 4);
+                            public void stateUpdated(State state) {
+                                model.setValueAt(state.toString(), rowValue, 4);
                             }
 
                         });

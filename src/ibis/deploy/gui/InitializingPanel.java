@@ -1,5 +1,8 @@
 package ibis.deploy.gui;
 
+import ibis.deploy.State;
+import ibis.deploy.StateListener;
+
 import java.awt.BorderLayout;
 
 import javax.swing.JDialog;
@@ -12,7 +15,7 @@ import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.Job;
 
-public class InitializingPanel implements MetricListener {
+public class InitializingPanel implements StateListener {
 
     /**
      * 
@@ -36,9 +39,9 @@ public class InitializingPanel implements MetricListener {
         progressBar.setStringPainted(true);
     }
 
-    public void processMetricEvent(MetricEvent event) {
-        progressBar.setString("" + event.getValue());
-        if (event.getValue() == Job.JobState.RUNNING) {
+    public void stateUpdated(State state) {
+        progressBar.setString("" + state);
+        if (state == State.DEPLOYED) {
             experimentsPanel.removeAll();
             initializedPanel.init();
             experimentsPanel.add(initializedPanel);

@@ -9,13 +9,9 @@ import java.util.List;
 
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
-import org.gridlab.gat.monitoring.Metric;
-import org.gridlab.gat.monitoring.MetricEvent;
-import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.JavaSoftwareDescription;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
-import org.gridlab.gat.resources.Job.JobState;
 import org.gridlab.gat.security.CertificateSecurityContext;
 import org.gridlab.gat.security.SecurityContext;
 import org.slf4j.Logger;
@@ -63,7 +59,7 @@ public class RemoteServer implements Runnable, Hub {
 
     private boolean killed = false;
 
-    private final Listeners listeners;
+    private final StateForwarder forwarder;
 
     /**
      * Create a server/hub on the given cluster. Does not block, so server may
@@ -83,7 +79,7 @@ public class RemoteServer implements Runnable, Hub {
      * 
      */
     RemoteServer(Cluster cluster, boolean hubOnly, LocalServer rootHub,
-            File deployHomeDir, MetricListener hubListener, boolean keepSandbox)
+            File deployHomeDir, StateListener listener, boolean keepSandbox)
             throws Exception {
         this.hubOnly = hubOnly;
         this.rootHub = rootHub;
@@ -105,9 +101,9 @@ public class RemoteServer implements Runnable, Hub {
             id = "Server-" + getNextID();
         }
 
-        listeners = new Listeners(this.toString());
-        if (hubListener != null) {
-            addStateListener(hubListener);
+        forwarder = new StateForwarder(this.toString());
+        if (listener != null) {
+            addStateListener(listener);
         }
 
         logger.info("Starting " + this + " using "
@@ -252,40 +248,19 @@ public class RemoteServer implements Runnable, Hub {
     }
 
     /**
-     * Add a listener to this server which reports the state of the JavaGAT job.
-     * Also causes a new {@link MetricEvent} for this listener with the current
+     * Add a listener to this server which reports the state of the job.
+     * Also causes a new event for this listener with the current
      * state of the job.
      * 
      * @param listener
      *            the listener to attach
-     * @throws Exception
-     *             in case attaching failed
      */
-    public void addStateListener(MetricListener listener) throws Exception {
-        if (listener == null) {
-            throw new Exception("tried to attach null listener");
-        }
-
-        // causes a new event for this listener with the current state of the
-        // job.
-        if (gatJob != null) {
-            Metric metric = gatJob.getMetricDefinitionByName("job.status")
-                    .createMetric(null);
-            listener.processMetricEvent(new MetricEvent(gatJob, gatJob
-                    .getState(), metric, System.currentTimeMillis()));
-        }
-
-        listeners.addListener(listener);
+    public void addStateListener(StateListener listener) {
+        forwarder.addListener(listener);
     }
 
-    synchronized JobState getState() throws Exception {
-        if (error != null) {
-            throw error;
-        }
-        if (gatJob == null) {
-            return JobState.UNKNOWN;
-        }
-        return gatJob.getState();
+    public State getState() {
+        return forwarder.getState();
     }
 
     synchronized void kill() {
@@ -313,20 +288,23 @@ public class RemoteServer implements Runnable, Hub {
         try {
             if (cluster.getCacheDir() != null) {
                 logger.info(this + " doing pre-stage using rsync");
+                forwarder.setState(State.PRE_STAGE_RSYNC);
             }
 
             JobDescription jobDescription = createJobDescription();
 
+            logger.info("JavaGAT job description for " + this + " ="
+                    + jobDescription);
+            
             logger.debug("creating resource broker for hub");
 
+            forwarder.setState(State.SUBMITTING);
+            
             ResourceBroker jobBroker = GAT.createResourceBroker(context,
                     cluster.getServerURI());
 
-            logger.info("JavaGAT job description for " + this + " ="
-                    + jobDescription);
-
             org.gridlab.gat.resources.Job job = jobBroker.submitJob(
-                    jobDescription, listeners, "job.status");
+                    jobDescription, forwarder, "job.status");
             setGatJob(job);
 
             // forward error to deploy console
@@ -342,6 +320,8 @@ public class RemoteServer implements Runnable, Hub {
             logger.debug("getting address via remote client");
 
             setAddress(client.getAddress(TIMEOUT));
+            
+            forwarder.setState(State.DEPLOYED);
 
             logger.debug("address is " + getAddress());
 
@@ -353,6 +333,7 @@ public class RemoteServer implements Runnable, Hub {
             logger.info(this + " now running (address = " + getAddress() + ")");
         } catch (Exception e) {
             logger.error("cannot start hub/server", e);
+            forwarder.setState(State.ERROR);
             setError(e);
         }
     }
@@ -432,7 +413,7 @@ public class RemoteServer implements Runnable, Hub {
      *             if the state of the job could not be determined
      */
     public synchronized boolean isRunning() throws Exception {
-        return address != null && getState() == JobState.RUNNING;
+        return getState() == State.DEPLOYED;
     }
 
     /**
@@ -444,5 +425,10 @@ public class RemoteServer implements Runnable, Hub {
         } else {
             return "Server \"" + id + "\" on \"" + cluster.getName() + "\"";
         }
+    }
+
+    public void addListener(StateListener listener) {
+        // TODO Auto-generated method stub
+        
     }
 }

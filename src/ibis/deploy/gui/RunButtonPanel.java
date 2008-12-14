@@ -2,6 +2,8 @@ package ibis.deploy.gui;
 
 import ibis.deploy.Job;
 import ibis.deploy.JobDescription;
+import ibis.deploy.State;
+import ibis.deploy.StateListener;
 
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -70,17 +72,17 @@ public class RunButtonPanel extends JPanel {
                     final int row = model.getRowCount();
                     Job job = gui.getDeploy().submitJob(result,
                             gui.getApplicationSet(), gui.getGrid(),
-                            new MetricListener() {
+                            new StateListener() {
 
-                                public void processMetricEvent(MetricEvent event) {
-                                    model.setValueAt(event.getValue()
+                                public void stateUpdated(State state) {
+                                    model.setValueAt(state
                                             .toString(), row, 3);
                                 }
 
-                            }, new MetricListener() {
+                            }, new StateListener() {
 
-                                public void processMetricEvent(MetricEvent event) {
-                                    model.setValueAt(event.getValue()
+                                public void stateUpdated(State state) {
+                                    model.setValueAt(state
                                             .toString(), row, 4);
                                 }
 

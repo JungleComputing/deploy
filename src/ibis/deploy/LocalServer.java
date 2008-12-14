@@ -91,4 +91,15 @@ public class LocalServer implements Hub {
 
         return "Local Server @ " + getAddress();
     }
+
+    public void addListener(StateListener listener) {
+        if (listener != null) {
+        //signal listener we're done deploying.
+        listener.stateUpdated(State.DEPLOYED);
+        }
+    }
+
+    public State getState() {
+        return State.DEPLOYED;
+    }
 }
