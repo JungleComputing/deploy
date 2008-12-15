@@ -9,11 +9,11 @@ public enum State {
     UNKNOWN,
 
     /**
-     * Initial state indicator.
+     * Constructed state indicator.
      * 
      * The {@link Job} has been constructed.
      */
-    INITIAL,
+    CREATED,
 
     /**
      * The {@link Job} is waiting for an event (usually the hub has not been
@@ -22,9 +22,9 @@ public enum State {
     WAITING,
 
     /**
-     * The input files of the {@link Job} are being pre staged using Rsync.
+     * The input files of the {@link Job} are copied to the cluster using Rsync.
      */
-    PRE_STAGE_RSYNC,
+    RSYNC,
 
     /**
      * The {@link Job} is being submitted to the underlying middleware.
@@ -55,7 +55,7 @@ public enum State {
      * The process of the {@link Job} is executing, or sometimes scheduled to be
      * executed.
      */
-    RUNNING,
+    INITIALIZING,
 
     /**
      * Deploy state indicator.

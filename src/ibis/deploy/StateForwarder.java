@@ -27,7 +27,7 @@ class StateForwarder implements MetricListener, Runnable {
     // listeners
     private final List<StateListener> listeners;
 
-    private State currentState = State.INITIAL;
+    private State currentState = State.CREATED;
 
     StateForwarder(String name) {
         this.name = name;
@@ -62,6 +62,8 @@ class StateForwarder implements MetricListener, Runnable {
                     + " to " + state);
             return;
         }
+        
+        logger.info(name + " state now " + state);
 
         this.currentState = state;
         notifyAll();
@@ -91,7 +93,7 @@ class StateForwarder implements MetricListener, Runnable {
             setState(State.SCHEDULED);
             break;
         case RUNNING:
-            setState(State.RUNNING);
+            setState(State.INITIALIZING);
             break;
         case POST_STAGING:
             setState(State.POST_STAGING);

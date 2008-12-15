@@ -42,18 +42,14 @@ public class Job implements Runnable {
 
     private final Application application;
 
-    private final String serverAddress;
-
-    private final LocalServer rootHub;
-
     // shared hub. If null, a local hub is used
     private final Hub sharedHub;
-
-    private final File deployHomeDir;
 
     private final boolean keepSandbox;
 
     private final GATContext context;
+
+    private final Deploy deploy;
 
     // set in case this jobs fails for some reason.
     private Exception error = null;
@@ -85,19 +81,16 @@ public class Job implements Runnable {
      * @throws Exception
      *             if the listener could not be attached to this job
      */
-    Job(JobDescription description, String serverAddress, LocalServer rootHub,
-            Hub hub, File deployHomeDir, boolean keepSandbox,
-            StateListener jobListener, StateListener hubListener)
+    Job(JobDescription description, Hub hub, boolean keepSandbox,
+            StateListener jobListener, StateListener hubListener, Deploy deploy)
             throws Exception {
         this.description = description;
         this.cluster = description.getClusterOverrides();
         this.application = description.getApplicationOverrides();
-        this.serverAddress = serverAddress;
-        this.rootHub = rootHub;
         this.sharedHub = hub;
-        this.deployHomeDir = deployHomeDir;
         this.keepSandbox = keepSandbox;
         this.hubListener = hubListener;
+        this.deploy = deploy;
 
         this.context = createGATContext();
 
@@ -178,6 +171,26 @@ public class Job implements Runnable {
         }
     }
 
+    public void waitUntilDeployed() throws Exception {
+        String location = jobID + "@" + cluster.getName();
+
+        while (!isFinished()) {
+            if (deploy.poolSizes().containsKey(description.getPoolName())) {
+                for (String string : deploy.getLocations(description
+                        .getPoolName())) {
+                    if (string.equals(location)) {
+                        forwarder.setState(State.DEPLOYED);
+                        return;
+                    }
+                }
+            }
+
+            synchronized (this) {
+                wait(1000);
+            }
+        }
+    }
+
     private synchronized void setGatJob(org.gridlab.gat.resources.Job gatJob)
             throws GATInvocationException {
         this.gatJob = gatJob;
@@ -235,7 +248,8 @@ public class Job implements Runnable {
 
         // make sure files are readable on the other side
         context.addPreference("file.chmod", "0755");
-        // make sure non existing files/directories will be created on the fly during a
+        // make sure non existing files/directories will be created on the fly
+        // during a
         // copy
         context.addPreference("file.create", "true");
         // make ssh jobs stoppable, we lose the difference between stdout and
@@ -276,7 +290,7 @@ public class Job implements Runnable {
 
         // create cache dir, and server dir within
         org.gridlab.gat.io.File gatCacheDirFile = GAT.createFile(context,
-                "any://" + host + "/" + fileCacheDir);
+            "any://" + host + "/" + fileCacheDir);
         gatCacheDirFile.mkdirs();
 
         // rsync to cluster cache server dir
@@ -312,12 +326,14 @@ public class Job implements Runnable {
         sd.setJavaOptions(application.getJVMOptions());
 
         // ibis stuff
-        sd.addJavaSystemProperty(IbisProperties.LOCATION, cluster.getName());
+        sd.addJavaSystemProperty(IbisProperties.LOCATION,
+            (jobID + "@" + cluster.getName()));
         sd.addJavaSystemProperty(IbisProperties.POOL_NAME, description
                 .getPoolName());
         sd.addJavaSystemProperty(IbisProperties.POOL_SIZE, ""
                 + description.getPoolSize());
-        sd.addJavaSystemProperty(IbisProperties.SERVER_ADDRESS, serverAddress);
+        sd.addJavaSystemProperty(IbisProperties.SERVER_ADDRESS, deploy
+                .getServerAddress());
 
         sd.addJavaSystemProperty("ibis.deploy.job.id", jobID);
         sd.addJavaSystemProperty("ibis.deploy.job.size", Integer
@@ -333,7 +349,7 @@ public class Job implements Runnable {
         // and all settings made by ibis-deploy
         if (application.getSystemProperties() != null) {
             sd.getJavaSystemProperties().putAll(
-                    application.getSystemProperties());
+                application.getSystemProperties());
         }
 
         if (application.getLibs() == null) {
@@ -342,8 +358,8 @@ public class Job implements Runnable {
         }
 
         if (cluster.getCacheDir() != null) {
-            forwarder.setState(State.PRE_STAGE_RSYNC);
-            logger.info(this + " doing pre-stage using rsync");
+            forwarder.setState(State.RSYNC);
+            logger.debug(this + " doing pre-stage using rsync");
         }
 
         // file referring to libs dir of sandbox
@@ -377,12 +393,12 @@ public class Job implements Runnable {
         File log4jFile = application.getLog4jFile();
 
         if (log4jFile == null) {
-            log4jFile = new File(deployHomeDir, "log4j.properties");
+            log4jFile = new File(deploy.getHome(), "log4j.properties");
         }
 
         // add log4j file to pre-stage, and add log4j property to use it
         org.gridlab.gat.io.File log4jGatFile = GAT.createFile(context,
-                log4jFile.getPath());
+            log4jFile.getPath());
         sd.addPreStagedFile(log4jGatFile, gatCwd);
         sd.addJavaSystemProperty("log4j.configuration", "file:"
                 + log4jFile.getName());
@@ -498,7 +514,8 @@ public class Job implements Runnable {
             if (sharedHub == null) {
                 // start a hub especially for this job
                 localHub = new RemoteServer(description.getClusterOverrides(),
-                        true, rootHub, deployHomeDir, hubListener, keepSandbox);
+                        true, deploy.getRootHub(), deploy.getHome(),
+                        hubListener, keepSandbox);
 
                 // wait until hub really running
                 localHub.waitUntilRunning();
@@ -511,13 +528,14 @@ public class Job implements Runnable {
                 hubList = sharedHub.getAddress();
             }
             // add hubs list from root hub
-            for (String address : rootHub.getHubs()) {
+            for (String address : deploy.getRootHub().getHubs()) {
                 hubList = hubList + "," + address;
             }
 
             GATContext context = createGATContext();
 
-            //Creating software description also does rsync of files to cluster.
+            // Creating software description also does rsync of files to
+            // cluster.
             JavaSoftwareDescription javaSoftwareDescription = createJavaSoftwareDescription(hubList);
 
             org.gridlab.gat.resources.JobDescription jobDescription = createJobDescription(javaSoftwareDescription);
@@ -526,28 +544,27 @@ public class Job implements Runnable {
                     + jobDescription);
 
             forwarder.setState(State.SUBMITTING);
-            
+
             ResourceBroker jobBroker = GAT.createResourceBroker(context,
-                    description.getClusterOverrides().getJobURI());
+                description.getClusterOverrides().getJobURI());
 
             org.gridlab.gat.resources.Job gatJob = jobBroker.submitJob(
-                    jobDescription, forwarder, "job.status");
+                jobDescription, forwarder, "job.status");
             setGatJob(gatJob);
-            
-            //TODO: implement waiting until job has joined pool
-           
 
-            waitUntilFinished();
+            waitUntilDeployed();
 
+            if (localHub != null) {
+                waitUntilFinished();
+
+                // kill our local hub
+                localHub.kill();
+            }
         } catch (Exception e) {
             logger.error("Error on running job: ", e);
             forwarder.setState(State.ERROR);
             setError(e);
 
-        }
-        if (localHub != null) {
-            // kill our local hub
-            localHub.kill();
         }
     }
 

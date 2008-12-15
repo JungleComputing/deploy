@@ -140,6 +140,22 @@ public class Deploy {
 
         return rootHub.getAddress();
     }
+    
+    /**
+     * Returns the build-in root hub.
+     * 
+     * @return the build-in root hub.
+     * @throws Exception
+     *             if ibis-deploy has not been initialized yet.
+     */
+    synchronized LocalServer getRootHub() throws Exception {
+        if (rootHub == null) {
+            throw new Exception("Ibis-deploy not initialized yet");
+        }
+
+        return rootHub;
+    }
+
 
     /**
      * Retrieves address of server. May block if server has not been started
@@ -269,8 +285,8 @@ public class Deploy {
         }
 
         // start job
-        Job job = new Job(description, serverAddress, rootHub, hub, home,
-                keepSandboxes, jobListener, hubListener);
+        Job job = new Job(description, hub,
+                keepSandboxes, jobListener, hubListener, this);
 
         jobs.add(job);
 
@@ -355,6 +371,36 @@ public class Deploy {
         }
 
         return registryMonitor.getPoolSizes();
+    }
+    
+    /**
+     * Returns a map containing the size of each pool at the server
+     * 
+     * @return a map containing the size of each pool at the server
+     * @throws Exception
+     *             if the server is not running yet, or communicating with it
+     *             failed
+     */
+    public synchronized String[] getLocations(String poolName) throws Exception {
+        if (rootHub == null) {
+            throw new Exception(
+                    "Ibis Deploy not initialized, cannot monitor server");
+        }
+
+        if (remoteServer != null && !remoteServer.isRunning()) {
+            throw new Exception("Cannot monitor server \"" + remoteServer
+                    + "\" not running");
+        }
+
+        if (registryMonitor == null) {
+            Properties properties = new Properties();
+            properties.put(ServerProperties.ADDRESS, getServerAddress());
+            properties.put(ServerProperties.HUB_ADDRESSES, getRootHubAddress());
+
+            registryMonitor = new RegistryMonitorClient(properties, false);
+        }
+
+        return registryMonitor.getLocations(poolName);
     }
 
     /**

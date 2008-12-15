@@ -287,8 +287,8 @@ public class RemoteServer implements Runnable, Hub {
     public void run() {
         try {
             if (cluster.getCacheDir() != null) {
-                logger.info(this + " doing pre-stage using rsync");
-                forwarder.setState(State.PRE_STAGE_RSYNC);
+                logger.debug(this + " doing pre-stage using rsync");
+                forwarder.setState(State.RSYNC);
             }
 
             JobDescription jobDescription = createJobDescription();
