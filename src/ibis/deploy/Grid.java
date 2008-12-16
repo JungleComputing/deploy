@@ -162,7 +162,7 @@ public class Grid {
      */
     public Cluster createNewCluster(String name) throws Exception {
         if (hasCluster(name)) {
-            throw new Exception("Cannot add cluster, cluster \"" + name
+            throw new AlreadyExistsException("Cannot add cluster, cluster \"" + name
                     + "\" already exists");
         }
 

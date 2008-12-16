@@ -136,7 +136,7 @@ public class ApplicationSet {
      */
     public Application createNewApplication(String name) throws Exception {
         if(hasApplication(name)) {
-            throw new Exception("Cannot add application, application \"" + name + "\" already exists");
+            throw new AlreadyExistsException("Cannot add application, application \"" + name + "\" already exists");
         }
         
         Application result = new Application(name, this);
