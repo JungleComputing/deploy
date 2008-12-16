@@ -26,15 +26,7 @@ import org.slf4j.LoggerFactory;
  */
 public class Job implements Runnable {
 
-    private static int nextID = 0;
-
-    static synchronized int getNextID() {
-        return nextID++;
-    }
-
     private static final Logger logger = LoggerFactory.getLogger(Job.class);
-
-    private final String jobID;
 
     private final JobDescription description;
 
@@ -94,13 +86,11 @@ public class Job implements Runnable {
 
         this.context = createGATContext();
 
-        jobID = "Job-" + getNextID();
-
         forwarder = new StateForwarder(this.toString());
         forwarder.addListener(jobListener);
 
         // fork thread
-        ThreadPool.createNew(this, jobID);
+        ThreadPool.createNew(this, toString());
     }
 
     /**
@@ -172,7 +162,7 @@ public class Job implements Runnable {
     }
 
     public void waitUntilDeployed() throws Exception {
-        String location = jobID + "@" + cluster.getName();
+        String location = description.getName() + "@" + cluster.getName();
 
         while (!isFinished()) {
             if (deploy.poolSizes().containsKey(description.getPoolName())) {
@@ -327,7 +317,7 @@ public class Job implements Runnable {
 
         // ibis stuff
         sd.addJavaSystemProperty(IbisProperties.LOCATION,
-            (jobID + "@" + cluster.getName()));
+            (description.getName() + "@" + cluster.getName()));
         sd.addJavaSystemProperty(IbisProperties.POOL_NAME, description
                 .getPoolName());
         sd.addJavaSystemProperty(IbisProperties.POOL_SIZE, ""
@@ -335,7 +325,7 @@ public class Job implements Runnable {
         sd.addJavaSystemProperty(IbisProperties.SERVER_ADDRESS, deploy
                 .getServerAddress());
 
-        sd.addJavaSystemProperty("ibis.deploy.job.id", jobID);
+        sd.addJavaSystemProperty("ibis.deploy.job.id", description.getName());
         sd.addJavaSystemProperty("ibis.deploy.job.size", Integer
                 .toString(description.getProcessCount()));
 
@@ -592,7 +582,7 @@ public class Job implements Runnable {
      * @see java.lang.Object#toString()
      */
     public String toString() {
-        return jobID + ":" + description.getName() + "/"
+        return "Job: " + description.getName() + "/"
                 + description.getPoolName() + "@"
                 + description.getClusterName();
     }
