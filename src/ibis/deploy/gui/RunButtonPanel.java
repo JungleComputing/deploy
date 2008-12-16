@@ -1,5 +1,6 @@
 package ibis.deploy.gui;
 
+import ibis.deploy.AlreadyExistsException;
 import ibis.deploy.Job;
 import ibis.deploy.JobDescription;
 import ibis.deploy.State;
@@ -40,8 +41,7 @@ public class RunButtonPanel extends JPanel {
 
             public void actionPerformed(ActionEvent event) {
                 try {
-                    JobDescription result = gui.getExperiment().createNewJob(
-                            "job-" + (id++));
+                    JobDescription result = getJobDescription(gui);
                     gui.fireSubmitJob(result);
                     result = result.resolve(gui.getApplicationSet(), gui
                             .getGrid());
@@ -62,8 +62,7 @@ public class RunButtonPanel extends JPanel {
 
             public void actionPerformed(ActionEvent event) {
                 try {
-                    JobDescription result = gui.getExperiment().createNewJob(
-                            "job-" + (id++));
+                    JobDescription result = getJobDescription(gui);
                     gui.fireSubmitJob(result);
                     result = result.resolve(gui.getApplicationSet(), gui
                             .getGrid());
@@ -75,15 +74,13 @@ public class RunButtonPanel extends JPanel {
                             new StateListener() {
 
                                 public void stateUpdated(State state) {
-                                    model.setValueAt(state
-                                            .toString(), row, 3);
+                                    model.setValueAt(state.toString(), row, 3);
                                 }
 
                             }, new StateListener() {
 
                                 public void stateUpdated(State state) {
-                                    model.setValueAt(state
-                                            .toString(), row, 4);
+                                    model.setValueAt(state.toString(), row, 4);
                                 }
 
                             });
@@ -100,6 +97,18 @@ public class RunButtonPanel extends JPanel {
         });
         add(createButton);
         add(createAndRunButton);
+    }
+
+    static private JobDescription getJobDescription(GUI gui) throws Exception {
+        JobDescription result = null;
+        while (result == null) {
+            try {
+                result = gui.getExperiment().createNewJob("job-" + id);
+            } catch (AlreadyExistsException e) {
+                id++;
+            }
+        }
+        return result;
     }
 
 }

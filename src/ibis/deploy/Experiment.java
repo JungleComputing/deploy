@@ -186,7 +186,7 @@ public class Experiment {
      */
     public JobDescription createNewJob(String name) throws Exception {
         if (hasJob(name)) {
-            throw new Exception("Cannot add job, job \"" + name + "\" already exists");
+            throw new AlreadyExistsException("Cannot add job, job \"" + name + "\" already exists");
         }
         
         JobDescription result = new JobDescription(name, this);
