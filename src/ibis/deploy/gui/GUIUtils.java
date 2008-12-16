@@ -1,5 +1,6 @@
 package ibis.deploy.gui;
 
+import java.awt.Insets;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -8,6 +9,7 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.SwingConstants;
 
 public class GUIUtils {
 
@@ -28,6 +30,8 @@ public class GUIUtils {
         JButton result = new JButton(action);
         result.setText(buttonText);
         result.setIcon(createImageIcon(path, description));
+        result.setHorizontalAlignment(SwingConstants.LEFT);
+        result.setMargin(new Insets(2, 2, 2, 2));
         result.setVerticalTextPosition(AbstractButton.CENTER);
         result.setHorizontalTextPosition(AbstractButton.TRAILING);
         result.setToolTipText(description);
@@ -43,6 +47,8 @@ public class GUIUtils {
             String buttonText) {
         JButton result = new JButton(buttonText, createImageIcon(path,
                 description));
+        result.setHorizontalAlignment(SwingConstants.LEFT);
+        result.setMargin(new Insets(2, 2, 2, 2));
         result.setVerticalTextPosition(AbstractButton.CENTER);
         result.setHorizontalTextPosition(AbstractButton.TRAILING);
         result.setToolTipText(description);

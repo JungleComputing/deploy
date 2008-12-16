@@ -47,7 +47,7 @@ public class JobTablePanel extends JPanel {
             column = table.getColumnModel().getColumn(i);
             if (i == 0) {
                 column.setCellEditor(new ButtonEditor());
-                column.setPreferredWidth(30); // first column is smaller
+                column.setPreferredWidth(40); // first column is smaller
             } else if (i == 9) {
                 column.setCellEditor(new ButtonEditor());
             } else {
