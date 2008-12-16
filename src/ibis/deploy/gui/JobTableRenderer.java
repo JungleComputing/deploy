@@ -4,15 +4,14 @@ import ibis.deploy.Job;
 import ibis.deploy.JobDescription;
 import ibis.deploy.gui.action.SubmitExistingJobAction;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -81,6 +80,7 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
             setText("" + jobDescription.getResourceCount());
         } else if (column == 9) {
             JButton button = new JButton("output");
+            button.setMargin(new Insets(2, 2, 2, 2));
             button.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent arg0) {
