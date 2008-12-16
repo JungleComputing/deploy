@@ -39,10 +39,11 @@ public class RemoteServer implements Runnable, Hub {
 
     private final Cluster cluster;
 
-    private final File deployHomeDir;
+    private final RootHub rootHub;
 
-    // reference to rootHub so this server can report its address
-    private final LocalServer rootHub;
+    private final File deployHome;
+
+    private final boolean verbose;
 
     private final boolean keepSandbox;
 
@@ -61,29 +62,13 @@ public class RemoteServer implements Runnable, Hub {
 
     private final StateForwarder forwarder;
 
-    /**
-     * Create a server/hub on the given cluster. Does not block, so server may
-     * not be available when this constructor completes.
-     * 
-     * @param cluster
-     *            cluster to start this server on
-     * @param hubOnly
-     *            if true, only start a SmartSockets hub. If false, start the
-     *            complete server)
-     * @param rootHub
-     *            root hub of this ibis-deploy. Address of this hub is reported
-     *            to the root-hub.
-     * @param homeDir
-     *            home directory of ibis-deploy. Files used to start server
-     *            should be here.
-     * 
-     */
-    RemoteServer(Cluster cluster, boolean hubOnly, LocalServer rootHub,
-            File deployHomeDir, StateListener listener, boolean keepSandbox)
-            throws Exception {
+    RemoteServer(Cluster cluster, boolean hubOnly, RootHub rootHub,
+            File deployHome, boolean verbose, StateListener listener,
+            boolean keepSandbox) throws Exception {
         this.hubOnly = hubOnly;
         this.rootHub = rootHub;
-        this.deployHomeDir = deployHomeDir;
+        this.deployHome = deployHome;
+        this.verbose = verbose;
         this.keepSandbox = keepSandbox;
         address = null;
         gatJob = null;
@@ -153,7 +138,7 @@ public class RemoteServer implements Runnable, Hub {
 
         // create cache dir, and server dir within
         org.gridlab.gat.io.File gatCacheDirFile = GAT.createFile(context,
-                "any://" + host + "/" + cacheDir + "/server/");
+            "any://" + host + "/" + cacheDir + "/server/");
         gatCacheDirFile.mkdirs();
 
         // rsync to cluster cache server dir
@@ -195,11 +180,11 @@ public class RemoteServer implements Runnable, Hub {
         sd.setJavaArguments(arguments.toArray(new String[0]));
 
         // add server libraries to pre-stage, use rsync if specified
-        File serverLibs = new File(deployHomeDir, "lib-server");
+        File serverLibs = new File(deployHome, "lib-server");
         prestage(serverLibs, cluster, sd);
 
         // add server log4j file
-        File log4j = new File(deployHomeDir, "log4j.properties");
+        File log4j = new File(deployHome, "log4j.properties");
         prestage(log4j, cluster, sd);
 
         // add server output files to post-stage
@@ -248,9 +233,8 @@ public class RemoteServer implements Runnable, Hub {
     }
 
     /**
-     * Add a listener to this server which reports the state of the job.
-     * Also causes a new event for this listener with the current
-     * state of the job.
+     * Add a listener to this server which reports the state of the job. Also
+     * causes a new event for this listener with the current state of the job.
      * 
      * @param listener
      *            the listener to attach
@@ -261,6 +245,10 @@ public class RemoteServer implements Runnable, Hub {
 
     public State getState() {
         return forwarder.getState();
+    }
+
+    public void addListener(StateListener listener) {
+        forwarder.addListener(listener);
     }
 
     synchronized void kill() {
@@ -293,18 +281,23 @@ public class RemoteServer implements Runnable, Hub {
 
             JobDescription jobDescription = createJobDescription();
 
-            logger.info("JavaGAT job description for " + this + " ="
-                    + jobDescription);
-            
+            if (verbose) {
+                logger.info("JavaGAT job description for " + this + " ="
+                        + jobDescription);
+            } else {
+                logger.debug("JavaGAT job description for " + this + " ="
+                        + jobDescription);
+            }
+
             logger.debug("creating resource broker for hub");
 
             forwarder.setState(State.SUBMITTING);
-            
+
             ResourceBroker jobBroker = GAT.createResourceBroker(context,
-                    cluster.getServerURI());
+                cluster.getServerURI());
 
             org.gridlab.gat.resources.Job job = jobBroker.submitJob(
-                    jobDescription, forwarder, "job.status");
+                jobDescription, forwarder, "job.status");
             setGatJob(job);
 
             // forward error to deploy console
@@ -320,7 +313,7 @@ public class RemoteServer implements Runnable, Hub {
             logger.debug("getting address via remote client");
 
             setAddress(client.getAddress(TIMEOUT));
-            
+
             forwarder.setState(State.DEPLOYED);
 
             logger.debug("address is " + getAddress());
@@ -423,12 +416,7 @@ public class RemoteServer implements Runnable, Hub {
         if (hubOnly) {
             return "Hub \"" + id + "\" on \"" + cluster.getName() + "\"";
         } else {
-            return "Server \"" + id + "\" on \"" + cluster.getName() + "\"";
+            return "Server on \"" + cluster.getName() + "\"";
         }
-    }
-
-    public void addListener(StateListener listener) {
-        // TODO Auto-generated method stub
-        
     }
 }

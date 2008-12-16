@@ -176,59 +176,92 @@ public class GUI {
         frame.pack();
         frame.setVisible(true);
     }
+    
+    private static void printUsage() {
+        System.err
+                .println("Usage: ibis-deploy-gui [OPTIONS] [GRID_FILE] [APP_FILE] [EXPERIMENT_FILE] [WORKSPACE_FILE]");
+        System.err.println("Options:");
+        System.err.println("-v\t\tVerbose mode");
+        System.err.println("-h | --help\tThis message");
+    }
 
     protected GUI(String[] arguments) {
         File gridFile = null;
         File applicationsFile = null;
         File experimentFile = null;
-        File workSpaceFile = null;
+        File workspaceFile = null;
         boolean verbose = false;
 
         if (arguments.length == 0) {
             if (DEFAULT_WORKSPACE.exists()) {
-                workSpaceFile = DEFAULT_WORKSPACE;
+                workspaceFile = DEFAULT_WORKSPACE;
             }
         }
-
+        
         for (int i = 0; i < arguments.length; i++) {
-            if (arguments[i].equals("-g")) {
-                i++;
-                gridFile = new File(arguments[i]);
-            } else if (arguments[i].equals("-a")) {
-                i++;
-                applicationsFile = new File(arguments[i]);
-            } else if (arguments[i].equals("-v")) {
+            if (arguments[i].equals("-v")) {
                 verbose = true;
-            } else if (arguments[i].equals("-w")) {
-                i++;
-                workSpaceFile = new File(arguments[i]);
+            } else if (arguments[i].equals("-h")
+                    || arguments[i].equals("--help")) {
+                printUsage();
+                System.exit(0);
+            } else if (arguments[i].endsWith(".grid")) {
+                if (gridFile != null) {
+                    System.err
+                            .println("ERROR: can only specify a single grid file");
+                    System.exit(1);
+                }
+                gridFile = new File(arguments[i]);
+            } else if (arguments[i].endsWith(".applications")) {
+                if (applicationsFile != null) {
+                    System.err
+                            .println("ERROR: can only specify a single applications file");
+                    System.exit(1);
+                }
+                applicationsFile = new File(arguments[i]);
+            } else if (arguments[i].endsWith(".experiment")) {
+                if (experimentFile != null) {
+                    System.err
+                            .println("ERROR: can only specify a single experiment file");
+                    System.exit(1);
+                }
+                experimentFile = (new File(arguments[i]));
+            } else if (arguments[i].endsWith(".workspace")) {
+                if (workspaceFile != null) {
+                    System.err
+                            .println("ERROR: can only specify a single workspace file");
+                    System.exit(1);
+                }
+                workspaceFile = (new File(arguments[i]));
             } else {
-                experimentFile = new File(arguments[i]);
+                System.err.println("Unknown option or file type: " + arguments[i]);
+                printUsage();
+                System.exit(1);
             }
         }
 
-        if (workSpaceFile == null) {
+        if (workspaceFile == null) {
             // do nothing, there might be separate grid, applications and
             // experiment files
         } else {
-            if (!workSpaceFile.isFile()) {
+            if (!workspaceFile.isFile()) {
                 System.err
                         .println("DEPLOY: Specified workspace file: \""
-                                + workSpaceFile
+                                + workspaceFile
                                 + "\" does not exist or is a directory");
                 System.exit(1);
             }
 
             try {
-                Workspace workSpace = new Workspace(workSpaceFile);
+                Workspace workSpace = new Workspace(workspaceFile);
                 grid = workSpace.getGrid();
                 applications = workSpace.getApplications();
                 experiment = workSpace.getExperiment();
             } catch (FileNotFoundException e) {
-                System.err.println("Exception for file '" + workSpaceFile
+                System.err.println("Exception for file '" + workspaceFile
                         + "': " + e);
             } catch (Exception e) {
-                System.err.println("Exception for file '" + workSpaceFile
+                System.err.println("Exception for file '" + workspaceFile
                         + "': " + e);
             }
 
@@ -335,7 +368,7 @@ public class GUI {
         }
 
         try {
-            deploy = new Deploy(null);
+            deploy = new Deploy(null, verbose);
         } catch (Exception e) {
             System.err.println("Could not initialize ibis-deploy: " + e);
             System.exit(1);

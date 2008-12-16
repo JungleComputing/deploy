@@ -37,7 +37,7 @@ public class Deploy {
     private static final Logger logger = LoggerFactory.getLogger(Deploy.class);
 
     // "root" hub (perhaps including the server)
-    private LocalServer rootHub;
+    private RootHub rootHub;
 
     // remote server (if it exists)
     private RemoteServer remoteServer;
@@ -46,6 +46,9 @@ public class Deploy {
 
     // home dir of ibis-deploy
     private final File home;
+
+    // promote some logging prints from debug to info
+    private boolean verbose;
 
     // submitted jobs
     private List<Job> jobs;
@@ -66,10 +69,11 @@ public class Deploy {
      * @throws Exception
      *             if required files cannot be found in home
      */
-    public Deploy(File home) throws Exception {
+    public Deploy(File home, boolean verbose) throws Exception {
         rootHub = null;
         remoteServer = null;
         keepSandboxes = false;
+        this.verbose = verbose;
 
         jobs = new ArrayList<Job>();
         hubs = new HashMap<String, RemoteServer>();
@@ -95,6 +99,11 @@ public class Deploy {
      */
     public File getHome() {
         return home;
+    }
+
+    // is verbose mode turned on?
+    boolean isVerbose() {
+        return verbose;
     }
 
     /**
@@ -140,7 +149,7 @@ public class Deploy {
 
         return rootHub.getAddress();
     }
-    
+
     /**
      * Returns the build-in root hub.
      * 
@@ -148,14 +157,13 @@ public class Deploy {
      * @throws Exception
      *             if ibis-deploy has not been initialized yet.
      */
-    synchronized LocalServer getRootHub() throws Exception {
+    synchronized RootHub getRootHub() throws Exception {
         if (rootHub == null) {
             throw new Exception("Ibis-deploy not initialized yet");
         }
 
         return rootHub;
     }
-
 
     /**
      * Retrieves address of server. May block if server has not been started
@@ -188,7 +196,7 @@ public class Deploy {
      * @throws Exception
      *             if the server cannot be started
      */
-    public synchronized void initialize(Cluster serverCluster) throws Exception {
+    public void initialize(Cluster serverCluster) throws Exception {
         initialize(serverCluster, null, true);
     }
 
@@ -216,14 +224,16 @@ public class Deploy {
 
         if (serverCluster == null) {
             // rootHub includes server
-            rootHub = new LocalServer(false);
+            rootHub = new RootHub(true);
             rootHub.addListener(listener);
             remoteServer = null;
 
         } else {
-            rootHub = new LocalServer(true);
+            rootHub = new RootHub(false);
             remoteServer = new RemoteServer(serverCluster, false, rootHub,
-                    home, listener, keepSandboxes);
+                    home, verbose,
+
+                    listener, keepSandboxes);
 
             hubs.put(serverCluster.getName(), remoteServer);
 
@@ -272,12 +282,13 @@ public class Deploy {
         // resolve given description into single "independent" description
         description = description.resolve(applicationSet, grid);
 
-        logger.debug("Submitting new job:\n" + description.toPrintString());
+        if (verbose) {
+            logger.info("Submitting new job:\n" + description.toPrintString());
+        } else {
+            logger.debug("Submitting new job:\n" + description.toPrintString());
+        }
 
         description.checkSettings();
-
-        // waits until server is running
-        String serverAddress = getServerAddress();
 
         Hub hub = null;
         if (description.getSharedHub() == null || description.getSharedHub()) {
@@ -285,8 +296,8 @@ public class Deploy {
         }
 
         // start job
-        Job job = new Job(description, hub,
-                keepSandboxes, jobListener, hubListener, this);
+        Job job = new Job(description, hub, keepSandboxes, jobListener,
+                hubListener, rootHub, verbose, home, getServerAddress(), this);
 
         jobs.add(job);
 
@@ -329,7 +340,7 @@ public class Deploy {
         RemoteServer result = hubs.get(clusterName);
 
         if (result == null) {
-            result = new RemoteServer(cluster, true, rootHub, home,
+            result = new RemoteServer(cluster, true, rootHub, home, verbose,
                     listener, keepSandboxes);
             hubs.put(clusterName, result);
         } else {
@@ -372,7 +383,7 @@ public class Deploy {
 
         return registryMonitor.getPoolSizes();
     }
-    
+
     /**
      * Returns a map containing the size of each pool at the server
      * 

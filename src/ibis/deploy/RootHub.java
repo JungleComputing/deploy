@@ -10,11 +10,10 @@ import org.slf4j.LoggerFactory;
  * Server or Hub running on the local machine (inside the deploy jvm)
  * 
  */
-public class LocalServer implements Hub {
-    private static final Logger logger = LoggerFactory
-            .getLogger(LocalServer.class);
+public class RootHub implements Hub {
+    private static final Logger logger = LoggerFactory.getLogger(RootHub.class);
 
-    private final boolean hubOnly;
+    private final boolean isServer;
 
     // used in case of a local server
     private final ibis.server.Server server;
@@ -23,22 +22,22 @@ public class LocalServer implements Hub {
      * Start a server/hub locally.
      * 
      * @param hubOnly
-     *                if true, only start a hub. If false, also start a server.
+     *            if true, only start a hub. If false, also start a server.
      * @throws Exception
-     *                 if starting the server fails.
+     *             if starting the server fails.
      */
     @SuppressWarnings("unchecked")
-    LocalServer(boolean hubOnly) throws Exception {
-        this.hubOnly = hubOnly;
+    RootHub(boolean isServer) throws Exception {
+        this.isServer = isServer;
 
-        if (hubOnly) {
-            logger.debug("Starting build-in hub");
-        } else {
+        if (isServer) {
             logger.debug("Starting build-in server");
+        } else {
+            logger.debug("Starting build-in hub");
         }
 
         Properties properties = new Properties();
-        properties.put(ServerProperties.HUB_ONLY, hubOnly + "");
+        properties.put(ServerProperties.HUB_ONLY, !isServer + "");
         // properties.put(ServerProperties.PRINT_ERRORS, "true");
         // properties.put(ServerProperties.PRINT_EVENTS, "true");
         // properties.put(ServerProperties.PRINT_STATS, "true");
@@ -84,11 +83,11 @@ public class LocalServer implements Hub {
      * @see java.lang.Object#toString()
      */
     public String toString() {
-        if (hubOnly) {
-            return "Local Hub @ " + getAddress();
+        if (isServer) {
+            return "Local Server @ " + getAddress();
         }
+        return "Local Hub @ " + getAddress();
 
-        return "Local Server @ " + getAddress();
     }
 
     public void addListener(StateListener listener) {

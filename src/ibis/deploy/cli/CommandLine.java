@@ -12,6 +12,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Command line interface for ibis-deploy library
  * 
@@ -20,39 +23,32 @@ import java.util.List;
  */
 public class CommandLine {
 
-    private static void println(String message) {
-        System.err.printf("%tT DEPLOY: %s\n", System.currentTimeMillis(), message);
-    }
+    private static final Logger logger = LoggerFactory
+            .getLogger(CommandLine.class);
 
     // run a single experiment
     private static void runExperiment(Experiment experiment, Grid grid,
             ApplicationSet applications, Deploy deploy, boolean verbose)
             throws Exception {
         if (verbose) {
-            println("Running experiment: " + experiment.toPrintString());
+            logger.info("Running experiment: " + experiment.toPrintString());
         } else {
-            println("Running experiment \"" + experiment
-                    + "\" with " + experiment.getJobs().length + " jobs");
+            logger.info("Running experiment \"" + experiment.getName() + "\"");
+            logger.debug("Running experiment: " + experiment.toPrintString());
         }
 
         // start jobs
         List<Job> jobs = new ArrayList<Job>();
         for (JobDescription jobDescription : experiment.getJobs()) {
             Job job = deploy.submitJob(jobDescription, applications, grid,
-                    null, null);
+                null, null);
             jobs.add(job);
-            if (verbose) {
-                println("Submitted job "
-                        + job.getDescription().toPrintString());
-            } else {
-                println("Submitted job " + job);
-            }
         }
 
         // wait for all jobs to end
         deploy.waitUntilJobsFinished();
 
-        println("Experiment \"" + experiment + "\" done");
+        logger.info("Experiment \"" + experiment + "\" done");
     }
 
     private static void printUsage() {
@@ -113,7 +109,8 @@ public class CommandLine {
             } else if (arguments[i].endsWith(".experiment")) {
                 experimentFiles.add(new File(arguments[i]));
             } else {
-                System.err.println("Unknown option or file type: " + arguments[i]);
+                System.err.println("Unknown option or file type: "
+                        + arguments[i]);
                 printUsage();
                 System.exit(1);
             }
@@ -147,7 +144,12 @@ public class CommandLine {
                 applications = new ApplicationSet(applicationsFile);
 
                 if (verbose) {
-                    println("Applications: " + applications.toPrintString());
+                    logger
+                            .info("Applications: "
+                                    + applications.toPrintString());
+                } else {
+                    logger.debug("Applications: "
+                            + applications.toPrintString());
                 }
             }
 
@@ -158,18 +160,17 @@ public class CommandLine {
                 System.exit(1);
             }
 
-            Deploy deploy = new Deploy(null);
+            Deploy deploy = new Deploy(null, verbose);
 
             deploy.keepSandboxes(keepSandboxes);
 
             if (serverCluster == null) {
-                
-                        println("Initializing Command Line Ibis Deploy, using build-in server");
+                logger.info("Initializing Command Line Ibis Deploy, using build-in server");
 
                 deploy.initialize(null, null);
             } else {
-                println("Initializing Command Line Ibis Deploy, using server on cluster \""
-                                + serverCluster + "\"");
+                logger.info("Initializing Command Line Ibis Deploy, using server on cluster \""
+                        + serverCluster + "\"");
 
                 if (grid == null) {
                     System.err.println("ERROR: Server cluster " + serverCluster
@@ -200,8 +201,7 @@ public class CommandLine {
 
             deploy.end();
         } catch (Exception e) {
-            println("Exception on running experiments");
-            e.printStackTrace(System.err);
+            logger.error("Exception on running experiments", e);
             System.exit(1);
         }
     }

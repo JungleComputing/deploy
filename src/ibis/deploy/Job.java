@@ -41,7 +41,17 @@ public class Job implements Runnable {
 
     private final GATContext context;
 
+    private final RootHub rootHub;
+
+    private final boolean verbose;
+
+    private final File deployHome;
+
+    private final String serverAddress;
+    
     private final Deploy deploy;
+
+    // private final Deploy deploy;
 
     // set in case this jobs fails for some reason.
     private Exception error = null;
@@ -74,14 +84,20 @@ public class Job implements Runnable {
      *             if the listener could not be attached to this job
      */
     Job(JobDescription description, Hub hub, boolean keepSandbox,
-            StateListener jobListener, StateListener hubListener, Deploy deploy)
-            throws Exception {
+            StateListener jobListener, StateListener hubListener,
+            RootHub rootHub, boolean verbose, File deployHome, String serverAddress,
+
+            Deploy deploy) throws Exception {
         this.description = description;
         this.cluster = description.getClusterOverrides();
         this.application = description.getApplicationOverrides();
         this.sharedHub = hub;
         this.keepSandbox = keepSandbox;
         this.hubListener = hubListener;
+        this.rootHub = rootHub;
+        this.verbose = verbose;
+        this.deployHome = deployHome;
+        this.serverAddress = serverAddress;
         this.deploy = deploy;
 
         this.context = createGATContext();
@@ -316,14 +332,14 @@ public class Job implements Runnable {
         sd.setJavaOptions(application.getJVMOptions());
 
         // ibis stuff
-        sd.addJavaSystemProperty(IbisProperties.LOCATION,
-            (description.getName() + "@" + cluster.getName()));
+        sd.addJavaSystemProperty(IbisProperties.LOCATION, (description
+                .getName()
+                + "@" + cluster.getName()));
         sd.addJavaSystemProperty(IbisProperties.POOL_NAME, description
                 .getPoolName());
         sd.addJavaSystemProperty(IbisProperties.POOL_SIZE, ""
                 + description.getPoolSize());
-        sd.addJavaSystemProperty(IbisProperties.SERVER_ADDRESS, deploy
-                .getServerAddress());
+        sd.addJavaSystemProperty(IbisProperties.SERVER_ADDRESS, serverAddress);
 
         sd.addJavaSystemProperty("ibis.deploy.job.id", description.getName());
         sd.addJavaSystemProperty("ibis.deploy.job.size", Integer
@@ -383,7 +399,7 @@ public class Job implements Runnable {
         File log4jFile = application.getLog4jFile();
 
         if (log4jFile == null) {
-            log4jFile = new File(deploy.getHome(), "log4j.properties");
+            log4jFile = new File(deployHome, "log4j.properties");
         }
 
         // add log4j file to pre-stage, and add log4j property to use it
@@ -504,8 +520,8 @@ public class Job implements Runnable {
             if (sharedHub == null) {
                 // start a hub especially for this job
                 localHub = new RemoteServer(description.getClusterOverrides(),
-                        true, deploy.getRootHub(), deploy.getHome(),
-                        hubListener, keepSandbox);
+                        true, rootHub, deployHome, verbose, hubListener,
+                        keepSandbox);
 
                 // wait until hub really running
                 localHub.waitUntilRunning();
@@ -518,7 +534,7 @@ public class Job implements Runnable {
                 hubList = sharedHub.getAddress();
             }
             // add hubs list from root hub
-            for (String address : deploy.getRootHub().getHubs()) {
+            for (String address : rootHub.getHubs()) {
                 hubList = hubList + "," + address;
             }
 
@@ -530,8 +546,13 @@ public class Job implements Runnable {
 
             org.gridlab.gat.resources.JobDescription jobDescription = createJobDescription(javaSoftwareDescription);
 
-            logger.info("JavaGAT job description for " + this + " ="
-                    + jobDescription);
+            if (verbose) {
+                logger.info("JavaGAT job description for " + this + " ="
+                        + jobDescription);
+            } else {
+                logger.debug("JavaGAT job description for " + this + " ="
+                        + jobDescription);
+            }
 
             forwarder.setState(State.SUBMITTING);
 
