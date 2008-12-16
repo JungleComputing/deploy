@@ -1,6 +1,10 @@
 package ibis.deploy.gui;
 
 import ibis.deploy.Application;
+import ibis.deploy.gui.editor.FileArrayEditor;
+import ibis.deploy.gui.editor.TextArrayEditor;
+import ibis.deploy.gui.editor.TextEditor;
+import ibis.deploy.gui.editor.TextMapArrayEditor;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;

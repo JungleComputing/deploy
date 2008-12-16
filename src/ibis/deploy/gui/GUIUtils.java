@@ -12,7 +12,7 @@ import javax.swing.JLabel;
 public class GUIUtils {
 
     /** Returns an JLabel, or null if the path was invalid. */
-    protected static JLabel createImageLabel(String path, String description) {
+    public static JLabel createImageLabel(String path, String description) {
         JLabel result = new JLabel(createImageIcon(path, description));
         result.setToolTipText(description);
         return result;
@@ -23,7 +23,7 @@ public class GUIUtils {
      * 
      * @param buttonText
      */
-    protected static JButton createImageButton(Action action, String path,
+    public static JButton createImageButton(Action action, String path,
             String description, String buttonText) {
         JButton result = new JButton(action);
         result.setText(buttonText);
@@ -39,7 +39,7 @@ public class GUIUtils {
      * 
      * @param buttonText
      */
-    protected static JButton createImageButton(String path, String description,
+    public static JButton createImageButton(String path, String description,
             String buttonText) {
         JButton result = new JButton(buttonText, createImageIcon(path,
                 description));
@@ -50,7 +50,7 @@ public class GUIUtils {
     }
 
     /** Returns an ImageIcon, or null if the path was invalid. */
-    protected static ImageIcon createImageIcon(String path, String description) {
+    public static ImageIcon createImageIcon(String path, String description) {
         java.net.URL imgURL = GUIUtils.class.getResource(path);
         // URL imgURL = null;
         // try {

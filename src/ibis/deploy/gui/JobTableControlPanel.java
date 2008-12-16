@@ -1,5 +1,8 @@
 package ibis.deploy.gui;
 
+import ibis.deploy.gui.action.StopExistingJobAction;
+import ibis.deploy.gui.action.SubmitExistingJobAction;
+
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTable;

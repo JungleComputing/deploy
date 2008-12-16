@@ -1,6 +1,8 @@
 package ibis.deploy.gui;
 
 import ibis.deploy.Cluster;
+import ibis.deploy.gui.listener.WorkSpaceChangedListener;
+import ibis.deploy.gui.worldmap.MapUtilities;
 
 import java.awt.Color;
 import java.awt.Dimension;

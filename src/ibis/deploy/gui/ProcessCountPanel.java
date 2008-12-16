@@ -1,6 +1,7 @@
 package ibis.deploy.gui;
 
 import ibis.deploy.JobDescription;
+import ibis.deploy.gui.listener.SubmitJobListener;
 
 import java.awt.Dimension;
 import java.awt.FlowLayout;

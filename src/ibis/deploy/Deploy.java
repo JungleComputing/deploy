@@ -301,7 +301,7 @@ public class Deploy {
      *            cluster to deploy the hub on
      * @param waitUntilRunning
      *            wait until hub is actually running
-     * @param hubListener
+     * @param listener
      *            listener for state of hub
      * @return reference to a hub on the given cluster
      * @throws Exception

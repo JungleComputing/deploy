@@ -20,7 +20,7 @@ public class InitializedPanel extends JPanel {
     }
 
     public void init() {
-        MyTableModel model = new MyTableModel();
+        JobTableModel model = new JobTableModel();
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
                 new ExperimentEditorPanel(gui, model), new MonitoringPanel(gui,
                         model));

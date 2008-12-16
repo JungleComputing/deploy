@@ -26,7 +26,7 @@ public class RunButtonPanel extends JPanel {
 
     private static int id = 0;
 
-    public RunButtonPanel(final GUI gui, final MyTableModel model) {
+    public RunButtonPanel(final GUI gui, final JobTableModel model) {
 
         setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
 

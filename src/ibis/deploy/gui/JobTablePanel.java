@@ -1,6 +1,7 @@
 package ibis.deploy.gui;
 
 import ibis.deploy.JobDescription;
+import ibis.deploy.gui.listener.WorkSpaceChangedListener;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -29,12 +30,12 @@ public class JobTablePanel extends JPanel {
      */
     private static final long serialVersionUID = 9193516947528088612L;
 
-    public JobTablePanel(GUI gui, final MyTableModel model) {
+    public JobTablePanel(GUI gui, final JobTableModel model) {
         setLayout(new BorderLayout());
         JTable table = new JTable(model);
         model.setTable(table);
 
-        table.setDefaultRenderer(Object.class, new MyTableRenderer(gui));
+        table.setDefaultRenderer(Object.class, new JobTableRenderer(gui));
         table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         table.setRowSelectionAllowed(true);
         table.setRowHeight(30);

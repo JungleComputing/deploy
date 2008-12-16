@@ -14,7 +14,7 @@ public class ExperimentEditorPanel extends JPanel {
 
     private final static int SPACER = 5;
 
-    public ExperimentEditorPanel(GUI gui, MyTableModel model) {
+    public ExperimentEditorPanel(GUI gui, JobTableModel model) {
         setBorder(BorderFactory.createTitledBorder("Experiment Editor"));
         setLayout(new BorderLayout(5, 5));
         WorldMapPanel worldMapPanel = new WorldMapPanel(gui);

@@ -16,7 +16,7 @@ public class ExperimentEditorTextPanel extends JPanel {
      */
     private static final long serialVersionUID = -5262692042637073227L;
 
-    public ExperimentEditorTextPanel(GUI gui, MyTableModel model,
+    public ExperimentEditorTextPanel(GUI gui, JobTableModel model,
             WorldMapPanel worldMapPanel) {
         setLayout(new BorderLayout());
         JPanel topPanel = new JPanel();

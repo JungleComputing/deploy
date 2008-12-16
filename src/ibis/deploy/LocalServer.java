@@ -23,9 +23,9 @@ public class LocalServer implements Hub {
      * Start a server/hub locally.
      * 
      * @param hubOnly
-     *            if true, only start a hub. If false, also start a server.
+     *                if true, only start a hub. If false, also start a server.
      * @throws Exception
-     *             if starting the server fails.
+     *                 if starting the server fails.
      */
     @SuppressWarnings("unchecked")
     LocalServer(boolean hubOnly) throws Exception {
@@ -56,7 +56,6 @@ public class LocalServer implements Hub {
      * 
      * 
      */
-    @Override
     public String getAddress() {
         return server.getLocalAddress();
     }
@@ -76,9 +75,9 @@ public class LocalServer implements Hub {
     void killAll() {
         // TODO:implement using Smartsockets kill mechanism
     }
-    
+
     public void waitUntilRunning() {
-        //NOTHING
+        // NOTHING
     }
 
     /**
@@ -94,8 +93,8 @@ public class LocalServer implements Hub {
 
     public void addListener(StateListener listener) {
         if (listener != null) {
-        //signal listener we're done deploying.
-        listener.stateUpdated(State.DEPLOYED);
+            // signal listener we're done deploying.
+            listener.stateUpdated(State.DEPLOYED);
         }
     }
 

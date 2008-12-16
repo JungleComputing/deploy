@@ -1,6 +1,7 @@
 package ibis.deploy.gui;
 
 import ibis.deploy.Application;
+import ibis.deploy.gui.listener.EditorListener;
 
 import java.awt.BorderLayout;
 import java.util.ArrayList;

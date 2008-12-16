@@ -6,6 +6,22 @@ import ibis.deploy.Experiment;
 import ibis.deploy.Grid;
 import ibis.deploy.JobDescription;
 import ibis.deploy.Workspace;
+import ibis.deploy.gui.action.AboutAction;
+import ibis.deploy.gui.action.HubPolicyAction;
+import ibis.deploy.gui.action.ResetApplicationSetWorkSpaceAction;
+import ibis.deploy.gui.action.ResetExperimentWorkSpaceAction;
+import ibis.deploy.gui.action.ResetGridWorkSpaceAction;
+import ibis.deploy.gui.action.ResetWorkSpaceAction;
+import ibis.deploy.gui.action.SaveApplicationSetWorkSpaceAction;
+import ibis.deploy.gui.action.SaveExperimentWorkSpaceAction;
+import ibis.deploy.gui.action.SaveGridWorkSpaceAction;
+import ibis.deploy.gui.action.SaveWorkSpaceAction;
+import ibis.deploy.gui.action.SwitchApplicationSetWorkSpaceAction;
+import ibis.deploy.gui.action.SwitchExperimentWorkSpaceAction;
+import ibis.deploy.gui.action.SwitchGridWorkSpaceAction;
+import ibis.deploy.gui.action.SwitchWorkSpaceAction;
+import ibis.deploy.gui.listener.SubmitJobListener;
+import ibis.deploy.gui.listener.WorkSpaceChangedListener;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -327,37 +343,37 @@ public class GUI {
 
     }
 
-    protected Deploy getDeploy() {
+    public Deploy getDeploy() {
         return deploy;
     }
 
-    protected Grid getGrid() {
+    public Grid getGrid() {
         return grid;
     }
 
-    protected void setGrid(Grid grid) {
+    public void setGrid(Grid grid) {
         this.grid = grid;
     }
 
-    protected ApplicationSet getApplicationSet() {
+    public ApplicationSet getApplicationSet() {
         return applications;
     }
 
-    protected void setApplicationSet(ApplicationSet applications) {
+    public void setApplicationSet(ApplicationSet applications) {
         this.applications = applications;
 
     }
 
-    protected Experiment getExperiment() {
+    public Experiment getExperiment() {
         return experiment;
     }
 
-    protected void setExperiment(Experiment experiment) {
+    public void setExperiment(Experiment experiment) {
         this.experiment = experiment;
 
     }
 
-    protected Workspace getWorkSpace() {
+    public Workspace getWorkSpace() {
         Workspace wp = null;
         try {
             wp = new Workspace(getExperiment().getName());
@@ -382,31 +398,31 @@ public class GUI {
         this.sharedHubs = sharedHubs;
     }
 
-    protected void fireSubmitJob(JobDescription jobDescription) {
+    public void fireSubmitJob(JobDescription jobDescription) {
         for (SubmitJobListener listener : submitJobListeners) {
             listener.modify(jobDescription);
         }
     }
 
-    protected void fireWorkSpaceUpdated() {
+    public void fireWorkSpaceUpdated() {
         fireGridUpdated();
         fireApplicationSetUpdated();
         fireExperimentUpdated();
     }
 
-    protected void fireGridUpdated() {
+    public void fireGridUpdated() {
         for (WorkSpaceChangedListener listener : gridListeners) {
             listener.workSpaceChanged(this);
         }
     }
 
-    protected void fireApplicationSetUpdated() {
+    public void fireApplicationSetUpdated() {
         for (WorkSpaceChangedListener listener : applicationSetListeners) {
             listener.workSpaceChanged(this);
         }
     }
 
-    protected void fireExperimentUpdated() {
+    public void fireExperimentUpdated() {
         for (WorkSpaceChangedListener listener : experimentListeners) {
             listener.workSpaceChanged(this);
         }

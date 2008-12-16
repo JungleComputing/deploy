@@ -1,6 +1,8 @@
 package ibis.deploy.gui;
 
 import ibis.deploy.JobDescription;
+import ibis.deploy.gui.listener.SubmitJobListener;
+import ibis.deploy.gui.listener.WorkSpaceChangedListener;
 
 import java.awt.BorderLayout;
 

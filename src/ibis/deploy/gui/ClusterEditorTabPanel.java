@@ -1,6 +1,13 @@
 package ibis.deploy.gui;
 
 import ibis.deploy.Cluster;
+import ibis.deploy.gui.editor.FileArrayEditor;
+import ibis.deploy.gui.editor.FileEditor;
+import ibis.deploy.gui.editor.MapEditor;
+import ibis.deploy.gui.editor.NumberEditor;
+import ibis.deploy.gui.editor.TextArrayComboBoxEditor;
+import ibis.deploy.gui.editor.TextComboBoxEditor;
+import ibis.deploy.gui.editor.TextEditor;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
