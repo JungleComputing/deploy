@@ -366,7 +366,7 @@ public class Deploy {
 
             if (rootHub == null) {
                 throw new Exception(
-                "Ibis Deploy not initialized, cannot monitor server");
+                        "Ibis Deploy not initialized, cannot monitor server");
             }
 
             if (remoteServer != null && !remoteServer.isRunning()) {
@@ -385,7 +385,11 @@ public class Deploy {
 
             return registryMonitor.getPoolSizes();
         } catch (Exception e) {
-            logger.warn("could not get pool sizes", e);
+            if (logger.isDebugEnabled()) {
+                logger.debug("could not get pool sizes", e);
+            } else {
+                logger.warn("could not get pool sizes");
+            }
             return new HashMap<String, Integer>();
         }
     }
@@ -421,7 +425,11 @@ public class Deploy {
 
             return registryMonitor.getLocations(poolName);
         } catch (Exception e) {
-            logger.warn("could not get locations", e);
+            if (logger.isDebugEnabled()) {
+                logger.debug("could not get locations");
+            } else {
+                logger.warn("could not get locations", e);
+            }
             return new String[0];
         }
     }
