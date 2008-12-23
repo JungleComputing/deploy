@@ -365,15 +365,13 @@ public class Deploy {
         try {
 
             if (rootHub == null) {
-                logger
-                        .warn("Ibis Deploy not initialized, cannot monitor server");
-                return new HashMap<String, Integer>();
+                throw new Exception(
+                "Ibis Deploy not initialized, cannot monitor server");
             }
 
             if (remoteServer != null && !remoteServer.isRunning()) {
-                logger.warn("Cannot monitor server \"" + remoteServer
+                throw new Exception("Cannot monitor server \"" + remoteServer
                         + "\" not running");
-                return new HashMap<String, Integer>();
             }
 
             if (registryMonitor == null) {
@@ -400,26 +398,32 @@ public class Deploy {
      *             if the server is not running yet, or communicating with it
      *             failed
      */
-    public synchronized String[] getLocations(String poolName) throws Exception {
-        if (rootHub == null) {
-            throw new Exception(
-                    "Ibis Deploy not initialized, cannot monitor server");
+    public synchronized String[] getLocations(String poolName) {
+        try {
+            if (rootHub == null) {
+                throw new Exception(
+                        "Ibis Deploy not initialized, cannot monitor server");
+            }
+
+            if (remoteServer != null && !remoteServer.isRunning()) {
+                throw new Exception("Cannot monitor server \"" + remoteServer
+                        + "\" not running");
+            }
+
+            if (registryMonitor == null) {
+                Properties properties = new Properties();
+                properties.put(ServerProperties.ADDRESS, getServerAddress());
+                properties.put(ServerProperties.HUB_ADDRESSES,
+                        getRootHubAddress());
+
+                registryMonitor = new RegistryMonitorClient(properties, false);
+            }
+
+            return registryMonitor.getLocations(poolName);
+        } catch (Exception e) {
+            logger.warn("could not get locations", e);
+            return new String[0];
         }
-
-        if (remoteServer != null && !remoteServer.isRunning()) {
-            throw new Exception("Cannot monitor server \"" + remoteServer
-                    + "\" not running");
-        }
-
-        if (registryMonitor == null) {
-            Properties properties = new Properties();
-            properties.put(ServerProperties.ADDRESS, getServerAddress());
-            properties.put(ServerProperties.HUB_ADDRESSES, getRootHubAddress());
-
-            registryMonitor = new RegistryMonitorClient(properties, false);
-        }
-
-        return registryMonitor.getLocations(poolName);
     }
 
     /**
