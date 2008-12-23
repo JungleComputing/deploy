@@ -4,6 +4,7 @@ import ibis.ipl.impl.registry.central.monitor.RegistryMonitorClient;
 import ibis.server.ServerProperties;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -357,31 +358,38 @@ public class Deploy {
     /**
      * Returns a map containing the size of each pool at the server
      * 
-     * @return a map containing the size of each pool at the server
-     * @throws Exception
-     *             if the server is not running yet, or communicating with it
-     *             failed
+     * @return a map containing the size of each pool at the server. May be
+     *         empty if the server could not be reached
      */
-    public synchronized Map<String, Integer> poolSizes() throws Exception {
-        if (rootHub == null) {
-            throw new Exception(
-                    "Ibis Deploy not initialized, cannot monitor server");
+    public synchronized Map<String, Integer> poolSizes() {
+        try {
+
+            if (rootHub == null) {
+                logger
+                        .warn("Ibis Deploy not initialized, cannot monitor server");
+                return new HashMap<String, Integer>();
+            }
+
+            if (remoteServer != null && !remoteServer.isRunning()) {
+                logger.warn("Cannot monitor server \"" + remoteServer
+                        + "\" not running");
+                return new HashMap<String, Integer>();
+            }
+
+            if (registryMonitor == null) {
+                Properties properties = new Properties();
+                properties.put(ServerProperties.ADDRESS, getServerAddress());
+                properties.put(ServerProperties.HUB_ADDRESSES,
+                        getRootHubAddress());
+
+                registryMonitor = new RegistryMonitorClient(properties, false);
+            }
+
+            return registryMonitor.getPoolSizes();
+        } catch (Exception e) {
+            logger.warn("could not get pool sizes", e);
+            return new HashMap<String, Integer>();
         }
-
-        if (remoteServer != null && !remoteServer.isRunning()) {
-            throw new Exception("Cannot monitor server \"" + remoteServer
-                    + "\" not running");
-        }
-
-        if (registryMonitor == null) {
-            Properties properties = new Properties();
-            properties.put(ServerProperties.ADDRESS, getServerAddress());
-            properties.put(ServerProperties.HUB_ADDRESSES, getRootHubAddress());
-
-            registryMonitor = new RegistryMonitorClient(properties, false);
-        }
-
-        return registryMonitor.getPoolSizes();
     }
 
     /**
