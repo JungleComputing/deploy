@@ -136,6 +136,13 @@ class StateForwarder implements MetricListener, Runnable {
                 || currentState.equals(State.DONE);
     }
     
+    public synchronized boolean isRunning() throws Exception {
+        if (exception != null) {
+            throw exception;
+        }
+        return currentState.equals(State.DEPLOYED);
+    }
+    
     public synchronized void waitUntilFinished() throws Exception {
         while (currentState.ordinal() < State.DONE.ordinal()) {
             if (exception != null) {

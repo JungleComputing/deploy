@@ -368,7 +368,7 @@ public class RemoteServer implements Runnable, Hub {
      * @throws Exception
      *             when the server could not be started.
      */
-    public synchronized void waitUntilRunning() throws Exception {
+    public void waitUntilRunning() throws Exception {
         forwarder.waitUntilRunning();
     }
 
@@ -380,8 +380,8 @@ public class RemoteServer implements Runnable, Hub {
      * @throws Exception
      *             if the state of the job could not be determined
      */
-    public synchronized boolean isRunning() throws Exception {
-        return getState() == State.DEPLOYED;
+    public boolean isRunning() throws Exception {
+        return forwarder.isRunning();
     }
 
     /**
