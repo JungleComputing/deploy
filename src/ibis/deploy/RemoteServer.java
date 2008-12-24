@@ -55,9 +55,6 @@ public class RemoteServer implements Runnable, Hub {
 
     private RemoteClient remoteClient;
 
-    // in case this hub/server dies or fails to start, the error will be here
-    private Exception error = null;
-
     private boolean killed = false;
 
     private final StateForwarder forwarder;
@@ -326,25 +323,12 @@ public class RemoteServer implements Runnable, Hub {
             logger.info(this + " now running (address = " + getAddress() + ")");
         } catch (Exception e) {
             logger.error("cannot start hub/server", e);
-            forwarder.setState(State.ERROR);
-            setError(e);
+            forwarder.setState(State.ERROR, e);
         }
     }
 
     private synchronized void setAddress(String address) {
         this.address = address;
-
-        // server already killed before it was submitted :(
-        // kill server...
-        if (killed) {
-            kill();
-        }
-
-        notifyAll();
-    }
-
-    private synchronized void setError(Exception error) {
-        this.error = error;
 
         // server already killed before it was submitted :(
         // kill server...
@@ -385,16 +369,7 @@ public class RemoteServer implements Runnable, Hub {
      *             when the server could not be started.
      */
     public synchronized void waitUntilRunning() throws Exception {
-        while (address == null) {
-            if (error != null) {
-                throw error;
-            }
-
-            wait(1000);
-        }
-        if (error != null) {
-            throw error;
-        }
+        forwarder.waitUntilRunning();
     }
 
     /**

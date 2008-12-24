@@ -76,7 +76,7 @@ public enum State {
      * The {@link Job} has properly run. All the cleanup and administration of
      * the {@link Job} is completely done.
      */
-    STOPPED,
+    DONE,
 
     /**
      * Error state indicator.

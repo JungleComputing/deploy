@@ -53,9 +53,6 @@ public class Job implements Runnable {
 
     // private final Deploy deploy;
 
-    // set in case this jobs fails for some reason.
-    private Exception error = null;
-
     // gat job
     private org.gridlab.gat.resources.Job gatJob;
 
@@ -118,11 +115,6 @@ public class Job implements Runnable {
         return description;
     }
 
-    private synchronized void setError(Exception error) {
-        this.error = error;
-        notifyAll();
-    }
-
     /**
      * Add a listener to this server which reports the state of the Job. Also
      * causes a new event for this listener with the current state of the job.
@@ -145,24 +137,14 @@ public class Job implements Runnable {
     }
 
     /**
-     * Returns if this job is in the "STOPPED" or "SUBMISSION_ERROR" state.
+     * Returns if this job either done or an error occurred.
      * 
-     * @return true if this job is in the "STOPPED" or "SUBMISSION_ERROR" state.
+     * @return true if this job either done or an error occurred.
      * @throws Exception
      *             in case an error occurs.
      */
     public synchronized boolean isFinished() throws Exception {
-        if (error != null) {
-            throw error;
-        }
-
-        State state = getState();
-
-        if (state == State.STOPPED || state == State.ERROR) {
-            return true;
-        }
-
-        return false;
+        return forwarder.isFinished();
     }
 
     /**
@@ -172,9 +154,7 @@ public class Job implements Runnable {
      *             in case an error occurs.
      */
     public synchronized void waitUntilFinished() throws Exception {
-        while (!isFinished()) {
-            wait(1000);
-        }
+        forwarder.waitUntilFinished();
     }
 
     public void waitUntilDeployed() throws Exception {
@@ -573,9 +553,7 @@ public class Job implements Runnable {
             }
         } catch (Exception e) {
             logger.error("Error on running job: ", e);
-            forwarder.setState(State.ERROR);
-            setError(e);
-
+            forwarder.setState(State.ERROR, e);
         }
     }
 

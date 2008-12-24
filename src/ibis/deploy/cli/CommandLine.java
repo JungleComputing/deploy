@@ -167,7 +167,7 @@ public class CommandLine {
             if (serverCluster == null) {
                 logger.info("Initializing Command Line Ibis Deploy, using build-in server");
 
-                deploy.initialize(null, null);
+                deploy.initialize(null);
             } else {
                 logger.info("Initializing Command Line Ibis Deploy, using server on cluster \""
                         + serverCluster + "\"");

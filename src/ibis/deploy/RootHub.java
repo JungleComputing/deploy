@@ -93,7 +93,7 @@ public class RootHub implements Hub {
     public void addListener(StateListener listener) {
         if (listener != null) {
             // signal listener we're done deploying.
-            listener.stateUpdated(State.DEPLOYED);
+            listener.stateUpdated(State.DEPLOYED, null);
         }
     }
 

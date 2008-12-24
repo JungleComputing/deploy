@@ -39,7 +39,7 @@ public class InitializingPanel implements StateListener {
         progressBar.setStringPainted(true);
     }
 
-    public void stateUpdated(State state) {
+    public void stateUpdated(State state, Exception exception) {
         progressBar.setString("" + state);
         if (state == State.DEPLOYED) {
             experimentsPanel.removeAll();

@@ -85,13 +85,13 @@ public class SubmitExistingJobAction extends AbstractAction {
                         gui.getApplicationSet(), gui.getGrid(),
                         new StateListener() {
 
-                            public void stateUpdated(State state) {
+                            public void stateUpdated(State state, Exception e) {
                                 model.setValueAt(state.toString(), rowValue, 3);
                             }
 
                         }, new StateListener() {
 
-                            public void stateUpdated(State state) {
+                            public void stateUpdated(State state, Exception e) {
                                 model.setValueAt(state.toString(), rowValue, 4);
                             }
 

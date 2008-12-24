@@ -73,13 +73,13 @@ public class RunButtonPanel extends JPanel {
                             gui.getApplicationSet(), gui.getGrid(),
                             new StateListener() {
 
-                                public void stateUpdated(State state) {
+                                public void stateUpdated(State state, Exception e) {
                                     model.setValueAt(state.toString(), row, 3);
                                 }
 
                             }, new StateListener() {
 
-                                public void stateUpdated(State state) {
+                                public void stateUpdated(State state, Exception e) {
                                     model.setValueAt(state.toString(), row, 4);
                                 }
 

@@ -29,6 +29,8 @@ class StateForwarder implements MetricListener, Runnable {
 
     private State currentState = State.CREATED;
 
+    private Exception exception = null;
+
     StateForwarder(String name) {
         this.name = name;
 
@@ -45,7 +47,7 @@ class StateForwarder implements MetricListener, Runnable {
 
         // tell listener the current state
         try {
-            listener.stateUpdated(currentState);
+            listener.stateUpdated(currentState, exception);
         } catch (Throwable t) {
             logger.warn("State update handler threw exception", t);
         }
@@ -53,6 +55,10 @@ class StateForwarder implements MetricListener, Runnable {
     }
 
     synchronized void setState(State state) {
+        setState(state, null);
+    }
+
+    synchronized void setState(State state, Exception exception) {
         if (this.currentState == state) {
             return;
         }
@@ -62,10 +68,15 @@ class StateForwarder implements MetricListener, Runnable {
                     + " to " + state);
             return;
         }
-        
+
         logger.info(name + " state now " + state);
 
         this.currentState = state;
+
+        if (this.exception == null) {
+            this.exception = exception;
+        }
+
         notifyAll();
     }
 
@@ -84,11 +95,11 @@ class StateForwarder implements MetricListener, Runnable {
         case INITIAL:
             setState(State.SUBMITTED);
             break;
-            
+
         case PRE_STAGING:
             setState(State.PRE_STAGING);
             break;
-            
+
         case SCHEDULED:
             setState(State.SCHEDULED);
             break;
@@ -99,7 +110,7 @@ class StateForwarder implements MetricListener, Runnable {
             setState(State.POST_STAGING);
             break;
         case STOPPED:
-            setState(State.STOPPED);
+            setState(State.DONE);
             break;
         case SUBMISSION_ERROR:
             setState(State.ERROR);
@@ -108,26 +119,70 @@ class StateForwarder implements MetricListener, Runnable {
             logger.warn("Unknown state: " + event.getValue());
         }
     }
-    
+
     public synchronized State getState() {
         return currentState;
     }
-    
-    public synchronized boolean done() {
-        return currentState.equals(State.ERROR)
-        || currentState.equals(State.STOPPED);
+
+    public synchronized Exception getException() {
+        return exception;
     }
 
+    public synchronized boolean isFinished() throws Exception {
+        if (exception != null) {
+            throw exception;
+        }
+        return currentState.equals(State.ERROR)
+                || currentState.equals(State.DONE);
+    }
+    
+    public synchronized void waitUntilFinished() throws Exception {
+        while (currentState.ordinal() < State.DONE.ordinal()) {
+            if (exception != null) {
+                throw exception;
+            }
+
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                // IGNORE
+            }
+        }
+        if (exception != null) {
+            throw exception;
+        }
+    }
+
+    
+
+    public synchronized void waitUntilRunning() throws Exception {
+        while (currentState.ordinal() < State.DEPLOYED.ordinal()) {
+            if (exception != null) {
+                throw exception;
+            }
+
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                // IGNORE
+            }
+        }
+        if (exception != null) {
+            throw exception;
+        }
+    }
 
     public void run() {
         State reported = null;
+        Exception reportedException = null;
 
         while (true) {
             StateListener[] listeners;
 
             synchronized (this) {
-                if (reported != null && (reported.equals(State.ERROR)
-                        || reported.equals(State.STOPPED))) {
+                if (reported != null
+                        && (reported.equals(State.ERROR) || reported
+                                .equals(State.DONE))) {
                     logger.debug("state forwarder stopping. job has stopped");
                     return;
                 }
@@ -142,12 +197,13 @@ class StateForwarder implements MetricListener, Runnable {
 
                 // state has changed, report!
                 reported = currentState;
+                reportedException = exception;
                 listeners = this.listeners.toArray(new StateListener[0]);
             }
 
             for (StateListener listener : listeners) {
                 try {
-                    listener.stateUpdated(reported);
+                    listener.stateUpdated(reported, reportedException);
                 } catch (Throwable t) {
                     logger.warn("State update handler threw exception", t);
                 }
