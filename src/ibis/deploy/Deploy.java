@@ -354,7 +354,7 @@ public class Deploy {
 
         return result;
     }
-    
+
     public synchronized RegistryMonitorClient getMonitor() throws Exception {
         if (rootHub == null) {
             throw new Exception(
@@ -369,12 +369,11 @@ public class Deploy {
         if (registryMonitor == null) {
             Properties properties = new Properties();
             properties.put(ServerProperties.ADDRESS, getServerAddress());
-            properties.put(ServerProperties.HUB_ADDRESSES,
-                    getRootHubAddress());
+            properties.put(ServerProperties.HUB_ADDRESSES, getRootHubAddress());
 
             registryMonitor = new RegistryMonitorClient(properties, false);
         }
-        
+
         return registryMonitor;
     }
 
@@ -385,15 +384,16 @@ public class Deploy {
      *         empty if the server could not be reached
      */
     public Map<String, Integer> poolSizes() {
-        try {        
+        try {
             RegistryMonitorClient registryMonitor = getMonitor();
 
             return registryMonitor.getPoolSizes();
         } catch (Exception e) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("could not get pool sizes", e);
-            } else {
+            if (isVerbose()) {
                 logger.warn("could not get pool sizes", e);
+            } else {
+                logger.warn("could not get pool sizes");
+                logger.debug("could not get pool sizes", e);
             }
             return new HashMap<String, Integer>();
         }
@@ -413,15 +413,16 @@ public class Deploy {
 
             return registryMonitor.getLocations(poolName);
         } catch (Exception e) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("could not get locations", e);
-            } else {
+            if (isVerbose()) {
                 logger.warn("could not get locations", e);
+            } else {
+                logger.warn("could not get locations");
+                logger.debug("could not get locations", e);
             }
             return new String[0];
         }
     }
-    
+
     public synchronized Job[] getJobs() {
         return jobs.toArray(new Job[0]);
     }
@@ -436,7 +437,7 @@ public class Deploy {
      */
     public void waitUntilJobsFinished() throws Exception {
         Job[] jobs = getJobs();
-        
+
         while (true) {
             boolean done = true;
 
