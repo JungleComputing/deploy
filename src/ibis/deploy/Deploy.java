@@ -450,7 +450,7 @@ public class Deploy {
                 return;
             }
 
-            wait(1000);
+            Thread.sleep(1000);
         }
     }
 
