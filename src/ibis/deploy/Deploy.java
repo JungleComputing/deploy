@@ -393,7 +393,7 @@ public class Deploy {
             if (logger.isDebugEnabled()) {
                 logger.debug("could not get pool sizes", e);
             } else {
-                logger.warn("could not get pool sizes");
+                logger.warn("could not get pool sizes", e);
             }
             return new HashMap<String, Integer>();
         }
@@ -414,7 +414,7 @@ public class Deploy {
             return registryMonitor.getLocations(poolName);
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
-                logger.debug("could not get locations");
+                logger.debug("could not get locations", e);
             } else {
                 logger.warn("could not get locations", e);
             }
