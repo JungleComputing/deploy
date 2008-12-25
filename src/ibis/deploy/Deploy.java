@@ -197,7 +197,7 @@ public class Deploy {
      * @throws Exception
      *             if the server cannot be started
      */
-    public void initialize(Cluster serverCluster) throws Exception {
+    public synchronized void initialize(Cluster serverCluster) throws Exception {
         initialize(serverCluster, null, true);
     }
 
@@ -354,6 +354,29 @@ public class Deploy {
 
         return result;
     }
+    
+    public synchronized RegistryMonitorClient getMonitor() throws Exception {
+        if (rootHub == null) {
+            throw new Exception(
+                    "Ibis Deploy not initialized, cannot monitor server");
+        }
+
+        if (remoteServer != null && !remoteServer.isRunning()) {
+            throw new Exception("Cannot monitor server \"" + remoteServer
+                    + "\" not running");
+        }
+
+        if (registryMonitor == null) {
+            Properties properties = new Properties();
+            properties.put(ServerProperties.ADDRESS, getServerAddress());
+            properties.put(ServerProperties.HUB_ADDRESSES,
+                    getRootHubAddress());
+
+            registryMonitor = new RegistryMonitorClient(properties, false);
+        }
+        
+        return registryMonitor;
+    }
 
     /**
      * Returns a map containing the size of each pool at the server
@@ -361,27 +384,9 @@ public class Deploy {
      * @return a map containing the size of each pool at the server. May be
      *         empty if the server could not be reached
      */
-    public synchronized Map<String, Integer> poolSizes() {
-        try {
-
-            if (rootHub == null) {
-                throw new Exception(
-                        "Ibis Deploy not initialized, cannot monitor server");
-            }
-
-            if (remoteServer != null && !remoteServer.isRunning()) {
-                throw new Exception("Cannot monitor server \"" + remoteServer
-                        + "\" not running");
-            }
-
-            if (registryMonitor == null) {
-                Properties properties = new Properties();
-                properties.put(ServerProperties.ADDRESS, getServerAddress());
-                properties.put(ServerProperties.HUB_ADDRESSES,
-                        getRootHubAddress());
-
-                registryMonitor = new RegistryMonitorClient(properties, false);
-            }
+    public Map<String, Integer> poolSizes() {
+        try {        
+            RegistryMonitorClient registryMonitor = getMonitor();
 
             return registryMonitor.getPoolSizes();
         } catch (Exception e) {
@@ -402,26 +407,9 @@ public class Deploy {
      *             if the server is not running yet, or communicating with it
      *             failed
      */
-    public synchronized String[] getLocations(String poolName) {
+    public String[] getLocations(String poolName) {
         try {
-            if (rootHub == null) {
-                throw new Exception(
-                        "Ibis Deploy not initialized, cannot monitor server");
-            }
-
-            if (remoteServer != null && !remoteServer.isRunning()) {
-                throw new Exception("Cannot monitor server \"" + remoteServer
-                        + "\" not running");
-            }
-
-            if (registryMonitor == null) {
-                Properties properties = new Properties();
-                properties.put(ServerProperties.ADDRESS, getServerAddress());
-                properties.put(ServerProperties.HUB_ADDRESSES,
-                        getRootHubAddress());
-
-                registryMonitor = new RegistryMonitorClient(properties, false);
-            }
+            RegistryMonitorClient registryMonitor = getMonitor();
 
             return registryMonitor.getLocations(poolName);
         } catch (Exception e) {
@@ -433,18 +421,23 @@ public class Deploy {
             return new String[0];
         }
     }
+    
+    public synchronized Job[] getJobs() {
+        return jobs.toArray(new Job[0]);
+    }
 
     /**
      * Waits until all jobs are finished. If any jobs are submitted while
-     * waiting, will also wait on those.
+     * waiting, will not wait on those.
      * 
      * @throws Exception
      *             if one of the jobs failed.
      * 
      */
-    public synchronized void waitUntilJobsFinished() throws Exception {
+    public void waitUntilJobsFinished() throws Exception {
+        Job[] jobs = getJobs();
+        
         while (true) {
-
             boolean done = true;
 
             for (Job job : jobs) {
