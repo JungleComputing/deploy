@@ -298,6 +298,12 @@ public class Job implements Runnable {
         logger.debug("creating job description");
 
         JavaSoftwareDescription sd = new JavaSoftwareDescription();
+        
+     // ANDROID CHANGE START
+        if (application.getMainClass().startsWith("intent:")) {
+            sd = new IntentSoftwareDescription();
+        }
+        // ANDROID CHANGE END
 
         if (cluster.getJavaPath() == null) {
             sd.setExecutable("java");
@@ -307,7 +313,20 @@ public class Job implements Runnable {
         logger.debug("executable: " + sd.getExecutable());
 
         // basic application properties
-        sd.setJavaMain(application.getMainClass());
+        // ANDROID CHANGE START
+        if (application.getMainClass().startsWith("intent:")) {
+            sd.setJavaMain(application.getMainClass().substring(
+                    "intent:".length()));
+            sd.getAttributes().put("sandbox.useroot", "true");
+            sd.getAttributes().put("sandbox.delete", "false");
+        } else {
+            sd.setJavaMain(application.getMainClass());
+        }
+        // ANDROID CHANGE END
+        // ORIGINAL START
+        // sd.setJavaMain(application.getMainClass());
+        // ORIGINAL END
+
         sd.setJavaArguments(application.getArguments());
         sd.setJavaOptions(application.getJVMOptions());
 
