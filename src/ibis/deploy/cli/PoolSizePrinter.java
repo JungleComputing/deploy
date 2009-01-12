@@ -13,7 +13,7 @@ public class PoolSizePrinter implements Runnable {
 
     private final Deploy deploy;
 
-    PoolSizePrinter(Deploy deploy) {
+    public PoolSizePrinter(Deploy deploy) {
         this.deploy = deploy;
 
         ThreadPool.createNew(this, "pool size printer");

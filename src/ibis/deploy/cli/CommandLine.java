@@ -55,7 +55,7 @@ public class CommandLine {
         System.err
                 .println("Usage: ibis-deploy-cli [OPTIONS] [GRID_FILE] [APP_FILE] [EXPERIMENT_FILE]+...");
         System.err.println("Options:");
-        System.err.println("-s CLUSTER\t\tRun server on specified cluster");
+        System.err.println("-s CLUSTER\tRun server on specified cluster");
         System.err.println("-v\t\tVerbose mode");
         System.err.println("-k\t\tKeep sandboxes");
         System.err.println("-h | --help\tThis message");

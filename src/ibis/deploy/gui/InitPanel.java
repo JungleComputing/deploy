@@ -1,5 +1,7 @@
 package ibis.deploy.gui;
 
+import ibis.deploy.cli.PoolSizePrinter;
+
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -28,7 +30,8 @@ public class InitPanel extends JPanel {
                     listener.init();
                     gui.getDeploy().initialize(worldMap.getSelectedCluster(),
                             listener);
-
+                    // print pool size statistics
+                    new PoolSizePrinter(gui.getDeploy());
                 } catch (Exception e) {
                     JOptionPane.showMessageDialog(getRootPane(),
                             e.getMessage(), "Initialize failed",
