@@ -32,21 +32,21 @@ public class Util {
      * except for "default". The list is sorted by alphabet.
      * 
      * @param properties
-     *            to search for elements in.
+     *                to search for elements in.
      * 
      * @return the set of elements
      */
     public static String[] getElementList(Properties properties) {
         Set<String> result = new TreeSet<String>();
 
-        for (String key : properties.stringPropertyNames()) {
+        for (Object key : properties.keySet()) {
             // add part of key before the first period to the result
-            result.add(key.split("\\.")[0]);
+            result.add(key.toString().split("\\.")[0]);
         }
 
         // make sure "default" is not in the list
         result.remove("default");
-        
+
         return result.toArray(new String[0]);
     }
 
@@ -57,21 +57,21 @@ public class Util {
      * the given prefix is returned, except for "default"
      * 
      * @param properties
-     *            to search for elements in.
+     *                to search for elements in.
      * 
      * @param prefix
-     *            prefix to filter on
+     *                prefix to filter on
      * 
      * @return the set of elements
      */
     public static String[] getElementList(Properties properties, String prefix) {
         Set<String> result = new HashSet<String>();
 
-        for (String key : properties.stringPropertyNames()) {
-            if (key.startsWith(prefix)) {
-                key = key.substring(prefix.length());
+        for (Object key : properties.keySet()) {
+            if (key.toString().startsWith(prefix)) {
+                key = key.toString().substring(prefix.length());
                 // add part of key before the first period to the result
-                result.add(key.split("\\.")[0]);
+                result.add(key.toString().split("\\.")[0]);
             }
         }
 
@@ -85,9 +85,9 @@ public class Util {
      * Extracts a URI property from a properties object
      * 
      * @param properties
-     *            source properties object
+     *                source properties object
      * @param key
-     *            key of property to extract
+     *                key of property to extract
      * @return URI version of property, or null if it does not exist
      * @throws URISyntaxException
      */
@@ -103,9 +103,9 @@ public class Util {
      * Extracts a File property from a properties object
      * 
      * @param properties
-     *            source properties object
+     *                source properties object
      * @param key
-     *            key of property to extract
+     *                key of property to extract
      * @return File version of property, or null if it does not exist
      */
     public static File getFileProperty(Properties properties, String key) {
@@ -119,9 +119,9 @@ public class Util {
      * Extracts a list of files from a properties object
      * 
      * @param properties
-     *            source properties object
+     *                source properties object
      * @param key
-     *            key of property to extract
+     *                key of property to extract
      * @return List of Files , or null if the property does not exist
      */
     public static List<File> getFileListProperty(TypedProperties properties,
@@ -142,9 +142,9 @@ public class Util {
      * Get a string map from a property object
      * 
      * @param properties
-     *            the properties to extract the map from.
+     *                the properties to extract the map from.
      * @param key
-     *            the key of the map.
+     *                the key of the map.
      * @return a string map.
      */
     public static Map<String, String> getStringMapProperty(
@@ -175,7 +175,7 @@ public class Util {
      * Convert a list of Strings to a single comma separated String
      * 
      * @param list
-     *            the input list
+     *                the input list
      * @return a comma separated version of the list
      */
     public static String strings2CSS(List<String> list) {
@@ -197,7 +197,7 @@ public class Util {
      * convert a list of Strings to a single comma separated String
      * 
      * @param list
-     *            the input list
+     *                the input list
      * @return a comma separated version of the list
      */
     public static String strings2CSS(String[] list) {
@@ -219,7 +219,7 @@ public class Util {
      * convert a list of files to a single comma separated String
      * 
      * @param list
-     *            the input list
+     *                the input list
      * @return a comma separated version of the list
      */
     public static String files2CSS(List<File> list) {
@@ -241,7 +241,7 @@ public class Util {
      * convert a list of files to a single comma separated String
      * 
      * @param list
-     *            the input list
+     *                the input list
      * @return a comma separated version of the list
      */
     public static String files2CSS(File[] list) {
@@ -263,7 +263,7 @@ public class Util {
      * convert a string map to a single comma separated String
      * 
      * @param map
-     *            the input map
+     *                the input map
      * @return a comma separated version of the map
      */
     public static String toCSString(Map<String, String> map) {
@@ -283,9 +283,9 @@ public class Util {
      * found
      * 
      * @param properties
-     *            the source properties object
+     *                the source properties object
      * @param key
-     *            key of the property to extract
+     *                key of the property to extract
      * @return the property as a list of strings, or null if the property does
      *         not exist
      */
