@@ -63,12 +63,12 @@ public class Deploy {
      * Create a new (uninitialized) deployment interface.
      * 
      * @param home
-     *            "home" directory of ibis-deploy. If null, the default location
-     *            is used from the "ibis.deploy.home" system property. If this
-     *            property is unspecified, final default value is the current
-     *            working directory.
+     *                "home" directory of ibis-deploy. If null, the default
+     *                location is used from the "ibis.deploy.home" system
+     *                property. If this property is unspecified, final default
+     *                value is the current working directory.
      * @throws Exception
-     *             if required files cannot be found in home
+     *                 if required files cannot be found in home
      */
     public Deploy(File home, boolean verbose) throws Exception {
         rootHub = null;
@@ -111,9 +111,9 @@ public class Deploy {
      * Checks if required files are in the specified home dir
      * 
      * @param home
-     *            ibis-deploy home dir
+     *                ibis-deploy home dir
      * @throws Exception
-     *             if one or more files are missing
+     *                 if one or more files are missing
      */
     private void checkFiles() throws Exception {
         for (String fileName : REQUIRED_FILES) {
@@ -129,8 +129,8 @@ public class Deploy {
      * servers though). This is turned of by default
      * 
      * @param keepSandboxes
-     *            if true, ibis-deploy will keep all sandboxes for jobs from now
-     *            on.
+     *                if true, ibis-deploy will keep all sandboxes for jobs from
+     *                now on.
      */
     public synchronized void keepSandboxes(boolean keepSandboxes) {
         this.keepSandboxes = keepSandboxes;
@@ -141,7 +141,7 @@ public class Deploy {
      * 
      * @return the address of the build-in root hub.
      * @throws Exception
-     *             if ibis-deploy has not been initialized yet.
+     *                 if ibis-deploy has not been initialized yet.
      */
     public synchronized String getRootHubAddress() throws Exception {
         if (rootHub == null) {
@@ -156,7 +156,7 @@ public class Deploy {
      * 
      * @return the build-in root hub.
      * @throws Exception
-     *             if ibis-deploy has not been initialized yet.
+     *                 if ibis-deploy has not been initialized yet.
      */
     synchronized RootHub getRootHub() throws Exception {
         if (rootHub == null) {
@@ -172,7 +172,7 @@ public class Deploy {
      * 
      * @return address of server
      * @throws Exception
-     *             if server state cannot be retrieved.
+     *                 if server state cannot be retrieved.
      */
     public synchronized String getServerAddress() throws Exception {
         if (rootHub == null) {
@@ -191,11 +191,11 @@ public class Deploy {
      * running
      * 
      * @param serverCluster
-     *            cluster where the server should be started, or null for a
-     *            server embedded in this JVM.
+     *                cluster where the server should be started, or null for a
+     *                server embedded in this JVM.
      * 
      * @throws Exception
-     *             if the server cannot be started
+     *                 if the server cannot be started
      */
     public synchronized void initialize(Cluster serverCluster) throws Exception {
         initialize(serverCluster, null, true);
@@ -206,12 +206,12 @@ public class Deploy {
      * actually running
      * 
      * @param serverCluster
-     *            cluster where the server should be started, or null for a
-     *            server embedded in this JVM.
+     *                cluster where the server should be started, or null for a
+     *                server embedded in this JVM.
      * @param listener
-     *            callback object for status of server
+     *                callback object for status of server
      * @throws Exception
-     *             if the server cannot be started
+     *                 if the server cannot be started
      */
     public synchronized void initialize(Cluster serverCluster,
             StateListener listener) throws Exception {
@@ -251,15 +251,15 @@ public class Deploy {
      * Submit a new job.
      * 
      * @param description
-     *            description of the job.
+     *                description of the job.
      * @param applicationSet
-     *            applicationSet for job
+     *                applicationSet for job
      * @param grid
-     *            grid to use
+     *                grid to use
      * @param hubListener
-     *            listener for state of hub
+     *                listener for state of hub
      * @param jobListener
-     *            listener for state of job
+     *                listener for state of job
      * 
      * 
      * 
@@ -281,23 +281,28 @@ public class Deploy {
         }
 
         // resolve given description into single "independent" description
-        description = description.resolve(applicationSet, grid);
+        JobDescription resolvedDescription = description.resolve(
+                applicationSet, grid);
 
         if (verbose) {
-            logger.info("Submitting new job:\n" + description.toPrintString());
+            logger.info("Submitting new job:\n"
+                    + resolvedDescription.toPrintString());
         } else {
-            logger.debug("Submitting new job:\n" + description.toPrintString());
+            logger.debug("Submitting new job:\n"
+                    + resolvedDescription.toPrintString());
         }
 
-        description.checkSettings();
+        resolvedDescription.checkSettings();
 
         Hub hub = null;
-        if (description.getSharedHub() == null || description.getSharedHub()) {
-            hub = getHub(description.getClusterOverrides(), false, hubListener);
+        if (resolvedDescription.getSharedHub() == null
+                || resolvedDescription.getSharedHub()) {
+            hub = getHub(resolvedDescription.getClusterOverrides(), false,
+                    hubListener);
         }
 
         // start job
-        Job job = new Job(description, hub, keepSandboxes, jobListener,
+        Job job = new Job(resolvedDescription, hub, keepSandboxes, jobListener,
                 hubListener, rootHub, verbose, home, getServerAddress(), this);
 
         jobs.add(job);
@@ -310,14 +315,14 @@ public class Deploy {
      * cluster, one is submitted. May not be running (yet).
      * 
      * @param cluster
-     *            cluster to deploy the hub on
+     *                cluster to deploy the hub on
      * @param waitUntilRunning
-     *            wait until hub is actually running
+     *                wait until hub is actually running
      * @param listener
-     *            listener for state of hub
+     *                listener for state of hub
      * @return reference to a hub on the given cluster
      * @throws Exception
-     *             if the hub cannot be started
+     *                 if the hub cannot be started
      */
     public synchronized Hub getHub(Cluster cluster, boolean waitUntilRunning,
             StateListener listener) throws Exception {
@@ -404,8 +409,8 @@ public class Deploy {
      * 
      * @return a map containing the size of each pool at the server
      * @throws Exception
-     *             if the server is not running yet, or communicating with it
-     *             failed
+     *                 if the server is not running yet, or communicating with
+     *                 it failed
      */
     public String[] getLocations(String poolName) {
         try {
@@ -432,7 +437,7 @@ public class Deploy {
      * waiting, will not wait on those.
      * 
      * @throws Exception
-     *             if one of the jobs failed.
+     *                 if one of the jobs failed.
      * 
      */
     public void waitUntilJobsFinished() throws Exception {

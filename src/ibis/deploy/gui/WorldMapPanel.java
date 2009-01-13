@@ -369,7 +369,9 @@ public class WorldMapPanel extends JPanel {
             final int x = cwp.getOffset().width;
             final int y = cwp.getOffset().height;
 
-            String numberNodesString = "" + cwp.getCluster().getNodes();
+            String numberNodesString = ""
+                    + ((cwp.getCluster().getNodes() > 0) ? cwp.getCluster()
+                            .getNodes() : "n.a.");
 
             // draw circle
             final int radius = cwp.getRadius();
@@ -379,11 +381,11 @@ public class WorldMapPanel extends JPanel {
                 g.setPaint(new Color(255, 100, 100, 200));
                 g.fillArc(x - radius, y - radius, diameter, diameter, 90, -(cwp
                         .getResourceCount() * 360)
-                        / cwp.getCluster().getNodes());
+                        / Math.max(1, cwp.getCluster().getNodes()));
                 g.setPaint(new Color(255, 100, 100, 80));
                 g.fillArc(x - radius, y - radius, diameter, diameter, 90, 360
                         - (cwp.getResourceCount() * 360)
-                        / cwp.getCluster().getNodes());
+                        / Math.max(1, cwp.getCluster().getNodes()));
             } else {
                 g.setPaint(new Color(100, 100, 255, 80));
                 g.fillOval(x - radius, y - radius, diameter, diameter);
@@ -461,8 +463,10 @@ public class WorldMapPanel extends JPanel {
 
             // draw usage
             if (cwp.isSelected()) {
-                String usageString = cwp.getResourceCount() + "/"
-                        + cwp.getCluster().getNodes();
+                String usageString = cwp.getResourceCount()
+                        + "/"
+                        + ((cwp.getCluster().getNodes() > 0) ? cwp.getCluster()
+                                .getNodes() : "n.a.");
                 width = (int) g.getFontMetrics()
                         .getStringBounds(usageString, g).getWidth();
                 height = (int) g.getFontMetrics().getStringBounds(usageString,

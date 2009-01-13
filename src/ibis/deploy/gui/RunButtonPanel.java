@@ -43,9 +43,9 @@ public class RunButtonPanel extends JPanel {
                 try {
                     JobDescription result = getJobDescription(gui);
                     gui.fireSubmitJob(result);
-                    result = result.resolve(gui.getApplicationSet(), gui
-                            .getGrid());
-                    result.checkSettings();
+                    // result = result.resolve(gui.getApplicationSet(), gui
+                    // .getGrid());
+                    //                    result.checkSettings();
                     result.setSharedHub(gui.getSharedHubs());
                     model.addRow(result);
                     model.fireTableChanged(new TableModelEvent(model));
