@@ -3,6 +3,7 @@ package ibis.deploy.gui.action;
 import ibis.deploy.Job;
 import ibis.deploy.JobDescription;
 import ibis.deploy.gui.GUI;
+import ibis.deploy.gui.JobRowObject;
 import ibis.deploy.gui.JobTableModel;
 
 import java.awt.event.ActionEvent;
@@ -56,10 +57,9 @@ public class StopExistingJobAction extends AbstractAction {
                     continue;
                 }
             }
-            Object object = model.getValueAt(row, 0);
-            JobDescription jd = null;
-            if (object instanceof Job) {
-                ((Job) object).kill();
+            JobRowObject jobRow = (JobRowObject) model.getValueAt(row, 0);
+            if (jobRow.getJob() != null) {
+                jobRow.getJob().kill();
             }
         }
     }

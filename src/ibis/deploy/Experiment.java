@@ -33,14 +33,14 @@ public class Experiment {
      * Also constructs the jobs inside this experiments.
      * 
      * @param file
-     *            the file containing the properties
+     *                the file containing the properties
      * @throws FileNotFoundException
-     *             if the given file cannot be found
+     *                 if the given file cannot be found
      * @throws IOException
-     *             if reading from the given file fails
+     *                 if reading from the given file fails
      * @throws Exception
-     *             if the properties don't contain a 'name' property with the
-     *             name of the experiment
+     *                 if the properties don't contain a 'name' property with
+     *                 the name of the experiment
      */
     public Experiment(File file) throws FileNotFoundException, IOException,
             Exception {
@@ -87,12 +87,13 @@ public class Experiment {
      * constructs the jobs inside this experiment.
      * 
      * @param properties
-     *            properties of the experiment
+     *                properties of the experiment
      * @param name
-     *            name of the experiment
+     *                name of the experiment
      * @param prefix
-     *            prefix to use on all keys
-     * @throws Exception if job cannot be read properly
+     *                prefix to use on all keys
+     * @throws Exception
+     *                 if job cannot be read properly
      * 
      */
     public Experiment(TypedProperties properties, String name, String prefix)
@@ -100,7 +101,7 @@ public class Experiment {
         jobs = new ArrayList<JobDescription>();
 
         this.name = name;
-        
+
         if (prefix != null) {
             prefix = prefix + ".";
         }
@@ -121,9 +122,10 @@ public class Experiment {
      * Constructs a experiment with the given name.
      * 
      * @param name
-     *            the name of the experiment
+     *                the name of the experiment
      * @throws Exception
-     *             if the name is <code>null</code>, or contains periods or spaces
+     *                 if the name is <code>null</code>, or contains periods
+     *                 or spaces
      */
     public Experiment(String name) throws Exception {
         jobs = new ArrayList<JobDescription>();
@@ -149,7 +151,7 @@ public class Experiment {
      * Sets the name of this experiment
      * 
      * @param name
-     *            the new name of this experiment.
+     *                the new name of this experiment.
      */
     public void setName(String name) {
         this.name = name;
@@ -169,9 +171,14 @@ public class Experiment {
      * experiment at all).
      * 
      * @param job
-     *            the job to be removed from this experiment
+     *                the job to be removed from this experiment
      */
     public void removeJob(JobDescription job) {
+        if (!jobs.contains(job)) {
+            for (JobDescription jd : jobs) {
+                System.out.println(jd + " != " + job);
+            }
+        }
         jobs.remove(job);
     }
 
@@ -179,27 +186,30 @@ public class Experiment {
      * Creates a new job in this experiment, with a given name.
      * 
      * @param name
-     *            the name of the job.
+     *                the name of the job.
      * @return the new job.
      * @throws Exception
-     *             if the name given is <code>null</code>, or the job already exists.
+     *                 if the name given is <code>null</code>, or the job
+     *                 already exists.
      */
     public JobDescription createNewJob(String name) throws Exception {
         if (hasJob(name)) {
-            throw new AlreadyExistsException("Cannot add job, job \"" + name + "\" already exists");
+            throw new AlreadyExistsException("Cannot add job, job \"" + name
+                    + "\" already exists");
         }
-        
+
         JobDescription result = new JobDescription(name, this);
 
         jobs.add(result);
 
         return result;
     }
-    
+
     /**
      * Returns if a Job with the given name exists.
      * 
-     * @param name name of the Job.
+     * @param name
+     *                name of the Job.
      * @return if a Job with the given name exists.
      */
     public boolean hasJob(String name) {
@@ -215,7 +225,7 @@ public class Experiment {
      * Get an job with a given name from this Experiment
      * 
      * @param jobName
-     *            the name of the job to search for
+     *                the name of the job to search for
      * @return the job with the given name, or <code>null</code> if no jobs
      *         with the given name exist in this Experiment.
      */
@@ -241,9 +251,9 @@ public class Experiment {
      * Save this experiment to the given file
      * 
      * @param file
-     *            file to save experiment to
+     *                file to save experiment to
      * @throws Exception
-     *             in case file cannot be written
+     *                 in case file cannot be written
      */
     public void save(File file) throws Exception {
         if (!file.exists()) {
@@ -268,11 +278,11 @@ public class Experiment {
      * Save this experiment to the given stream
      * 
      * @param out
-     *            stream to write experiment to
+     *                stream to write experiment to
      * @param prefix
-     *            prefix for all keys written
+     *                prefix for all keys written
      * @throws Exception
-     *             in case data cannot be written
+     *                 in case data cannot be written
      */
     public void save(PrintWriter out, String prefix) throws Exception {
         if (prefix != null) {

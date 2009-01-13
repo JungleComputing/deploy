@@ -45,9 +45,9 @@ public class RunButtonPanel extends JPanel {
                     gui.fireSubmitJob(result);
                     // result = result.resolve(gui.getApplicationSet(), gui
                     // .getGrid());
-                    //                    result.checkSettings();
+                    // result.checkSettings();
                     result.setSharedHub(gui.getSharedHubs());
-                    model.addRow(result);
+                    model.addRow(new JobRowObject(result, null));
                     model.fireTableChanged(new TableModelEvent(model));
                 } catch (Exception e) {
                     JOptionPane.showMessageDialog(getRootPane(),
@@ -64,27 +64,29 @@ public class RunButtonPanel extends JPanel {
                 try {
                     JobDescription result = getJobDescription(gui);
                     gui.fireSubmitJob(result);
-                    result = result.resolve(gui.getApplicationSet(), gui
-                            .getGrid());
-                    result.checkSettings();
+                    // result = result.resolve(gui.getApplicationSet(), gui
+                    // .getGrid());
+                    // result.checkSettings();
                     result.setSharedHub(gui.getSharedHubs());
                     final int row = model.getRowCount();
                     Job job = gui.getDeploy().submitJob(result,
                             gui.getApplicationSet(), gui.getGrid(),
                             new StateListener() {
 
-                                public void stateUpdated(State state, Exception e) {
+                                public void stateUpdated(State state,
+                                        Exception e) {
                                     model.setValueAt(state.toString(), row, 3);
                                 }
 
                             }, new StateListener() {
 
-                                public void stateUpdated(State state, Exception e) {
+                                public void stateUpdated(State state,
+                                        Exception e) {
                                     model.setValueAt(state.toString(), row, 4);
                                 }
 
                             });
-                    model.addRow(job);
+                    model.addRow(new JobRowObject(result, job));
                     model.fireTableChanged(new TableModelEvent(model));
                 } catch (Exception e) {
                     JOptionPane.showMessageDialog(getRootPane(),

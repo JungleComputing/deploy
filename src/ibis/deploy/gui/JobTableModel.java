@@ -17,11 +17,7 @@ public class JobTableModel extends AbstractTableModel {
             "hub", "cluster", "application", "process count", "resource count",
             "output" };
 
-    private List<Object> jobs = new ArrayList<Object>();
-
-    private List<Object> jobStates = new ArrayList<Object>();
-
-    private List<Object> hubStates = new ArrayList<Object>();
+    private List<JobRowObject> jobRows = new ArrayList<JobRowObject>();
 
     private JTable table;
 
@@ -34,7 +30,7 @@ public class JobTableModel extends AbstractTableModel {
     }
 
     public int getRowCount() {
-        return jobs.size();
+        return jobRows.size();
     }
 
     public int getColumnCount() {
@@ -42,13 +38,7 @@ public class JobTableModel extends AbstractTableModel {
     }
 
     public Object getValueAt(int row, int col) {
-        if (col == 3) {
-            return jobStates.get(row);
-        } else if (col == 4) {
-            return hubStates.get(row);
-        } else {
-            return jobs.get(row);
-        }
+        return jobRows.get(row);
     }
 
     public boolean isCellEditable(int row, int col) {
@@ -56,51 +46,39 @@ public class JobTableModel extends AbstractTableModel {
     }
 
     public Class<?> getColumnClass(int column) {
-        return Object.class;
+        return JobRowObject.class;
     }
 
     public void setValueAt(Object value, final int row, final int col) {
         fireTableCellUpdated(row, 0);
         if (col == 3) {
-            if (row == jobStates.size()) {
-                jobStates.add(value);
-            } else {
-                jobStates.set(row, value);
-            }
+            jobRows.get(row).setJobState((String) value);
             // the start/stop button
             fireTableCellUpdated(row, 0);
             // the output value
             fireTableCellUpdated(row, 9);
         } else if (col == 4) {
-            if (row == hubStates.size()) {
-                hubStates.add(value);
-            } else {
-                hubStates.set(row, value);
-            }
+            jobRows.get(row).setHubState((String) value);
             fireTableCellUpdated(row, 0);
         } else {
-            jobs.set(row, value);
+            jobRows.set(row, (JobRowObject) value);
         }
         fireTableCellUpdated(row, col);
     }
 
-    public void addRow(Object value) {
-        jobs.add(value);
-        if (jobStates.size() < jobs.size()) {
-            jobStates.add("INITIAL");
-        }
-        if (hubStates.size() < jobs.size()) {
-            hubStates.add("INITIAL");
-        }
+    public void addRow(JobRowObject jobRow) {
+        jobRows.add(jobRow);
     }
 
     public void setRow(Object value, int row) {
-        jobs.set(row, value);
+        jobRows.set(row, (JobRowObject) value);
+    }
+
+    public void removeRow(int row) {
+        jobRows.remove(row);
     }
 
     public void clear() {
-        jobs.clear();
-        jobStates.clear();
-        hubStates.clear();
+        jobRows.clear();
     }
 }

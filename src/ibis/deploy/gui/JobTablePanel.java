@@ -61,7 +61,7 @@ public class JobTablePanel extends JPanel {
         }
 
         for (JobDescription jobDescription : gui.getExperiment().getJobs()) {
-            model.addRow(jobDescription);
+            model.addRow(new JobRowObject(jobDescription, null));
         }
 
         gui.addExperimentWorkSpaceListener(new WorkSpaceChangedListener() {
@@ -70,7 +70,7 @@ public class JobTablePanel extends JPanel {
                 model.clear();
                 for (JobDescription jobDescription : gui.getExperiment()
                         .getJobs()) {
-                    model.addRow(jobDescription);
+                    model.addRow(new JobRowObject(jobDescription, null));
                 }
                 model.fireTableDataChanged();
             }

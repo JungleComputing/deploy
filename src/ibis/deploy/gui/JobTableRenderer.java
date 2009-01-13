@@ -37,12 +37,17 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
         setText("N.A.");
         setOpaque(isSelected);
         setBackground(UIManager.getColor("Table.selectionBackground"));
-        final Job job = (object instanceof Job) ? (Job) object : null;
-        final JobDescription jobDescription = (object instanceof JobDescription) ? (JobDescription) object
-                : (object instanceof Job) ? ((Job) object).getDescription()
-                        : null;
+        final Job job = ((JobRowObject) object).getJob();
+        JobDescription jobDescription = null;
+        try {
+            jobDescription = ((JobRowObject) object).getJobDescription()
+                    .resolve(gui.getApplicationSet(), gui.getGrid());
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         if (column == 0) {
-            if (job != null && !table.getValueAt(row, 3).equals("DONE")) {
+            if (job != null && !((JobRowObject) object).getJobState().equals("DONE")) {
                 // job submitted, not yet stopped
                 final JButton stopButton = GUIUtils.createImageButton(
                         "/images/media-playback-stop.png", null, null);
@@ -67,9 +72,9 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
         } else if (column == 2) {
             setText(jobDescription.getName());
         } else if (column == 3) {
-            setText(object.toString());
+            setText(((JobRowObject) object).getJobState());
         } else if (column == 4) {
-            setText(object.toString());
+            setText(((JobRowObject) object).getHubState());
         } else if (column == 5) {
             setText(jobDescription.getClusterName());
         } else if (column == 6) {

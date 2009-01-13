@@ -5,6 +5,7 @@ import ibis.deploy.JobDescription;
 import ibis.deploy.State;
 import ibis.deploy.StateListener;
 import ibis.deploy.gui.GUI;
+import ibis.deploy.gui.JobRowObject;
 import ibis.deploy.gui.JobTableModel;
 
 import java.awt.event.ActionEvent;
@@ -63,25 +64,20 @@ public class SubmitExistingJobAction extends AbstractAction {
                 }
 
             }
-            Object object = model.getValueAt(row, 0);
-            JobDescription jd = null;
-            if (object instanceof Job) {
+            JobRowObject jobRow = (JobRowObject) model.getValueAt(row, 0);
+            if (jobRow.getJob() != null) {
                 try {
                     // continue for non stopped jobs
-                    if (!((Job) object).isFinished()) {
+                    if (!jobRow.getJob().isFinished()) {
                         continue;
                     }
                 } catch (Exception e) {
                     // ignore
                 }
-                jd = ((Job) object).getDescription();
-            } else {
-                // not yet submitted job
-                jd = (JobDescription) object;
             }
             final int rowValue = row;
             try {
-                Job job = gui.getDeploy().submitJob(jd,
+                Job job = gui.getDeploy().submitJob(jobRow.getJobDescription(),
                         gui.getApplicationSet(), gui.getGrid(),
                         new StateListener() {
 
@@ -96,7 +92,8 @@ public class SubmitExistingJobAction extends AbstractAction {
                             }
 
                         });
-                model.setRow(job, row);
+                model.setRow(new JobRowObject(jobRow.getJobDescription(), job),
+                        row);
                 model.fireTableChanged(new TableModelEvent(model));
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(rootPane, e.getMessage(),
@@ -104,6 +101,6 @@ public class SubmitExistingJobAction extends AbstractAction {
                 e.printStackTrace(System.err);
             }
         }
-    }
 
+    }
 }

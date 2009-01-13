@@ -3,6 +3,7 @@ package ibis.deploy.gui.action;
 import ibis.deploy.Job;
 import ibis.deploy.JobDescription;
 import ibis.deploy.gui.GUI;
+import ibis.deploy.gui.JobRowObject;
 import ibis.deploy.gui.JobTableModel;
 
 import java.awt.event.ActionEvent;
@@ -56,22 +57,34 @@ public class RemoveExistingJobAction extends AbstractAction {
                     continue;
                 }
             }
-            Object object = model.getValueAt(row, 0);
-
-            if (object instanceof Job) {
-                ((Job) object).kill();
+            JobRowObject jobRow = (JobRowObject) model.getValueAt(row, 0);
+            if (jobRow.getJob() != null) {
+                jobRow.getJob().kill();
                 try {
-                    ((Job) object).waitUntilFinished();
+                    jobRow.getJob().waitUntilFinished();
                 } catch (Exception e) {
                     // ignore, remove the job anyhow.
                 }
-                gui.getExperiment().removeJob(((Job) object).getDescription());
-            } else {
-                gui.getExperiment().removeJob((JobDescription) object);
             }
-
+            gui.getExperiment().removeJob(jobRow.getJobDescription());
         }
-        gui.fireExperimentUpdated();
+        for (int row = endRow; row >= 0; row--) {
+            if (onlySelectedRows) {
+                // ! selected
+                boolean selected = false;
+                for (int selectedRow : selectedRows) {
+                    selected = (selectedRow == row);
+                    if (selected) {
+                        break;
+                    }
+                }
+                if (!selected) {
+                    continue;
+                }
+            }
+            model.removeRow(row);
+        }
+        model.fireTableDataChanged();
     }
 
 }
