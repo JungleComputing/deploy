@@ -112,7 +112,12 @@ public class Job implements Runnable {
      * @return the description used to start this job.
      */
     public JobDescription getDescription() {
-        return description;
+        //cheat and simply resolve it again.
+        try {
+            return description.resolve(null, null);
+        } catch (Exception e) {
+            throw new Error("could not resolve job", e);
+        }
     }
 
     /**
