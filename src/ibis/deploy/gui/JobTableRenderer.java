@@ -42,7 +42,7 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
                 : (object instanceof Job) ? ((Job) object).getDescription()
                         : null;
         if (column == 0) {
-            if (job != null && !table.getValueAt(row, 3).equals("STOPPED")) {
+            if (job != null && !table.getValueAt(row, 3).equals("DONE")) {
                 // job submitted, not yet stopped
                 final JButton stopButton = GUIUtils.createImageButton(
                         "/images/media-playback-stop.png", null, null);
@@ -96,7 +96,7 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
                 }
 
             });
-            if (job != null && table.getValueAt(row, 3).equals("STOPPED")) {
+            if (job != null && table.getValueAt(row, 3).equals("DONE")) {
                 button.setEnabled(true);
             } else {
                 button.setEnabled(false);
