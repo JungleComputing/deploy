@@ -42,4 +42,8 @@ public class JobRowObject {
         this.hubState = state;
     }
 
+    public void setJob(Job job) {
+        this.job = job;
+    }
+
 }

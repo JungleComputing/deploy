@@ -64,7 +64,7 @@ public class SubmitExistingJobAction extends AbstractAction {
                 }
 
             }
-            JobRowObject jobRow = (JobRowObject) model.getValueAt(row, 0);
+            final JobRowObject jobRow = (JobRowObject) model.getValueAt(row, 0);
             if (jobRow.getJob() != null) {
                 try {
                     // continue for non stopped jobs
@@ -82,19 +82,20 @@ public class SubmitExistingJobAction extends AbstractAction {
                         new StateListener() {
 
                             public void stateUpdated(State state, Exception e) {
+                                jobRow.setJobState(state.toString());
                                 model.setValueAt(state.toString(), rowValue, 3);
                             }
 
                         }, new StateListener() {
 
                             public void stateUpdated(State state, Exception e) {
+                                jobRow.setHubState(state.toString());
                                 model.setValueAt(state.toString(), rowValue, 4);
                             }
 
                         });
-                model.setRow(new JobRowObject(jobRow.getJobDescription(), job),
-                        row);
-                model.fireTableChanged(new TableModelEvent(model));
+                jobRow.setJob(job);
+                // model.fireTableChanged(new TableModelEvent(model));
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(rootPane, e.getMessage(),
                         "Job submission failed", JOptionPane.PLAIN_MESSAGE);

@@ -69,12 +69,14 @@ public class RunButtonPanel extends JPanel {
                     // result.checkSettings();
                     result.setSharedHub(gui.getSharedHubs());
                     final int row = model.getRowCount();
+                    final JobRowObject jobRow = new JobRowObject(result, null);
                     Job job = gui.getDeploy().submitJob(result,
                             gui.getApplicationSet(), gui.getGrid(),
                             new StateListener() {
 
                                 public void stateUpdated(State state,
                                         Exception e) {
+                                    jobRow.setJobState(state.toString());
                                     model.setValueAt(state.toString(), row, 3);
                                 }
 
@@ -82,11 +84,13 @@ public class RunButtonPanel extends JPanel {
 
                                 public void stateUpdated(State state,
                                         Exception e) {
+                                    jobRow.setHubState(state.toString());
                                     model.setValueAt(state.toString(), row, 4);
                                 }
 
                             });
-                    model.addRow(new JobRowObject(result, job));
+                    jobRow.setJob(job);
+                    model.addRow(jobRow);
                     model.fireTableChanged(new TableModelEvent(model));
                 } catch (Exception e) {
                     JOptionPane.showMessageDialog(getRootPane(),

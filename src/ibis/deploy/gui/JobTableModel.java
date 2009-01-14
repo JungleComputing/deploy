@@ -50,7 +50,11 @@ public class JobTableModel extends AbstractTableModel {
     }
 
     public void setValueAt(Object value, final int row, final int col) {
-        fireTableCellUpdated(row, 0);
+        if (row >= jobRows.size()) {
+            // this can happen when we get an upcall for a state change, before
+            // the row is added!
+            return;
+        }
         if (col == 3) {
             jobRows.get(row).setJobState((String) value);
             // the start/stop button
