@@ -116,7 +116,7 @@ public class TextArrayEditor {
             }
         });
         arrayItemPanel.add(removeButton, BorderLayout.WEST);
-        panel.add(arrayItemPanel, panel.getComponentCount() - 1);
+        panel.add(arrayItemPanel, panel.getComponentCount());
     }
 
     public String[] getTextArray() {
