@@ -594,7 +594,9 @@ public class Job implements Runnable {
 
         if (gatJob != null) {
             try {
-                gatJob.stop();
+                if (! isFinished()) {
+                    gatJob.stop();
+                }
             } catch (Exception e) {
                 logger.warn("error on stopping job", e);
             }
