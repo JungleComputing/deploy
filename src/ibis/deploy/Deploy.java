@@ -225,12 +225,12 @@ public class Deploy {
 
         if (serverCluster == null) {
             // rootHub includes server
-            rootHub = new RootHub(true);
+            rootHub = new RootHub(true, verbose);
             rootHub.addListener(listener);
             remoteServer = null;
 
         } else {
-            rootHub = new RootHub(false);
+            rootHub = new RootHub(false, verbose);
             remoteServer = new RemoteServer(serverCluster, false, rootHub,
                     home, verbose,
 

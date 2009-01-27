@@ -165,9 +165,14 @@ public class RemoteServer implements Runnable, Hub {
         arguments.add("--remote");
         arguments.add("--port");
         arguments.add("0");
+        arguments.add("--errors");
 
         if (hubOnly) {
             arguments.add("--hub-only");
+        }
+        
+        if (verbose) {
+            arguments.add("--events");
         }
 
         // list of other hubs
