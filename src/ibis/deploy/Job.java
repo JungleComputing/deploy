@@ -426,6 +426,9 @@ public class Job implements Runnable {
             sd.getAttributes().put("sandbox.delete", "false");
         }
 
+        //FIXME: we need a setting for this somewhere.
+        sd.addAttribute("schedule.nodes", "true");
+
         // class path
         sd.setJavaClassPath(createClassPath(application.getLibs()));
 
