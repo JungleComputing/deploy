@@ -4,6 +4,7 @@ import ibis.smartsockets.direct.DirectSocketAddress;
 import ibis.smartsockets.viz.SmartsocketsViz;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,11 +25,10 @@ public class MonitoringPanel extends JPanel {
         setLayout(new BorderLayout());
         JPanel smartSocketsPanel = new JPanel();
 
-        List<DirectSocketAddress> rootHubAddressList = new ArrayList<DirectSocketAddress>();
         try {
-            rootHubAddressList.add(DirectSocketAddress.getByAddress(gui
-                    .getDeploy().getRootHubAddress()));
-            smartSocketsPanel = new SmartsocketsViz(rootHubAddressList);
+            DirectSocketAddress rootHub = DirectSocketAddress.getByAddress(gui
+                    .getDeploy().getRootHubAddress());
+            smartSocketsPanel = new SmartsocketsViz(Color.BLACK, Color.WHITE, rootHub);
         } catch (Exception e) {
             smartSocketsPanel.add(new JLabel("" + e));
             e.printStackTrace();
