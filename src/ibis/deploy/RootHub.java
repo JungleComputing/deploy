@@ -42,6 +42,7 @@ public class RootHub implements Hub {
 
         if (verbose) {
             properties.put(ServerProperties.PRINT_EVENTS, "true");
+            properties.put(ServerProperties.PRINT_STATS, "true");
         }
 
         properties.put(ServerProperties.PORT, "0");

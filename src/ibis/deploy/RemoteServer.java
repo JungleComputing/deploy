@@ -173,6 +173,7 @@ public class RemoteServer implements Runnable, Hub {
         
         if (verbose) {
             arguments.add("--events");
+            arguments.add("--stats");
         }
 
         // list of other hubs
