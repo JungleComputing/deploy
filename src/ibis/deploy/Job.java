@@ -48,7 +48,7 @@ public class Job implements Runnable {
     private final File deployHome;
 
     private final String serverAddress;
-    
+
     private final Deploy deploy;
 
     // private final Deploy deploy;
@@ -82,7 +82,8 @@ public class Job implements Runnable {
      */
     Job(JobDescription description, Hub hub, boolean keepSandbox,
             StateListener jobListener, StateListener hubListener,
-            RootHub rootHub, boolean verbose, File deployHome, String serverAddress,
+            RootHub rootHub, boolean verbose, File deployHome,
+            String serverAddress,
 
             Deploy deploy) throws Exception {
         this.description = description;
@@ -112,7 +113,7 @@ public class Job implements Runnable {
      * @return the description used to start this job.
      */
     public JobDescription getDescription() {
-        //cheat and simply resolve it again.
+        // cheat and simply resolve it again.
         try {
             return description.resolve(null, null);
         } catch (Exception e) {
@@ -303,8 +304,8 @@ public class Job implements Runnable {
         logger.debug("creating job description");
 
         JavaSoftwareDescription sd = new JavaSoftwareDescription();
-        
-     // ANDROID CHANGE START
+
+        // ANDROID CHANGE START
         if (application.getMainClass().startsWith("intent:")) {
             sd = new IntentSoftwareDescription();
         }
@@ -321,7 +322,7 @@ public class Job implements Runnable {
         // ANDROID CHANGE START
         if (application.getMainClass().startsWith("intent:")) {
             sd.setJavaMain(application.getMainClass().substring(
-                    "intent:".length()));
+                "intent:".length()));
             sd.getAttributes().put("sandbox.useroot", "true");
             sd.getAttributes().put("sandbox.delete", "false");
         } else {
@@ -426,8 +427,14 @@ public class Job implements Runnable {
             sd.getAttributes().put("sandbox.delete", "false");
         }
 
-        //FIXME: we need a setting for this somewhere.
+        // FIXME: we need a setting for this somewhere.
         sd.addAttribute("schedule.nodes", "true");
+
+        if (description.getRuntime() != 0) {
+            sd.addAttribute("walltime.max", "" + description.getRuntime());
+            sd.addAttribute("time.max", "" + description.getRuntime());
+            sd.addAttribute("cputime.max", "" + description.getRuntime());
+        }
 
         // class path
         sd.setJavaClassPath(createClassPath(application.getLibs()));
@@ -597,7 +604,7 @@ public class Job implements Runnable {
 
         if (gatJob != null) {
             try {
-                if (! isFinished()) {
+                if (!isFinished()) {
                     gatJob.stop();
                 }
             } catch (Exception e) {
