@@ -59,7 +59,10 @@ class StateForwarder implements MetricListener, Runnable {
     }
 
     synchronized void setState(State state, Exception exception) {
-        if (this.currentState == state) {
+        if (this.currentState == state
+                || (currentState == State.DEPLOYED && state == State.INITIALIZING)) {
+            // The latter condition can occur if ibis-deploy detects that the
+            // job is running before JavaGAT delivers the upcall. --Ceriel
             return;
         }
 
