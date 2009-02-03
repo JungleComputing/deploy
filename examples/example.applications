@@ -46,7 +46,7 @@ OneToMany.main.class = ibis.ipl.examples.OneToMany
 
 # Application "RegistryBenchmark"
 RegistryBenchmark.main.class = ibis.ipl.benchmarks.registry.Main
-RegistryBenchmark.arguments = --runtime 120
+RegistryBenchmark.arguments = --runtime,120
 #RegistryBenchmark.libs =
 #RegistryBenchmark.input.files =
 #RegistryBenchmark.output.files =
