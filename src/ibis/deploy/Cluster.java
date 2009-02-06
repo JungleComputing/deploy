@@ -1,7 +1,5 @@
 package ibis.deploy;
 
-import ibis.util.TypedProperties;
-
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -217,7 +215,7 @@ public class Cluster {
      * @throws Exception
      *             if cluster cannot be read properly, or its name is invalid
      */
-    Cluster(TypedProperties properties, String name, String prefix, Grid parent)
+    Cluster(DeployProperties properties, String name, String prefix, Grid parent)
             throws Exception {
         this.parent = parent;
         setName(name);
@@ -226,23 +224,23 @@ public class Cluster {
         prefix = prefix + ".";
 
         serverAdaptor = properties.getProperty(prefix + "server.adaptor");
-        serverURI = Util.getURIProperty(properties, prefix + "server.uri");
+        serverURI = properties.getURIProperty(prefix + "server.uri");
         jobAdaptor = properties.getProperty(prefix + "job.adaptor");
-        jobURI = Util.getURIProperty(properties, prefix + "job.uri");
+        jobURI = properties.getURIProperty(prefix + "job.uri");
 
         // get adaptors as list of string, defaults to "null"
-        fileAdaptors = Util.getStringListProperty(properties, prefix
+        fileAdaptors = properties.getStringListProperty(prefix
                 + "file.adaptors");
 
         javaPath = properties.getProperty(prefix + "java.path");
-        jobWrapperScript = Util.getFileProperty(properties, prefix
+        jobWrapperScript = properties.getFileProperty(prefix
                 + "job.wrapper.script");
 
         userName = properties.getProperty(prefix + "user.name");
-        cacheDir = Util.getFileProperty(properties, prefix + "cache.dir");
-        serverOutputFiles = Util.getFileListProperty(properties, prefix
+        cacheDir = properties.getFileProperty(prefix + "cache.dir");
+        serverOutputFiles = properties.getFileListProperty(prefix
                 + "server.output.files");
-        serverSystemProperties = Util.getStringMapProperty(properties, prefix
+        serverSystemProperties = properties.getStringMapProperty(prefix
                 + "server.system.properties");
 
         nodes = properties.getIntProperty(prefix + "nodes", 0);
@@ -379,7 +377,7 @@ public class Cluster {
             // name unchanged
             return;
         }
-        
+
         if (this.name != null && this.name.equals("local")) {
             throw new Exception("cannot rename local cluster");
         }
@@ -837,7 +835,7 @@ public class Cluster {
         Cluster result = new Cluster();
         if (parent != null) {
             if (getName().equals("local")) {
-                //local cluster has different defaults
+                // local cluster has different defaults
                 result.overwrite(parent.getLocalDefaults());
             } else {
                 result.overwrite(parent.getDefaults());

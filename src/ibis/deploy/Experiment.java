@@ -1,7 +1,5 @@
 package ibis.deploy;
 
-import ibis.util.TypedProperties;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -67,12 +65,12 @@ public class Experiment {
                             + file);
         }
 
-        TypedProperties properties = new TypedProperties();
+        DeployProperties properties = new DeployProperties();
         properties.loadFromFile(file.getAbsolutePath());
 
         defaults = new JobDescription(properties, "default", "default", this);
 
-        String[] jobNames = Util.getElementList(properties);
+        String[] jobNames = properties.getElementList();
         for (String jobName : jobNames) {
             if (!jobName.equals("name")) {
                 JobDescription job = new JobDescription(properties, jobName,
@@ -96,7 +94,7 @@ public class Experiment {
      *                 if job cannot be read properly
      * 
      */
-    public Experiment(TypedProperties properties, String name, String prefix)
+    public Experiment(DeployProperties properties, String name, String prefix)
             throws Exception {
         jobs = new ArrayList<JobDescription>();
 
@@ -109,7 +107,7 @@ public class Experiment {
         defaults = new JobDescription(properties, "default",
                 prefix + "default", this);
 
-        String[] jobNames = Util.getElementList(properties, prefix);
+        String[] jobNames = properties.getElementList(prefix);
         for (String jobName : jobNames) {
             JobDescription job = new JobDescription(properties, jobName, prefix
                     + jobName, this);

@@ -1,7 +1,5 @@
 package ibis.deploy;
 
-import ibis.util.TypedProperties;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -50,12 +48,12 @@ public class ApplicationSet {
                     "application files must have a \".applications\" extension (not: " + file + ")");
         }
 
-        TypedProperties properties = new TypedProperties();
+        DeployProperties properties = new DeployProperties();
         properties.loadFromFile(file.getAbsolutePath());
 
         defaults = new Application(properties, "defaults", "default", this);
 
-        String[] applicationNames = Util.getElementList(properties);
+        String[] applicationNames = properties.getElementList();
         for (String applicationName : applicationNames) {
             Application application = new Application(properties,
                     applicationName, applicationName, this);
@@ -73,7 +71,7 @@ public class ApplicationSet {
      *            prefix to use on all keys
      * @throws Exception if the applications cannot be initialized
      */
-    public ApplicationSet(TypedProperties properties, String prefix) throws Exception {
+    public ApplicationSet(DeployProperties properties, String prefix) throws Exception {
         applications = new ArrayList<Application>();
 
         if (prefix != null) {
@@ -83,7 +81,7 @@ public class ApplicationSet {
         defaults = new Application(properties, "defaults", prefix + "default", this);
 
 
-        String[] applicationNames = Util.getElementList(properties, prefix);
+        String[] applicationNames = properties.getElementList(prefix);
         for (String applicationName : applicationNames) {
             Application application = new Application(properties,
                     applicationName, prefix + applicationName, this);

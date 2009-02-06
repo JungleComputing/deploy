@@ -1,7 +1,5 @@
 package ibis.deploy;
 
-import ibis.util.TypedProperties;
-
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -132,7 +130,7 @@ public class Application {
      *             if application cannot be read properly, or its name is
      *             invalid
      */
-    Application(TypedProperties properties, String name, String prefix,
+    Application(DeployProperties properties, String name, String prefix,
             ApplicationSet parent) throws Exception {
         this.parent = parent;
         setName(name);
@@ -140,19 +138,15 @@ public class Application {
         // add separator to prefix
         prefix = prefix + ".";
 
-        libs = Util.getFileListProperty(properties, prefix + "libs");
+        libs = properties.getFileListProperty(prefix + "libs");
         mainClass = properties.getProperty(prefix + "main.class");
-        arguments = Util
-                .getStringListProperty(properties, prefix + "arguments");
-        inputFiles = Util.getFileListProperty(properties, prefix
-                + "input.files");
-        outputFiles = Util.getFileListProperty(properties, prefix
-                + "output.files");
-        systemProperties = Util.getStringMapProperty(properties, prefix
+        arguments = properties.getStringListProperty(prefix + "arguments");
+        inputFiles = properties.getFileListProperty(prefix + "input.files");
+        outputFiles = properties.getFileListProperty(prefix + "output.files");
+        systemProperties = properties.getStringMapProperty(prefix
                 + "system.properties");
-        jvmOptions = Util.getStringListProperty(properties, prefix
-                + "jvm.options");
-        log4jFile = Util.getFileProperty(properties, prefix + "log4j.file");
+        jvmOptions = properties.getStringListProperty(prefix + "jvm.options");
+        log4jFile = properties.getFileProperty(prefix + "log4j.file");
     }
 
     /**

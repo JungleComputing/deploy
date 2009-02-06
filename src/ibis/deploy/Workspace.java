@@ -1,7 +1,5 @@
 package ibis.deploy;
 
-import ibis.util.TypedProperties;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -68,7 +66,7 @@ public class Workspace {
         String name = fileName.substring(0, fileName.length()
                 - ".workspace".length());
 
-        TypedProperties properties = new TypedProperties();
+        DeployProperties properties = new DeployProperties();
 
         properties.loadFromFile(file.getAbsolutePath());
 

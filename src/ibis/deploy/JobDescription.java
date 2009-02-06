@@ -1,7 +1,5 @@
 package ibis.deploy;
 
-import ibis.util.TypedProperties;
-
 import java.io.PrintWriter;
 
 /**
@@ -137,7 +135,7 @@ public class JobDescription {
      * @throws Exception
      *             if job cannot be read properly
      */
-    JobDescription(TypedProperties properties, String name, String prefix,
+    JobDescription(DeployProperties properties, String name, String prefix,
             Experiment parent) throws Exception {
         this.parent = parent;
 

@@ -1,7 +1,5 @@
 package ibis.deploy;
 
-import ibis.util.TypedProperties;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -50,7 +48,7 @@ public class Grid {
             throw new Exception("grid files must have a \".grid\" extension");
         }
 
-        TypedProperties properties = new TypedProperties();
+        DeployProperties properties = new DeployProperties();
 
         properties.loadFromFile(file.getAbsolutePath());
 
@@ -58,7 +56,7 @@ public class Grid {
 
         localDefaults = Cluster.getLocalCluster();
 
-        String[] clusterNames = Util.getElementList(properties);
+        String[] clusterNames = properties.getElementList();
         if (clusterNames != null) {
             for (String clusterName : clusterNames) {
                 Cluster cluster = new Cluster(properties, clusterName,
@@ -85,7 +83,7 @@ public class Grid {
      *                 if cluster cannot be read properly
      * 
      */
-    public Grid(TypedProperties properties, String prefix) throws Exception {
+    public Grid(DeployProperties properties, String prefix) throws Exception {
         clusters = new ArrayList<Cluster>();
 
         if (prefix == null) {
@@ -98,7 +96,7 @@ public class Grid {
 
         localDefaults = Cluster.getLocalCluster();
 
-        String[] clusterNames = Util.getElementList(properties, prefix);
+        String[] clusterNames = properties.getElementList(prefix);
         if (clusterNames != null) {
             for (String clusterName : clusterNames) {
                 Cluster cluster = new Cluster(properties, clusterName, prefix
