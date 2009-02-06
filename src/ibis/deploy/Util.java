@@ -1,31 +1,13 @@
 package ibis.deploy;
 
-import ibis.util.TypedProperties;
-
 import java.io.File;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
-
-import org.gridlab.gat.URI;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Some utility functions of Ibis-Deploy
  */
 public class Util {
-
-    private static final Logger logger = LoggerFactory.getLogger(Util.class);
-
-
 
     /**
      * Convert a list of Strings to a single comma separated String
