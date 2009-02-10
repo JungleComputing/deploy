@@ -23,23 +23,16 @@ public class SaveWorkSpaceAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent arg0) {
-        JFileChooser chooser = new JFileChooser(System.getProperty("user.dir"));
-        if (chooser.showSaveDialog(frame) == JFileChooser.APPROVE_OPTION) {
+        int choice = JOptionPane.showConfirmDialog(frame,
+                "Save workspace to \"" + gui.getWorkspaceLocation() + "\"?",
+                "Save Workspace?", JOptionPane.YES_NO_OPTION);
+
+        if (choice == JOptionPane.YES_OPTION) {
             try {
-                if (chooser.getSelectedFile() != null) {
-                    String fileName = chooser.getSelectedFile().getName();
-                    if (fileName != null) {
-                        if (!fileName.endsWith(".workspace")) {
-                            fileName = fileName + ".workspace";
-                        }
-                        gui.getWorkSpace().save(new File(fileName));
-                    }
-                } else {
-                    throw new Exception("Please enter or select a file name!");
-                }
+                gui.saveWorkspace();
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(frame, e.getMessage(),
-                        "Saving entire workspace failed",
+                        "Saving workspace to \"" + gui.getWorkspaceLocation() + "\" failed",
                         JOptionPane.PLAIN_MESSAGE);
                 e.printStackTrace(System.err);
             }

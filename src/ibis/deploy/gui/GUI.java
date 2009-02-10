@@ -8,18 +8,10 @@ import ibis.deploy.JobDescription;
 import ibis.deploy.Workspace;
 import ibis.deploy.gui.action.AboutAction;
 import ibis.deploy.gui.action.HubPolicyAction;
-import ibis.deploy.gui.action.ResetApplicationSetWorkSpaceAction;
-import ibis.deploy.gui.action.ResetExperimentWorkSpaceAction;
-import ibis.deploy.gui.action.ResetGridWorkSpaceAction;
-import ibis.deploy.gui.action.ResetWorkSpaceAction;
-import ibis.deploy.gui.action.SaveApplicationSetWorkSpaceAction;
-import ibis.deploy.gui.action.SaveExperimentWorkSpaceAction;
-import ibis.deploy.gui.action.SaveGridWorkSpaceAction;
+import ibis.deploy.gui.action.NewWorkSpaceAction;
+import ibis.deploy.gui.action.SaveAsWorkSpaceAction;
 import ibis.deploy.gui.action.SaveWorkSpaceAction;
-import ibis.deploy.gui.action.SwitchApplicationSetWorkSpaceAction;
-import ibis.deploy.gui.action.SwitchExperimentWorkSpaceAction;
-import ibis.deploy.gui.action.SwitchGridWorkSpaceAction;
-import ibis.deploy.gui.action.SwitchWorkSpaceAction;
+import ibis.deploy.gui.action.OpenWorkSpaceAction;
 import ibis.deploy.gui.listener.SubmitJobListener;
 import ibis.deploy.gui.listener.WorkSpaceChangedListener;
 
@@ -27,9 +19,9 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,11 +30,18 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.UIManager;
+import javax.swing.WindowConstants;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GUI {
+
+    private static final Logger logger = LoggerFactory.getLogger(GUI.class);
 
     private Deploy deploy;
 
@@ -54,17 +53,27 @@ public class GUI {
 
     private List<SubmitJobListener> submitJobListeners = new ArrayList<SubmitJobListener>();
 
-    private Grid grid = null;
+    private Workspace workspace;
 
-    private ApplicationSet applications = null;
+    private File workspaceLocation;
 
-    private Experiment experiment = null;
+    private JFrame frame = null;
 
     private JMenuBar menuBar = null;
 
     private Boolean sharedHubs;
 
-    private static final File DEFAULT_WORKSPACE = new File("default.workspace");
+    private static class Shutdown extends Thread {
+        private final GUI gui;
+
+        Shutdown(GUI gui) {
+            this.gui = gui;
+        }
+
+        public void run() {
+            gui.getDeploy().end();
+        }
+    }
 
     /**
      * @param args
@@ -73,110 +82,108 @@ public class GUI {
         JPopupMenu.setDefaultLightWeightPopupEnabled(false);
 
         final GUI gui = new GUI(args);
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                try {
-                    gui.getWorkSpace().save(DEFAULT_WORKSPACE);
-                    gui.getDeploy().end();
-                } catch (Exception e) {
-                    e.printStackTrace(System.err);
-                }
-            }
-        });
+        Runtime.getRuntime().addShutdownHook(new Shutdown(gui));
 
         // Schedule a job for the event-dispatching thread:
         // creating and showing this application's GUI.
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                createAndShowGUI(gui);
+                gui.createAndShowGUI();
             }
         });
 
     }
 
-    protected static void createAndShowGUI(final GUI gui) {
+    private void saveAndClose() {
+        File location = getWorkspaceLocation();
+
+        int choice = JOptionPane.showConfirmDialog(null,
+                "Exiting ibis-deploy. Save workspace to \"" + location + "\"?",
+                "Save Workspace?", JOptionPane.YES_NO_CANCEL_OPTION);
+
+        if (choice == JOptionPane.YES_OPTION) {
+            try {
+                saveWorkspace();
+            } catch (Exception e) {
+                logger.error("Could not save workspace to " + location, e);
+            }
+            frame.dispose();
+            System.exit(0);
+        } else if (choice == JOptionPane.NO_OPTION) {
+            frame.dispose();
+            System.exit(0);
+        } else {
+            // cancel, do nothing :)
+        }
+    }
+
+    private void createAndShowGUI() {
+        JMenuItem menuItem;
+
         UIManager.put("swing.boldMetal", Boolean.FALSE);
-        final JFrame frame = new JFrame("Ibis Deploy");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame = new JFrame("Ibis Deploy - " + workspaceLocation.getName());
+        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         frame.setIconImage(GUIUtils
                 .createImageIcon("/images/favicon.ico", null).getImage());
 
-        gui.menuBar = new JMenuBar();
+        this.menuBar = new JMenuBar();
         JMenu menu = new JMenu("File");
-        JMenuItem menuItem = new JMenuItem("Exit");
+
+        menu.add(new NewWorkSpaceAction("New Workspace", frame, this));
+        menu.add(new OpenWorkSpaceAction("Open Workspace", frame, this));
+        menu.addSeparator();
+        menu.add(new SaveWorkSpaceAction("Save Workspace", frame, this));
+        menu.add(new SaveAsWorkSpaceAction("Save Workspace As...", frame, this));
+        menu.addSeparator();
+        menuItem = new JMenuItem("Exit");
         menu.add(menuItem);
         menuItem.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent arg0) {
-                System.exit(0);
+                saveAndClose();
             }
         });
 
-        gui.menuBar.add(menu);
-        menu = new JMenu("Workspaces");
-
-        JMenu subMenu = new JMenu("Save as ...");
-        subMenu.add(new SaveWorkSpaceAction("Entire Workspace", frame, gui));
-        subMenu.add(new SaveGridWorkSpaceAction("Grid Workspace", frame, gui));
-        subMenu.add(new SaveApplicationSetWorkSpaceAction(
-                "Application Workspace", frame, gui));
-        subMenu.add(new SaveExperimentWorkSpaceAction("Experiment Workspace",
-                frame, gui));
-        menu.add(subMenu);
-
-        subMenu = new JMenu("Switch");
-        subMenu.add(new SwitchWorkSpaceAction("Entire Workspace", frame, gui));
-        subMenu
-                .add(new SwitchGridWorkSpaceAction("Grid Workspace", frame, gui));
-        subMenu.add(new SwitchApplicationSetWorkSpaceAction(
-                "Application Workspace", frame, gui));
-        subMenu.add(new SwitchExperimentWorkSpaceAction("Experiment Workspace",
-                frame, gui));
-        menu.add(subMenu);
-
-        subMenu = new JMenu("Reset");
-        subMenu.add(new ResetWorkSpaceAction("Entire Workspace", frame, gui));
-        subMenu.add(new ResetGridWorkSpaceAction("Grid Workspace", frame, gui));
-        subMenu.add(new ResetApplicationSetWorkSpaceAction(
-                "Application Workspace", frame, gui));
-        subMenu.add(new ResetExperimentWorkSpaceAction("Experiment Workspace",
-                frame, gui));
-        menu.add(subMenu);
-
-        gui.menuBar.add(menu);
+        this.menuBar.add(menu);
 
         menu = new JMenu("Options");
-        subMenu = new JMenu("Hub Policy");
+        JMenu subMenu = new JMenu("Hub Policy");
         ButtonGroup hubPolicy = new ButtonGroup();
         menuItem = new JRadioButtonMenuItem(new HubPolicyAction("Shared hubs",
-                true, gui));
+                true, this));
         menuItem.setSelected(true);
         hubPolicy.add(menuItem);
         subMenu.add(menuItem);
         menuItem = new JRadioButtonMenuItem(new HubPolicyAction(
-                "One hub per job", false, gui));
+                "One hub per job", false, this));
         hubPolicy.add(menuItem);
         subMenu.add(menuItem);
         menu.add(subMenu);
-        gui.menuBar.add(menu);
+        this.menuBar.add(menu);
 
         menu = new JMenu("Help");
         menu.add(new AboutAction(frame));
 
-        gui.menuBar.add(menu, -1);
+        this.menuBar.add(menu, -1);
 
-        frame.setJMenuBar(gui.menuBar);
+        frame.setJMenuBar(this.menuBar);
 
         frame.getContentPane().setLayout(new BorderLayout());
-        frame.getContentPane().add(new RootPanel(gui), BorderLayout.CENTER);
+        frame.getContentPane().add(new RootPanel(this), BorderLayout.CENTER);
 
         frame.setPreferredSize(new Dimension(900, 650));
+        
+        frame.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent we) {
+                saveAndClose();
+            }
+        });
 
         // Display the window.
         frame.pack();
         frame.setVisible(true);
     }
-    
+
     private static void printUsage() {
         System.err
                 .println("Usage: ibis-deploy-gui [OPTIONS] [GRID_FILE] [APP_FILE] [EXPERIMENT_FILE] [WORKSPACE_FILE]");
@@ -189,15 +196,8 @@ public class GUI {
         File gridFile = null;
         File applicationsFile = null;
         File experimentFile = null;
-        File workspaceFile = null;
         boolean verbose = false;
 
-        if (arguments.length == 0) {
-            if (DEFAULT_WORKSPACE.exists()) {
-                workspaceFile = DEFAULT_WORKSPACE;
-            }
-        }
-        
         for (int i = 0; i < arguments.length; i++) {
             if (arguments[i].equals("-v")) {
                 verbose = true;
@@ -226,145 +226,83 @@ public class GUI {
                     System.exit(1);
                 }
                 experimentFile = (new File(arguments[i]));
-            } else if (arguments[i].endsWith(".workspace")) {
-                if (workspaceFile != null) {
+            } else {
+                if (workspaceLocation != null) {
                     System.err
-                            .println("ERROR: can only specify a single workspace file");
+                            .println("ERROR: can only specify a single workspace directory");
                     System.exit(1);
                 }
-                workspaceFile = (new File(arguments[i]));
-            } else {
-                System.err.println("Unknown option or file type: " + arguments[i]);
-                printUsage();
-                System.exit(1);
+                workspaceLocation = (new File(arguments[i]));
             }
         }
 
-        if (workspaceFile == null) {
-            // do nothing, there might be separate grid, applications and
-            // experiment files
-        } else {
-            if (!workspaceFile.isFile()) {
-                System.err
-                        .println("DEPLOY: Specified workspace file: \""
-                                + workspaceFile
-                                + "\" does not exist or is a directory");
-                System.exit(1);
+        try {
+
+            // load workspace
+            if (workspaceLocation == null) {
+                // default workspace location
+                workspaceLocation = Workspace.DEFAULT_LOCATION;
+            }
+            workspace = new Workspace(workspaceLocation);
+
+            if (workspace.getExperiments().size() > 1) {
+                logger
+                        .warn("Multiple experiments in workspace, GUI only supports one, using: "
+                                + workspace.getExperiments().get(0).getName()
+                                + " as experiment");
             }
 
-            try {
-                Workspace workSpace = new Workspace(workspaceFile);
-                grid = workSpace.getGrid();
-                applications = workSpace.getApplications();
-                experiment = workSpace.getExperiment();
-            } catch (FileNotFoundException e) {
-                System.err.println("Exception for file '" + workspaceFile
-                        + "': " + e);
-            } catch (Exception e) {
-                System.err.println("Exception for file '" + workspaceFile
-                        + "': " + e);
-            }
-
-            if (verbose) {
-                System.err.println("Workspace:");
-                if (grid != null) {
-                    System.err.println(grid.toPrintString());
+            // override grid
+            if (gridFile != null) {
+                if (!gridFile.isFile()) {
+                    System.err.println("DEPLOY: Specified grid file: \""
+                            + gridFile + "\" does not exist or is a directory");
+                    System.exit(1);
                 }
-                if (applications != null) {
-                    System.err.println(applications.toPrintString());
+
+                Grid grid = new Grid(gridFile);
+                workspace.setGrid(grid);
+            }
+
+            if (applicationsFile != null) {
+                if (!experimentFile.isFile()) {
+                    System.err
+                            .println("DEPLOY: Specified applications file: \""
+                                    + applicationsFile
+                                    + "\" does not exist or is a directory");
+                    System.exit(1);
                 }
-                if (experiment != null) {
-                    System.err.println(experiment.toPrintString());
+
+                ApplicationSet applications = new ApplicationSet(
+                        applicationsFile);
+                workspace.setApplications(applications);
+            }
+
+            // replace experiments in workspace with specified experiment, if
+            // needed
+            if (experimentFile != null) {
+                if (!experimentFile.isFile()) {
+                    System.err.println("DEPLOY: Specified experiment file: \""
+                            + experimentFile
+                            + "\" does not exist or is a directory");
+                    System.exit(1);
                 }
+                Experiment experiment = new Experiment(experimentFile);
+                workspace.getExperiments().set(0, experiment);
             }
+
+            if (workspace.getExperiments().size() == 0) {
+                workspace.addExperiment(new Experiment("default"));
+            }
+
+        } catch (Exception e) {
+            System.err.println("Exception when loading setting files: " + e);
+            System.exit(1);
         }
 
-        if (gridFile == null) {
-            if (grid == null) {
-                grid = new Grid();
-            }
-        } else {
-            if (!gridFile.isFile()) {
-                System.err.println("DEPLOY: Specified grid file: \"" + gridFile
-                        + "\" does not exist or is a directory");
-                System.exit(1);
-            }
-
-            try {
-                grid = new Grid(gridFile);
-            } catch (FileNotFoundException e) {
-                System.err.println("Exception for file '" + gridFile + "': "
-                        + e);
-            } catch (Exception e) {
-                System.err.println("Exception for file '" + gridFile + "': "
-                        + e);
-            }
-
-            if (verbose) {
-                System.err.println("Grid:");
-                System.err.println(grid.toPrintString());
-            }
-        }
-
-        if (applicationsFile == null) {
-            if (applications == null) {
-                applications = new ApplicationSet();
-            }
-        } else {
-            if (!applicationsFile.isFile()) {
-                System.err.println("DEPLOY: Specified applications file: \""
-                        + applicationsFile
-                        + "\" does not exist or is a directory");
-                System.exit(1);
-
-            }
-
-            try {
-                applications = new ApplicationSet(applicationsFile);
-            } catch (Exception e) {
-                System.err.println("Exception for file '" + applicationsFile
-                        + "': " + e);
-            }
-
-            if (verbose) {
-                System.err.println("DEPLOY: Applications:");
-                System.err.println(applications.toPrintString());
-            }
-        }
-
-        if (experimentFile != null) {
-            if (!experimentFile.isFile()) {
-                System.err.println("DEPLOY: Specified applications file: \""
-                        + experimentFile
-                        + "\" does not exist or is a directory");
-                System.exit(1);
-
-            }
-
-            try {
-                experiment = new Experiment(experimentFile);
-            } catch (FileNotFoundException e) {
-                System.err.println("Exception for file '" + experimentFile
-                        + "': " + e);
-            } catch (IOException e) {
-                System.err.println("Exception for file '" + experimentFile
-                        + "': " + e);
-            } catch (Exception e) {
-                System.err.println("Exception for file '" + experimentFile
-                        + "': " + e);
-            }
-
-            if (verbose) {
-                System.err.println("DEPLOY: Experiment:");
-                System.err.println(experiment.toPrintString());
-            }
-        } else if (experiment == null) {
-            try {
-                experiment = new Experiment("default");
-            } catch (Exception e) {
-                // ignore will always work!
-                e.printStackTrace();
-            }
+        if (verbose) {
+            System.err.println("DEPLOY: Workspace:");
+            System.err.println(workspace.toPrintString());
         }
 
         try {
@@ -381,42 +319,53 @@ public class GUI {
     }
 
     public Grid getGrid() {
-        return grid;
-    }
-
-    public void setGrid(Grid grid) {
-        this.grid = grid;
+        return workspace.getGrid();
     }
 
     public ApplicationSet getApplicationSet() {
-        return applications;
-    }
-
-    public void setApplicationSet(ApplicationSet applications) {
-        this.applications = applications;
-
+        return workspace.getApplications();
     }
 
     public Experiment getExperiment() {
-        return experiment;
-    }
+        if (workspace.getExperiments().size() == 0) {
+            try {
+                workspace.addExperiment(new Experiment("default"));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
 
-    public void setExperiment(Experiment experiment) {
-        this.experiment = experiment;
-
+        return workspace.getExperiments().get(0);
     }
 
     public Workspace getWorkSpace() {
-        Workspace wp = null;
-        try {
-            wp = new Workspace(getExperiment().getName());
-        } catch (Exception e) {
-            // ignore experiment name will never be invalid
-        }
-        wp.setExperiment(getExperiment());
-        wp.setApplications(getApplicationSet());
-        wp.setGrid(getGrid());
-        return wp;
+        return workspace;
+    }
+
+    public File getWorkspaceLocation() {
+        return workspaceLocation;
+    }
+
+    public void clearWorkspace() throws Exception {
+        workspace = new Workspace();
+        fireWorkSpaceUpdated();
+    }
+
+    public void loadWorkspace(File location) throws Exception {
+        workspace = new Workspace(location);
+        fireWorkSpaceUpdated();
+    }
+
+    public void saveWorkspace() throws Exception {
+        workspace.save(workspaceLocation);
+    }
+    
+
+    public void saveWorkspace(File newLocation) throws Exception {
+        workspace.save(newLocation);
+        //set location last, so it only gets set if the save succeeds
+        workspaceLocation = newLocation;
+        frame.setTitle("Ibis Deploy - " + workspaceLocation.getName());
     }
 
     public JMenuBar getMenuBar() {
@@ -477,5 +426,6 @@ public class GUI {
     public void addExperimentWorkSpaceListener(WorkSpaceChangedListener listener) {
         experimentListeners.add(listener);
     }
+
 
 }

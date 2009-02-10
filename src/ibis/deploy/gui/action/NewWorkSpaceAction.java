@@ -1,8 +1,5 @@
 package ibis.deploy.gui.action;
 
-import ibis.deploy.ApplicationSet;
-import ibis.deploy.Experiment;
-import ibis.deploy.Grid;
 import ibis.deploy.gui.GUI;
 
 import java.awt.event.ActionEvent;
@@ -11,7 +8,7 @@ import javax.swing.AbstractAction;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
-public class ResetWorkSpaceAction extends AbstractAction {
+public class NewWorkSpaceAction extends AbstractAction {
 
     /**
      * 
@@ -22,7 +19,7 @@ public class ResetWorkSpaceAction extends AbstractAction {
 
     private GUI gui;
 
-    public ResetWorkSpaceAction(String label, JFrame frame, GUI gui) {
+    public NewWorkSpaceAction(String label, JFrame frame, GUI gui) {
         super(label);
         this.frame = frame;
         this.gui = gui;
@@ -30,12 +27,7 @@ public class ResetWorkSpaceAction extends AbstractAction {
 
     public void actionPerformed(ActionEvent arg0) {
         try {
-            gui.setApplicationSet(new ApplicationSet());
-            gui.fireApplicationSetUpdated();
-            gui.setGrid(new Grid());
-            gui.fireGridUpdated();
-            gui.setExperiment(new Experiment("experiment"));
-            gui.fireExperimentUpdated();
+            gui.clearWorkspace();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(frame, e.getMessage(),
                     "Reset experiment workspace failed",

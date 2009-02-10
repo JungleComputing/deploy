@@ -1,22 +1,22 @@
 package ibis.deploy.gui.action;
 
-import ibis.deploy.Workspace;
 import ibis.deploy.gui.GUI;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
 
 import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
-public class SwitchWorkSpaceAction extends AbstractAction {
+public class SaveAsWorkSpaceAction extends AbstractAction {
 
     private JFrame frame;
 
     private GUI gui;
 
-    public SwitchWorkSpaceAction(String label, JFrame frame, GUI gui) {
+    public SaveAsWorkSpaceAction(String label, JFrame frame, GUI gui) {
         super(label);
         this.frame = frame;
         this.gui = gui;
@@ -24,18 +24,17 @@ public class SwitchWorkSpaceAction extends AbstractAction {
 
     public void actionPerformed(ActionEvent arg0) {
         JFileChooser chooser = new JFileChooser(System.getProperty("user.dir"));
-        if (chooser.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION) {
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        if (chooser.showSaveDialog(frame) == JFileChooser.APPROVE_OPTION) {
             try {
-                Workspace wp = new Workspace(chooser.getSelectedFile());
-                gui.setGrid(wp.getGrid());
-                gui.fireGridUpdated();
-                gui.setApplicationSet(wp.getApplications());
-                gui.fireApplicationSetUpdated();
-                gui.setExperiment(wp.getExperiment());
-                gui.fireExperimentUpdated();
+                if (chooser.getSelectedFile() == null) {
+                    throw new Exception("Please enter or select a directory!");
+                }
+                    
+                gui.saveWorkspace(chooser.getSelectedFile());
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(frame, e.getMessage(),
-                        "Switching entire workspace failed",
+                        "Saving workspace to \"" + chooser.getSelectedFile() + "\" failed",
                         JOptionPane.PLAIN_MESSAGE);
                 e.printStackTrace(System.err);
             }

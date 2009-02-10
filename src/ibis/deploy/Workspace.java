@@ -3,8 +3,12 @@ package ibis.deploy;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Container object for a grid, application and experiment.
@@ -14,105 +18,140 @@ import java.util.Date;
  */
 public class Workspace {
 
+    public static final File DEFAULT_LOCATION = new File("deploy-workspace");
+
+    public static final String GRID_FILENAME = "deploy.grid";
+
+    public static final String APPLICATION_FILENAME = "deploy.applications";
+
+    private static final Logger logger = LoggerFactory
+            .getLogger(Workspace.class);
+
     private Grid grid;
 
     private ApplicationSet applications;
 
-    private Experiment experiment;
+    private final ArrayList<Experiment> experiments;
 
     /**
-     * Constructs a workspace
+     * Constructs an empty workspace.
      * 
-     * @param experimentName
-     *            the name of the experiment in the workspace.
      * @throws Exception
-     *             if the experiment name is <code>null</code>, or contains
-     *             periods or spaces
+     *             if creating the workspace failed
      */
-    public Workspace(String experimentName) throws Exception {
-        grid = new Grid();
-        applications = new ApplicationSet();
-        experiment = new Experiment(experimentName);
+    public Workspace() throws Exception {
+        this(null);
     }
 
     /**
-     * Constructs a workspace object from properties stored in the given file.
-     * Also constructs the grid, applications and experiment within the
+     * Constructs a workspace from all properties files stored in the given
+     * directory. Constructs the grid, applications and experiments within the
      * workspace.
      * 
-     * @param file
-     *            the file containing the properties
+     * @param location
+     *            the directory of the workspace
      * @throws FileNotFoundException
-     *             if the given file cannot be found
+     *             if the given location is not a directory (usually a file)
      * @throws Exception
      * @throws Exception
-     *             if reading from the given file fails, or the file contains
-     *             invalid properties
+     *             if reading from the files in the directory fails, or any of
+     *             the files contain invalid properties.
      */
-    public Workspace(File file) throws Exception {
-        if (!file.exists()) {
-            throw new FileNotFoundException("file \"" + file
-                    + "\" does not exist");
+    public Workspace(File location) throws Exception {
+        experiments = new ArrayList<Experiment>();
+
+        if (location == null || !location.exists()) {
+            // do not try to load any further.
+            grid = new Grid();
+            applications = new ApplicationSet();
+            return;
         }
 
-        String fileName = file.getName();
-
-        if (!fileName.endsWith(".workspace")) {
-            throw new Exception(
-                    "workspace files must have a \".workspace\" extension");
+        if (!location.isDirectory()) {
+            throw new FileNotFoundException("location \"" + location
+                    + "\" is not a directory");
         }
 
-        // cut of ".workspace", use the rest as experiment name
-        String name = fileName.substring(0, fileName.length()
-                - ".workspace".length());
+        File gridFile = new File(location, GRID_FILENAME);
+        if (gridFile.isFile()) {
+            grid = new Grid(gridFile);
+        } else {
+            logger.warn("Workspace does not contain grid file: " + gridFile);
+            grid = new Grid();
+        }
 
-        DeployProperties properties = new DeployProperties();
+        File applicationFile = new File(location, APPLICATION_FILENAME);
+        if (applicationFile.isFile()) {
+            applications = new ApplicationSet(applicationFile);
+        } else {
+            logger.warn("Workspace does not contain application file: "
+                    + applicationFile);
+            applications = new ApplicationSet();
+        }
 
-        properties.loadFromFile(file.getAbsolutePath());
-
-        grid = new Grid(properties, "grid");
-        applications = new ApplicationSet(properties, "applications");
-        experiment = new Experiment(properties, name, "experiment");
+        // load all experiments
+        for (File file : location.listFiles()) {
+            if (file.getName().endsWith(".experiment")) {
+                experiments.add(new Experiment(file));
+            }
+        }
+        if (experiments.size() == 0) {
+            logger.warn("No experiments found in workspace: " + location);
+        }
     }
 
     /**
-     * Save this grid and all contained clusters to a property file
+     * Save this workspace to a directory.
      * 
-     * @param file
-     *            file to save grid to
+     * @param location
+     *            directory to save grid to
      * 
      * @throws Exception
      *             in case file cannot be written
      */
-    public void save(File file) throws Exception {
-        if (!file.exists()) {
-            if (!file.createNewFile()) {
-                throw new IOException("failed to create a new file '" + file
-                        + "'.");
+    public void save(File location) throws Exception {
+        if (location.isFile()) {
+            throw new IOException("cannot save workspace to " + location
+                    + " as this is a file, not a directory");
+        }
+
+        location.mkdirs();
+
+        if (!location.isDirectory()) {
+            throw new IOException("cannot save workspace to " + location
+                    + ", failed to create directory");
+        }
+
+        File gridFile = new File(location, GRID_FILENAME);
+        if (gridFile.exists()) {
+            gridFile.renameTo(new File(location, GRID_FILENAME + ".old"));
+        }
+        grid.save(gridFile);
+
+        File applicationFile = new File(location, APPLICATION_FILENAME);
+        if (applicationFile.exists()) {
+            applicationFile.renameTo(new File(location, APPLICATION_FILENAME
+                    + ".old"));
+        }
+        applications.save(applicationFile);
+
+        if (!location.isDirectory()) {
+            throw new IOException("failed to create workspace directory: "
+                    + location);
+        }
+
+        // move all experiment files to ".old" files
+        for (File file : location.listFiles()) {
+            if (file.getName().endsWith(".experiment") && file.exists()) {
+                file.renameTo(new File(file.getAbsolutePath() + ".old"));
             }
         }
-        PrintWriter out = new PrintWriter(file);
-        // write defaults
-        out.println("# Workspace file, " + "generated by Ibis Deploy on "
-                + new Date(System.currentTimeMillis()));
 
-        out.println();
-        out.println("################ Grid settings ###############");
-        out.println();
-        grid.save(out, "grid");
-
-        out.println();
-        out.println("################ Application settings ###############");
-        out.println();
-        applications.save(out, "applications");
-
-        out.println();
-        out.println("################ Experiment settings ###############");
-        out.println();
-        experiment.save(out, "experiment");
-
-        out.flush();
-        out.close();
+        // save experiments
+        for (Experiment experiment : experiments) {
+            experiment.save(new File(location, experiment.getName()
+                    + ".experiment"));
+        }
     }
 
     /**
@@ -131,18 +170,24 @@ public class Workspace {
     }
 
     /**
-     * @return the experiment
+     * @return the experiments. The returned list is not a copy! Changes to the
+     *         returned list will result in changes to the workspace.
      */
-    public Experiment getExperiment() {
-        return experiment;
+    public List<Experiment> getExperiments() {
+        return experiments;
+    }
+
+    public void setExperiments(Experiment[] experiments) {
+        this.experiments.clear();
+        this.experiments.addAll(Arrays.asList(experiments));
     }
 
     /**
      * @param experiment
      *            the experiment to set
      */
-    public void setExperiment(Experiment experiment) {
-        this.experiment = experiment;
+    public void addExperiment(Experiment experiment) {
+        experiments.add(experiment);
     }
 
     /**
@@ -171,11 +216,11 @@ public class Workspace {
             result += "\n";
         }
 
-        if (experiment != null) {
+        for (Experiment experiment : experiments) {
             result += experiment.toPrintString();
             result += "\n";
         }
-        
+
         return result;
     }
 
