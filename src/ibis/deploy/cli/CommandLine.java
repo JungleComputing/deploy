@@ -7,9 +7,11 @@ import ibis.deploy.Experiment;
 import ibis.deploy.Grid;
 import ibis.deploy.Job;
 import ibis.deploy.JobDescription;
+import ibis.deploy.Workspace;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -41,7 +43,7 @@ public class CommandLine {
         List<Job> jobs = new ArrayList<Job>();
         for (JobDescription jobDescription : experiment.getJobs()) {
             Job job = deploy.submitJob(jobDescription, applications, grid,
-                null, null);
+                    null, null);
             jobs.add(job);
         }
 
@@ -53,7 +55,7 @@ public class CommandLine {
 
     private static void printUsage() {
         System.err
-                .println("Usage: ibis-deploy-cli [OPTIONS] [GRID_FILE] [APP_FILE] [EXPERIMENT_FILE]+...");
+                .println("Usage: ibis-deploy-cli [OPTIONS] [WORKSPACE_DIR] [GRID_FILE] [APP_FILE] [EXPERIMENT_FILE]+...");
         System.err.println("Options:");
         System.err.println("-s CLUSTER\tRun server on specified cluster");
         System.err.println("-v\t\tVerbose mode");
@@ -66,9 +68,10 @@ public class CommandLine {
      *            arguments of application
      */
     public static void main(String[] arguments) {
+        File workspaceDir = null;
         File gridFile = null;
         File applicationsFile = null;
-        List<File> experimentFiles = new ArrayList<File>();
+        List<Experiment> experiments = new ArrayList<Experiment>();
         boolean verbose = false;
         boolean keepSandboxes = false;
         Grid grid = null;
@@ -80,43 +83,67 @@ public class CommandLine {
             System.exit(0);
         }
 
-        for (int i = 0; i < arguments.length; i++) {
-            if (arguments[i].equals("-s")) {
-                i++;
-                serverCluster = arguments[i];
-            } else if (arguments[i].equals("-v")) {
-                verbose = true;
-            } else if (arguments[i].equals("-k")) {
-                keepSandboxes = true;
-            } else if (arguments[i].equals("-h")
-                    || arguments[i].equals("--help")) {
-                printUsage();
-                System.exit(0);
-            } else if (arguments[i].endsWith(".grid")) {
-                if (gridFile != null) {
-                    System.err
-                            .println("ERROR: can only specify a single grid file");
-                    System.exit(1);
-                }
-                gridFile = new File(arguments[i]);
-            } else if (arguments[i].endsWith(".applications")) {
-                if (applicationsFile != null) {
-                    System.err
-                            .println("ERROR: can only specify a single applications file");
-                    System.exit(1);
-                }
-                applicationsFile = new File(arguments[i]);
-            } else if (arguments[i].endsWith(".experiment")) {
-                experimentFiles.add(new File(arguments[i]));
-            } else {
-                System.err.println("Unknown option or file type: "
-                        + arguments[i]);
-                printUsage();
-                System.exit(1);
-            }
-        }
-
         try {
+
+            for (int i = 0; i < arguments.length; i++) {
+                if (arguments[i].equals("-s")) {
+                    i++;
+                    serverCluster = arguments[i];
+                } else if (arguments[i].equals("-v")) {
+                    verbose = true;
+                } else if (arguments[i].equals("-k")) {
+                    keepSandboxes = true;
+                } else if (arguments[i].equals("-h")
+                        || arguments[i].equals("--help")) {
+                    printUsage();
+                    System.exit(0);
+                } else if (arguments[i].endsWith(".grid")) {
+                    if (gridFile != null) {
+                        System.err
+                                .println("ERROR: can only specify a single grid file");
+                        System.exit(1);
+                    }
+                    gridFile = new File(arguments[i]);
+                } else if (arguments[i].endsWith(".applications")) {
+                    if (applicationsFile != null) {
+                        System.err
+                                .println("ERROR: can only specify a single applications file");
+                        System.exit(1);
+                    }
+                    applicationsFile = new File(arguments[i]);
+                } else if (arguments[i].endsWith(".experiment")) {
+                    File file = new File(arguments[i]);
+                    Experiment experiment = new Experiment(file);
+
+                    experiments.add(experiment);
+                } else {
+                    File file = new File(arguments[i]);
+                    if (file.isDirectory()) {
+                        if (workspaceDir != null) {
+                            System.err
+                                    .println("ERROR: can only specify a single workspace dir");
+                            System.exit(1);
+                        }
+
+                        workspaceDir = file;
+                    } else {
+
+                        System.err.println("Unknown option or file type: "
+                                + arguments[i]);
+                        printUsage();
+                        System.exit(1);
+                    }
+                }
+            }
+
+            // load stuff from workspace
+            if (workspaceDir != null) {
+                Workspace workspace = new Workspace(workspaceDir);
+                grid = workspace.getGrid();
+                applications = workspace.getApplications();
+                experiments.addAll(workspace.getExperiments());
+            }
+
             if (gridFile != null) {
                 if (!gridFile.isFile()) {
                     System.err.println("ERROR: Specified grid file: \""
@@ -126,10 +153,11 @@ public class CommandLine {
 
                 grid = new Grid(gridFile);
 
-                if (verbose) {
-                    System.err.println("Grid:");
-                    System.err.println(grid.toPrintString());
-                }
+            }
+
+            if (grid != null && verbose) {
+                System.err.println("Grid:");
+                System.err.println(grid.toPrintString());
             }
 
             if (applicationsFile != null) {
@@ -143,20 +171,17 @@ public class CommandLine {
 
                 applications = new ApplicationSet(applicationsFile);
 
-                if (verbose) {
-                    logger
-                            .info("Applications: "
-                                    + applications.toPrintString());
-                } else {
-                    logger.debug("Applications: "
-                            + applications.toPrintString());
-                }
             }
 
-            if (experimentFiles.size() == 0) {
+            if (applications != null && verbose) {
+                logger.info("Applications: " + applications.toPrintString());
+            } else if (applications != null) {
+                logger.debug("Applications: " + applications.toPrintString());
+            }
+
+            if (experiments.size() == 0) {
                 System.err.println("ERROR: no experiments specified!");
-                System.err
-                        .println("Usage: ibis-deploy-cli [-v] [-s SERVER_CLUSTER] [-g GRID_FILE] [-a APPLICATIONS_FILE] [EXPERIMENT_FILE]+...");
+                printUsage();
                 System.exit(1);
             }
 
@@ -165,12 +190,14 @@ public class CommandLine {
             deploy.keepSandboxes(keepSandboxes);
 
             if (serverCluster == null) {
-                logger.info("Initializing Command Line Ibis Deploy, using build-in server");
+                logger
+                        .info("Initializing Command Line Ibis Deploy, using build-in server");
 
                 deploy.initialize(null);
             } else {
-                logger.info("Initializing Command Line Ibis Deploy, using server on cluster \""
-                        + serverCluster + "\"");
+                logger
+                        .info("Initializing Command Line Ibis Deploy, using server on cluster \""
+                                + serverCluster + "\"");
 
                 if (grid == null) {
                     System.err.println("ERROR: Server cluster " + serverCluster
@@ -193,9 +220,7 @@ public class CommandLine {
             new PoolSizePrinter(deploy);
 
             // run experiments
-            for (File file : experimentFiles) {
-                Experiment experiment = new Experiment(file);
-
+            for (Experiment experiment : experiments) {
                 runExperiment(experiment, grid, applications, deploy, verbose);
             }
 
