@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView android:id="@+id/main"
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent">
+	<LinearLayout android:orientation="vertical"
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent">
+		<LinearLayout android:id="@+id/name"
+			android:orientation="horizontal" android:layout_width="fill_parent"
+			android:layout_height="wrap_content">
+			<CheckBox android:id="@+id/checkbox"
+				style="@style/CheckBoxInEditor">
+			</CheckBox>
+			<LinearLayout android:padding="5px"
+				android:orientation="vertical" android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:layout_weight="1">
+				<TextView android:layout_width="fill_parent"
+					android:layout_height="wrap_content" android:text="Name: ">
+				</TextView>
+				<EditText android:id="@+id/edit"
+					android:layout_width="fill_parent"
+					android:layout_height="wrap_content">
+				</EditText>
+
+			</LinearLayout>
+		</LinearLayout>
+		<LinearLayout android:id="@+id/mainClass"
+			android:orientation="horizontal" android:layout_width="fill_parent"
+			android:layout_height="wrap_content">
+			<CheckBox android:id="@+id/checkbox"
+				style="@style/CheckBoxInEditor">
+			</CheckBox>
+			<LinearLayout android:padding="5px"
+				android:orientation="vertical" android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:layout_weight="1">
+				<TextView android:layout_width="fill_parent"
+					android:layout_height="wrap_content" android:text="Main Class: ">
+				</TextView>
+				<EditText android:id="@+id/edit"
+					android:layout_width="fill_parent"
+					android:layout_height="wrap_content">
+				</EditText>
+
+			</LinearLayout>
+		</LinearLayout>
+		<LinearLayout android:id="@+id/arguments"
+			android:orientation="horizontal" android:layout_width="fill_parent"
+			android:layout_height="wrap_content">
+			<CheckBox android:id="@+id/checkbox"
+				style="@style/CheckBoxInEditor">
+			</CheckBox>
+			<LinearLayout android:id="@+id/container"
+				android:padding="5px" android:orientation="vertical"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:layout_weight="1">
+				<TextView android:layout_width="fill_parent"
+					android:layout_height="wrap_content" android:text="Arguments: ">
+				</TextView>
+				<Button android:id="@+id/add"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content" android:text=" + ">
+				</Button>
+
+			</LinearLayout>
+		</LinearLayout>
+		<LinearLayout android:id="@+id/systemProperties"
+			android:orientation="horizontal" android:layout_width="fill_parent"
+			android:layout_height="wrap_content">
+			<CheckBox android:id="@+id/checkbox"
+				style="@style/CheckBoxInEditor">
+			</CheckBox>
+			<LinearLayout android:id="@+id/container"
+				android:padding="5px" android:orientation="vertical"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:layout_weight="1">
+				<TextView android:layout_width="fill_parent"
+					android:layout_height="wrap_content"
+					android:text="JVM System Properties ">
+				</TextView>
+				<Button android:id="@+id/add"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content" android:text=" + ">
+				</Button>
+
+			</LinearLayout>
+		</LinearLayout>
+		<LinearLayout android:id="@+id/jvmOptions"
+			android:orientation="horizontal" android:layout_width="fill_parent"
+			android:layout_height="wrap_content">
+			<CheckBox android:id="@+id/checkbox"
+				style="@style/CheckBoxInEditor">
+			</CheckBox>
+			<LinearLayout android:id="@+id/container"
+				android:padding="5px" android:orientation="vertical"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:layout_weight="1">
+				<TextView android:layout_width="fill_parent"
+					android:layout_height="wrap_content"
+					android:text="JVM Options: ">
+				</TextView>
+				<Button android:id="@+id/add"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content" android:text=" + ">
+				</Button>
+
+			</LinearLayout>
+		</LinearLayout>
+		<LinearLayout android:id="@+id/libraries"
+			android:orientation="horizontal" android:layout_width="fill_parent"
+			android:layout_height="wrap_content">
+			<CheckBox android:id="@+id/checkbox"
+				style="@style/CheckBoxInEditor">
+			</CheckBox>
+			<LinearLayout android:id="@+id/container"
+				android:padding="5px" android:orientation="vertical"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:layout_weight="1">
+				<TextView android:layout_width="fill_parent"
+					android:layout_height="wrap_content" android:text="Libraries: ">
+				</TextView>
+
+				<Button android:id="@+id/add"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content" android:text=" + ">
+				</Button>
+
+			</LinearLayout>
+		</LinearLayout>
+		<LinearLayout android:id="@+id/inputFiles"
+			android:orientation="horizontal" android:layout_width="fill_parent"
+			android:layout_height="wrap_content">
+			<CheckBox android:id="@+id/checkbox"
+				style="@style/CheckBoxInEditor">
+			</CheckBox>
+			<LinearLayout android:id="@+id/container"
+				android:padding="5px" android:orientation="vertical"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:layout_weight="1">
+				<TextView android:layout_width="fill_parent"
+					android:layout_height="wrap_content"
+					android:text="Input Files: ">
+				</TextView>
+				<Button android:id="@+id/add"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content" android:text=" + ">
+				</Button>
+
+			</LinearLayout>
+		</LinearLayout>
+		<LinearLayout android:id="@+id/outputFiles"
+			android:orientation="horizontal" android:layout_width="fill_parent"
+			android:layout_height="wrap_content">
+			<CheckBox android:id="@+id/checkbox"
+				style="@style/CheckBoxInEditor">
+			</CheckBox>
+			<LinearLayout android:id="@+id/container"
+				android:padding="5px" android:orientation="vertical"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:layout_weight="1">
+				<TextView android:layout_width="fill_parent"
+					android:layout_height="wrap_content"
+					android:text="Output Files: ">
+				</TextView>
+				<Button android:id="@+id/add"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content" android:text=" + ">
+				</Button>
+
+			</LinearLayout>
+		</LinearLayout>
+	</LinearLayout>
+</ScrollView>

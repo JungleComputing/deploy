@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/top" android:orientation="vertical"
+	android:layout_width="fill_parent" android:layout_height="wrap_content"
+	android:gravity="center_vertical">
+	<LinearLayout android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:gravity="center_vertical"
+		android:orientation="horizontal">
+		<TextView android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:text="Application: ">
+		</TextView>
+		<TextView android:id="@+id/application"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content">
+		</TextView>
+	</LinearLayout>
+	<LinearLayout android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:gravity="center_vertical"
+		android:orientation="horizontal">
+		<TextView android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:text="Cluster: ">
+		</TextView>
+		<TextView android:id="@+id/cluster"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content">
+		</TextView>
+	</LinearLayout>
+	<LinearLayout android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:gravity="center_vertical"
+		android:orientation="horizontal">
+		<TextView android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:text="# Resources: ">
+		</TextView>
+		<TextView android:id="@+id/resourceCount"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content">
+		</TextView>
+	</LinearLayout>
+	<LinearLayout android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:gravity="center_vertical"
+		android:orientation="horizontal">
+		<TextView android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:text="# Processes: ">
+		</TextView>
+		<TextView android:id="@+id/processCount"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content">
+		</TextView>
+	</LinearLayout>
+	<LinearLayout android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:gravity="center_vertical"
+		android:orientation="horizontal">
+		<TextView android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:text="Pool: ">
+		</TextView>
+		<TextView android:id="@+id/pool"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content">
+		</TextView>
+	</LinearLayout>
+	<LinearLayout android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:gravity="center_vertical"
+		android:orientation="horizontal">
+		<TextView android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="Standard Output: ">
+		</TextView>
+		<TextView android:id="@+id/stdout"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content">
+		</TextView>
+	</LinearLayout>
+	<LinearLayout android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:gravity="center_vertical"
+		android:orientation="horizontal">
+		<TextView android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="Standard Error: ">
+		</TextView>
+		<TextView android:id="@+id/stderr"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content">
+		</TextView>
+	</LinearLayout>
+</LinearLayout>

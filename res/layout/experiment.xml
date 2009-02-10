@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical" android:layout_width="fill_parent"
+	android:layout_height="fill_parent">
+
+	<LinearLayout android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:orientation="horizontal"
+		android:background="#CCC">
+		<ImageButton android:id="@+id/Experiment"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:layout_weight="1"
+			android:text="experiment"
+			android:src="@drawable/utilities_system_monitor">
+		</ImageButton>
+		<ImageButton android:id="@+id/Jobs"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:layout_weight="1"
+			android:text="jobs" android:src="@drawable/applications_system">
+		</ImageButton>
+		<ImageButton android:id="@+id/Network"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:layout_weight="1"
+			android:text="network"
+			android:src="@drawable/applications_internet">
+		</ImageButton>
+		<ImageButton android:id="@+id/Applications"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:layout_weight="1"
+			android:text="applications"
+			android:src="@drawable/applications_other">
+		</ImageButton>
+		<ImageButton android:id="@+id/Grid"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:layout_weight="1"
+			android:text="grid" android:src="@drawable/network_server">
+		</ImageButton>
+	</LinearLayout>
+
+
+	<LinearLayout android:id="@+id/Application"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:orientation="vertical">
+
+
+		<LinearLayout android:id="@+id/ApplicationTop"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:orientation="horizontal">
+
+			<TextView android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="Select Application" android:layout_weight="1"
+				android:layout_gravity="center_vertical">
+			</TextView>
+
+			<ImageView android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:src="@drawable/applications_other"
+				android:layout_weight="0">
+			</ImageView>
+		</LinearLayout>
+
+		<LinearLayout android:id="@+id/ApplicationBottom"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:orientation="horizontal">
+
+			<Spinner android:id="@+id/ApplicationSpinner"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:layout_weight="1">
+
+			</Spinner>
+			<LinearLayout android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:layout_weight="0"
+				android:orientation="horizontal">
+
+				<TextView android:layout_width="wrap_content"
+					android:layout_height="wrap_content" android:text=" x ">
+				</TextView>
+
+				<EditText android:id="@+id/ProcessCount"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content" android:numeric="integer">
+				</EditText>
+			</LinearLayout>
+		</LinearLayout>
+	</LinearLayout>
+
+	<ImageView android:layout_width="fill_parent"
+		android:layout_height="3px" android:src="#444">
+	</ImageView>
+
+
+
+
+	<LinearLayout android:id="@+id/ClusterTop"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:orientation="horizontal"
+		android:layout_gravity="center_horizontal">
+
+		<TextView android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:text="Select Cluster"
+			android:layout_weight="1" android:layout_gravity="center_vertical">
+		</TextView>
+
+		<ImageView android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:src="@drawable/network_server" android:layout_weight="0">
+		</ImageView>
+	</LinearLayout>
+	<RelativeLayout android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:layout_weight="1">
+		<com.google.android.maps.MapView android:id="@+id/map"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content" android:enabled="true"
+			android:clickable="true"
+			android:apiKey="0mgbiRpfAryhu69_HA7DWsdfZ0NDrUTAttnKzQQ">
+		</com.google.android.maps.MapView>
+		<LinearLayout android:id="@+id/layout_zoom"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_alignParentBottom="true"
+			android:layout_centerHorizontal="true">
+		</LinearLayout>
+	</RelativeLayout>
+
+	<ImageView android:layout_width="fill_parent"
+		android:layout_height="3px" android:src="#444">
+	</ImageView>
+
+	<LinearLayout android:id="@+id/Cluster"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal">
+		<ImageButton android:id="@+id/ImageButton01"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:src="@drawable/list_add"
+			android:layout_weight="1">
+		</ImageButton>
+		<ImageButton android:id="@+id/ImageButton02"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:src="@drawable/go_next"
+			android:layout_weight="1">
+		</ImageButton>
+	</LinearLayout>
+
+
+
+</LinearLayout>

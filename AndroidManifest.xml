@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+	package="ibis.deploy.android" android:versionCode="1"
+	android:versionName="1.0.0">
+	<application android:icon="@drawable/icon"
+		android:label="@string/app_name">
+		<uses-library android:name="com.google.android.maps" />
+		<activity android:name=".DeployActivity"
+			android:label="@string/app_name">
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+				<category
+					android:name="android.intent.category.LAUNCHER" />
+			</intent-filter>
+		</activity>
+		<activity android:name=".ExperimentActivity"
+			android:label="experiment">
+
+		</activity>
+		<activity android:name=".ApplicationListActivity"
+			android:label="application editor - overview">
+
+		</activity>
+		<activity android:name=".ApplicationEditorActivity"
+			android:label="application editor">
+
+		</activity>
+		<activity android:name=".ClusterListActivity"
+			android:label="cluster editor - overview">
+
+		</activity>
+		<activity android:name=".ClusterEditorActivity"
+			android:label="cluster editor">
+
+		</activity>
+
+		<activity android:name=".JobTableActivity"
+			android:label="job table">
+
+		</activity>
+
+		<service android:name=".DeployServiceImpl"
+			android:process=":remote" android:label="MyActivity">
+			<intent-filter>
+				<!-- These are the interfaces supported by the service, which
+					you can bind to. -->
+				<action
+					android:name="ibis.deploy.android.DeployService" />
+				<action android:name="ibis.deploy.android.SERVICE" />
+			</intent-filter>
+
+		</service>
+
+		<activity android:label="Network Visualization"
+			android:name="HubVizActivity">
+		</activity>
+	</application>
+	<uses-permission android:name="android.permission.INTERNET"></uses-permission>
+	<uses-permission
+		android:name="android.permission.ACCESS_FINE_LOCATION">
+	</uses-permission>
+
+
+</manifest>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent" android:layout_height="wrap_content"
+	android:orientation="horizontal" android:padding="5px"
+	android:gravity="center">
+	<ImageButton android:id="@+id/startButton"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content">
+	</ImageButton>
+
+	<LinearLayout android:layout_width="wrap_content"
+		android:layout_height="wrap_content" android:orientation="vertical"
+		android:layout_weight="1">
+
+		<TextView android:id="@+id/jobNameText"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content">
+		</TextView>
+
+		<LinearLayout android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:orientation="horizontal">
+			<TextView android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:text="Job State: ">
+			</TextView>
+			<TextView android:id="@+id/jobStateText"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content">
+			</TextView>
+		</LinearLayout>
+
+		<LinearLayout android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:orientation="horizontal">
+			<TextView android:layout_width="wrap_content"
+				android:layout_height="wrap_content" android:text="Hub State: ">
+			</TextView>
+			<TextView android:id="@+id/hubStateText"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content">
+			</TextView>
+		</LinearLayout>
+	</LinearLayout>
+	<ImageButton android:id="@+id/detailsButton"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:src="@drawable/details">
+	</ImageButton>
+
+
+</LinearLayout>
+
+

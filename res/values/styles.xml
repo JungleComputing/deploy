@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<style name="TableRow">
+		<item name="android:gravity">center_vertical</item>
+	</style>
+	<style name="TableHeader">
+		<item name="android:textSize">12sp</item>
+		<item name="android:textColor">#CCC</item>
+		<item name="android:background">#444</item>
+		<item name="android:padding">5px</item>
+		<item name="android:layout_width">wrap_content</item>
+		<item name="android:layout_height">fill_parent</item>
+		<item name="android:gravity">center</item>
+
+	</style>
+	<style name="TableValue">
+		<item name="android:textSize">12sp</item>
+		<item name="android:textColor">#F00</item>
+		<item name="android:padding">20px</item>
+		<item name="android:gravity">center</item>
+		<item name="android:layout_width">wrap_content</item>
+		<item name="android:layout_height">fill_parent</item>
+
+	</style>
+	<style name="CheckBoxInEditor">
+		<item name="android:layout_width">wrap_content</item>
+		<item name="android:layout_height">wrap_content</item>
+		<item name="android:layout_weight">0</item>
+		<item name="android:gravity">top</item>
+		<item name="android:layout_marginTop">22px</item>
+	</style>
+</resources>

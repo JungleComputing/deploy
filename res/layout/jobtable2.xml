@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent" android:layout_height="fill_parent"
+	android:orientation="vertical">
+
+	<LinearLayout android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:orientation="horizontal"
+		android:background="#CCC">
+		<ImageButton android:id="@+id/Experiment"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:layout_weight="1"
+			android:text="experiment"
+			android:src="@drawable/utilities_system_monitor">
+		</ImageButton>
+		<ImageButton android:id="@+id/Jobs"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:layout_weight="1"
+			android:text="jobs" android:src="@drawable/applications_system">
+		</ImageButton>
+		<ImageButton android:id="@+id/Network"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:layout_weight="1"
+			android:text="network"
+			android:src="@drawable/applications_internet">
+		</ImageButton>
+		<ImageButton android:id="@+id/Applications"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:layout_weight="1"
+			android:text="applications"
+			android:src="@drawable/applications_other">
+		</ImageButton>
+		<ImageButton android:id="@+id/Grid"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:layout_weight="1"
+			android:text="grid" android:src="@drawable/network_server">
+		</ImageButton>
+	</LinearLayout>
+	<ListView android:id="@+id/list" android:layout_width="fill_parent"
+		android:layout_height="fill_parent">
+
+	</ListView>
+</LinearLayout>
