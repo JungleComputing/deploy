@@ -173,7 +173,7 @@ public class GUI {
         frame.getContentPane().setLayout(new BorderLayout());
         frame.getContentPane().add(new RootPanel(this), BorderLayout.CENTER);
 
-        frame.setPreferredSize(new Dimension(900, 650));
+        frame.setPreferredSize(new Dimension(1024, 768));
 
         frame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent we) {

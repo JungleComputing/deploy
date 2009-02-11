@@ -44,8 +44,14 @@ public class ClusterEditorTabPanel extends JPanel {
             final boolean defaultsEditor) {
         setLayout(new BorderLayout());
 
-        Cluster defaults = (source.getGrid() == null) ? null : source.getGrid()
-                .getDefaults();
+        Cluster defaults = null;
+        if (source.getGrid() != null) {
+            if (source.getName().equals("local")) {
+                defaults = source.getGrid().getLocalDefaults();
+            } else {
+                defaults = source.getGrid().getDefaults();
+            }
+        }
 
         JPanel container = new JPanel(new BorderLayout());
 
@@ -59,8 +65,7 @@ public class ClusterEditorTabPanel extends JPanel {
                 source.getNodes(), defaults == null ? 1 : defaults.getNodes());
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
         final NumberEditor coresEditor = new NumberEditor(formPanel, "Cores: ",
-                source.getCores(), defaults == null ? 1 : defaults
-                        .getCores());
+                source.getCores(), defaults == null ? 1 : defaults.getCores());
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
         final TextEditor jobURIEditor = new TextEditor(formPanel, "Job URI: ",
                 source.getJobURI(), defaults == null ? null : defaults

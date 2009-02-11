@@ -25,8 +25,8 @@ public class InitializedPanel extends JPanel {
                 new ExperimentEditorPanel(gui, model), new MonitoringPanel(gui,
                         model));
         splitPane.setOneTouchExpandable(true);
+        splitPane.setDividerLocation(320);
         add(splitPane, BorderLayout.CENTER);
 
     }
-
 }
