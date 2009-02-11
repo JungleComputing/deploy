@@ -97,7 +97,7 @@ public class GUI {
     private void saveAndClose() {
         File location = getWorkspaceLocation();
 
-        int choice = JOptionPane.showConfirmDialog(null,
+        int choice = JOptionPane.showConfirmDialog(frame,
                 "Exiting ibis-deploy. Save workspace to \"" + location + "\"?",
                 "Save Workspace?", JOptionPane.YES_NO_CANCEL_OPTION);
 
@@ -133,7 +133,9 @@ public class GUI {
         menu.add(new OpenWorkSpaceAction("Open Workspace", frame, this));
         menu.addSeparator();
         menu.add(new SaveWorkSpaceAction("Save Workspace", frame, this));
-        menu.add(new SaveAsWorkSpaceAction("Save Workspace As...", frame, this));
+        menu
+                .add(new SaveAsWorkSpaceAction("Save Workspace As...", frame,
+                        this));
         menu.addSeparator();
         menuItem = new JMenuItem("Exit");
         menu.add(menuItem);
@@ -172,7 +174,7 @@ public class GUI {
         frame.getContentPane().add(new RootPanel(this), BorderLayout.CENTER);
 
         frame.setPreferredSize(new Dimension(900, 650));
-        
+
         frame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent we) {
                 saveAndClose();
@@ -359,11 +361,10 @@ public class GUI {
     public void saveWorkspace() throws Exception {
         workspace.save(workspaceLocation);
     }
-    
 
     public void saveWorkspace(File newLocation) throws Exception {
         workspace.save(newLocation);
-        //set location last, so it only gets set if the save succeeds
+        // set location last, so it only gets set if the save succeeds
         workspaceLocation = newLocation;
         frame.setTitle("Ibis Deploy - " + workspaceLocation.getName());
     }
@@ -426,6 +427,5 @@ public class GUI {
     public void addExperimentWorkSpaceListener(WorkSpaceChangedListener listener) {
         experimentListeners.add(listener);
     }
-
 
 }
