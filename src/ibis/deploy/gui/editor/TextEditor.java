@@ -21,9 +21,6 @@ public class TextEditor {
 
     private final String defaultValue;
 
-    private final JButton openButton = GUIUtils.createImageButton(
-            "/images/document-open.png", "select a file", null);
-
     private final JLabel label = new JLabel("", JLabel.TRAILING);
 
     public TextEditor(JPanel form, final String text, Object value,
@@ -37,11 +34,11 @@ public class TextEditor {
         this.defaultValue = defaultValue;
 
         // determine whether this text editor holds a default value
-        final boolean useDefault = (value == null && defaultValue != null);
+        final boolean useDefault = value == null;
 
         // set the check box
         useDefaultCheckBox
-                .setToolTipText("<html>enable for <code><i>default</i></code> value</html>");
+                .setToolTipText("<html>check this box to overwrite the <code><i>default</i></code> value</html>");
         // if the value is 'nullified' or 'denullified' enable or disable the
         // editing components and invoke the edited method
         useDefaultCheckBox.addActionListener(new ActionListener() {
@@ -87,7 +84,6 @@ public class TextEditor {
         }
         label.setEnabled(!useDefault);
         textField.setEnabled(!useDefault);
-        openButton.setEnabled(!useDefault);
     }
 
 }

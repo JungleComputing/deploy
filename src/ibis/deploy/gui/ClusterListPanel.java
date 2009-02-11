@@ -2,11 +2,13 @@ package ibis.deploy.gui;
 
 import ibis.deploy.Cluster;
 import ibis.deploy.gui.listener.EditorListener;
+import ibis.deploy.gui.listener.WorkSpaceChangedListener;
 
 import java.awt.BorderLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
@@ -23,37 +25,16 @@ public class ClusterListPanel extends JPanel {
 
     private static final String DEFAULTS = "<html><i>defaults</i></html>";
 
+    private ClusterEditorPanel clusterEditorPanel;
+
     public ClusterListPanel(final GUI gui, final JPanel editPanel,
             final ClusterEditorPanel clusterEditorPanel) {
 
         setLayout(new BorderLayout());
-        DefaultListModel model = new DefaultListModel();
-        try {
-            gui.getGrid().getDefaults().setName(DEFAULTS);
-        } catch (Exception e) {
-            // ignore
-        }
-        model.addElement(gui.getGrid().getDefaults());
-
-        for (Cluster cluster : gui.getGrid().getClusters()) {
-            model.addElement(cluster);
-        }
+        final DefaultListModel model = new DefaultListModel();
         final JList clusterList = new JList(model);
-        // create a hash map with all the panels
-        final HashMap<Cluster, JPanel> editClusterPanels = new HashMap<Cluster, JPanel>();
-        editClusterPanels.put(gui.getGrid().getDefaults(),
-                new ClusterEditorTabPanel(gui.getGrid().getDefaults(),
-                        clusterEditorPanel, gui, true));
-        for (Cluster cluster : gui.getGrid().getClusters()) {
-            editClusterPanels.put(cluster, new ClusterEditorTabPanel(cluster,
-                    clusterEditorPanel, gui, false));
-        }
-
-        add(new ClusterListTopPanel(gui, clusterList, editClusterPanels,
-                clusterEditorPanel), BorderLayout.NORTH);
-
         clusterList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        add(new JScrollPane(clusterList), BorderLayout.CENTER);
+        final HashMap<Cluster, JPanel> editClusterPanels = new HashMap<Cluster, JPanel>();
 
         clusterList.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
@@ -73,6 +54,52 @@ public class ClusterListPanel extends JPanel {
             }
 
         });
+
+        add(new ClusterListTopPanel(gui, clusterList,
+                editClusterPanels, clusterEditorPanel),
+                BorderLayout.NORTH);
+
+        add(new JScrollPane(clusterList), BorderLayout.CENTER);
+
+        init(gui, model, editClusterPanels);
+
+        gui.addGridWorkSpaceListener(new WorkSpaceChangedListener() {
+
+            public void workSpaceChanged(GUI gui) {
+                init(gui, model, editClusterPanels);
+            }
+
+        });
+
+    }
+
+    private void init(GUI gui, DefaultListModel model,
+            Map<Cluster, JPanel> editClusterPanels) {
+
+        try {
+            gui.getGrid().getDefaults().setName(DEFAULTS);
+        } catch (Exception e) {
+            // ignore
+        }
+        model.clear();
+        model.addElement(gui.getGrid().getDefaults());
+
+        for (Cluster cluster : gui.getGrid()
+                .getClusters()) {
+            model.addElement(cluster);
+        }
+
+        // create a hash map with all the panels
+        editClusterPanels.clear();
+        editClusterPanels.put(gui.getGrid().getDefaults(),
+                new ClusterEditorTabPanel(gui.getGrid()
+                        .getDefaults(), clusterEditorPanel, gui, true));
+        for (Cluster cluster : gui.getGrid()
+                .getClusters()) {
+            editClusterPanels.put(cluster,
+                    new ClusterEditorTabPanel(cluster,
+                            clusterEditorPanel, gui, false));
+        }
 
     }
 }

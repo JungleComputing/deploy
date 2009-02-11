@@ -49,11 +49,11 @@ public class TextMapArrayEditor {
         this.defaultValues = defaultValues;
 
         // determine whether this text editor holds a default value
-        boolean useDefault = (values == null && defaultValues != null);
+        boolean useDefault = values == null;
 
         // set the check box
         useDefaultCheckBox
-                .setToolTipText("<html>enable for <code><i>default</i></code> value</html>");
+                .setToolTipText("<html>check this box to overwrite the <code><i>default</i></code> value(s)</html>");
         // if the value is 'nullified' or 'denullified' enable or disable the
         // editing components and invoke the edited method
         useDefaultCheckBox.addActionListener(new ActionListener() {

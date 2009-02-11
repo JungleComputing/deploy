@@ -38,11 +38,11 @@ public class FileEditor {
         this.defaultValue = defaultValue;
 
         // determine whether this text editor holds a default value
-        final boolean useDefault = (value == null && defaultValue != null);
+        final boolean useDefault = value == null;
 
         // set the check box
         useDefaultCheckBox
-                .setToolTipText("<html>enable for <code><i>default</i></code> value</html>");
+                .setToolTipText("<html>check this box to overwrite the <code><i>default</i></code> value</html>");
         // if the value is 'nullified' or 'denullified' enable or disable the
         // editing components and invoke the edited method
         useDefaultCheckBox.addActionListener(new ActionListener() {
