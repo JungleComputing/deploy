@@ -177,7 +177,9 @@ public class ClusterOverlay extends Overlay {
                                 (int) (mDeployService.getLatitude(clusterName) * 1000000),
                                 (int) (mDeployService.getLongitude(clusterName) * 1000000)),
                         point);
-
+        if (!mOffsetTable.get(mZoomLevel).containsKey(clusterName)) {
+            mOffsetTable.put(mZoomLevel, calculateOffsets(mapView));
+        }
         point.offset(mOffsetTable.get(mZoomLevel).get(clusterName).x,
                 mOffsetTable.get(mZoomLevel).get(clusterName).y);
 

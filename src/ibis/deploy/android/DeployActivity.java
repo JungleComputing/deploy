@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
@@ -125,6 +126,9 @@ public class DeployActivity extends MapActivity {
             unbindService(mConnection);
             break;
         default:
+            Toast
+                    .makeText(this, "Shutting down Ibis Deploy",
+                            Toast.LENGTH_LONG);
             System.out.println("default");
             finish();
         }
