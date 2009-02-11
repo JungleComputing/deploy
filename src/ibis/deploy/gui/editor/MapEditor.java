@@ -20,6 +20,9 @@ public class MapEditor {
 
     private JLabel coordinatesLabel = new JLabel();
 
+    private static final GeoPosition DEFAULT_GEO_POSITION = new GeoPosition(
+            52.332933, 4.866064);
+
     // map editor doesn't support default values, since it isn't straightforward
     // to implement it. Map editor uses two values which both could be defaults.
     public MapEditor(JPanel form, String text, double latitude, double longitude) {
@@ -39,7 +42,12 @@ public class MapEditor {
         MapUtilities.register(mapKit);
         mapKit.setTileFactory(MapUtilities.getDefaultTileFactory());
         mapKit.setMiniMapVisible(false);
-        GeoPosition position = new GeoPosition(latitude, longitude);
+        GeoPosition position;
+        if (latitude == 0 && longitude == 0) {
+            position = DEFAULT_GEO_POSITION;
+        } else {
+            position = new GeoPosition(latitude, longitude);
+        }
         mapKit.getMainMap().setZoom(MapUtilities.INITIAL_MAP_ZOOM);
         mapKit.getMainMap().setCenterPosition(MapUtilities.INITIAL_MAP_CENTER);
         mapKit.getMainMap().setAddressLocation(position);

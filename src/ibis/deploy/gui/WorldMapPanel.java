@@ -305,7 +305,11 @@ public class WorldMapPanel extends JPanel {
         private Dimension offset = new Dimension(0, 0);
 
         public ClusterWaypoint(Cluster cluster, boolean selected) {
-            super(cluster.getLatitude(), cluster.getLongitude());
+            super(
+                    cluster.getLatitude() == 0 && cluster.getLongitude() == 0 ? 52.332933
+                            : cluster.getLatitude(), cluster.getLatitude() == 0
+                            && cluster.getLongitude() == 0 ? 4.866064 : cluster
+                            .getLongitude());
             this.selected = selected;
             this.cluster = cluster;
             this.resourceCount = 1;
