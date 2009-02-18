@@ -6,6 +6,9 @@
 	<property name="version" value="" />
 
 	<property name="dist-name" value="${ant.project.name}${version}" />
+	<property name="lib-jar" value="deploy${version}.jar" />
+	<property name="gui-jar" value="deploy-gui${version}.jar" />
+	<property name="cli-jar" value="deploy-cli${version}.jar" />
 
 	<!-- Import environment properties -->
 
@@ -101,8 +104,18 @@
 		</javac>
 
 		<!-- Create jar file -->
-		<jar destfile="lib/${dist-name}.jar" basedir="tmp" includes="**/*.class,images/*">
+		<jar destfile="lib/${lib-jar}" basedir="tmp" includes="ibis/deploy/*.class">
 		</jar>
+
+		<!-- Create jar file -->
+		<jar destfile="lib/${gui-jar}" basedir="tmp" includes="ibis/deploy/gui/**/*.class,images/*">
+		</jar>
+
+		<!-- Create jar file -->
+		<jar destfile="lib/${cli-jar}" basedir="tmp" includes="ibis/deploy/cli/**/*.class">
+		</jar>
+
+
 
 		<!-- Generate javadoc -->
 		<javadoc destdir="javadoc" access="public" classpathref="default.classpath" packagenames="ibis.deploy" sourcepath="src" windowtitle="Ibis ${ant.project.name} Documentation" doctitle="Ibis ${ant.project.name} Documentation" bottom="The Ibis project">
