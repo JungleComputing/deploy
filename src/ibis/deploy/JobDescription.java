@@ -500,8 +500,8 @@ public class JobDescription {
 
         clusterOverrides.checkSettings(name, false);
 
-        if (resourceCount <= 0) {
-            throw new Exception(prefix + "Resource count zero or negative");
+        if (resourceCount < 0) {
+            throw new Exception(prefix + "Resource count negative");
         }
 
         if (runtime < 0) {

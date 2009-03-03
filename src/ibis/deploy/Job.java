@@ -428,7 +428,7 @@ public class Job implements Runnable {
         }
 
         // FIXME: we need a setting for this somewhere.
-        sd.addAttribute("schedule.nodes", "true");
+        // sd.addAttribute("schedule.nodes", "true");
 
         if (description.getRuntime() != 0) {
             sd.addAttribute("walltime.max", "" + description.getRuntime());
