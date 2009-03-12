@@ -1,6 +1,6 @@
 package ibis.deploy;
 
-import ibis.server.RemoteClient;
+import ibis.ipl.server.RemoteClient;
 import ibis.util.ThreadPool;
 
 import java.io.File;
@@ -158,7 +158,7 @@ public class RemoteServer implements Runnable, Hub {
         logger.debug("executable: " + sd.getExecutable());
 
         // main class and options
-        sd.setJavaMain("ibis.server.Server");
+        sd.setJavaMain("ibis.ipl.server.Server");
 
         List<String> arguments = new ArrayList<String>();
 

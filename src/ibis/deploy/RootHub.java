@@ -1,6 +1,6 @@
 package ibis.deploy;
 
-import ibis.server.ServerProperties;
+import ibis.ipl.server.ServerProperties;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -16,7 +16,7 @@ public class RootHub implements Hub {
     private final boolean isServer;
 
     // used in case of a local server
-    private final ibis.server.Server server;
+    private final ibis.ipl.server.Server server;
 
     /**
      * Start a server/hub locally.
@@ -47,7 +47,7 @@ public class RootHub implements Hub {
 
         properties.put(ServerProperties.PORT, "0");
 
-        server = new ibis.server.Server(properties);
+        server = new ibis.ipl.server.Server(properties);
 
         logger.debug(server.toString());
     }

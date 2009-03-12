@@ -1,7 +1,8 @@
 package ibis.deploy;
 
-import ibis.ipl.impl.registry.central.monitor.RegistryMonitorClient;
-import ibis.server.ServerProperties;
+import ibis.ipl.IbisProperties;
+import ibis.ipl.registry.central.monitor.RegistryMonitorClient;
+import ibis.ipl.server.ServerProperties;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -372,8 +373,8 @@ public class Deploy {
 
         if (registryMonitor == null) {
             Properties properties = new Properties();
-            properties.put(ServerProperties.ADDRESS, getServerAddress());
-            properties.put(ServerProperties.HUB_ADDRESSES, getRootHubAddress());
+            properties.put(IbisProperties.SERVER_ADDRESS, getServerAddress());
+            properties.put(IbisProperties.HUB_ADDRESSES, getRootHubAddress());
 
             registryMonitor = new RegistryMonitorClient(properties, false);
         }
