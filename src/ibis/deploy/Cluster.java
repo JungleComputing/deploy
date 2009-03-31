@@ -69,6 +69,8 @@ public class Cluster {
                 .println("# latitude            Latitude position of this cluster (double)");
         out
                 .println("# longitude           Longitude position of this cluster (double)");
+        out
+                .println("# start.zorilla       Boolean: if true, a zorilla node is started at the cluster");
     }
 
     /**
@@ -90,6 +92,8 @@ public class Cluster {
 
         result.setLatitude(52.332933);
         result.setLongitude(4.866064);
+
+        result.setStartZorilla(null);
 
         return result;
     }
@@ -144,6 +148,8 @@ public class Cluster {
     // Longitude position of this cluster
     private double longitude;
 
+    private Boolean startZorilla;
+
     /**
      * Creates a new cluster with a given name. Clusters cannot be created
      * directly, but are constructed by a parent Grid object.
@@ -173,6 +179,7 @@ public class Cluster {
         cores = 0;
         latitude = 0;
         longitude = 0;
+        startZorilla = null;
     }
 
     /**
@@ -198,6 +205,7 @@ public class Cluster {
         cores = 0;
         latitude = 0;
         longitude = 0;
+        startZorilla = null;
     }
 
     /**
@@ -247,6 +255,16 @@ public class Cluster {
         cores = properties.getIntProperty(prefix + "cores", 0);
         latitude = properties.getDoubleProperty(prefix + "latitude", 0);
         longitude = properties.getDoubleProperty(prefix + "longitude", 0);
+
+        String startZorillaString = properties.getProperty(prefix
+                + "start.zorilla", null);
+
+        if (startZorillaString == null) {
+            startZorilla = null;
+        } else {
+            startZorilla = properties.getBooleanProperty(prefix
+                    + "start.zorilla");
+        }
     }
 
     public boolean isEmpty() {
@@ -256,7 +274,7 @@ public class Cluster {
                 && jobWrapperScript == null && userName == null
                 && cacheDir == null && serverOutputFiles == null
                 && serverSystemProperties == null && nodes == 0 && cores == 0
-                && latitude == 0 && longitude == 0;
+                && latitude == 0 && longitude == 0 && startZorilla == null;
     }
 
     /**
@@ -337,6 +355,10 @@ public class Cluster {
 
         if (other.longitude != 0) {
             longitude = other.longitude;
+        }
+
+        if (other.startZorilla != null) {
+            startZorilla = other.startZorilla;
         }
     }
 
@@ -767,6 +789,14 @@ public class Cluster {
         this.longitude = longitude;
     }
 
+    public Boolean getStartZorilla() {
+        return startZorilla;
+    }
+
+    public void setStartZorilla(Boolean startZorilla) {
+        this.startZorilla = startZorilla;
+    }
+
     /**
      * Checks if this cluster is suitable for deploying. If not, throws an
      * exception.
@@ -979,6 +1009,13 @@ public class Cluster {
             out.println("#" + dotPrefix + "longitude = ");
         }
 
+        if (startZorilla != null) {
+            out.println(dotPrefix + "start.zorilla = " + startZorilla);
+            empty = false;
+        } else if (printComments) {
+            out.println("#" + dotPrefix + "start.zorilla = ");
+        }
+
         if (empty && printComments) {
             out
                     .println("#Dummy property to make sure cluster is actually defined");
@@ -1023,6 +1060,7 @@ public class Cluster {
         result += " Cores = " + getCores() + "\n";
         result += " Latitude = " + getLatitude() + "\n";
         result += " Longitude = " + getLongitude() + "\n";
+        result += " Start Zorilla = " + getStartZorilla() + "\n";
 
         return result;
     }

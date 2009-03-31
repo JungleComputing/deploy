@@ -135,7 +135,7 @@ public class RemoteServer implements Runnable, Hub {
 
         // create cache dir, and server dir within
         org.gridlab.gat.io.File gatCacheDirFile = GAT.createFile(context,
-            "any://" + host + "/" + cacheDir + "/server/");
+                "any://" + host + "/" + cacheDir + "/server/");
         gatCacheDirFile.mkdirs();
 
         // rsync to cluster cache server dir
@@ -166,11 +166,18 @@ public class RemoteServer implements Runnable, Hub {
         arguments.add("--port");
         arguments.add("0");
         arguments.add("--errors");
-
-        if (hubOnly) {
-            arguments.add("--hub-only");
+        
+        boolean startZorilla = false;
+        if (cluster.getStartZorilla() != null) {
+            startZorilla = cluster.getStartZorilla();
         }
         
+        logger.debug("Zorilla started on " + cluster + " = " + startZorilla + " (raw = " + cluster.getStartZorilla());
+
+        if (hubOnly && !startZorilla) {
+            arguments.add("--hub-only");
+        }
+
         if (verbose) {
             arguments.add("--events");
             arguments.add("--stats");
@@ -185,6 +192,12 @@ public class RemoteServer implements Runnable, Hub {
         // add server libraries to pre-stage, use rsync if specified
         File serverLibs = new File(deployHome, "lib-server");
         prestage(serverLibs, cluster, sd);
+
+        // if zorilla, add zorilla libs too
+        if (startZorilla) {
+            File zorillaLibs = new File(deployHome, "lib-zorilla");
+            prestage(zorillaLibs, cluster, sd);
+        }
 
         // add server log4j file
         File log4j = new File(deployHome, "log4j.properties");
@@ -205,7 +218,11 @@ public class RemoteServer implements Runnable, Hub {
         }
 
         // set classpath
-        sd.setJavaClassPath(".:lib-server:lib-server/*");
+        if (startZorilla) {
+            sd.setJavaClassPath(".:lib-server:lib-server/*:lib-zorilla:lib-zorilla/*");
+        } else {
+            sd.setJavaClassPath(".:lib-server:lib-server/*");
+        }
 
         if (keepSandbox) {
             sd.getAttributes().put("sandbox.delete", "false");
@@ -297,10 +314,10 @@ public class RemoteServer implements Runnable, Hub {
             forwarder.setState(State.SUBMITTING);
 
             ResourceBroker jobBroker = GAT.createResourceBroker(context,
-                cluster.getServerURI());
+                    cluster.getServerURI());
 
             org.gridlab.gat.resources.Job job = jobBroker.submitJob(
-                jobDescription, forwarder, "job.status");
+                    jobDescription, forwarder, "job.status");
             setGatJob(job);
 
             // forward error to deploy console

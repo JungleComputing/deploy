@@ -10,6 +10,7 @@ import java.util.List;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.URI;
 import org.gridlab.gat.resources.JavaSoftwareDescription;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.SoftwareDescription;
@@ -282,7 +283,7 @@ public class Job implements Runnable {
 
         // create cache dir, and server dir within
         org.gridlab.gat.io.File gatCacheDirFile = GAT.createFile(context,
-            "any://" + host + "/" + fileCacheDir);
+                "any://" + host + "/" + fileCacheDir);
         gatCacheDirFile.mkdirs();
 
         // rsync to cluster cache server dir
@@ -322,7 +323,7 @@ public class Job implements Runnable {
         // ANDROID CHANGE START
         if (application.getMainClass().startsWith("intent:")) {
             sd.setJavaMain(application.getMainClass().substring(
-                "intent:".length()));
+                    "intent:".length()));
             sd.getAttributes().put("sandbox.useroot", "true");
             sd.getAttributes().put("sandbox.delete", "false");
         } else {
@@ -360,7 +361,7 @@ public class Job implements Runnable {
         // and all settings made by ibis-deploy
         if (application.getSystemProperties() != null) {
             sd.getJavaSystemProperties().putAll(
-                application.getSystemProperties());
+                    application.getSystemProperties());
         }
 
         if (application.getLibs() == null) {
@@ -409,7 +410,7 @@ public class Job implements Runnable {
 
         // add log4j file to pre-stage, and add log4j property to use it
         org.gridlab.gat.io.File log4jGatFile = GAT.createFile(context,
-            log4jFile.getPath());
+                log4jFile.getPath());
         sd.addPreStagedFile(log4jGatFile, gatCwd);
         sd.addJavaSystemProperty("log4j.configuration", "file:"
                 + log4jFile.getName());
@@ -529,6 +530,7 @@ public class Job implements Runnable {
 
         try {
             String hubList;
+            String hubAddress;
 
             forwarder.setState(State.WAITING);
             if (sharedHub == null) {
@@ -541,13 +543,14 @@ public class Job implements Runnable {
                 localHub.waitUntilRunning();
 
                 // create list of hubs, add to software description
-                hubList = localHub.getAddress();
+                hubAddress = localHub.getAddress();
             } else {
                 sharedHub.waitUntilRunning();
 
-                hubList = sharedHub.getAddress();
+                hubAddress = sharedHub.getAddress();
             }
-            // add hubs list from root hub
+            // create list of hubs from our hub and hubs list from root hub
+            hubList = hubAddress;
             for (String address : rootHub.getHubs()) {
                 hubList = hubList + "," + address;
             }
@@ -570,11 +573,22 @@ public class Job implements Runnable {
 
             forwarder.setState(State.SUBMITTING);
 
-            ResourceBroker jobBroker = GAT.createResourceBroker(context,
-                description.getClusterOverrides().getJobURI());
+            ResourceBroker jobBroker;
+
+            if (description.getClusterOverrides().getJobAdaptor().equals("zorilla")
+                    && description.getClusterOverrides().getStartZorilla()) {
+                // set address of hub as address for zorilla, provide root hub as local hub
+                context.addPreference("zorilla.hub.addresses", rootHub.getAddress().toString());
+                jobBroker = GAT.createResourceBroker(context, new URI(
+                        "zorilla:" + hubAddress));
+            } else {
+                //use address provided by user
+                jobBroker = GAT.createResourceBroker(context, description
+                        .getClusterOverrides().getJobURI());
+            }
 
             org.gridlab.gat.resources.Job gatJob = jobBroker.submitJob(
-                jobDescription, forwarder, "job.status");
+                    jobDescription, forwarder, "job.status");
             setGatJob(gatJob);
 
             waitUntilDeployed();

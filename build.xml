@@ -1,142 +1,185 @@
 <project name="deploy" default="build" basedir=".">
-	<description>
+    <description>
 	Build file for the deploy project
     </description>
 
-	<property name="version" value="" />
+    <property name="version" value="" />
 
-	<property name="dist-name" value="${ant.project.name}${version}" />
-	<property name="lib-jar" value="deploy${version}.jar" />
-	<property name="gui-jar" value="deploy-gui${version}.jar" />
-	<property name="cli-jar" value="deploy-cli${version}.jar" />
+    <property name="dist-name" value="${ant.project.name}${version}" />
+    <property name="lib-jar" value="deploy${version}.jar" />
+    <property name="gui-jar" value="deploy-gui${version}.jar" />
+    <property name="cli-jar" value="deploy-cli${version}.jar" />
 
-	<!-- Import environment properties -->
+    <!-- Import environment properties -->
 
-	<property environment="env" />
-	<property name="gat-location" location="${env.GAT_LOCATION}" />
-	<property name="ipl-home" location="${env.IPL_HOME}" />
+    <property environment="env" />
+    <property name="gat-location" location="${env.GAT_LOCATION}" />
+    <property name="ipl-home" location="${env.IPL_HOME}" />
 
-	<target name="build" description="Build with included JavaGAT and IPL" depends="clean,copy-included,copy-included-ipl,copy-included-javagat,compile" />
+    <target name="build"
+            description="Build with included JavaGAT and IPL"
+            depends="clean,copy-included,copy-included-ipl,copy-included-javagat,compile"
+    />
 
-	<target name="build-external" description="Build with external JavaGAT and IPL" depends="clean,copy-included,copy-external-ipl,copy-external-javagat,compile" />
+    <target name="build-external"
+            description="Build with external JavaGAT and IPL"
+            depends="clean,copy-included,copy-external-ipl,copy-external-javagat,compile"
+    />
 
-	<target name="build-external-ipl" description="Build with included JavaGAT and external IPL" depends="clean,copy-included,copy-included-javagat,copy-external-ipl,compile" />
+    <target name="build-external-ipl"
+            description="Build with included JavaGAT and external IPL"
+            depends="clean,copy-included,copy-included-javagat,copy-external-ipl,compile"
+    />
 
-	<target name="build-external-javagat" description="Build with external JavaGAT and included IPL" depends="clean,copy-included,copy-external-javagat,copy-included-ipl,compile" />
+    <target name="build-external-javagat"
+            description="Build with external JavaGAT and included IPL"
+            depends="clean,copy-included,copy-external-javagat,copy-included-ipl,compile"
+    />
 
-	<!-- copy external dependancies, except GAT and ipl -->
-	<target name="copy-included">
-		<mkdir dir="lib" />
+    <!-- copy external dependancies, except GAT and ipl -->
+    <target name="copy-included">
+        <mkdir dir="lib" />
 
-		<copy todir="lib">
-			<fileset dir="external" includes="*.jar" />
-		</copy>
-	</target>
+        <copy todir="lib">
+            <fileset dir="external" includes="*.jar" />
+        </copy>
+    </target>
 
-	<!-- copy included IPL -->
-	<target name="copy-included-ipl">
-		<copy todir="lib/ipl">
-			<fileset dir="external/ipl" />
-		</copy>
+    <!-- copy included IPL -->
+    <target name="copy-included-ipl">
+        <copy todir="lib/ipl">
+            <fileset dir="external/ipl" />
+        </copy>
 
-		<copy todir="lib/ipl-apps">
-			<fileset dir="external/ipl-apps" />
-		</copy>
-	</target>
+        <copy todir="lib/ipl-apps">
+            <fileset dir="external/ipl-apps" />
+        </copy>
+    </target>
 
-	<!-- copy IPL specified by $IPL_HOME  -->
-	<target name="copy-external-ipl">
-		<copy todir="lib/ipl">
-			<fileset dir="${ipl-home}/lib" />
-		</copy>
+    <!-- copy IPL specified by $IPL_HOME  -->
+    <target name="copy-external-ipl">
+        <copy todir="lib/ipl">
+            <fileset dir="${ipl-home}/lib" />
+        </copy>
 
-		<copy todir="lib/ipl-apps">
-			<fileset dir="${ipl-home}/benchmarks/lib" />
-		</copy>
+        <copy todir="lib/ipl-apps">
+            <fileset dir="${ipl-home}/benchmarks/lib" />
+        </copy>
 
-		<copy todir="lib/ipl-apps">
-			<fileset dir="${ipl-home}/examples/lib" />
-		</copy>
-
-
-	</target>
-
-	<!-- copy included JavaGAT -->
-	<target name="copy-included-javagat">
-		<copy todir="lib/javagat">
-			<fileset dir="external/javagat" />
-		</copy>
-	</target>
-
-	<!-- copy javaGAT specified by $GAT_LOCATION -->
-	<target name="copy-external-javagat">
-		<copy todir="lib/javagat">
-			<fileset dir="${gat-location}/lib" />
-		</copy>
-	</target>
-
-	<!-- Compile -->
-	<target name="compile">
-		<mkdir dir="tmp" />
-		<mkdir dir="tmp/images" />
-		<mkdir dir="lib" />
-
-		<path id="default.classpath">
-			<fileset dir="lib">
-				<include name="*.jar" />
-			</fileset>
-			<fileset dir="lib/javagat">
-				<include name="*.jar" />
-			</fileset>
-			<fileset dir="lib/ipl">
-				<include name="*.jar" />
-			</fileset>
-			<pathelement path="tmp" />
-		</path>
-
-		<copy todir="tmp/images">
-			<fileset dir="images" includes="*" />
-		</copy>
-
-		<!-- Compile the java code from ${src} into ${tmp} -->
-		<javac srcdir="src" destdir="tmp" debug="on" source="1.5" target="1.5" classpathref="default.classpath">
-			<compilerarg value="-Xlint:unchecked" />
-		</javac>
-
-		<!-- Create jar file -->
-		<jar destfile="lib/${lib-jar}" basedir="tmp" includes="ibis/deploy/*.class">
-		</jar>
-
-		<!-- Create jar file -->
-		<jar destfile="lib/${gui-jar}" basedir="tmp" includes="ibis/deploy/gui/**/*.class,images/*">
-		</jar>
-
-		<!-- Create jar file -->
-		<jar destfile="lib/${cli-jar}" basedir="tmp" includes="ibis/deploy/cli/**/*.class">
-		</jar>
+        <copy todir="lib/ipl-apps">
+            <fileset dir="${ipl-home}/examples/lib" />
+        </copy>
 
 
+    </target>
 
-		<!-- Generate javadoc -->
-		<javadoc destdir="javadoc" access="public" classpathref="default.classpath" packagenames="ibis.deploy" sourcepath="src" windowtitle="Ibis ${ant.project.name} Documentation" doctitle="Ibis ${ant.project.name} Documentation" bottom="The Ibis project">
-			<link href="http://java.sun.com/j2se/1.5.0/docs/api/" />
-		</javadoc>
+    <!-- copy included JavaGAT -->
+    <target name="copy-included-javagat">
+        <copy todir="lib/javagat">
+            <fileset dir="external/javagat" />
+        </copy>
+    </target>
 
-		<delete dir="tmp" />
+    <!-- copy javaGAT specified by $GAT_LOCATION -->
+    <target name="copy-external-javagat">
+        <copy todir="lib/javagat">
+            <fileset dir="${gat-location}/lib" />
+        </copy>
+    </target>
 
-		<mkdir dir="lib-server" />
+    <!-- Compile -->
+    <target name="compile">
+        <mkdir dir="tmp" />
+        <mkdir dir="tmp/images" />
+        <mkdir dir="lib" />
 
-		<copy todir="lib-server">
-			<fileset dir="lib/ipl" includes="commons*,ibis*,ipl*,jstun*,log4j*,sbbi*,slf4j*,smartsockets*,trilead*" />
-		</copy>
-	</target>
+        <path id="default.classpath">
+            <fileset dir="lib">
+                <include name="*.jar" />
+            </fileset>
+            <fileset dir="lib/javagat">
+                <include name="*.jar" />
+            </fileset>
+            <fileset dir="lib/ipl">
+                <include name="*.jar" />
+            </fileset>
+            <pathelement path="tmp" />
+        </path>
 
-	<!-- Clean up everything -->
-	<target name="clean" description="Clean up">
-		<delete dir="tmp" />
-		<delete dir="lib" />
-		<delete dir="lib-server" />
-		<delete dir="javadoc" />
-	</target>
+        <copy todir="tmp/images">
+            <fileset dir="images" includes="*" />
+        </copy>
+
+        <!-- Compile the java code from ${src} into ${tmp} -->
+        <javac srcdir="src"
+               destdir="tmp"
+               debug="on"
+               source="1.5"
+               target="1.5"
+               classpathref="default.classpath"
+        >
+            <compilerarg value="-Xlint:unchecked" />
+        </javac>
+
+        <!-- Create jar file -->
+        <jar destfile="lib/${lib-jar}"
+             basedir="tmp"
+             includes="ibis/deploy/*.class"
+        >
+        </jar>
+
+        <!-- Create jar file -->
+        <jar destfile="lib/${gui-jar}"
+             basedir="tmp"
+             includes="ibis/deploy/gui/**/*.class,images/*"
+        >
+        </jar>
+
+        <!-- Create jar file -->
+        <jar destfile="lib/${cli-jar}"
+             basedir="tmp"
+             includes="ibis/deploy/cli/**/*.class"
+        >
+        </jar>
+
+        <!-- Generate javadoc -->
+        <javadoc destdir="javadoc"
+                 access="public"
+                 classpathref="default.classpath"
+                 packagenames="ibis.deploy"
+                 sourcepath="src"
+                 windowtitle="Ibis ${ant.project.name} Documentation"
+                 doctitle="Ibis ${ant.project.name} Documentation"
+                 bottom="The Ibis project"
+        >
+            <link href="http://java.sun.com/j2se/1.5.0/docs/api/" />
+        </javadoc>
+
+        <delete dir="tmp" />
+
+        <mkdir dir="lib-server" />
+
+        <copy todir="lib-server">
+            <fileset dir="lib/ipl"
+                     includes="commons*,ibis*,ipl*,jstun*,log4j*,sbbi*,slf4j*,smartsockets*,trilead*"
+            />
+        </copy>
+
+        <mkdir dir="lib-zorilla" />
+
+        <copy todir="lib-zorilla">
+            <fileset dir="external/zorilla" />
+        </copy>
+
+    </target>
+
+    <!-- Clean up everything -->
+    <target name="clean" description="Clean up">
+        <delete dir="tmp" />
+        <delete dir="lib" />
+        <delete dir="lib-server" />
+        <delete dir="lib-zorilla" />
+        <delete dir="javadoc" />
+    </target>
 
 </project>
