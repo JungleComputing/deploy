@@ -199,6 +199,7 @@ public class GUI {
         File applicationsFile = null;
         File experimentFile = null;
         boolean verbose = false;
+        boolean keepSandboxes = false;
 
         for (int i = 0; i < arguments.length; i++) {
             if (arguments[i].equals("-v")) {
@@ -207,6 +208,8 @@ public class GUI {
                     || arguments[i].equals("--help")) {
                 printUsage();
                 System.exit(0);
+            } else if (arguments[i].equals("-k")) {
+                keepSandboxes = true;
             } else if (arguments[i].endsWith(".grid")) {
                 if (gridFile != null) {
                     System.err
@@ -309,6 +312,7 @@ public class GUI {
 
         try {
             deploy = new Deploy(null, verbose);
+            deploy.keepSandboxes(keepSandboxes);
         } catch (Exception e) {
             System.err.println("Could not initialize ibis-deploy: " + e);
             System.exit(1);

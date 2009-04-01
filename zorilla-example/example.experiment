@@ -46,3 +46,9 @@ localJob.resource.count = 1
 #localJob.pool.name =
 #localJob.pool.size =
 #localJob.shared.hub =
+#
+tJob.application.name = RegistryBenchmark
+tJob.process.count = 1
+tJob.cluster.name = Tsukuba
+tJob.resource.count = 1
+#

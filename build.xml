@@ -16,25 +16,13 @@
     <property name="gat-location" location="${env.GAT_LOCATION}" />
     <property name="ipl-home" location="${env.IPL_HOME}" />
 
-    <target name="build"
-            description="Build with included JavaGAT and IPL"
-            depends="clean,copy-included,copy-included-ipl,copy-included-javagat,compile"
-    />
+    <target name="build" description="Build with included JavaGAT and IPL" depends="clean,copy-included,copy-included-ipl,copy-included-javagat,compile" />
 
-    <target name="build-external"
-            description="Build with external JavaGAT and IPL"
-            depends="clean,copy-included,copy-external-ipl,copy-external-javagat,compile"
-    />
+    <target name="build-external" description="Build with external JavaGAT and IPL" depends="clean,copy-included,copy-external-ipl,copy-external-javagat,compile" />
 
-    <target name="build-external-ipl"
-            description="Build with included JavaGAT and external IPL"
-            depends="clean,copy-included,copy-included-javagat,copy-external-ipl,compile"
-    />
+    <target name="build-external-ipl" description="Build with included JavaGAT and external IPL" depends="clean,copy-included,copy-included-javagat,copy-external-ipl,compile" />
 
-    <target name="build-external-javagat"
-            description="Build with external JavaGAT and included IPL"
-            depends="clean,copy-included,copy-external-javagat,copy-included-ipl,compile"
-    />
+    <target name="build-external-javagat" description="Build with external JavaGAT and included IPL" depends="clean,copy-included,copy-external-javagat,copy-included-ipl,compile" />
 
     <!-- copy external dependancies, except GAT and ipl -->
     <target name="copy-included">
@@ -111,47 +99,24 @@
         </copy>
 
         <!-- Compile the java code from ${src} into ${tmp} -->
-        <javac srcdir="src"
-               destdir="tmp"
-               debug="on"
-               source="1.5"
-               target="1.5"
-               classpathref="default.classpath"
-        >
+        <javac srcdir="src" destdir="tmp" debug="on" source="1.5" target="1.5" classpathref="default.classpath">
             <compilerarg value="-Xlint:unchecked" />
         </javac>
 
         <!-- Create jar file -->
-        <jar destfile="lib/${lib-jar}"
-             basedir="tmp"
-             includes="ibis/deploy/*.class"
-        >
+        <jar destfile="lib/${lib-jar}" basedir="tmp" includes="ibis/deploy/*.class">
         </jar>
 
         <!-- Create jar file -->
-        <jar destfile="lib/${gui-jar}"
-             basedir="tmp"
-             includes="ibis/deploy/gui/**/*.class,images/*"
-        >
+        <jar destfile="lib/${gui-jar}" basedir="tmp" includes="ibis/deploy/gui/**/*.class,images/*">
         </jar>
 
         <!-- Create jar file -->
-        <jar destfile="lib/${cli-jar}"
-             basedir="tmp"
-             includes="ibis/deploy/cli/**/*.class"
-        >
+        <jar destfile="lib/${cli-jar}" basedir="tmp" includes="ibis/deploy/cli/**/*.class">
         </jar>
 
         <!-- Generate javadoc -->
-        <javadoc destdir="javadoc"
-                 access="public"
-                 classpathref="default.classpath"
-                 packagenames="ibis.deploy"
-                 sourcepath="src"
-                 windowtitle="Ibis ${ant.project.name} Documentation"
-                 doctitle="Ibis ${ant.project.name} Documentation"
-                 bottom="The Ibis project"
-        >
+        <javadoc destdir="javadoc" access="public" classpathref="default.classpath" packagenames="ibis.deploy" sourcepath="src" windowtitle="Ibis ${ant.project.name} Documentation" doctitle="Ibis ${ant.project.name} Documentation" bottom="The Ibis project">
             <link href="http://java.sun.com/j2se/1.5.0/docs/api/" />
         </javadoc>
 
@@ -160,15 +125,14 @@
         <mkdir dir="lib-server" />
 
         <copy todir="lib-server">
-            <fileset dir="lib/ipl"
-                     includes="commons*,ibis*,ipl*,jstun*,log4j*,sbbi*,slf4j*,smartsockets*,trilead*"
-            />
+            <fileset dir="lib/ipl" includes="commons*,ibis*,ipl*,jstun*,log4j*,sbbi*,slf4j*,smartsockets*,trilead*" />
         </copy>
 
         <mkdir dir="lib-zorilla" />
 
         <copy todir="lib-zorilla">
             <fileset dir="external/zorilla" />
+            <fileset dir="lib/javagat" includes="*.jar,adaptors/LocalAdaptor/*,adaptors/SshTrileadAdaptor/*,adaptors/shared/*" />
         </copy>
 
     </target>

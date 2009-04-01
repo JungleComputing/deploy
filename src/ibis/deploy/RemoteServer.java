@@ -172,8 +172,6 @@ public class RemoteServer implements Runnable, Hub {
             startZorilla = cluster.getStartZorilla();
         }
         
-        logger.debug("Zorilla started on " + cluster + " = " + startZorilla + " (raw = " + cluster.getStartZorilla());
-
         if (hubOnly && !startZorilla) {
             arguments.add("--hub-only");
         }
@@ -186,17 +184,31 @@ public class RemoteServer implements Runnable, Hub {
         // list of other hubs
         arguments.add("--hub-addresses");
         arguments.add(Util.strings2CSS(rootHub.getHubs()));
-
+        
         sd.setJavaArguments(arguments.toArray(new String[0]));
 
         // add server libraries to pre-stage, use rsync if specified
         File serverLibs = new File(deployHome, "lib-server");
         prestage(serverLibs, cluster, sd);
 
-        // if zorilla, add zorilla libs too
         if (startZorilla) {
+            //add zorilla libs too
             File zorillaLibs = new File(deployHome, "lib-zorilla");
             prestage(zorillaLibs, cluster, sd);
+            
+            //add list of slave nodes, be a master
+            if (cluster.getNodeHostnames() != null) {
+                sd.addJavaSystemProperty("zorilla.slaves", cluster.getNodeHostnames());
+                sd.addJavaSystemProperty("zorilla.master", "true");
+            }
+            
+            //classpath includes zorilla
+            sd.setJavaClassPath(".:lib-server:lib-server/*:lib-zorilla:lib-zorilla/*");
+            
+            sd.addJavaSystemProperty("gat.adaptor.path", "lib-zorilla/adaptors");
+        } else {
+            //regular classpath
+            sd.setJavaClassPath(".:lib-server:lib-server/*");
         }
 
         // add server log4j file
@@ -215,13 +227,6 @@ public class RemoteServer implements Runnable, Hub {
 
         if (cluster.getServerSystemProperties() != null) {
             sd.setJavaSystemProperties(cluster.getServerSystemProperties());
-        }
-
-        // set classpath
-        if (startZorilla) {
-            sd.setJavaClassPath(".:lib-server:lib-server/*:lib-zorilla:lib-zorilla/*");
-        } else {
-            sd.setJavaClassPath(".:lib-server:lib-server/*");
         }
 
         if (keepSandbox) {
