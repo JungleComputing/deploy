@@ -34,8 +34,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.UIManager;
-import javax.swing.WindowConstants;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

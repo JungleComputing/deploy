@@ -12,6 +12,11 @@ import javax.swing.JPanel;
 
 public class AboutPanel extends JPanel {
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+
     public AboutPanel() {
         JButton button = GUIUtils.createImageButton(
                 "/images/ibis-logo-left.png", "www.cs.vu.nl/ibis", null);

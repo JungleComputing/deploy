@@ -2,8 +2,6 @@ package ibis.deploy;
 
 import ibis.ipl.IbisProperties;
 import ibis.ipl.registry.central.monitor.RegistryMonitorClient;
-import ibis.ipl.server.ServerProperties;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,7 +21,7 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class Deploy {
-
+    
     /**
      * System property with home dir of Ibis deploy.
      */

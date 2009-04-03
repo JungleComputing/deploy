@@ -11,10 +11,6 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 
-import org.gridlab.gat.monitoring.MetricEvent;
-import org.gridlab.gat.monitoring.MetricListener;
-import org.gridlab.gat.resources.Job;
-
 public class InitializingPanel implements StateListener {
 
     /**

@@ -8,6 +8,11 @@ import javax.swing.AbstractAction;
 
 public class HubPolicyAction extends AbstractAction {
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+
     private boolean sharedHubs;
 
     private GUI gui;

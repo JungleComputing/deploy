@@ -7,10 +7,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Server or Hub running on the local machine (inside the deploy jvm)
+ * Server or Hub running on the local machine (inside the deploy jvm). Runs on
+ * default server port (usually 8888)
  * 
  */
 public class RootHub implements Hub {
+
     private static final Logger logger = LoggerFactory.getLogger(RootHub.class);
 
     private final boolean isServer;
@@ -18,15 +20,6 @@ public class RootHub implements Hub {
     // used in case of a local server
     private final ibis.ipl.server.Server server;
 
-    /**
-     * Start a server/hub locally.
-     * 
-     * @param hubOnly
-     *            if true, only start a hub. If false, also start a server.
-     * @throws Exception
-     *             if starting the server fails.
-     */
-    @SuppressWarnings("unchecked")
     RootHub(boolean isServer, boolean verbose) throws Exception {
         this.isServer = isServer;
 
@@ -44,8 +37,6 @@ public class RootHub implements Hub {
             properties.put(ServerProperties.PRINT_EVENTS, "true");
             properties.put(ServerProperties.PRINT_STATS, "true");
         }
-
-        properties.put(ServerProperties.PORT, "0");
 
         server = new ibis.ipl.server.Server(properties);
 

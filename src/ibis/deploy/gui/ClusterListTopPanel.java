@@ -12,7 +12,6 @@ import javax.swing.JButton;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
 
 public class ClusterListTopPanel extends JPanel {
 

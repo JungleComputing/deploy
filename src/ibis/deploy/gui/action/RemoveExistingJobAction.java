@@ -1,7 +1,5 @@
 package ibis.deploy.gui.action;
 
-import ibis.deploy.Job;
-import ibis.deploy.JobDescription;
 import ibis.deploy.gui.GUI;
 import ibis.deploy.gui.JobRowObject;
 import ibis.deploy.gui.JobTableModel;
@@ -13,6 +11,11 @@ import javax.swing.JRootPane;
 import javax.swing.JTable;
 
 public class RemoveExistingJobAction extends AbstractAction {
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
 
     private int startRow;
 

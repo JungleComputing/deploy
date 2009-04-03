@@ -1,7 +1,6 @@
 package ibis.deploy.gui.action;
 
 import ibis.deploy.Job;
-import ibis.deploy.JobDescription;
 import ibis.deploy.State;
 import ibis.deploy.StateListener;
 import ibis.deploy.gui.GUI;
@@ -14,12 +13,13 @@ import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 import javax.swing.JRootPane;
 import javax.swing.JTable;
-import javax.swing.event.TableModelEvent;
-
-import org.gridlab.gat.monitoring.MetricEvent;
-import org.gridlab.gat.monitoring.MetricListener;
 
 public class SubmitExistingJobAction extends AbstractAction {
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
 
     private int startRow;
 

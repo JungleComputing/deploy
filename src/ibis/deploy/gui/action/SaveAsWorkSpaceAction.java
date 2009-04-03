@@ -3,14 +3,17 @@ package ibis.deploy.gui.action;
 import ibis.deploy.gui.GUI;
 
 import java.awt.event.ActionEvent;
-import java.io.File;
-
 import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 public class SaveAsWorkSpaceAction extends AbstractAction {
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
 
     private JFrame frame;
 

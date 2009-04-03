@@ -1,6 +1,5 @@
 package ibis.deploy.gui.action;
 
-import ibis.deploy.Workspace;
 import ibis.deploy.gui.GUI;
 
 import java.awt.event.ActionEvent;
@@ -11,6 +10,11 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 public class OpenWorkSpaceAction extends AbstractAction {
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
 
     private JFrame frame;
 

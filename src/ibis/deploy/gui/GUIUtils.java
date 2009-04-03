@@ -1,9 +1,6 @@
 package ibis.deploy.gui;
 
 import java.awt.Insets;
-import java.net.MalformedURLException;
-import java.net.URL;
-
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
