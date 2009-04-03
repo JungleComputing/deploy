@@ -252,6 +252,8 @@ public class Job implements Runnable {
             throw new Exception("no job adaptor specified for cluster: "
                     + cluster);
         }
+        
+        context.addPreference(IbisProperties.HUB_ADDRESSES, deploy.getRootHubAddress());
 
         context.addPreference("resourcebroker.adaptor.name", cluster
                 .getJobAdaptor());
@@ -353,9 +355,6 @@ public class Job implements Runnable {
 
         // add hub list to software description
         sd.addJavaSystemProperty(IbisProperties.HUB_ADDRESSES, hubList);
-
-        // Also set old property name for hub addresses
-        sd.addJavaSystemProperty("ibis.server.hub.addresses", hubList);
 
         // set these last so a user can override any
         // and all settings made by ibis-deploy
@@ -575,7 +574,7 @@ public class Job implements Runnable {
 
             ResourceBroker jobBroker;
 
-            if (description.getClusterOverrides().getJobAdaptor().equals("zorilla")
+            if (description.getClusterOverrides().getJobAdaptor().equalsIgnoreCase("zorilla")
                     && description.getClusterOverrides().getStartZorilla()) {
                 // set address of hub as address for zorilla, provide root hub as local hub
                 context.addPreference("zorilla.hub.addresses", rootHub.getAddress().toString());

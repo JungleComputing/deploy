@@ -28,27 +28,27 @@
 #default.shared.hub =
 
 # Details of job "VUJob"
-VUJob.application.name = RegistryBenchmark
-VUJob.process.count = 8
-VUJob.cluster.name = VU
-VUJob.resource.count = 0
+#VUJob.application.name = RegistryBenchmark
+#VUJob.process.count = 8
+#VUJob.cluster.name = VU
+#VUJob.resource.count = 0
 #VUJob.runtime =
 #VUJob.pool.name =
 #VUJob.pool.size =
 #VUJob.shared.hub =
 
 # Details of job "localJob"
-localJob.application.name = RegistryBenchmark
-localJob.process.count = 1
-localJob.cluster.name = local
-localJob.resource.count = 1
+#localJob.application.name = RegistryBenchmark
+#localJob.process.count = 1
+#localJob.cluster.name = local
+#localJob.resource.count = 1
 #localJob.runtime =
 #localJob.pool.name =
 #localJob.pool.size =
 #localJob.shared.hub =
-#
-tJob.application.name = RegistryBenchmark
-tJob.process.count = 1
-tJob.cluster.name = Tsukuba
-tJob.resource.count = 1
-#
+
+TsukubaJob.application.name = RegistryBenchmark
+TsukubaJob.process.count = 16
+TsukubaJob.cluster.name = Tsukuba
+TsukubaJob.resource.count = 0
+

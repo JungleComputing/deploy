@@ -145,21 +145,21 @@ VU.cores = 340
 VU.latitude = 52.336062
 VU.longitude = 4.872222
 VU.start.zorilla=true
-VU.start.zorilla=true
-VU.node.hostnames=node064
+VU.node.hostnames=node014
 
 # Details of cluster "Tsukuba"
 #Tsukuba.server.adaptor = 
 Tsukuba.server.uri = any://163.220.103.168
-Tsukuba.job.adaptor = Zorilla
-Tsukuba.job.uri = zorilla:163.220.103.168-5444/10.0.1.168-5444~ndrost
+Tsukuba.job.adaptor = zorilla
+Tsukuba.job.uri = filled-in-later
 #Tsukuba.file.adaptors = 
 Tsukuba.java.path = /usr/local/jdk/bin/java
-Tsukuba.cache.dir = ibis-deploy-cache
+#Tsukuba.cache.dir = ibis-deploy-cache
 Tsukuba.nodes = 20
 Tsukuba.cores = 20
 Tsukuba.latitude = 34.59704151614417
 Tsukuba.longitude = 136.7578125
 Tsukuba.start.zorilla = true
-Tsukuba.node.hostnames=tsukuba0[04-15]
+#Tsukuba.node.hostnames=tsukuba0[04-15]
+#Tsukuba.node.hostnames=tsukuba004
 
