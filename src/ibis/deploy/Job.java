@@ -270,7 +270,7 @@ public class Job implements Runnable {
         String user = cluster.getUserName();
         File clusterCacheDir = cluster.getCacheDir();
 
-        if (clusterCacheDir == null) {
+        if (clusterCacheDir == null || cluster.getJobAdaptor().equalsIgnoreCase("zorilla")) {
             org.gridlab.gat.io.File gatFile = GAT.createFile(context, src
                     .toString());
             org.gridlab.gat.io.File gatDstFile = GAT.createFile(context, dstDir
@@ -427,9 +427,6 @@ public class Job implements Runnable {
             sd.getAttributes().put("sandbox.delete", "false");
         }
 
-        // FIXME: we need a setting for this somewhere.
-        // sd.addAttribute("schedule.nodes", "true");
-
         if (description.getRuntime() != 0) {
             sd.addAttribute("walltime.max", "" + description.getRuntime());
             sd.addAttribute("time.max", "" + description.getRuntime());
@@ -573,9 +570,14 @@ public class Job implements Runnable {
             forwarder.setState(State.SUBMITTING);
 
             ResourceBroker jobBroker;
+            
+            boolean startZorilla = false;
+            if (cluster.getStartZorilla() != null) {
+                startZorilla = cluster.getStartZorilla();
+            }
 
-            if (description.getClusterOverrides().getJobAdaptor().equalsIgnoreCase("zorilla")
-                    && description.getClusterOverrides().getStartZorilla()) {
+            if (cluster.getJobAdaptor().equalsIgnoreCase("zorilla")
+                    && startZorilla) {
                 // set address of hub as address for zorilla, provide root hub as local hub
                 context.addPreference("zorilla.hub.addresses", rootHub.getAddress().toString());
                 jobBroker = GAT.createResourceBroker(context, new URI(
