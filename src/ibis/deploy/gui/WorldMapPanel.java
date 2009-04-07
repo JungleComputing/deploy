@@ -131,7 +131,7 @@ public class WorldMapPanel extends JPanel {
 
                 double distance = p1.distance(p2);
                 double minDistance = waypoint.getRadius()
-                        + otherWaypoint.getRadius();
+                        + otherWaypoint.getRadius() + 20;
                 if (distance < minDistance) {
                     // move both waypoints in half the overlap size in the
                     // proper direction
@@ -316,7 +316,7 @@ public class WorldMapPanel extends JPanel {
         }
 
         public int getRadius() {
-            return Math.max(20, 15 + cluster.getNodes()) / 2 + 20;
+            return Math.max(20, 15 + cluster.getNodes()) / 2;
         }
 
         public void resetOffset() {
@@ -451,10 +451,10 @@ public class WorldMapPanel extends JPanel {
             g.drawString(clusterName, x + -width / 2 - 0, y + height / 2 + 8
                     - 1 + radius); // shadow
 
-            // g.setPaint(Color.WHITE);
-            //
-            // g.drawString(clusterName, x + -width / 2, y + height / 2 + 8
-            // + radius); // text
+             g.setPaint(Color.WHITE);
+            
+             g.drawString(clusterName, x + -width / 2, y + height / 2 + 8
+             + radius); // text
 
             if (cwp.isSelected()) {
                 g.setPaint(new Color(255, 100, 100, 100));

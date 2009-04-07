@@ -5,6 +5,7 @@ import ibis.util.ThreadPool;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.gridlab.gat.GAT;
@@ -69,17 +70,17 @@ public class Job implements Runnable {
      * Creates a job object from the given description.
      * 
      * @param description
-     *                description of new job
+     *            description of new job
      * @param serverAddress
-     *                address of server
+     *            address of server
      * @param rootHub
-     *                root hub.
+     *            root hub.
      * @param hub
-     *                shared hub. null for local hub
+     *            shared hub. null for local hub
      * @param deployHomeDir
-     *                home dir of deploy. Libs of server should be here
+     *            home dir of deploy. Libs of server should be here
      * @throws Exception
-     *                 if the listener could not be attached to this job
+     *             if the listener could not be attached to this job
      */
     Job(JobDescription description, Hub hub, boolean keepSandbox,
             StateListener jobListener, StateListener hubListener,
@@ -127,7 +128,7 @@ public class Job implements Runnable {
      * causes a new event for this listener with the current state of the job.
      * 
      * @param listener
-     *                the listener to attach
+     *            the listener to attach
      */
     public void addStateListener(StateListener listener) {
         forwarder.addListener(listener);
@@ -148,7 +149,7 @@ public class Job implements Runnable {
      * 
      * @return true if this job either done or an error occurred.
      * @throws Exception
-     *                 in case an error occurs.
+     *             in case an error occurs.
      */
     public synchronized boolean isFinished() throws Exception {
         return forwarder.isFinished();
@@ -158,7 +159,7 @@ public class Job implements Runnable {
      * Wait until this job is in the "STOPPED" or "SUBMISSION_ERROR" state.
      * 
      * @throws Exception
-     *                 in case an error occurs.
+     *             in case an error occurs.
      */
     public synchronized void waitUntilFinished() throws Exception {
         forwarder.waitUntilFinished();
@@ -343,7 +344,24 @@ public class Job implements Runnable {
         // ORIGINAL END
 
         sd.setJavaArguments(application.getArguments());
-        sd.setJavaOptions(application.getJVMOptions());
+
+        //Set jvm options. Add memory settings if needed.
+        int memory = application.getMemorySize();
+        if (memory > 0) {
+            sd.addAttribute("memory.max", "" + memory);
+
+            ArrayList<String> javaOptions = new ArrayList<String>();
+            if (application.getJVMOptions() != null) {
+                javaOptions.addAll(Arrays.asList(application.getJVMOptions()));
+            }
+
+            javaOptions.add("-Xmx" + memory + "M");
+            javaOptions.add("-Xms" + memory + "M");
+
+            sd.setJavaOptions(javaOptions.toArray(new String[0]));
+        } else {
+            sd.setJavaOptions(application.getJVMOptions());
+        }
 
         // ibis stuff
         sd.addJavaSystemProperty(IbisProperties.LOCATION, (description

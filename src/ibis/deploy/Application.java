@@ -39,10 +39,10 @@ public class Application {
                 .println("# system.properties  Additional system properties in the form of name=value(*)");
         out
                 .println("# jvm.options        Additional JVM options, for instance memory options(*)");
-        out
-                .println("# log4j.file         Log4j properties file used for the application.");
+        out.println("# log4j.file         Log4j properties file used for the application.");
         out
                 .println("#                    Defaults to log4j of ibis-deploy itself.");
+        out.println("# memory.size        Integer: amount of memory to use for this application (in Megabytes)");
         out.println("# (* = comma separated list of items)");
 
     }
@@ -76,6 +76,8 @@ public class Application {
     private List<String> jvmOptions;
 
     private File log4jFile;
+    
+    private int memorySize;
 
     /**
      * Creates an empty application object, with no name or parent
@@ -91,6 +93,7 @@ public class Application {
         systemProperties = null;
         jvmOptions = null;
         log4jFile = null;
+        memorySize = 0;
     }
 
     /**
@@ -114,6 +117,7 @@ public class Application {
         systemProperties = null;
         jvmOptions = null;
         log4jFile = null;
+        memorySize = 0;
     }
 
     /**
@@ -147,6 +151,7 @@ public class Application {
                 + "system.properties");
         jvmOptions = properties.getStringListProperty(prefix + "jvm.options");
         log4jFile = properties.getFileProperty(prefix + "log4j.file");
+        memorySize = properties.getIntProperty(prefix + "memory.size", 0);
     }
 
     /**
@@ -202,6 +207,10 @@ public class Application {
 
         if (other.log4jFile != null) {
             this.log4jFile = other.log4jFile;
+        }
+        
+        if (other.memorySize != 0) {
+            this.memorySize = other.memorySize;
         }
     }
 
@@ -549,6 +558,25 @@ public class Application {
      */
     public void setLog4jFile(File log4jFile) {
         this.log4jFile = log4jFile;
+    }
+    
+    /**
+     * Returns the amount of memory used for the application, in Megabytes. Defaults to 0 for "unset"
+     * 
+     * @return the amount of memory used for the application, in Megabytes.
+     */
+    public int getMemorySize() {
+        return memorySize;
+    }
+
+    /**
+     * Sets the amount of memory used by the application, in Megabytes.
+     * 
+     * @param memorySize
+     *            the new amount of memory for this application, in Megabytes.
+     */
+    public void setMemorySize(int memorySize) {
+        this.memorySize = memorySize; 
     }
 
     /**
