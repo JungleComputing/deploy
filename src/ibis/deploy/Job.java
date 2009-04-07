@@ -275,7 +275,7 @@ public class Job implements Runnable {
                     .toString());
             org.gridlab.gat.io.File gatDstFile = GAT.createFile(context, dstDir
                     .getPath()
-                    + "/");
+                    + "/" + src.getName());
             sd.addPreStagedFile(gatFile, gatDstFile);
             return;
         }
@@ -290,14 +290,14 @@ public class Job implements Runnable {
 
         // rsync to cluster cache server dir
         File rsyncLocation = new File(fileCacheDir);
-        // Rsync.rsync(src, rsyncLocation, host, user);
+        Rsync.rsync(src, rsyncLocation, host, user);
 
         // tell job to pre-stage from cache dir
         org.gridlab.gat.io.File gatFile = GAT.createFile(context, "any://"
                 + host + "/" + fileCacheDir + "/" + src.getName());
         org.gridlab.gat.io.File gatDstFile = GAT.createFile(context, dstDir
                 .getPath()
-                + "/");
+                + "/" + src.getName());
         sd.addPreStagedFile(gatFile, gatDstFile);
         return;
     }
@@ -456,7 +456,7 @@ public class Job implements Runnable {
             sd.addAttribute("time.max", "" + description.getRuntime());
             sd.addAttribute("cputime.max", "" + description.getRuntime());
         }
-
+        
         // class path
         sd.setJavaClassPath(createClassPath(application.getLibs()));
         if (sd instanceof JythonSoftwareDescription) {
