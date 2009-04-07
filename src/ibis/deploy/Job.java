@@ -69,17 +69,17 @@ public class Job implements Runnable {
      * Creates a job object from the given description.
      * 
      * @param description
-     *            description of new job
+     *                description of new job
      * @param serverAddress
-     *            address of server
+     *                address of server
      * @param rootHub
-     *            root hub.
+     *                root hub.
      * @param hub
-     *            shared hub. null for local hub
+     *                shared hub. null for local hub
      * @param deployHomeDir
-     *            home dir of deploy. Libs of server should be here
+     *                home dir of deploy. Libs of server should be here
      * @throws Exception
-     *             if the listener could not be attached to this job
+     *                 if the listener could not be attached to this job
      */
     Job(JobDescription description, Hub hub, boolean keepSandbox,
             StateListener jobListener, StateListener hubListener,
@@ -127,7 +127,7 @@ public class Job implements Runnable {
      * causes a new event for this listener with the current state of the job.
      * 
      * @param listener
-     *            the listener to attach
+     *                the listener to attach
      */
     public void addStateListener(StateListener listener) {
         forwarder.addListener(listener);
@@ -148,7 +148,7 @@ public class Job implements Runnable {
      * 
      * @return true if this job either done or an error occurred.
      * @throws Exception
-     *             in case an error occurs.
+     *                 in case an error occurs.
      */
     public synchronized boolean isFinished() throws Exception {
         return forwarder.isFinished();
@@ -158,7 +158,7 @@ public class Job implements Runnable {
      * Wait until this job is in the "STOPPED" or "SUBMISSION_ERROR" state.
      * 
      * @throws Exception
-     *             in case an error occurs.
+     *                 in case an error occurs.
      */
     public synchronized void waitUntilFinished() throws Exception {
         forwarder.waitUntilFinished();
@@ -200,13 +200,11 @@ public class Job implements Runnable {
 
         if (!file.isDirectory()) {
             // regular files not in classpath
-            return "";
+            return prefix + file.getName() + File.pathSeparator;
         }
         // classpath for dir "lib" with prefix "dir/" is dir/lib/*:dir/lib
         // both directory itself, and all files in that dir (*)
-        String result = prefix + file.getName() + File.separator + "*"
-                + File.pathSeparator + prefix + file.getName()
-                + File.pathSeparator;
+        String result = prefix + file.getName() + File.pathSeparator;
         for (File child : file.listFiles()) {
             result = result
                     + classpathFor(child, prefix + file.getName()
@@ -218,8 +216,7 @@ public class Job implements Runnable {
     // classpath made up of all directories, as well as jar
     private static String createClassPath(File[] libs) {
         // start with lib directory
-        String result = "lib" + File.pathSeparator + "lib" + File.separator
-                + "*" + File.pathSeparator;
+        String result = "lib" + File.pathSeparator;
 
         for (File file : libs) {
             result = result + classpathFor(file, "lib" + File.separator);
@@ -252,8 +249,9 @@ public class Job implements Runnable {
             throw new Exception("no job adaptor specified for cluster: "
                     + cluster);
         }
-        
-        context.addPreference(IbisProperties.HUB_ADDRESSES, deploy.getRootHubAddress());
+
+        context.addPreference(IbisProperties.HUB_ADDRESSES, deploy
+                .getRootHubAddress());
 
         context.addPreference("resourcebroker.adaptor.name", cluster
                 .getJobAdaptor());
@@ -270,7 +268,8 @@ public class Job implements Runnable {
         String user = cluster.getUserName();
         File clusterCacheDir = cluster.getCacheDir();
 
-        if (clusterCacheDir == null || cluster.getJobAdaptor().equalsIgnoreCase("zorilla")) {
+        if (clusterCacheDir == null
+                || cluster.getJobAdaptor().equalsIgnoreCase("zorilla")) {
             org.gridlab.gat.io.File gatFile = GAT.createFile(context, src
                     .toString());
             org.gridlab.gat.io.File gatDstFile = GAT.createFile(context, dstDir
@@ -290,7 +289,7 @@ public class Job implements Runnable {
 
         // rsync to cluster cache server dir
         File rsyncLocation = new File(fileCacheDir);
-        Rsync.rsync(src, rsyncLocation, host, user);
+        // Rsync.rsync(src, rsyncLocation, host, user);
 
         // tell job to pre-stage from cache dir
         org.gridlab.gat.io.File gatFile = GAT.createFile(context, "any://"
@@ -311,6 +310,8 @@ public class Job implements Runnable {
         // ANDROID CHANGE START
         if (application.getMainClass().startsWith("intent:")) {
             sd = new IntentSoftwareDescription();
+        } else if (application.getMainClass().endsWith(".py")) {
+            sd = new JythonSoftwareDescription();
         }
         // ANDROID CHANGE END
 
@@ -328,6 +329,11 @@ public class Job implements Runnable {
                     "intent:".length()));
             sd.getAttributes().put("sandbox.useroot", "true");
             sd.getAttributes().put("sandbox.delete", "false");
+        } else if (application.getMainClass().endsWith(".py")) {
+            ((JythonSoftwareDescription) sd).setPythonScript(application
+                    .getMainClass());
+            ((JythonSoftwareDescription) sd)
+                    .setJythonJar("../jython2.2.1/jython.jar");
         } else {
             sd.setJavaMain(application.getMainClass());
         }
@@ -435,6 +441,10 @@ public class Job implements Runnable {
 
         // class path
         sd.setJavaClassPath(createClassPath(application.getLibs()));
+        if (sd instanceof JythonSoftwareDescription) {
+            ((JythonSoftwareDescription) sd)
+                    .setPythonPath(createClassPath(application.getLibs()));
+        }
 
         sd.setStdout(GAT.createFile(context, description.getPoolName() + "."
                 + description.getName() + ".out"));
@@ -570,7 +580,7 @@ public class Job implements Runnable {
             forwarder.setState(State.SUBMITTING);
 
             ResourceBroker jobBroker;
-            
+
             boolean startZorilla = false;
             if (cluster.getStartZorilla() != null) {
                 startZorilla = cluster.getStartZorilla();
@@ -578,12 +588,14 @@ public class Job implements Runnable {
 
             if (cluster.getJobAdaptor().equalsIgnoreCase("zorilla")
                     && startZorilla) {
-                // set address of hub as address for zorilla, provide root hub as local hub
-                context.addPreference("zorilla.hub.addresses", rootHub.getAddress().toString());
+                // set address of hub as address for zorilla, provide root hub
+                // as local hub
+                context.addPreference("zorilla.hub.addresses", rootHub
+                        .getAddress().toString());
                 jobBroker = GAT.createResourceBroker(context, new URI(
                         "zorilla:" + hubAddress));
             } else {
-                //use address provided by user
+                // use address provided by user
                 jobBroker = GAT.createResourceBroker(context, description
                         .getClusterOverrides().getJobURI());
             }
