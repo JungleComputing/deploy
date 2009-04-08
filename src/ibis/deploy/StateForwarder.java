@@ -55,10 +55,6 @@ class StateForwarder implements MetricListener, Runnable {
     }
 
     synchronized void setState(State state) {
-        setState(state, null);
-    }
-
-    synchronized void setState(State state, Exception exception) {
         if (this.currentState == state
                 || (currentState == State.DEPLOYED && state == State.INITIALIZING)) {
             // The latter condition can occur if ibis-deploy detects that the
@@ -75,7 +71,14 @@ class StateForwarder implements MetricListener, Runnable {
         logger.info(name + " state now " + state);
 
         this.currentState = state;
+        
 
+        notifyAll();
+    }
+
+    synchronized void setErrorState(Exception exception) {
+        setState(State.ERROR);
+        
         if (this.exception == null) {
             this.exception = exception;
         }
@@ -98,11 +101,9 @@ class StateForwarder implements MetricListener, Runnable {
         case INITIAL:
             setState(State.SUBMITTED);
             break;
-
         case PRE_STAGING:
             setState(State.PRE_STAGING);
             break;
-
         case SCHEDULED:
             setState(State.SCHEDULED);
             break;
@@ -131,18 +132,12 @@ class StateForwarder implements MetricListener, Runnable {
         return exception;
     }
 
-    public synchronized boolean isFinished() throws Exception {
-        if (exception != null) {
-            throw exception;
-        }
+    public synchronized boolean isFinished() {
         return currentState.equals(State.ERROR)
                 || currentState.equals(State.DONE);
     }
     
-    public synchronized boolean isRunning() throws Exception {
-        if (exception != null) {
-            throw exception;
-        }
+    public synchronized boolean isRunning() {
         return currentState.equals(State.DEPLOYED);
     }
     
@@ -170,7 +165,6 @@ class StateForwarder implements MetricListener, Runnable {
             if (exception != null) {
                 throw exception;
             }
-
             try {
                 wait();
             } catch (InterruptedException e) {

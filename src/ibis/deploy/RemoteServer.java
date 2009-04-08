@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
  */
 public class RemoteServer implements Runnable, Hub {
 
-    public static final long TIMEOUT = 30000;
+    public static final long TIMEOUT = 1200000;
 
     private static int nextID = 0;
 
@@ -351,7 +351,7 @@ public class RemoteServer implements Runnable, Hub {
             logger.info(this + " now running (address = " + getAddress() + ")");
         } catch (Exception e) {
             logger.error("cannot start hub/server", e);
-            forwarder.setState(State.ERROR, e);
+            forwarder.setErrorState(e);
         }
     }
 
@@ -405,10 +405,8 @@ public class RemoteServer implements Runnable, Hub {
      * 
      * @return true if this server is running
      * 
-     * @throws Exception
-     *             if the state of the job could not be determined
      */
-    public boolean isRunning() throws Exception {
+    public boolean isRunning() {
         return forwarder.isRunning();
     }
 

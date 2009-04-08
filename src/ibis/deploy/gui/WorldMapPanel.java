@@ -12,6 +12,7 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.HashSet;
 import java.util.Set;
@@ -372,6 +373,7 @@ public class WorldMapPanel extends JPanel {
             ClusterWaypoint cwp = (ClusterWaypoint) wp;
             final int x = cwp.getOffset().width;
             final int y = cwp.getOffset().height;
+            
 
             String numberNodesString = ""
                     + ((cwp.getCluster().getNodes() > 0) ? cwp.getCluster()
@@ -465,6 +467,12 @@ public class WorldMapPanel extends JPanel {
             g.drawString(clusterName, x + -width / 2, y + height / 2 + 8
                     + radius); // text
 
+            //draw a line to the original position of the cluster
+            //Point2D point = map.convertGeoPositionToPoint(cwp.getPosition());
+//            g.setPaint(Color.BLACK);
+//            g.drawLine(0, 0, x, y);
+
+            
             // draw usage
             if (cwp.isSelected()) {
                 String usageString = cwp.getResourceCount()

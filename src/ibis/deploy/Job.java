@@ -140,7 +140,7 @@ public class Job implements Runnable {
      * @return the state of this job
      * 
      */
-    public State getState() throws Exception {
+    public State getState() {
         return forwarder.getState();
     }
 
@@ -148,12 +148,19 @@ public class Job implements Runnable {
      * Returns if this job either done or an error occurred.
      * 
      * @return true if this job either done or an error occurred.
-     * @throws Exception
-     *             in case an error occurs.
      */
-    public synchronized boolean isFinished() throws Exception {
+    public boolean isFinished() {
         return forwarder.isFinished();
     }
+    
+    /**
+     * Returns the exception of this job (if any).
+     * @return the exception of this job (if any).
+     */
+    public Exception getException() {
+        return forwarder.getException();
+    }
+    
 
     /**
      * Wait until this job is in the "STOPPED" or "SUBMISSION_ERROR" state.
@@ -632,7 +639,7 @@ public class Job implements Runnable {
             }
         } catch (Exception e) {
             logger.error("Error on running job: ", e);
-            forwarder.setState(State.ERROR, e);
+            forwarder.setErrorState(e);
         }
     }
 

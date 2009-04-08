@@ -5,10 +5,14 @@ import ibis.deploy.Job;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
+import java.awt.TextArea;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -16,6 +20,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 
 public class OutputPanel extends JPanel {
 
@@ -31,7 +36,7 @@ public class OutputPanel extends JPanel {
             return;
         }
         JPanel container = new JPanel();
-        container.setLayout(new BoxLayout(container, BoxLayout.PAGE_AXIS));
+        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
         setBorder(BorderFactory.createTitledBorder("Output Files for '"
                 + job.getDescription().getName() + "'"));
 
@@ -59,9 +64,11 @@ public class OutputPanel extends JPanel {
         });
         JPanel stdoutPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         stdoutPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        stdoutPanel.add(new JLabel("Standard Output: "));
+        JLabel label = new JLabel("Standard Output: ");
+        label.setAlignmentX(Component.LEFT_ALIGNMENT);
+        stdoutPanel.add(label);
         stdoutPanel.add(stdoutLabel);
-        container.add(stdoutPanel);
+        container.add(stdoutPanel, Component.LEFT_ALIGNMENT);
 
         final String stderr = job.getDescription().getPoolName() + "."
                 + job.getDescription().getName() + ".err";
@@ -122,6 +129,23 @@ public class OutputPanel extends JPanel {
 
             }
         }
+
+        if (job.getException() != null) {
+            container.add(new JLabel("Exception of job: "));
+
+            Writer stackTraceString = new StringWriter();
+            PrintWriter printWriter = new PrintWriter(stackTraceString);
+            job.getException().printStackTrace(printWriter);
+
+            JTextArea stackTrace = new JTextArea(stackTraceString.toString(), 24,
+                    80);
+            stackTrace.setLineWrap(true);
+            stackTrace.setAutoscrolls(false);
+            stackTrace.setEditable(false);
+
+            container.add(stackTrace);
+        }
+
         add(container);
     }
 }
