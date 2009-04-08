@@ -51,9 +51,9 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
             if (job != null) {
                 startedAndNotFinished = true;
                 try {
-                    startedAndNotFinished = ! job.isFinished();
-                } catch(Exception e) {
-                    // ignored
+                    startedAndNotFinished = !job.isFinished();
+                } catch (Exception e) {
+                    startedAndNotFinished = false;
                 }
             }
             if (startedAndNotFinished) {
@@ -112,7 +112,7 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
             });
             try {
                 button.setEnabled(job != null && job.isFinished());
-            } catch(Exception e) {
+            } catch (Exception e) {
                 button.setEnabled(false);
             }
             return button;
