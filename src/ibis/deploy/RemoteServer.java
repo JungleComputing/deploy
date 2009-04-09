@@ -166,12 +166,12 @@ public class RemoteServer implements Runnable, Hub {
         arguments.add("--port");
         arguments.add("0");
         arguments.add("--errors");
-        
+
         boolean startZorilla = false;
         if (cluster.getStartZorilla() != null) {
             startZorilla = cluster.getStartZorilla();
         }
-        
+
         if (hubOnly && !startZorilla) {
             arguments.add("--hub-only");
         }
@@ -184,7 +184,7 @@ public class RemoteServer implements Runnable, Hub {
         // list of other hubs
         arguments.add("--hub-addresses");
         arguments.add(Util.strings2CSS(rootHub.getHubs()));
-        
+
         sd.setJavaArguments(arguments.toArray(new String[0]));
 
         // add server libraries to pre-stage, use rsync if specified
@@ -192,22 +192,31 @@ public class RemoteServer implements Runnable, Hub {
         prestage(serverLibs, cluster, sd);
 
         if (startZorilla) {
-            //add zorilla libs too
+            // add zorilla libs too
             File zorillaLibs = new File(deployHome, "lib-zorilla");
             prestage(zorillaLibs, cluster, sd);
-            
-            //add list of slave nodes, be a master
+
+            // add list of slave nodes, be a master
             if (cluster.getNodeHostnames() != null) {
-                sd.addJavaSystemProperty("zorilla.slaves", cluster.getNodeHostnames());
+                sd.addJavaSystemProperty("zorilla.slaves", cluster
+                        .getNodeHostnames());
                 sd.addJavaSystemProperty("zorilla.master", "true");
             }
-            
-            //classpath includes zorilla
-            sd.setJavaClassPath(".:lib-server:lib-server/*:lib-zorilla:lib-zorilla/*");
-            
-            sd.addJavaSystemProperty("gat.adaptor.path", "lib-zorilla/adaptors");
+
+            // classpath includes zorilla
+            sd
+                    .setJavaClassPath(".:lib-server:lib-server/*:lib-zorilla:lib-zorilla/*");
+
+            sd
+                    .addJavaSystemProperty("gat.adaptor.path",
+                            "lib-zorilla/adaptors");
+
+            // always keep sandbox for now...
+            sd.addAttribute("sandbox.delete", "false");
+
+            sd.setJavaOptions("-XX:+HeapDumpOnOutOfMemoryError");
         } else {
-            //regular classpath
+            // regular classpath
             sd.setJavaClassPath(".:lib-server:lib-server/*");
         }
 
