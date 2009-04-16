@@ -40,12 +40,12 @@ public class Scrub {
                         || arguments[i].endsWith(".workspace")) {
                     File file = new File(arguments[i]);
                     files.add(file);
-                    
+
                     if (!file.exists()) {
                         System.err.println("File " + file + " does not exist");
                         System.exit(1);
                     }
-                    
+
                     if (!file.isFile()) {
                         System.err.println("Path " + file + " is not a file");
                         System.exit(1);

@@ -1,6 +1,6 @@
 package ibis.deploy.gui.editor;
 
-import ibis.deploy.gui.GUIUtils;
+import ibis.deploy.gui.misc.Utils;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -33,7 +33,7 @@ public class TextMapArrayEditor {
 
     private final JPanel addPanel = new JPanel(new BorderLayout());
 
-    private final JButton addButton = GUIUtils.createImageButton(
+    private final JButton addButton = Utils.createImageButton(
             "/images/list-add-small.png", "add a new item", null);
 
     private final JLabel label = new JLabel("", JLabel.TRAILING);
@@ -145,7 +145,7 @@ public class TextMapArrayEditor {
 
         arrayItemPanel.add(internalPanel, BorderLayout.CENTER);
 
-        final JButton removeButton = GUIUtils.createImageButton(
+        final JButton removeButton = Utils.createImageButton(
                 "/images/list-remove-small.png", "remove item", null);
         removeButtons.add(removeButton);
         removeButton.addActionListener(new ActionListener() {

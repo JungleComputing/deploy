@@ -143,7 +143,7 @@ public class DeployProperties extends TypedProperties {
      * @return the split-up property value.
      */
     public String[] getStringList(String key) {
-        //split by comma's and whitespace of any length
+        // split by comma's and whitespace of any length
         return getStringList(key, ",|\\s+", new String[0]);
     }
 

@@ -71,14 +71,13 @@ class StateForwarder implements MetricListener, Runnable {
         logger.info(name + " state now " + state);
 
         this.currentState = state;
-        
 
         notifyAll();
     }
 
     synchronized void setErrorState(Exception exception) {
         setState(State.ERROR);
-        
+
         if (this.exception == null) {
             this.exception = exception;
         }
@@ -136,11 +135,11 @@ class StateForwarder implements MetricListener, Runnable {
         return currentState.equals(State.ERROR)
                 || currentState.equals(State.DONE);
     }
-    
+
     public synchronized boolean isRunning() {
         return currentState.equals(State.DEPLOYED);
     }
-    
+
     public synchronized void waitUntilFinished() throws Exception {
         while (currentState.ordinal() < State.DONE.ordinal()) {
             if (exception != null) {
@@ -157,8 +156,6 @@ class StateForwarder implements MetricListener, Runnable {
             throw exception;
         }
     }
-
-    
 
     public synchronized void waitUntilRunning() throws Exception {
         while (currentState.ordinal() < State.DEPLOYED.ordinal()) {

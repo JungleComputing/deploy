@@ -6,14 +6,14 @@ import ibis.deploy.Experiment;
 import ibis.deploy.Grid;
 import ibis.deploy.JobDescription;
 import ibis.deploy.Workspace;
-import ibis.deploy.gui.action.AboutAction;
-import ibis.deploy.gui.action.HubPolicyAction;
-import ibis.deploy.gui.action.NewWorkSpaceAction;
-import ibis.deploy.gui.action.SaveAsWorkSpaceAction;
-import ibis.deploy.gui.action.SaveWorkSpaceAction;
-import ibis.deploy.gui.action.OpenWorkSpaceAction;
-import ibis.deploy.gui.listener.SubmitJobListener;
-import ibis.deploy.gui.listener.WorkSpaceChangedListener;
+import ibis.deploy.gui.experiment.composer.SubmitJobListener;
+import ibis.deploy.gui.misc.AboutAction;
+import ibis.deploy.gui.misc.Utils;
+import ibis.deploy.gui.misc.HubPolicyAction;
+import ibis.deploy.gui.misc.NewWorkSpaceAction;
+import ibis.deploy.gui.misc.OpenWorkSpaceAction;
+import ibis.deploy.gui.misc.SaveAsWorkSpaceAction;
+import ibis.deploy.gui.misc.SaveWorkSpaceAction;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -121,8 +121,8 @@ public class GUI {
         UIManager.put("swing.boldMetal", Boolean.FALSE);
         frame = new JFrame("Ibis Deploy - " + workspaceLocation.getName());
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        frame.setIconImage(GUIUtils
-                .createImageIcon("/images/favicon.ico", null).getImage());
+        frame.setIconImage(Utils.createImageIcon("/images/favicon.ico", null)
+                .getImage());
 
         this.menuBar = new JMenuBar();
         JMenu menu = new JMenu("File");

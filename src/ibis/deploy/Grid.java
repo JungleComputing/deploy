@@ -29,12 +29,12 @@ public class Grid {
      * constructs the clusters inside this grid.
      * 
      * @param file
-     *                the file containing the properties
+     *            the file containing the properties
      * @throws FileNotFoundException
-     *                 if the given file cannot be found
+     *             if the given file cannot be found
      * @throws Exception
-     *                 if reading from the given file fails, or the file
-     *                 contains invalid properties
+     *             if reading from the given file fails, or the file contains
+     *             invalid properties
      */
     public Grid(File file) throws FileNotFoundException, Exception {
         clusters = new ArrayList<Cluster>();
@@ -76,11 +76,11 @@ public class Grid {
      * clusters inside this grid.
      * 
      * @param properties
-     *                properties of the grid
+     *            properties of the grid
      * @param prefix
-     *                prefix to use on all keys
+     *            prefix to use on all keys
      * @throws Exception
-     *                 if cluster cannot be read properly
+     *             if cluster cannot be read properly
      * 
      */
     public Grid(DeployProperties properties, String prefix) throws Exception {
@@ -141,7 +141,7 @@ public class Grid {
      * all).
      * 
      * @param cluster
-     *                the cluster to be removed from this group
+     *            the cluster to be removed from this group
      */
     public void removeCluster(Cluster cluster) {
         clusters.remove(cluster);
@@ -151,17 +151,17 @@ public class Grid {
      * Creates a new cluster in this grid, with a given name.
      * 
      * @param name
-     *                the name of the cluster.
+     *            the name of the cluster.
      * 
      * @return the new cluster.
      * 
      * @throws Exception
-     *                 if the name given is <code>null</code>
+     *             if the name given is <code>null</code>
      */
     public Cluster createNewCluster(String name) throws Exception {
         if (hasCluster(name)) {
-            throw new AlreadyExistsException("Cannot add cluster, cluster \"" + name
-                    + "\" already exists");
+            throw new AlreadyExistsException("Cannot add cluster, cluster \""
+                    + name + "\" already exists");
         }
 
         Cluster result = new Cluster(name, this);
@@ -175,7 +175,7 @@ public class Grid {
      * Returns if a cluster with the given name exists.
      * 
      * @param name
-     *                name of the cluster.
+     *            name of the cluster.
      * @return if a cluster with the given name exists.
      */
     public boolean hasCluster(String name) {
@@ -191,7 +191,7 @@ public class Grid {
      * Get an cluster with a given name from this Grid
      * 
      * @param clusterName
-     *                the name of the cluster to search for
+     *            the name of the cluster to search for
      * @return the cluster with the given name, or <code>null</code> if no
      *         clusters with the given name exist in this Grid.
      */
@@ -226,10 +226,10 @@ public class Grid {
      * Save this grid and all contained clusters to a property file
      * 
      * @param file
-     *                file to save grid to
+     *            file to save grid to
      * 
      * @throws Exception
-     *                 in case file cannot be written
+     *             in case file cannot be written
      */
     public void save(File file) throws Exception {
         if (!file.exists()) {
@@ -254,11 +254,11 @@ public class Grid {
      * Save this grid and all contained clusters to the given stream
      * 
      * @param out
-     *                stream to save grid to
+     *            stream to save grid to
      * @param prefix
-     *                prefix for all keys written
+     *            prefix for all keys written
      * @throws Exception
-     *                 in case data cannot be written
+     *             in case data cannot be written
      */
     public void save(PrintWriter out, String prefix) throws Exception {
         if (prefix != null) {

@@ -1,6 +1,6 @@
 package ibis.deploy.gui.editor;
 
-import ibis.deploy.gui.GUIUtils;
+import ibis.deploy.gui.misc.Utils;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -21,7 +21,7 @@ public class TextComboBoxEditor {
 
     private final String defaultValue;
 
-    private final JButton openButton = GUIUtils.createImageButton(
+    private final JButton openButton = Utils.createImageButton(
             "/images/document-open.png", "select a file", null);
 
     private final JLabel label = new JLabel("", JLabel.TRAILING);

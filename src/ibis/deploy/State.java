@@ -30,7 +30,7 @@ public enum State {
      * The {@link Job} is being submitted to the underlying middleware.
      */
     SUBMITTING,
-    
+
     /**
      * The {@link Job} is submitted to the underlying middleware.
      */

@@ -13,7 +13,7 @@ public class Util {
      * Convert a list of Strings to a single comma separated String
      * 
      * @param list
-     *                the input list
+     *            the input list
      * @return a comma separated version of the list
      */
     public static String strings2CSS(List<String> list) {
@@ -35,7 +35,7 @@ public class Util {
      * convert a list of Strings to a single comma separated String
      * 
      * @param list
-     *                the input list
+     *            the input list
      * @return a comma separated version of the list
      */
     public static String strings2CSS(String[] list) {
@@ -57,7 +57,7 @@ public class Util {
      * convert a list of files to a single comma separated String
      * 
      * @param list
-     *                the input list
+     *            the input list
      * @return a comma separated version of the list
      */
     public static String files2CSS(List<File> list) {
@@ -79,7 +79,7 @@ public class Util {
      * convert a list of files to a single comma separated String
      * 
      * @param list
-     *                the input list
+     *            the input list
      * @return a comma separated version of the list
      */
     public static String files2CSS(File[] list) {
@@ -101,7 +101,7 @@ public class Util {
      * convert a string map to a single comma separated String
      * 
      * @param map
-     *                the input map
+     *            the input map
      * @return a comma separated version of the map
      */
     public static String toCSString(Map<String, String> map) {
@@ -115,6 +115,5 @@ public class Util {
         }
         return result;
     }
-
 
 }

@@ -5,9 +5,10 @@ import java.util.Map;
 
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.resources.JavaSoftwareDescription;
-import org.gridlab.gat.resources.SoftwareDescription;
 
 public class JythonSoftwareDescription extends JavaSoftwareDescription {
+
+    private static final long serialVersionUID = 1L;
 
     private String jythonJar;
 

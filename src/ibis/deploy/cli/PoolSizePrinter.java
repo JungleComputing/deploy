@@ -36,9 +36,8 @@ public class PoolSizePrinter implements Runnable {
                     if (!poolSizes.containsKey(poolName)
                             || poolSize != poolSizes.get(poolName)) {
                         System.err.printf(
-                                "%tT DEPLOY: Size of pool \"%s\" now %d\n", System
-                                        .currentTimeMillis(), poolName,
-                                poolSize);
+                                "%tT DEPLOY: Size of pool \"%s\" now %d\n",
+                                System.currentTimeMillis(), poolName, poolSize);
                     }
                 }
 

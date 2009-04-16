@@ -1,6 +1,6 @@
 package ibis.deploy.gui.editor;
 
-import ibis.deploy.gui.GUIUtils;
+import ibis.deploy.gui.misc.Utils;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -39,7 +39,7 @@ public class FileArrayEditor {
 
     private final JPanel addPanel = new JPanel(new BorderLayout());
 
-    private final JButton addButton = GUIUtils.createImageButton(
+    private final JButton addButton = Utils.createImageButton(
             "/images/list-add-small.png", "add a new item", null);
 
     private final JLabel label = new JLabel("", JLabel.TRAILING);
@@ -118,7 +118,7 @@ public class FileArrayEditor {
         final JFileChooser fileChooser = new JFileChooser(value);
         fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         fileChoosers.add(fileChooser);
-        final JButton openButton = GUIUtils.createImageButton(
+        final JButton openButton = Utils.createImageButton(
                 "/images/document-open.png", "select a file", null);
         openButtons.add(openButton);
 
@@ -135,7 +135,7 @@ public class FileArrayEditor {
 
         arrayItemPanel.add(openButton, BorderLayout.EAST);
 
-        final JButton removeButton = GUIUtils.createImageButton(
+        final JButton removeButton = Utils.createImageButton(
                 "/images/list-remove-small.png", "remove item", null);
         removeButtons.add(removeButton);
         removeButton.addActionListener(new ActionListener() {

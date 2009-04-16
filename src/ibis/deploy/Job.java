@@ -152,15 +152,15 @@ public class Job implements Runnable {
     public boolean isFinished() {
         return forwarder.isFinished();
     }
-    
+
     /**
      * Returns the exception of this job (if any).
+     * 
      * @return the exception of this job (if any).
      */
     public Exception getException() {
         return forwarder.getException();
     }
-    
 
     /**
      * Wait until this job is in the "STOPPED" or "SUBMISSION_ERROR" state.
@@ -352,7 +352,7 @@ public class Job implements Runnable {
 
         sd.setJavaArguments(application.getArguments());
 
-        //Set jvm options. Add memory settings if needed.
+        // Set jvm options. Add memory settings if needed.
         int memory = application.getMemorySize();
         if (memory > 0) {
             sd.addAttribute("memory.max", "" + memory);
@@ -463,7 +463,7 @@ public class Job implements Runnable {
             sd.addAttribute("time.max", "" + description.getRuntime());
             sd.addAttribute("cputime.max", "" + description.getRuntime());
         }
-        
+
         // class path
         sd.setJavaClassPath(createClassPath(application.getLibs()));
         if (sd instanceof JythonSoftwareDescription) {

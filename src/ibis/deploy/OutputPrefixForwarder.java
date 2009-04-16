@@ -9,13 +9,13 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 
 public class OutputPrefixForwarder implements Runnable {
-    
+
     private final BufferedReader input;
-    
+
     private final PrintStream output;
 
     private final String outputPrefix;
-    
+
     /**
      * @param input
      *            Input stream
@@ -24,10 +24,11 @@ public class OutputPrefixForwarder implements Runnable {
      * @param outputPrefix
      *            Prefix to add to all lines of output
      * 
-     * @throws IOException if the reading stream cannot be created.
+     * @throws IOException
+     *             if the reading stream cannot be created.
      */
-    public OutputPrefixForwarder(InputStream input,
-            PrintStream output, String outputPrefix) throws IOException {
+    public OutputPrefixForwarder(InputStream input, PrintStream output,
+            String outputPrefix) throws IOException {
         this.input = new BufferedReader(new InputStreamReader(input));
         this.output = output;
 
@@ -35,7 +36,7 @@ public class OutputPrefixForwarder implements Runnable {
 
         ThreadPool.createNew(this, "prefix forwarder");
     }
-    
+
     /**
      * Forwards standard out of server to given output stream. Filters out line
      * containing server address.
@@ -46,13 +47,13 @@ public class OutputPrefixForwarder implements Runnable {
                 String line = input.readLine();
 
                 if (line == null) {
-                    //we're done
+                    // we're done
                     return;
                 }
-                
+
                 output.println(outputPrefix + line);
             } catch (IOException e) {
-                //we're done
+                // we're done
                 return;
             }
         }

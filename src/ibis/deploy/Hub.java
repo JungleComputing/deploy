@@ -1,7 +1,7 @@
 package ibis.deploy;
 
 public interface Hub {
-    
+
     /**
      * Ensure this hub is running, wait for it if needed.
      * 
@@ -18,9 +18,9 @@ public interface Hub {
      *             if the server failed to start
      */
     String getAddress() throws Exception;
-    
+
     public void addListener(StateListener listener);
-    
+
     public State getState();
 
 }
