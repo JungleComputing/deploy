@@ -35,6 +35,21 @@ public class InitializingDialog implements StateListener {
         progressBar.setStringPainted(true);
     }
 
+    public void init() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel
+                .add(new JLabel("Starting the Ibis Server..."),
+                        BorderLayout.NORTH);
+        panel.add(progressBar, BorderLayout.SOUTH);
+        dialog = new JDialog(
+                SwingUtilities.getWindowAncestor(experimentsPanel),
+                "Initializing");
+        dialog.setContentPane(panel);
+        dialog.pack();
+        dialog.setLocationRelativeTo(experimentsPanel);
+        dialog.setVisible(true);
+    }
+    
     public void stateUpdated(State state, Exception exception) {
         progressBar.setString("" + state);
         if (state == State.DEPLOYED) {
@@ -42,8 +57,6 @@ public class InitializingDialog implements StateListener {
             initializedPanel.init();
             experimentsPanel.add(initializedPanel);
             experimentsPanel.getRootPane().repaint();
-            progressBar.setIndeterminate(false);
-            progressBar.setValue(100);
             // show the user we're now deployed
             try {
                 Thread.sleep(500);
@@ -53,21 +66,6 @@ public class InitializingDialog implements StateListener {
                 dialog.dispose();
             }
         }
-    }
-
-    public void init() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel
-                .add(new JLabel("Starting the Ibis Server..."),
-                        BorderLayout.NORTH);
-        panel.add(progressBar, BorderLayout.SOUTH);
-        dialog = new JDialog(
-                SwingUtilities.getWindowAncestor(experimentsPanel),
-                "Ibis Server Status");
-        dialog.setContentPane(panel);
-        dialog.pack();
-        dialog.setLocationRelativeTo(experimentsPanel);
-        dialog.setVisible(true);
     }
 
 }
