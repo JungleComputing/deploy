@@ -49,7 +49,6 @@ public class ExperimentsPanel extends JPanel implements StateListener,
 
         // used in "initizing status" dialog
         progressBar = new JProgressBar();
-
     }
 
     /**
@@ -117,6 +116,10 @@ public class ExperimentsPanel extends JPanel implements StateListener,
             JPanel panel = new JPanel(new BorderLayout());
             panel.add(new JLabel("Starting the Ibis Server..."),
                     BorderLayout.NORTH);
+            progressBar.setString("" + State.CREATED);
+            progressBar.setStringPainted(true);
+            progressBar.setIndeterminate(true);
+
             panel.add(progressBar, BorderLayout.SOUTH);
             dialog = new JDialog(SwingUtilities.getWindowAncestor(this),
                     "Initializing");
