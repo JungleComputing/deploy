@@ -1,5 +1,6 @@
 package ibis.deploy;
 
+import ibis.ipl.IbisProperties;
 import ibis.ipl.server.RemoteClient;
 import ibis.util.ThreadPool;
 
@@ -213,8 +214,6 @@ public class RemoteServer implements Runnable, Hub {
 
             // always keep sandbox for now...
             sd.addAttribute("sandbox.delete", "false");
-
-            sd.setJavaOptions("-XX:+HeapDumpOnOutOfMemoryError");
         } else {
             // regular classpath
             sd.setJavaClassPath(".:lib-server:lib-server/*");
@@ -233,6 +232,8 @@ public class RemoteServer implements Runnable, Hub {
                 sd.addPostStagedFile(gatFile, GAT.createFile(context, "."));
             }
         }
+        
+        sd.addJavaSystemProperty(IbisProperties.LOCATION, cluster.getName());
 
         if (cluster.getServerSystemProperties() != null) {
             sd.setJavaSystemProperties(cluster.getServerSystemProperties());
