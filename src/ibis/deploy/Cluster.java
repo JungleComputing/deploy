@@ -829,6 +829,10 @@ public class Cluster {
     public void setNodeHostnames(String nodeHostnames) {
         this.nodeHostnames = nodeHostnames;
     }
+    
+    public String getColor() {
+        return Colors.locationToColorString(name);
+    }
 
     /**
      * Checks if this cluster is suitable for deploying. If not, throws an

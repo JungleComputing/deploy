@@ -372,6 +372,7 @@ public class Job implements Runnable {
 
         // ibis stuff
         sd.addJavaSystemProperty(IbisProperties.LOCATION, cluster.getName());
+        sd.addJavaSystemProperty(IbisProperties.LOCATION_COLOR, cluster.getColor());
         sd.addJavaSystemProperty(IbisProperties.POOL_NAME, description
                 .getPoolName());
         sd.addJavaSystemProperty(IbisProperties.POOL_SIZE, ""

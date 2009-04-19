@@ -1,5 +1,6 @@
 package ibis.deploy;
 
+import ibis.ipl.IbisProperties;
 import ibis.ipl.server.ServerProperties;
 import java.util.Properties;
 
@@ -32,6 +33,7 @@ public class RootHub implements Hub {
         Properties properties = new Properties();
         properties.put(ServerProperties.HUB_ONLY, !isServer + "");
         properties.put(ServerProperties.PRINT_ERRORS, "true");
+        properties.put(IbisProperties.LOCATION_COLOR, Colors.locationToColorString("local"));
 
         if (verbose) {
             properties.put(ServerProperties.PRINT_EVENTS, "true");
