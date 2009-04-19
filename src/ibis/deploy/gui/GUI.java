@@ -40,6 +40,10 @@ import org.slf4j.LoggerFactory;
 
 public class GUI {
 
+    public static final int DEFAULT_SCREEN_WIDTH = 1024;
+
+    public static final int DEFAULT_SCREEN_HEIGHT = 768;
+
     private static final Logger logger = LoggerFactory.getLogger(GUI.class);
 
     private Deploy deploy;
@@ -146,11 +150,10 @@ public class GUI {
         });
 
         this.menuBar.add(menu);
-        
+
         menu = new JMenu("View");
         menu.add(new SmartSocketsVizAction(frame, this));
         this.menuBar.add(menu);
-
 
         menu = new JMenu("Options");
         JMenu subMenu = new JMenu("Hub Policy");
@@ -177,7 +180,7 @@ public class GUI {
         frame.getContentPane().setLayout(new BorderLayout());
         frame.getContentPane().add(new RootPanel(this), BorderLayout.CENTER);
 
-        frame.setPreferredSize(new Dimension(1024, 768));
+        frame.setPreferredSize(new Dimension(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT));
 
         frame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent we) {

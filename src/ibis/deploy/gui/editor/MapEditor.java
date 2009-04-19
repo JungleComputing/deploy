@@ -25,7 +25,7 @@ public class MapEditor {
 
     // map editor doesn't support default values, since it isn't straightforward
     // to implement it. Map editor uses two values which both could be defaults.
-    public MapEditor(JPanel form, String text, double latitude, double longitude) {
+    public MapEditor(JPanel form, String text, double latitude, double longitude, int zoom) {
         JPanel container = new JPanel(new BorderLayout());
 
         JLabel label = new JLabel(text, JLabel.TRAILING);
@@ -48,7 +48,7 @@ public class MapEditor {
         } else {
             position = new GeoPosition(latitude, longitude);
         }
-        mapKit.getMainMap().setZoom(MapUtilities.INITIAL_MAP_ZOOM);
+        mapKit.getMainMap().setZoom(zoom);
         mapKit.getMainMap().setCenterPosition(MapUtilities.INITIAL_MAP_CENTER);
         mapKit.getMainMap().setAddressLocation(position);
         mapKit.getMainMap().addMouseListener(new MouseListener() {

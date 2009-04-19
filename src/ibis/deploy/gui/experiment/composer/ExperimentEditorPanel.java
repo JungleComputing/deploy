@@ -21,7 +21,7 @@ public class ExperimentEditorPanel extends JPanel {
     public ExperimentEditorPanel(GUI gui, JobTableModel model) {
         setBorder(BorderFactory.createTitledBorder("Experiment Editor"));
         setLayout(new BorderLayout(SPACER, SPACER));
-        WorldMapPanel worldMapPanel = new WorldMapPanel(gui);
+        WorldMapPanel worldMapPanel = new WorldMapPanel(gui, 16);
         add(worldMapPanel, BorderLayout.CENTER);
         add(new ExperimentEditorTextPanel(gui, model, worldMapPanel),
                 BorderLayout.EAST);

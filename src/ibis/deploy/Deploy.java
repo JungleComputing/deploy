@@ -216,7 +216,7 @@ public class Deploy {
         initialize(serverCluster, listener, false);
     }
 
-    private synchronized void initialize(Cluster serverCluster,
+    public synchronized void initialize(Cluster serverCluster,
             StateListener listener, boolean blocking) throws Exception {
 
         logger.debug("Initializing deploy");
@@ -457,7 +457,7 @@ public class Deploy {
             Thread.sleep(1000);
         }
     }
-
+    
     /**
      * Ends all jobs and closes all open connections.
      */

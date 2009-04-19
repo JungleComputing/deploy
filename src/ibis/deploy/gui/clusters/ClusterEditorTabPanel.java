@@ -9,6 +9,7 @@ import ibis.deploy.gui.editor.NumberEditor;
 import ibis.deploy.gui.editor.TextArrayComboBoxEditor;
 import ibis.deploy.gui.editor.TextComboBoxEditor;
 import ibis.deploy.gui.editor.TextEditor;
+import ibis.deploy.gui.worldmap.MapUtilities;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -140,7 +141,7 @@ public class ClusterEditorTabPanel extends JPanel {
                         : defaults.getServerOutputFiles());
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
         final MapEditor geoPositionEditor = new MapEditor(formPanel,
-                "Geo Position: ", source.getLatitude(), source.getLongitude());
+                "Geo Position: ", source.getLatitude(), source.getLongitude(), MapUtilities.MIN_ZOOM);
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
 
         container.add(formPanel, BorderLayout.NORTH);

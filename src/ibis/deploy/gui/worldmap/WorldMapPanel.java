@@ -35,6 +35,8 @@ public class WorldMapPanel extends JPanel {
      */
     private static final long serialVersionUID = -846163477030295465L;
 
+//    private static final int INITIAL_MAP_ZOOM = 15;
+
     private ClusterSelectionPanel clusterSelectionPanel;
 
     private Cluster selectedCluster;
@@ -42,8 +44,8 @@ public class WorldMapPanel extends JPanel {
     private ClusterWaypoint selectedWaypoint = null;
 
     private Set<Waypoint> waypoints = new HashSet<Waypoint>();
-
-    public WorldMapPanel(final GUI gui) {
+    
+    public WorldMapPanel(final GUI gui, final int zoom) {
         JMenuBar menuBar = gui.getMenuBar();
         JMenu menu = null;
         for (int i = 0; i < menuBar.getMenuCount(); i++) {
@@ -157,7 +159,7 @@ public class WorldMapPanel extends JPanel {
         mapKit.setTileFactory(MapUtilities.getDefaultTileFactory());
         mapKit.setMiniMapVisible(false);
         mapKit.setAddressLocationShown(false);
-        mapKit.getMainMap().setZoom(MapUtilities.INITIAL_MAP_ZOOM);
+        mapKit.getMainMap().setZoom(zoom);
         mapKit.getMainMap().setCenterPosition(MapUtilities.INITIAL_MAP_CENTER);
 
         for (Cluster cluster : gui.getGrid().getClusters()) {
@@ -171,7 +173,7 @@ public class WorldMapPanel extends JPanel {
                 for (Cluster cluster : gui.getGrid().getClusters()) {
                     waypoints.add(new ClusterWaypoint(cluster, false));
                 }
-                mapKit.setZoom(MapUtilities.INITIAL_MAP_ZOOM);
+                mapKit.setZoom(zoom);
                 mapKit.getMainMap().repaint();
             }
         });
@@ -310,8 +312,16 @@ public class WorldMapPanel extends JPanel {
             this.resourceCount = 1;
         }
 
+        /**
+         * Radius of a cluster based on the number of nodes. Number of nodes
+         * represents the AREA of the cluster, so we convert to the radius.
+         * 
+         * @return
+         */
         public int getRadius() {
-            return Math.max(20, 15 + cluster.getNodes()) / 2;
+            int nodes = cluster.getNodes();
+
+            return (int) Math.sqrt(50 + (nodes * 13) / Math.PI);
         }
 
         public void resetOffset() {
@@ -367,16 +377,20 @@ public class WorldMapPanel extends JPanel {
             ClusterWaypoint cwp = (ClusterWaypoint) wp;
             final int x = cwp.getOffset().width;
             final int y = cwp.getOffset().height;
-            
+
             Color clusterBorderColor = new Color(100, 100, 255, 255);
-            //Color clusterArcColor = new Color(100, 100, 255, 200);
+            // Color clusterArcColor = new Color(100, 100, 255, 200);
             Color clusterFillColor = new Color(100, 100, 255, 150);
             Color clusterTextColor = new Color(100, 100, 255, 100);
-            
+
             Color selectedBorderColor = new Color(255, 100, 100, 255);
             Color selectedArcColor = new Color(255, 100, 100, 200);
             Color selectedFillColor = new Color(255, 100, 100, 80);
             Color selectedTextColor = new Color(255, 100, 100, 100);
+            
+            //draw a line from where the cluster is drawn to where it actually is
+//            g.setPaint(Color.BLACK);
+//            g.drawLine(0, 0, x, y);
 
             // String numberNodesString = ""
             // + ((cwp.getCluster().getNodes() > 0) ? cwp.getCluster()
@@ -420,23 +434,6 @@ public class WorldMapPanel extends JPanel {
                     .getStringBounds(clusterName, g).getWidth();
             int height = (int) g.getFontMetrics().getStringBounds(clusterName,
                     g).getHeight();
-
-            // if (cwp.isSelected()) {
-            // g.setPaint(new Color(255, 100, 100, 100));
-            // } else {
-            // g.setPaint(new Color(100, 100, 255, 100));
-            // }
-            // g.fillRoundRect(x + -width / 2 - 5, y + -height / 2 + 8 + radius,
-            // width + 10, height + 6, 10, 10);
-            // if (cwp.isSelected()) {
-            // g.setPaint(new Color(255, 100, 100, 255));
-            // } else {
-            // g.setPaint(new Color(100, 100, 255, 255));
-            // }
-            // g.drawRoundRect(x + -width / 2 - 5, y + -height / 2 + 8 + radius,
-            // width + 10, height + 6, 10, 10);
-
-            // draw text w/ shadow
 
             g.setPaint(Color.BLACK);
             g.drawString(clusterName, x + -width / 2 - 1, y + height / 2 + 8
