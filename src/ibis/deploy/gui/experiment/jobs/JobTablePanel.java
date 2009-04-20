@@ -47,7 +47,7 @@ public class JobTablePanel extends JPanel {
                 column.setMaxWidth(30);// first column is fixed
                 column.setPreferredWidth(30);
                 column.setMinWidth(30);
-            } else if (i == 9) {
+            } else if (i == 10) {
                 column.setCellEditor(new ButtonEditor());
                 column.setMaxWidth(52);// last column is fixed
                 column.setPreferredWidth(52);

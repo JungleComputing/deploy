@@ -81,14 +81,14 @@ public class SubmitExistingJobAction extends AbstractAction {
 
                             public void stateUpdated(State state, Exception e) {
                                 jobRow.setJobState(state);
-                                model.setValueAt(state, rowValue, 4);
+                                model.setValueAt(state, rowValue, 3);
                             }
 
                         }, new StateListener() {
 
                             public void stateUpdated(State state, Exception e) {
                                 jobRow.setHubState(state);
-                                model.setValueAt(state, rowValue, 5);
+                                model.setValueAt(state, rowValue, 4);
                             }
 
                         });

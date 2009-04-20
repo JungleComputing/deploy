@@ -8,6 +8,7 @@ import ibis.deploy.gui.misc.Utils;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -141,6 +142,7 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
         } else if (column == 10) {
             JButton button = new JButton("output");
             button.setMargin(new Insets(2, 2, 2, 2));
+            button.setPreferredSize(new Dimension(10,10));
             button.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent arg0) {
