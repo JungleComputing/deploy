@@ -1,5 +1,6 @@
 package ibis.deploy;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -155,6 +156,8 @@ public class Cluster {
 
     private String nodeHostnames;
 
+    private String color;
+
     /**
      * Creates a new cluster with a given name. Clusters cannot be created
      * directly, but are constructed by a parent Grid object.
@@ -186,6 +189,7 @@ public class Cluster {
         longitude = 0;
         startZorilla = null;
         nodeHostnames = null;
+        color = null;
     }
 
     /**
@@ -213,6 +217,7 @@ public class Cluster {
         longitude = 0;
         startZorilla = null;
         nodeHostnames = null;
+        color = null;
     }
 
     /**
@@ -274,6 +279,8 @@ public class Cluster {
         }
 
         nodeHostnames = properties.getProperty(prefix + "node.hostnames");
+
+        this.color = null;
     }
 
     public boolean isEmpty() {
@@ -373,6 +380,10 @@ public class Cluster {
 
         if (other.nodeHostnames != null) {
             nodeHostnames = other.nodeHostnames;
+        }
+
+        if (other.color != null) {
+            color = other.color;
         }
     }
 
@@ -829,9 +840,29 @@ public class Cluster {
     public void setNodeHostnames(String nodeHostnames) {
         this.nodeHostnames = nodeHostnames;
     }
-    
-    public String getColor() {
-        return Colors.locationToColorString(name);
+
+    public String getColorCode() {
+        return color;
+    }
+
+    public Color getColor() {
+        if (color == null || color.equals("")) {
+            return null;
+        }
+        return Color.decode(color);
+    }
+
+    public Color getLightColor() {
+        Color color = getColor();
+        
+        if (color == null) {
+            return null;
+        }
+        return new Color(color.getRed(), color.getGreen(), color.getBlue(), 125);
+    }
+
+    public void setColor(String color) {
+        this.color = color;
     }
 
     /**
@@ -1106,6 +1137,7 @@ public class Cluster {
         result += " Longitude = " + getLongitude() + "\n";
         result += " Start Zorilla = " + getStartZorilla() + "\n";
         result += " Node Hostnames = " + getNodeHostnames() + "\n";
+        result += " Color = " + getColorCode() + "\n";
 
         return result;
     }

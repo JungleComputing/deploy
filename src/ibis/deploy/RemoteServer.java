@@ -234,6 +234,7 @@ public class RemoteServer implements Runnable, Hub {
         }
         
         sd.addJavaSystemProperty(IbisProperties.LOCATION, cluster.getName());
+        sd.addJavaSystemProperty(IbisProperties.LOCATION_COLOR, cluster.getColorCode());
 
         if (cluster.getServerSystemProperties() != null) {
             sd.setJavaSystemProperties(cluster.getServerSystemProperties());

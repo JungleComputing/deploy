@@ -76,16 +76,16 @@ public class RunButtonPanel extends JPanel {
 
                                 public void stateUpdated(State state,
                                         Exception e) {
-                                    jobRow.setJobState(state.toString());
-                                    model.setValueAt(state.toString(), row, 3);
+                                    jobRow.setJobState(state);
+                                    model.setValueAt(state, row, 4);
                                 }
 
                             }, new StateListener() {
 
                                 public void stateUpdated(State state,
                                         Exception e) {
-                                    jobRow.setHubState(state.toString());
-                                    model.setValueAt(state.toString(), row, 4);
+                                    jobRow.setHubState(state);
+                                    model.setValueAt(state, row, 5);
                                 }
 
                             });

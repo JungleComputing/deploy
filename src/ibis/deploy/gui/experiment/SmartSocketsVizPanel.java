@@ -26,7 +26,9 @@ public class SmartSocketsVizPanel extends JPanel {
         try {
             DirectSocketAddress rootHub = DirectSocketAddress.getByAddress(gui
                     .getDeploy().getRootHubAddress());
-            smartSocketsPanel = new SmartsocketsViz(Color.BLACK, Color.WHITE,
+            smartSocketsPanel = new SmartsocketsViz(Color.BLACK, 
+                    Color.WHITE,
+                    
                     rootHub);
         } catch (Exception e) {
             smartSocketsPanel.add(new JLabel("" + e));

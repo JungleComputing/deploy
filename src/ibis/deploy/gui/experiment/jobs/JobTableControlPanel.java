@@ -8,6 +8,7 @@ import java.awt.GridLayout;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.JTable;
 
 public class JobTableControlPanel extends JPanel {
@@ -43,19 +44,21 @@ public class JobTableControlPanel extends JPanel {
                 new RemoveExistingJobAction(0, true, true, table, gui),
                 "/images/list-remove.png",
                 "Remove selected jobs from this experiment", "Remove Selected");
-        JPanel runPanel = new JPanel(new GridLayout(2, 1, 0, 2));
-        runPanel.add(runAllButton);
-        runPanel.add(runSelectedButton);
-        add(runPanel);
-
-        JPanel stopPanel = new JPanel(new GridLayout(2, 1, 0, 2));
-        stopPanel.add(stopAllButton);
-        stopPanel.add(stopSelectedButton);
-        add(stopPanel);
-
-        JPanel removePanel = new JPanel(new GridLayout(2, 1, 0, 2));
-        removePanel.add(removeAllButton);
-        removePanel.add(removeSelectedButton);
-        add(removePanel);
+        
+         JPanel runPanel = new JPanel(new GridLayout(2, 1, 0, 2));
+         runPanel.add(runAllButton);
+         runPanel.add(runSelectedButton);
+         add(runPanel);
+        
+         JPanel stopPanel = new JPanel(new GridLayout(2, 1, 0, 2));
+         stopPanel.add(stopAllButton);
+         stopPanel.add(stopSelectedButton);
+         add(stopPanel);
+        
+         JPanel removePanel = new JPanel(new GridLayout(2, 1, 0, 2));
+         removePanel.add(removeAllButton);
+         removePanel.add(removeSelectedButton);
+         add(removePanel);
+    
     }
 }

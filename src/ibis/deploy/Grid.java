@@ -15,7 +15,18 @@ import java.util.List;
  * 
  */
 public class Grid {
+    
+    public static final String LOCAL_COLOR = "#FF0000";
 
+    // colors used for clusters
+    private static final String[] COLORS = {  "#FF8000", "#FFFF00",
+            "#80FF00", "#00FF00", "#00FF80", "#007FFF", "#0000FF", "#8000FF",
+            "#FF00FF", "#FF0080", "#FF8080", "#FFBF80", "#FFFF80", "#BFFF80",
+            "#80FF80", "#80FFBF", "#80FFFF", "#80BFFF", "#8080FF", "#BF80FF",
+            "#FF80FF", "#FF80BF", "#800000", "#804000", "#808000", "#408000",
+            "#008000", "#008040", "#008080", "#004080", "#000080", "#400080",
+    };
+    
     // cluster representing defaults
     private final Cluster defaults;
 
@@ -23,6 +34,8 @@ public class Grid {
     private final Cluster localDefaults;
 
     private final List<Cluster> clusters;
+
+    private int nextColor = 0;
 
     /**
      * Constructs a grid object from properties stored in the given file. Also
@@ -61,14 +74,30 @@ public class Grid {
             for (String clusterName : clusterNames) {
                 Cluster cluster = new Cluster(properties, clusterName,
                         clusterName, this);
+                if (clusterName.equals("local")) {
+                    cluster.setColor(LOCAL_COLOR);
+                } else {
+                    cluster.setColor(getNextColor());
+                }
                 clusters.add(cluster);
             }
         }
 
         // add "local" cluster if it doesn't exist yet
         if (!hasCluster("local")) {
-            createNewCluster("local");
+            Cluster local = new Cluster("local", this);
+            local.setColor(LOCAL_COLOR);
+            clusters.add(local);
         }
+    }
+
+    private synchronized String getNextColor() {
+        String result = COLORS[nextColor];
+
+        nextColor++;
+        nextColor = nextColor % COLORS.length;
+
+        return result;
     }
 
     /**
@@ -95,19 +124,24 @@ public class Grid {
         defaults = new Cluster(properties, "defaults", prefix + "default", null);
 
         localDefaults = Cluster.getLocalCluster();
+        localDefaults.setColor(getNextColor());
 
         String[] clusterNames = properties.getElementList(prefix);
         if (clusterNames != null) {
             for (String clusterName : clusterNames) {
                 Cluster cluster = new Cluster(properties, clusterName, prefix
                         + clusterName, this);
+                if (!clusterName.equals("local")) {
+                    cluster.setColor(getNextColor());
+                }
                 clusters.add(cluster);
             }
         }
 
         // add "local" cluster if it doesn't exist yet
         if (!hasCluster("local")) {
-            createNewCluster("local");
+            Cluster local = new Cluster("local", this);
+            clusters.add(local);
         }
     }
 
@@ -120,6 +154,7 @@ public class Grid {
             defaults = new Cluster("defaults", null);
             // add a default local cluster.
             localDefaults = Cluster.getLocalCluster();
+            localDefaults.setColor(getNextColor());
             Cluster local = new Cluster("local", this);
             clusters.add(local);
         } catch (Exception e) {
@@ -165,6 +200,7 @@ public class Grid {
         }
 
         Cluster result = new Cluster(name, this);
+        result.setColor(getNextColor());
 
         clusters.add(result);
 

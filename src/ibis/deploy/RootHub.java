@@ -33,7 +33,7 @@ public class RootHub implements Hub {
         Properties properties = new Properties();
         properties.put(ServerProperties.HUB_ONLY, !isServer + "");
         properties.put(ServerProperties.PRINT_ERRORS, "true");
-        properties.put(IbisProperties.LOCATION_COLOR, Colors.locationToColorString("local"));
+        properties.put(IbisProperties.LOCATION_COLOR, Grid.LOCAL_COLOR);
 
         if (verbose) {
             properties.put(ServerProperties.PRINT_EVENTS, "true");

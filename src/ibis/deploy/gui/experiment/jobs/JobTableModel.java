@@ -1,5 +1,7 @@
 package ibis.deploy.gui.experiment.jobs;
 
+import ibis.deploy.State;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +15,7 @@ public class JobTableModel extends AbstractTableModel {
     private static final long serialVersionUID = -2478479107636581568L;
 
     private String[] columnNames = new String[] { "", "pool", "name", "status",
-            "hub", "cluster", "application", "process count", "resource count",
+            "hub", "cluster", "middleware", "application", "process count", "resource count",
             "output" };
 
     private List<JobRowObject> jobRows = new ArrayList<JobRowObject>();
@@ -49,13 +51,13 @@ public class JobTableModel extends AbstractTableModel {
             return;
         }
         if (col == 3) {
-            jobRows.get(row).setJobState((String) value);
+            jobRows.get(row).setJobState((State) value);
             // the start/stop button
             fireTableCellUpdated(row, 0);
             // the output value
             fireTableCellUpdated(row, 9);
         } else if (col == 4) {
-            jobRows.get(row).setHubState((String) value);
+            jobRows.get(row).setHubState((State) value);
             fireTableCellUpdated(row, 0);
         } else {
             jobRows.set(row, (JobRowObject) value);

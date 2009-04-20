@@ -2,6 +2,7 @@ package ibis.deploy.gui.experiment.jobs;
 
 import ibis.deploy.Job;
 import ibis.deploy.JobDescription;
+import ibis.deploy.State;
 
 public class JobRowObject {
 
@@ -9,9 +10,9 @@ public class JobRowObject {
 
     private JobDescription jobDescription;
 
-    private String hubState = "";
+    private State hubState = null;
 
-    private String jobState = "";
+    private State jobState = null;
 
     public JobRowObject(JobDescription jobDescription, Job job) {
         this.job = job;
@@ -26,19 +27,19 @@ public class JobRowObject {
         return jobDescription;
     }
 
-    public String getHubState() {
+    public State getHubState() {
         return hubState;
     }
 
-    public String getJobState() {
+    public State getJobState() {
         return jobState;
     }
 
-    public void setJobState(String state) {
+    public void setJobState(State state) {
         this.jobState = state;
     }
 
-    public void setHubState(String state) {
+    public void setHubState(State state) {
         this.hubState = state;
     }
 

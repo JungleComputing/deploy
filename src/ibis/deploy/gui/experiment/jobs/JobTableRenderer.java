@@ -2,9 +2,11 @@ package ibis.deploy.gui.experiment.jobs;
 
 import ibis.deploy.Job;
 import ibis.deploy.JobDescription;
+import ibis.deploy.State;
 import ibis.deploy.gui.GUI;
 import ibis.deploy.gui.misc.Utils;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -35,11 +37,13 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
     public Component getTableCellRendererComponent(final JTable table,
             final Object object, boolean isSelected, boolean hasFocus,
             final int row, int column) {
-        setText("N.A.");
+        setText("");
         setOpaque(isSelected);
         setBackground(UIManager.getColor("Table.selectionBackground"));
+        setForeground(Color.BLACK);
         final Job job = ((JobRowObject) object).getJob();
         JobDescription jobDescription = null;
+        JobRowObject data = (JobRowObject) object;
         try {
             jobDescription = ((JobRowObject) object).getJobDescription()
                     .resolve(gui.getApplicationSet(), gui.getGrid());
@@ -82,18 +86,59 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
         } else if (column == 2) {
             setText(jobDescription.getName());
         } else if (column == 3) {
-            setText(((JobRowObject) object).getJobState());
+            State state = data.getJobState();
+
+            if (state != null) {
+                if (state == State.DEPLOYED) {
+                    //green
+                    setForeground(Color.decode("#00CC00"));
+                } else if (state == State.ERROR) {
+                    setForeground(Color.RED);
+                } else {
+                    setForeground(Color.BLACK);
+                }
+
+                setText(state.toString());
+            }
         } else if (column == 4) {
-            setText(((JobRowObject) object).getHubState());
+            State state = data.getHubState();
+
+            if (state != null) {
+                if (state == State.DEPLOYED) {
+                    //green
+                    setForeground(Color.decode("#00CC00"));
+                } else if (state == State.ERROR) {
+                    setForeground(Color.RED);
+                } else {
+                    setForeground(Color.BLACK);
+                }
+
+                setText(state.toString());
+            }
         } else if (column == 5) {
+            setOpaque(true);
+
+            if (isSelected) {
+                setBackground(jobDescription.getClusterOverrides().getColor());
+            } else {
+                setBackground(jobDescription.getClusterOverrides()
+                        .getLightColor());
+            }
+
             setText(jobDescription.getClusterName());
         } else if (column == 6) {
-            setText(jobDescription.getApplicationName());
+            String adaptor = jobDescription.getClusterOverrides().getJobAdaptor();
+            if (adaptor.equalsIgnoreCase("sshTrilead")) {
+                adaptor = "ssh";
+            }
+            setText(adaptor);
         } else if (column == 7) {
-            setText("" + jobDescription.getProcessCount());
+            setText(jobDescription.getApplicationName());
         } else if (column == 8) {
-            setText("" + jobDescription.getResourceCount());
+            setText("" + jobDescription.getProcessCount());
         } else if (column == 9) {
+            setText("" + jobDescription.getResourceCount());
+        } else if (column == 10) {
             JButton button = new JButton("output");
             button.setMargin(new Insets(2, 2, 2, 2));
             button.addActionListener(new ActionListener() {
