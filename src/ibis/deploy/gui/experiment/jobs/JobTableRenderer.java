@@ -91,7 +91,7 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
 
             if (state != null) {
                 if (state == State.DEPLOYED) {
-                    //green
+                    // green
                     setForeground(Color.decode("#00CC00"));
                 } else if (state == State.ERROR) {
                     setForeground(Color.RED);
@@ -106,7 +106,7 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
 
             if (state != null) {
                 if (state == State.DEPLOYED) {
-                    //green
+                    // green
                     setForeground(Color.decode("#00CC00"));
                 } else if (state == State.ERROR) {
                     setForeground(Color.RED);
@@ -120,15 +120,17 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
             setOpaque(true);
 
             if (isSelected) {
-                setBackground(jobDescription.getClusterOverrides().getColor());
+                setBackground(Utils.getColor(jobDescription
+                        .getClusterOverrides().getColorCode()));
             } else {
-                setBackground(jobDescription.getClusterOverrides()
-                        .getLightColor());
+                setBackground(Utils.getLightColor(jobDescription
+                        .getClusterOverrides().getColorCode()));
             }
 
             setText(jobDescription.getClusterName());
         } else if (column == 6) {
-            String adaptor = jobDescription.getClusterOverrides().getJobAdaptor();
+            String adaptor = jobDescription.getClusterOverrides()
+                    .getJobAdaptor();
             if (adaptor.equalsIgnoreCase("sshTrilead")) {
                 adaptor = "ssh";
             }
@@ -142,7 +144,7 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
         } else if (column == 10) {
             JButton button = new JButton("output");
             button.setMargin(new Insets(2, 2, 2, 2));
-            button.setPreferredSize(new Dimension(10,10));
+            button.setPreferredSize(new Dimension(10, 10));
             button.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent arg0) {

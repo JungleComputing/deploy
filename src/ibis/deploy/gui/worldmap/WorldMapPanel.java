@@ -4,6 +4,7 @@ import ibis.deploy.Cluster;
 import ibis.deploy.gui.GUI;
 import ibis.deploy.gui.WorkSpaceChangedListener;
 import ibis.deploy.gui.experiment.composer.ClusterSelectionPanel;
+import ibis.deploy.gui.misc.Utils;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -378,11 +379,13 @@ public class WorldMapPanel extends JPanel {
             final int x = cwp.getOffset().width;
             final int y = cwp.getOffset().height;
 
-            Color clusterBorderColor = cwp.getCluster().getColor();
+            Color clusterBorderColor = Utils.getColor(cwp.getCluster()
+                    .getColorCode());
             if (clusterBorderColor == null) {
                 clusterBorderColor = new Color(100, 100, 255, 255);
             }
-            Color clusterFillColor = cwp.getCluster().getLightColor();
+            Color clusterFillColor = Utils.getLightColor(cwp.getCluster()
+                    .getColorCode());
             if (clusterFillColor == null) {
                 clusterFillColor = new Color(100, 100, 255, 150);
             }
@@ -410,11 +413,13 @@ public class WorldMapPanel extends JPanel {
             final int diameter = 2 * radius;
 
             if (cwp.isSelected()) {
-                g.setPaint(cwp.getCluster().getColor());
+                g.setPaint(Utils.getColor(cwp.getCluster().getColorCode()));
                 g.fillArc(x - radius, y - radius, diameter, diameter, 90, -(cwp
                         .getResourceCount() * 360)
                         / Math.max(1, cwp.getCluster().getNodes()));
-                g.setPaint(cwp.getCluster().getLightColor());
+                g
+                        .setPaint(Utils.getLightColor(cwp.getCluster()
+                                .getColorCode()));
                 g.fillArc(x - radius, y - radius, diameter, diameter, 90, 360
                         - (cwp.getResourceCount() * 360)
                         / Math.max(1, cwp.getCluster().getNodes()));

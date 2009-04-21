@@ -8,13 +8,13 @@ import ibis.deploy.JobDescription;
 import ibis.deploy.Workspace;
 import ibis.deploy.gui.experiment.composer.SubmitJobListener;
 import ibis.deploy.gui.misc.AboutAction;
-import ibis.deploy.gui.misc.SmartSocketsVizAction;
-import ibis.deploy.gui.misc.Utils;
 import ibis.deploy.gui.misc.HubPolicyAction;
 import ibis.deploy.gui.misc.NewWorkSpaceAction;
 import ibis.deploy.gui.misc.OpenWorkSpaceAction;
 import ibis.deploy.gui.misc.SaveAsWorkSpaceAction;
 import ibis.deploy.gui.misc.SaveWorkSpaceAction;
+import ibis.deploy.gui.misc.SmartSocketsVizAction;
+import ibis.deploy.gui.misc.Utils;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -35,6 +35,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.UIManager;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

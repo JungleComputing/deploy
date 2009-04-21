@@ -845,21 +845,21 @@ public class Cluster {
         return color;
     }
 
-    public Color getColor() {
-        if (color == null || color.equals("")) {
-            return null;
-        }
-        return Color.decode(color);
-    }
-
-    public Color getLightColor() {
-        Color color = getColor();
-        
-        if (color == null) {
-            return null;
-        }
-        return new Color(color.getRed(), color.getGreen(), color.getBlue(), 125);
-    }
+//    public Color getColor() {
+//        if (color == null || color.equals("")) {
+//            return null;
+//        }
+//        return Color.decode(color);
+//    }
+//
+//    public Color getLightColor() {
+//        Color color = getColor();
+//        
+//        if (color == null) {
+//            return null;
+//        }
+//        return new Color(color.getRed(), color.getGreen(), color.getBlue(), 125);
+//    }
 
     public void setColor(String color) {
         this.color = color;
