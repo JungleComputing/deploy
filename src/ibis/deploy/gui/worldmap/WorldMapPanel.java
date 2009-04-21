@@ -11,10 +11,14 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.RenderingHints;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -28,6 +32,8 @@ import org.jdesktop.swingx.JXMapViewer;
 import org.jdesktop.swingx.mapviewer.Waypoint;
 import org.jdesktop.swingx.mapviewer.WaypointPainter;
 import org.jdesktop.swingx.mapviewer.WaypointRenderer;
+import org.jdesktop.swingx.painter.MattePainter;
+import org.jdesktop.swingx.painter.Painter;
 
 public class WorldMapPanel extends JPanel {
 
@@ -47,6 +53,7 @@ public class WorldMapPanel extends JPanel {
     private Set<Waypoint> waypoints = new HashSet<Waypoint>();
 
     public WorldMapPanel(final GUI gui, final int zoom) {
+
         JMenuBar menuBar = gui.getMenuBar();
         JMenu menu = null;
         for (int i = 0; i < menuBar.getMenuCount(); i++) {
@@ -72,96 +79,17 @@ public class WorldMapPanel extends JPanel {
         }
 
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
-        final JXMapKit mapKit = new JXMapKit() {
+        final JXMapKit worldMap = new WorldMap();
+        MapUtilities.register(worldMap);
+        add(worldMap);
+        worldMap.setTileFactory(MapUtilities.getDefaultTileFactory());
+        worldMap.setMiniMapVisible(false);
+        worldMap.setAddressLocationShown(false);
+        worldMap.getMainMap().setZoom(zoom);
+        worldMap.getMainMap()
+                .setCenterPosition(MapUtilities.INITIAL_MAP_CENTER);
 
-            /**
-             * 
-             */
-            private static final long serialVersionUID = -6194956781979564591L;
-
-            private boolean initialized = false;
-
-            private static final int MAX_DEPTH = 3;
-
-            private static final int MIN_DISTANCE = 4;
-
-            private void doFit() {
-                for (Waypoint waypoint : waypoints) {
-                    ((ClusterWaypoint) waypoint).resetOffset();
-                }
-                for (Waypoint currentWaypoint : waypoints) {
-                    for (Waypoint otherWaypoint : waypoints) {
-                        if (currentWaypoint != otherWaypoint) {
-                            adjustPosition((ClusterWaypoint) currentWaypoint,
-                                    (ClusterWaypoint) otherWaypoint, 0);
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void setZoom(int zoom) {
-                doFit();
-                super.setZoom(zoom);
-            }
-
-            public void paint(Graphics g) {
-                if (!initialized) {
-                    doFit();
-                    initialized = true;
-                }
-                super.paint(g);
-            }
-
-            private void adjustPosition(ClusterWaypoint waypoint,
-                    ClusterWaypoint otherWaypoint, int depth) {
-                // take already known offset into account
-                Point2D p1 = getMainMap().convertGeoPositionToPoint(
-                        waypoint.getPosition());
-                p1.setLocation(p1.getX() + waypoint.getOffset().width, p1
-                        .getY()
-                        + waypoint.getOffset().height);
-                Point2D p2 = getMainMap().convertGeoPositionToPoint(
-                        otherWaypoint.getPosition());
-                p2.setLocation(p2.getX() + otherWaypoint.getOffset().width, p2
-                        .getY()
-                        + otherWaypoint.getOffset().height);
-
-                double distance = p1.distance(p2);
-                double minDistance = waypoint.getRadius()
-                        + otherWaypoint.getRadius() + 20;
-                if (distance < minDistance) {
-                    // move both waypoints in half the overlap size in the
-                    // proper direction
-                    double overlap = 0.5 * (minDistance - distance)
-                            + MIN_DISTANCE;
-                    double deltaX = p1.getX() - p2.getX();
-                    double deltaY = p1.getY() - p2.getY();
-                    waypoint.addOffset((int) ((overlap / distance) * deltaX),
-                            (int) ((overlap / distance) * deltaY));
-                    otherWaypoint.addOffset(
-                            (int) ((overlap / distance) * -deltaX),
-                            (int) ((overlap / distance) * -deltaY));
-                    for (Waypoint thirdWaypoint : waypoints) {
-                        if (thirdWaypoint != waypoint
-                                && thirdWaypoint != otherWaypoint
-                                && depth < MAX_DEPTH) {
-                            adjustPosition(waypoint,
-                                    (ClusterWaypoint) thirdWaypoint, depth + 1);
-                            adjustPosition(otherWaypoint,
-                                    (ClusterWaypoint) thirdWaypoint, depth + 1);
-                        }
-                    }
-                }
-            }
-        };
-        MapUtilities.register(mapKit);
-        add(mapKit);
-        mapKit.setTileFactory(MapUtilities.getDefaultTileFactory());
-        mapKit.setMiniMapVisible(false);
-        mapKit.setAddressLocationShown(false);
-        mapKit.getMainMap().setZoom(zoom);
-        mapKit.getMainMap().setCenterPosition(MapUtilities.INITIAL_MAP_CENTER);
+        worldMap.getMainMap().setHorizontalWrapped(false);
 
         for (Cluster cluster : gui.getGrid().getClusters()) {
             waypoints.add(new ClusterWaypoint(cluster, false));
@@ -174,27 +102,27 @@ public class WorldMapPanel extends JPanel {
                 for (Cluster cluster : gui.getGrid().getClusters()) {
                     waypoints.add(new ClusterWaypoint(cluster, false));
                 }
-                mapKit.setZoom(zoom);
-                mapKit.getMainMap().repaint();
+                worldMap.setZoom(zoom);
+                worldMap.getMainMap().repaint();
             }
         });
         WaypointPainter<JXMapViewer> painter = new WaypointPainter<JXMapViewer>();
         painter.setRenderer(new ClusterWaypointRenderer());
         painter.setWaypoints(waypoints);
-        mapKit.getMainMap().setOverlayPainter(painter);
-        mapKit.getMainMap().repaint();
+        worldMap.getMainMap().setOverlayPainter(painter);
+        worldMap.getMainMap().repaint();
 
-        mapKit.getMainMap().addMouseListener(new MouseListener() {
+        worldMap.getMainMap().addMouseListener(new MouseListener() {
             @SuppressWarnings("unchecked")
             public void mouseClicked(MouseEvent e) {
-                if (mapKit.getMainMap().getOverlayPainter() instanceof WaypointPainter) {
-                    Set<Waypoint> waypoints = ((WaypointPainter) mapKit
+                if (worldMap.getMainMap().getOverlayPainter() instanceof WaypointPainter) {
+                    Set<Waypoint> waypoints = ((WaypointPainter) worldMap
                             .getMainMap().getOverlayPainter()).getWaypoints();
                     double closestDistance = Double.MAX_VALUE;
                     ClusterWaypoint tmpWaypoint = null;
                     for (Waypoint wp : waypoints) {
                         ClusterWaypoint cwp = (ClusterWaypoint) wp;
-                        Point2D clusterPoint = mapKit.getMainMap()
+                        Point2D clusterPoint = worldMap.getMainMap()
                                 .convertGeoPositionToPoint(cwp.getPosition());
                         clusterPoint.setLocation(clusterPoint.getX()
                                 + cwp.getOffset().width, clusterPoint.getY()
@@ -230,7 +158,7 @@ public class WorldMapPanel extends JPanel {
                         }
                     }
                     selectedWaypoint.setSelected(true);
-                    mapKit.repaint();
+                    worldMap.repaint();
                 }
             }
 
@@ -291,6 +219,107 @@ public class WorldMapPanel extends JPanel {
     }
 
     // HELPER CLASSES
+
+    private final class WorldMap extends JXMapKit {
+        /**
+         * 
+         */
+        private static final long serialVersionUID = -6194956781979564591L;
+        private boolean initialized = false;
+        private static final int MAX_DEPTH = 3;
+        private static final int MIN_DISTANCE = 4;
+
+        private static final int WIDTH = 256;
+        private static final int HEIGHT = 256;
+        
+        
+        WorldMap() {
+
+            //create loading image in color of background
+            
+            BufferedImage image = new BufferedImage(WIDTH,
+                    HEIGHT,
+                    BufferedImage.TYPE_INT_RGB);
+            
+            for(int x = 0; x < WIDTH;x++) {
+                for(int y = 0; y < HEIGHT; y++)
+                    image.setRGB(x, y, Color.decode("#99b3cc").getRGB());
+            }
+            
+            getMainMap().setLoadingImage(image);
+            
+            //debug: show tiles borders and coordinates
+            //getMainMap().setDrawTileBorders(true);
+
+        }
+
+        private void doFit() {
+            for (Waypoint waypoint : waypoints) {
+                ((ClusterWaypoint) waypoint).resetOffset();
+            }
+            for (Waypoint currentWaypoint : waypoints) {
+                for (Waypoint otherWaypoint : waypoints) {
+                    if (currentWaypoint != otherWaypoint) {
+                        adjustPosition((ClusterWaypoint) currentWaypoint,
+                                (ClusterWaypoint) otherWaypoint, 0);
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void setZoom(int zoom) {
+            doFit();
+            super.setZoom(zoom);
+        }
+
+        public void paint(Graphics g) {
+            if (!initialized) {
+                doFit();
+                initialized = true;
+            }
+            super.paint(g);
+        }
+
+        private void adjustPosition(ClusterWaypoint waypoint,
+                ClusterWaypoint otherWaypoint, int depth) {
+            // take already known offset into account
+            Point2D p1 = getMainMap().convertGeoPositionToPoint(
+                    waypoint.getPosition());
+            p1.setLocation(p1.getX() + waypoint.getOffset().width, p1.getY()
+                    + waypoint.getOffset().height);
+            Point2D p2 = getMainMap().convertGeoPositionToPoint(
+                    otherWaypoint.getPosition());
+            p2.setLocation(p2.getX() + otherWaypoint.getOffset().width, p2
+                    .getY()
+                    + otherWaypoint.getOffset().height);
+
+            double distance = p1.distance(p2);
+            double minDistance = waypoint.getRadius()
+                    + otherWaypoint.getRadius() + 20;
+            if (distance < minDistance) {
+                // move both waypoints in half the overlap size in the
+                // proper direction
+                double overlap = 0.5 * (minDistance - distance) + MIN_DISTANCE;
+                double deltaX = p1.getX() - p2.getX();
+                double deltaY = p1.getY() - p2.getY();
+                waypoint.addOffset((int) ((overlap / distance) * deltaX),
+                        (int) ((overlap / distance) * deltaY));
+                otherWaypoint.addOffset((int) ((overlap / distance) * -deltaX),
+                        (int) ((overlap / distance) * -deltaY));
+                for (Waypoint thirdWaypoint : waypoints) {
+                    if (thirdWaypoint != waypoint
+                            && thirdWaypoint != otherWaypoint
+                            && depth < MAX_DEPTH) {
+                        adjustPosition(waypoint,
+                                (ClusterWaypoint) thirdWaypoint, depth + 1);
+                        adjustPosition(otherWaypoint,
+                                (ClusterWaypoint) thirdWaypoint, depth + 1);
+                    }
+                }
+            }
+        }
+    }
 
     private class ClusterWaypoint extends Waypoint {
 
