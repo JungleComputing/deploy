@@ -43,10 +43,6 @@ public class RunButtonPanel extends JPanel {
                 try {
                     JobDescription result = getJobDescription(gui);
                     gui.fireSubmitJob(result);
-                    // result = result.resolve(gui.getApplicationSet(), gui
-                    // .getGrid());
-                    // result.checkSettings();
-                    result.setSharedHub(gui.getSharedHubs());
                     model.addRow(new JobRowObject(result, null));
                     model.fireTableChanged(new TableModelEvent(model));
                 } catch (Exception e) {
@@ -67,7 +63,6 @@ public class RunButtonPanel extends JPanel {
                     // result = result.resolve(gui.getApplicationSet(), gui
                     // .getGrid());
                     // result.checkSettings();
-                    result.setSharedHub(gui.getSharedHubs());
                     final int row = model.getRowCount();
                     final JobRowObject jobRow = new JobRowObject(result, null);
                     Job job = gui.getDeploy().submitJob(result,

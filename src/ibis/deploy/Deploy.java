@@ -22,6 +22,12 @@ import org.slf4j.LoggerFactory;
  */
 public class Deploy {
 
+    public enum HubPolicy {
+        OFF,
+        PER_CLUSTER,
+        PER_JOB,
+    }
+
     /**
      * System property with home dir of Ibis deploy.
      */
@@ -56,6 +62,8 @@ public class Deploy {
     private Map<String, RemoteServer> hubs;
 
     private boolean keepSandboxes;
+    
+    private HubPolicy hubPolicy;
 
     private PoolSizePrinter poolSizePrinter;
 
@@ -76,6 +84,8 @@ public class Deploy {
         keepSandboxes = false;
         poolSizePrinter = null;
         this.verbose = verbose;
+        
+        hubPolicy = HubPolicy.PER_CLUSTER;
 
         jobs = new ArrayList<Job>();
         hubs = new HashMap<String, RemoteServer>();
@@ -133,8 +143,12 @@ public class Deploy {
      *            if true, ibis-deploy will keep all sandboxes for jobs from now
      *            on.
      */
-    public synchronized void keepSandboxes(boolean keepSandboxes) {
+    public synchronized void setKeepSandboxes(boolean keepSandboxes) {
         this.keepSandboxes = keepSandboxes;
+    }
+    
+    public synchronized void setHubPolicy(HubPolicy policy) {
+        this.hubPolicy = policy;
     }
 
     /**
@@ -299,14 +313,13 @@ public class Deploy {
         resolvedDescription.checkSettings();
 
         Hub hub = null;
-        if (resolvedDescription.getSharedHub() == null
-                || resolvedDescription.getSharedHub()) {
-            hub = getHub(resolvedDescription.getClusterOverrides(), false,
+        if (hubPolicy == HubPolicy.PER_CLUSTER) {
+            hub = getClusterHub(resolvedDescription.getClusterOverrides(), false,
                     hubListener);
         }
-
+        
         // start job
-        Job job = new Job(resolvedDescription, hub, keepSandboxes, jobListener,
+        Job job = new Job(resolvedDescription, hubPolicy, hub, keepSandboxes, jobListener,
                 hubListener, rootHub, verbose, home, getServerAddress(), this);
 
         jobs.add(job);
@@ -328,7 +341,7 @@ public class Deploy {
      * @throws Exception
      *             if the hub cannot be started
      */
-    public synchronized Hub getHub(Cluster cluster, boolean waitUntilRunning,
+    public synchronized Hub getClusterHub(Cluster cluster, boolean waitUntilRunning,
             StateListener listener) throws Exception {
         if (rootHub == null) {
             throw new Exception("Ibis Deploy not initialized, cannot get hub");

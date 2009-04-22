@@ -41,12 +41,6 @@ public class JobDescription {
                 .println("# pool.name           Pool name. Defaults to name of experiment if unspecified");
         out
                 .println("# pool.size           Size of pool. Only used in a closed-world application");
-
-        out
-                .println("# shared.hub          if \"true\" (or unset), this job shares a hub with other");
-        out
-                .println("#                     jobs on this cluster. If \"false\" a hub is started");
-        out.println("#                     especially for it");
     }
 
     // experiment this job belongs to
@@ -73,8 +67,6 @@ public class JobDescription {
 
     private int poolSize;
 
-    private Boolean sharedHub;
-
     /**
      * Create an empty job description
      */
@@ -90,7 +82,6 @@ public class JobDescription {
         runtime = 0;
         poolName = null;
         poolSize = 0;
-        sharedHub = null;
     }
 
     /**
@@ -121,7 +112,6 @@ public class JobDescription {
         runtime = 0;
         poolName = null;
         poolSize = 0;
-        sharedHub = null;
     }
 
     /**
@@ -164,11 +154,6 @@ public class JobDescription {
 
         poolSize = properties.getIntProperty(prefix + "pool.size", 0);
 
-        if (!properties.containsKey("shared.hub")) {
-            sharedHub = null;
-        } else {
-            sharedHub = properties.getBooleanProperty(prefix + "shared.hub");
-        }
     }
 
     // overwrites values with all non-null fields from "other" except
@@ -206,9 +191,6 @@ public class JobDescription {
             this.poolSize = other.poolSize;
         }
 
-        if (other.sharedHub != null) {
-            this.sharedHub = other.sharedHub;
-        }
     }
 
     /**
@@ -442,27 +424,6 @@ public class JobDescription {
     }
 
     /**
-     * Returns if this job uses a shared hub (default), or one started
-     * especially for it.
-     * 
-     * @return if this job uses a shared hub (default), or one started
-     *         especially for it. Maybe null (unknown)
-     */
-    public Boolean getSharedHub() {
-        return sharedHub;
-    }
-
-    /**
-     * Sets if this job uses a shared hub, or one is started especially for it.
-     * 
-     * @param sharedHub
-     *            Does this job use a shared hub or not. Use null for "unknown"
-     */
-    public void setSharedHub(Boolean sharedHub) {
-        this.sharedHub = sharedHub;
-    }
-
-    /**
      * Checks if this description is suitable for deploying. If not, throws an
      * exception.
      * 
@@ -675,13 +636,6 @@ public class JobDescription {
             empty = false;
         }
 
-        if (sharedHub == null) {
-            out.println("#" + dotPrefix + "shared.hub =");
-        } else {
-            out.println(dotPrefix + "shared.hub = " + sharedHub);
-            empty = false;
-        }
-
         if (empty && ensureExists) {
             out.println("#Dummy property to make sure job is actually defined");
             out.println(prefix);
@@ -703,7 +657,6 @@ public class JobDescription {
         result += " Runtime = " + getRuntime() + "\n";
         result += " Pool Name = " + getPoolName() + "\n";
         result += " Pool Size = " + getPoolSize() + "\n";
-        result += " Shared Hub = " + getSharedHub() + "\n";
         result += applicationOverrides.toPrintString();
         result += clusterOverrides.toPrintString();
 

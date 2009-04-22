@@ -1,5 +1,6 @@
 package ibis.deploy.gui.misc;
 
+import ibis.deploy.Deploy.HubPolicy;
 import ibis.deploy.gui.GUI;
 
 import java.awt.event.ActionEvent;
@@ -13,18 +14,18 @@ public class HubPolicyAction extends AbstractAction {
      */
     private static final long serialVersionUID = 1L;
 
-    private boolean sharedHubs;
+    private HubPolicy policy;
 
     private GUI gui;
 
-    public HubPolicyAction(String label, boolean sharedHubs, GUI gui) {
+    public HubPolicyAction(String label, HubPolicy policy, GUI gui) {
         super(label);
         this.gui = gui;
-        this.sharedHubs = sharedHubs;
+        this.policy = policy;
     }
 
     public void actionPerformed(ActionEvent arg0) {
-        gui.setSharedHubs(sharedHubs);
+        gui.getDeploy().setHubPolicy(policy);
     }
 
 }

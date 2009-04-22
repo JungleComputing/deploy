@@ -1,5 +1,6 @@
 package ibis.deploy;
 
+import ibis.deploy.Deploy.HubPolicy;
 import ibis.ipl.IbisProperties;
 import ibis.util.ThreadPool;
 
@@ -36,7 +37,9 @@ public class Job implements Runnable {
 
     private final Application application;
 
-    // shared hub. If null, a local hub is used
+    private final HubPolicy hubPolicy;
+
+    // hub shared between all jobs on this cluster (if applicable)
     private final Hub sharedHub;
 
     private final boolean keepSandbox;
@@ -82,15 +85,16 @@ public class Job implements Runnable {
      * @throws Exception
      *             if the listener could not be attached to this job
      */
-    Job(JobDescription description, Hub hub, boolean keepSandbox,
-            StateListener jobListener, StateListener hubListener,
-            RootHub rootHub, boolean verbose, File deployHome,
-            String serverAddress,
+    Job(JobDescription description, HubPolicy hubPolicy, Hub hub,
+            boolean keepSandbox, StateListener jobListener,
+            StateListener hubListener, RootHub rootHub, boolean verbose,
+            File deployHome, String serverAddress,
 
             Deploy deploy) throws Exception {
         this.description = description;
         this.cluster = description.getClusterOverrides();
         this.application = description.getApplicationOverrides();
+        this.hubPolicy = hubPolicy;
         this.sharedHub = hub;
         this.keepSandbox = keepSandbox;
         this.hubListener = hubListener;
@@ -371,8 +375,10 @@ public class Job implements Runnable {
         }
 
         // ibis stuff
-        sd.addJavaSystemProperty(IbisProperties.LOCATION, description.getName() + "@" + cluster.getName());
-        sd.addJavaSystemProperty(IbisProperties.LOCATION_COLOR, cluster.getColorCode());
+        sd.addJavaSystemProperty(IbisProperties.LOCATION, description.getName()
+                + "@" + cluster.getName());
+        sd.addJavaSystemProperty(IbisProperties.LOCATION_COLOR, cluster
+                .getColorCode());
         sd.addJavaSystemProperty(IbisProperties.POOL_NAME, description
                 .getPoolName());
         sd.addJavaSystemProperty(IbisProperties.POOL_SIZE, ""
@@ -562,8 +568,12 @@ public class Job implements Runnable {
             String hubList;
             String hubAddress;
 
-            forwarder.setState(State.WAITING);
-            if (sharedHub == null) {
+            if (hubPolicy == HubPolicy.OFF) {
+                hubAddress = "";
+                hubList = "";
+            } else if (hubPolicy == HubPolicy.PER_JOB) {
+                forwarder.setState(State.WAITING);
+
                 // start a hub especially for this job
                 localHub = new RemoteServer(description.getClusterOverrides(),
                         true, rootHub, deployHome, verbose, hubListener,
@@ -574,15 +584,20 @@ public class Job implements Runnable {
 
                 // create list of hubs, add to software description
                 hubAddress = localHub.getAddress();
-            } else {
+                hubList = hubAddress + ",";
+            } else if (hubPolicy == HubPolicy.PER_CLUSTER) {
+                forwarder.setState(State.WAITING);
+
                 sharedHub.waitUntilRunning();
 
                 hubAddress = sharedHub.getAddress();
+                hubList = hubAddress + ",";
+            } else {
+                throw new Exception("Unknown Hub Policy");
             }
-            // create list of hubs from our hub and hubs list from root hub
-            hubList = hubAddress;
+
             for (String address : rootHub.getHubs()) {
-                hubList = hubList + "," + address;
+                hubList = hubList + address + ",";
             }
 
             GATContext context = createGATContext();
@@ -630,7 +645,7 @@ public class Job implements Runnable {
 
             waitUntilDeployed();
 
-            if (localHub != null) {
+            if (hubPolicy == HubPolicy.PER_JOB) {
                 waitUntilFinished();
 
                 // kill our local hub

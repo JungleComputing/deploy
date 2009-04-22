@@ -36,7 +36,7 @@ public class SmartSocketsVizAction extends AbstractAction {
         try {
             DirectSocketAddress rootHub = DirectSocketAddress.getByAddress(gui
                     .getDeploy().getRootHubAddress());
-            smartSocketsPanel = new SmartsocketsViz(Color.BLACK, Color.WHITE,
+            smartSocketsPanel = new SmartsocketsViz(Color.BLACK, Color.WHITE,false,
                     rootHub);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(frame, "Cannot start visualization: " + e.getMessage(), "Error",

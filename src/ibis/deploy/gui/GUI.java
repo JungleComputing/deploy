@@ -6,6 +6,7 @@ import ibis.deploy.Experiment;
 import ibis.deploy.Grid;
 import ibis.deploy.JobDescription;
 import ibis.deploy.Workspace;
+import ibis.deploy.Deploy.HubPolicy;
 import ibis.deploy.gui.experiment.composer.SubmitJobListener;
 import ibis.deploy.gui.misc.AboutAction;
 import ibis.deploy.gui.misc.HubPolicyAction;
@@ -65,7 +66,7 @@ public class GUI {
 
     private JMenuBar menuBar = null;
 
-    private Boolean sharedHubs;
+//    private Boolean sharedHubs;
 
     private static class Shutdown extends Thread {
         private final GUI gui;
@@ -159,13 +160,17 @@ public class GUI {
         menu = new JMenu("Options");
         JMenu subMenu = new JMenu("Hub Policy");
         ButtonGroup hubPolicy = new ButtonGroup();
-        menuItem = new JRadioButtonMenuItem(new HubPolicyAction("Shared hubs",
-                true, this));
+        menuItem = new JRadioButtonMenuItem(new HubPolicyAction("No hubs",
+                HubPolicy.OFF, this));
+        hubPolicy.add(menuItem);
+        subMenu.add(menuItem);
+        menuItem = new JRadioButtonMenuItem(new HubPolicyAction("One hub per cluster",
+                HubPolicy.PER_CLUSTER, this));
         menuItem.setSelected(true);
         hubPolicy.add(menuItem);
         subMenu.add(menuItem);
         menuItem = new JRadioButtonMenuItem(new HubPolicyAction(
-                "One hub per job", false, this));
+                "One hub per job", HubPolicy.PER_JOB, this));
         hubPolicy.add(menuItem);
         subMenu.add(menuItem);
         menu.add(subMenu);
@@ -320,7 +325,7 @@ public class GUI {
 
         try {
             deploy = new Deploy(null, verbose);
-            deploy.keepSandboxes(keepSandboxes);
+            deploy.setKeepSandboxes(keepSandboxes);
         } catch (Exception e) {
             System.err.println("Could not initialize ibis-deploy: " + e);
             System.exit(1);
@@ -385,13 +390,13 @@ public class GUI {
         return menuBar;
     }
 
-    public Boolean getSharedHubs() {
-        return sharedHubs;
-    }
-
-    public void setSharedHubs(boolean sharedHubs) {
-        this.sharedHubs = sharedHubs;
-    }
+//    public Boolean getSharedHubs() {
+//        return sharedHubs;
+//    }
+//
+//    public void setSharedHubs(boolean sharedHubs) {
+//        this.sharedHubs = sharedHubs;
+//    }
 
     public void fireSubmitJob(JobDescription jobDescription) {
         for (SubmitJobListener listener : submitJobListeners) {

@@ -186,7 +186,7 @@ public class CommandLine {
 
             Deploy deploy = new Deploy(null, verbose);
 
-            deploy.keepSandboxes(keepSandboxes);
+            deploy.setKeepSandboxes(keepSandboxes);
 
             if (serverCluster == null) {
                 logger
