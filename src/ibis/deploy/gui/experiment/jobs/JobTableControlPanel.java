@@ -8,7 +8,6 @@ import java.awt.GridLayout;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import javax.swing.JSeparator;
 import javax.swing.JTable;
 
 public class JobTableControlPanel extends JPanel {
@@ -16,7 +15,7 @@ public class JobTableControlPanel extends JPanel {
     /**
      * 
      */
-    private static final long serialVersionUID = -8138221871070915449L;
+    private static final long serialVersionUID = -1L;
 
     public JobTableControlPanel(final GUI gui, final JTable table) {
         setLayout(new FlowLayout(FlowLayout.CENTER, 2, 2));

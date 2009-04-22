@@ -7,6 +7,7 @@ import ibis.util.ThreadPool;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -233,11 +234,13 @@ public class RemoteServer implements Runnable, Hub {
             }
         }
         
+        
         sd.addJavaSystemProperty(IbisProperties.LOCATION, cluster.getName());
         sd.addJavaSystemProperty(IbisProperties.LOCATION_COLOR, cluster.getColorCode());
 
         if (cluster.getServerSystemProperties() != null) {
-            sd.setJavaSystemProperties(cluster.getServerSystemProperties());
+            sd.getJavaSystemProperties().putAll(
+                    cluster.getServerSystemProperties());
         }
 
         if (keepSandbox) {
@@ -312,7 +315,7 @@ public class RemoteServer implements Runnable, Hub {
         try {
             if (cluster.getCacheDir() != null) {
                 logger.debug(this + " doing pre-stage using rsync");
-                forwarder.setState(State.RSYNC);
+                forwarder.setState(State.UPLOADING);
             }
 
             JobDescription jobDescription = createJobDescription();

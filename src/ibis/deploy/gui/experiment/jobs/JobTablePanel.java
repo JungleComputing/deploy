@@ -42,12 +42,12 @@ public class JobTablePanel extends JPanel {
         TableColumn column = null;
         for (int i = 0; i < table.getColumnCount(); i++) {
             column = table.getColumnModel().getColumn(i);
-            if (i == 0) {
+            if (i == JobTableModel.CONTROL_COLUMN) {
                 column.setCellEditor(new ButtonEditor());
                 column.setMaxWidth(30);// first column is fixed
                 column.setPreferredWidth(30);
                 column.setMinWidth(30);
-            } else if (i == 10) {
+            } else if (i == JobTableModel.OUTPUT_COLUMN) {
                 column.setCellEditor(new ButtonEditor());
                 column.setMaxWidth(52);// last column is fixed
                 column.setPreferredWidth(52);

@@ -8,14 +8,30 @@ import java.util.List;
 import javax.swing.table.AbstractTableModel;
 
 public class JobTableModel extends AbstractTableModel {
+    
+    public static final int CONTROL_COLUMN = 0;
+    public static final int POOL_COLUMN = 1;
+    public static final int NAME_COLUMN = 2;
+    public static final int JOB_STATUS_COLUMN = 3;
+    public static final int HUB_STATUS_COLUMN = 4;
+    public static final int CLUSTER_COLUMN = 5;
+    public static final int MIDDLEWARE_COLUMN = 6;
+    public static final int APPLICATION_COLUMN = 7;
+    public static final int PROCESS_COUNT_COLUMN = 8;
+    public static final int RESOURCE_COUNT_COLUMN = 9;
+    
+    public static final int OUTPUT_COLUMN = 10;
+    
+    public static final int NUMBER_OF_COLUMNS = 11;
+    
 
     /**
      * 
      */
     private static final long serialVersionUID = -2478479107636581568L;
 
-    private String[] columnNames = new String[] { "", "pool", "name", "status",
-            "hub", "cluster", "middleware", "application", "process count", "resource count",
+    private String[] columnNames = new String[] { "", "pool", "name", "job status",
+            "hub status", "cluster", "middleware", "application", "process count", "resource count",
             "output" };
 
     private List<JobRowObject> jobRows = new ArrayList<JobRowObject>();
@@ -37,7 +53,7 @@ public class JobTableModel extends AbstractTableModel {
     }
 
     public boolean isCellEditable(int row, int col) {
-        return col == 0 || col == 9;
+        return col == CONTROL_COLUMN || col == OUTPUT_COLUMN;
     }
 
     public Class<?> getColumnClass(int column) {
@@ -50,15 +66,15 @@ public class JobTableModel extends AbstractTableModel {
             // the row is added!
             return;
         }
-        if (col == 3) {
+        if (col == JobTableModel.JOB_STATUS_COLUMN) {
             jobRows.get(row).setJobState((State) value);
             // the start/stop button
-            fireTableCellUpdated(row, 0);
+            fireTableCellUpdated(row, CONTROL_COLUMN);
             // the output value
-            fireTableCellUpdated(row, 9);
-        } else if (col == 4) {
+            fireTableCellUpdated(row, OUTPUT_COLUMN);
+        } else if (col == JobTableModel.HUB_STATUS_COLUMN) {
             jobRows.get(row).setHubState((State) value);
-            fireTableCellUpdated(row, 0);
+            fireTableCellUpdated(row, CONTROL_COLUMN);
         } else {
             jobRows.set(row, (JobRowObject) value);
         }

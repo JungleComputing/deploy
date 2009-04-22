@@ -1,6 +1,5 @@
 package ibis.deploy;
 
-import java.awt.Color;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;

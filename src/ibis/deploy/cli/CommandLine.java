@@ -215,9 +215,6 @@ public class CommandLine {
                 deploy.initialize(cluster);
             }
 
-            // print pool size statistics
-            new PoolSizePrinter(deploy);
-
             // run experiments
             for (Experiment experiment : experiments) {
                 runExperiment(experiment, grid, applications, deploy, verbose);

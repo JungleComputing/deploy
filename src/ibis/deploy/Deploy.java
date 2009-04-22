@@ -57,6 +57,8 @@ public class Deploy {
 
     private boolean keepSandboxes;
 
+    private PoolSizePrinter poolSizePrinter;
+
     /**
      * Create a new (uninitialized) deployment interface.
      * 
@@ -72,6 +74,7 @@ public class Deploy {
         rootHub = null;
         remoteServer = null;
         keepSandboxes = false;
+        poolSizePrinter = null;
         this.verbose = verbose;
 
         jobs = new ArrayList<Job>();
@@ -240,6 +243,9 @@ public class Deploy {
                 remoteServer.waitUntilRunning();
             }
         }
+
+        // print pool size statistics
+        poolSizePrinter = new PoolSizePrinter(this);
 
         logger.info("Ibis Deploy initialized, root hub address is "
                 + rootHub.getAddress());
@@ -457,12 +463,17 @@ public class Deploy {
             Thread.sleep(1000);
         }
     }
-    
+
     /**
      * Ends all jobs and closes all open connections.
      */
     public synchronized void end() {
         logger.info("ending ibis-deploy engine");
+
+        if (poolSizePrinter != null) {
+            poolSizePrinter.end();
+        }
+
         for (Job job : jobs) {
             logger.info("killing job " + job);
             job.kill();

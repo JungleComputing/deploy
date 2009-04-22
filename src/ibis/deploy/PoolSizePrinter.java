@@ -1,17 +1,18 @@
-package ibis.deploy.cli;
+package ibis.deploy;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import ibis.deploy.Deploy;
 import ibis.util.ThreadPool;
 
 /**
  * Prints pool statistics when they change.
  */
-public class PoolSizePrinter implements Runnable {
+class PoolSizePrinter implements Runnable {
 
     private final Deploy deploy;
+
+    private boolean ended;
 
     public PoolSizePrinter(Deploy deploy) {
         this.deploy = deploy;
@@ -25,7 +26,7 @@ public class PoolSizePrinter implements Runnable {
     public void run() {
         Map<String, Integer> poolSizes = new HashMap<String, Integer>();
 
-        while (true) {
+        while (!isEnded()) {
             try {
                 Map<String, Integer> newSizes = deploy.poolSizes();
 
@@ -46,12 +47,23 @@ public class PoolSizePrinter implements Runnable {
             } catch (Exception e) {
                 // IGNORED
             }
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {
-                // IGNORED
+            synchronized (this) {
+                try {
+                    wait(5000);
+                } catch (InterruptedException e) {
+                    // IGNORED
+                }
             }
         }
+    }
+
+    public synchronized void end() {
+        ended = true;
+        notifyAll();
+    }
+
+    public synchronized boolean isEnded() {
+        return ended;
     }
 
 }

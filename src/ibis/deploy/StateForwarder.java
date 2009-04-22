@@ -7,7 +7,6 @@ import java.util.List;
 
 import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.MetricListener;
-import org.gridlab.gat.resources.Job.JobState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,17 +90,17 @@ class StateForwarder implements MetricListener, Runnable {
     public void processMetricEvent(MetricEvent event) {
         logger.debug(name + " GAT status now " + event.getValue());
 
-        if (!(event.getValue() instanceof JobState)) {
+        if (!(event.getValue() instanceof org.gridlab.gat.resources.Job.JobState)) {
             logger.warn(event.getValue() + " not of type JobState");
             return;
         }
 
-        switch ((JobState) event.getValue()) {
+        switch ((org.gridlab.gat.resources.Job.JobState) event.getValue()) {
         case INITIAL:
             setState(State.SUBMITTED);
             break;
         case PRE_STAGING:
-            setState(State.PRE_STAGING);
+            setState(State.COPYING);
             break;
         case SCHEDULED:
             setState(State.SCHEDULED);
@@ -110,7 +109,7 @@ class StateForwarder implements MetricListener, Runnable {
             setState(State.INITIALIZING);
             break;
         case POST_STAGING:
-            setState(State.POST_STAGING);
+            setState(State.DOWNLOADING);
             break;
         case STOPPED:
             setState(State.DONE);

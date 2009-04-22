@@ -32,28 +32,33 @@ public class StopExistingJobAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent event) {
-        int endRow = untilLastRow ? model.getRowCount() - 1 : startRow;
-        int[] selectedRows = table.getSelectedRows();
+        new Thread() {
+            public void run() {
+                int endRow = untilLastRow ? model.getRowCount() - 1 : startRow;
+                int[] selectedRows = table.getSelectedRows();
 
-        for (int row = startRow; row <= endRow; row++) {
-            if (onlySelectedRows) {
-                // ! selected
-                boolean selected = false;
-                for (int selectedRow : selectedRows) {
-                    selected = (selectedRow == row);
-                    if (selected) {
-                        break;
+                for (int row = startRow; row <= endRow; row++) {
+                    if (onlySelectedRows) {
+                        // ! selected
+                        boolean selected = false;
+                        for (int selectedRow : selectedRows) {
+                            selected = (selectedRow == row);
+                            if (selected) {
+                                break;
+                            }
+                        }
+                        if (!selected) {
+                            continue;
+                        }
+                    }
+                    JobRowObject jobRow = (JobRowObject) model.getValueAt(row,
+                            0);
+                    if (jobRow.getJob() != null) {
+                        jobRow.getJob().kill();
                     }
                 }
-                if (!selected) {
-                    continue;
-                }
-            }
-            JobRowObject jobRow = (JobRowObject) model.getValueAt(row, 0);
-            if (jobRow.getJob() != null) {
-                jobRow.getJob().kill();
-            }
-        }
-    }
 
+            }
+        }.start();
+    }
 }

@@ -226,7 +226,7 @@ public class WorldMapPanel extends JPanel {
          */
         private static final long serialVersionUID = -6194956781979564591L;
         private boolean initialized = false;
-        private static final int MAX_DEPTH = 3;
+        private static final int MAX_DEPTH = 5;
         private static final int MIN_DISTANCE = 4;
 
         private static final int WIDTH = 256;

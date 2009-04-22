@@ -24,7 +24,7 @@ public enum State {
     /**
      * The input files of the {@link Job} are copied to the cluster using Rsync.
      */
-    RSYNC,
+    UPLOADING,
 
     /**
      * The {@link Job} is being submitted to the underlying middleware.
@@ -39,7 +39,7 @@ public enum State {
     /**
      * The input files of the {@link Job} are being pre staged.
      */
-    PRE_STAGING,
+    COPYING,
 
     /**
      * Scheduled state indicator.
@@ -68,7 +68,7 @@ public enum State {
     /**
      * The output files of the {@link Job} are being post staged.
      */
-    POST_STAGING,
+    DOWNLOADING,
 
     /**
      * Stopped state indicator.

@@ -2,7 +2,6 @@ package ibis.deploy.gui.experiment;
 
 import ibis.deploy.State;
 import ibis.deploy.StateListener;
-import ibis.deploy.cli.PoolSizePrinter;
 import ibis.deploy.gui.GUI;
 import ibis.deploy.gui.experiment.composer.ExperimentEditorPanel;
 import ibis.deploy.gui.experiment.jobs.JobTableModel;
@@ -62,6 +61,7 @@ public class ExperimentsPanel extends JPanel implements StateListener,
 
         SmartSocketsVizPanel smartSockets = new SmartSocketsVizPanel(gui,
                 jobTableModel);
+        smartSockets.setSize(100,100);
 
         ExperimentEditorPanel editor = new ExperimentEditorPanel(gui,
                 jobTableModel);
@@ -74,7 +74,7 @@ public class ExperimentsPanel extends JPanel implements StateListener,
                 JSplitPane.HORIZONTAL_SPLIT, editor, smartSockets);
         horizontalSplitPane.setOneTouchExpandable(true);
         horizontalSplitPane
-                .setDividerLocation((int) (GUI.DEFAULT_SCREEN_WIDTH * 0.585));
+                .setDividerLocation((int) (GUI.DEFAULT_SCREEN_WIDTH * 0.65));
         // resize left and right evenly
         horizontalSplitPane.setResizeWeight(0.5);
 
@@ -131,9 +131,6 @@ public class ExperimentsPanel extends JPanel implements StateListener,
             // initialize, wait until finished
             gui.getDeploy().initialize(worldMap.getSelectedCluster(), this,
                     true);
-
-            // print pool size statistics
-            new PoolSizePrinter(gui.getDeploy());
 
             createContent();
         } catch (Exception e) {

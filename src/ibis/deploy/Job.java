@@ -399,7 +399,7 @@ public class Job implements Runnable {
         }
 
         if (cluster.getCacheDir() != null) {
-            forwarder.setState(State.RSYNC);
+            forwarder.setState(State.UPLOADING);
             logger.debug(this + " doing pre-stage using rsync");
         }
 

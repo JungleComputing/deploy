@@ -52,7 +52,7 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        if (column == 0) {
+        if (column == JobTableModel.CONTROL_COLUMN) {
             boolean startedAndNotFinished = false;
             if (job != null) {
                 startedAndNotFinished = true;
@@ -82,11 +82,11 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
                         "/images/media-playback-start.png", null, null);
                 return startButton;
             }
-        } else if (column == 1) {
+        } else if (column == JobTableModel.POOL_COLUMN) {
             setText(jobDescription.getPoolName());
-        } else if (column == 2) {
+        } else if (column == JobTableModel.NAME_COLUMN) {
             setText(jobDescription.getName());
-        } else if (column == 3) {
+        } else if (column == JobTableModel.JOB_STATUS_COLUMN) {
             State state = data.getJobState();
 
             if (state != null) {
@@ -101,7 +101,7 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
 
                 setText(state.toString());
             }
-        } else if (column == 4) {
+        } else if (column == JobTableModel.HUB_STATUS_COLUMN) {
             State state = data.getHubState();
 
             if (state != null) {
@@ -116,7 +116,7 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
 
                 setText(state.toString());
             }
-        } else if (column == 5) {
+        } else if (column == JobTableModel.CLUSTER_COLUMN) {
             setOpaque(true);
 
             if (isSelected) {
@@ -128,26 +128,27 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
             }
 
             setText(jobDescription.getClusterName());
-        } else if (column == 6) {
+        } else if (column == JobTableModel.MIDDLEWARE_COLUMN) {
             String adaptor = jobDescription.getClusterOverrides()
                     .getJobAdaptor();
             if (adaptor.equalsIgnoreCase("sshTrilead")) {
                 adaptor = "ssh";
             }
             setText(adaptor);
-        } else if (column == 7) {
+        } else if (column == JobTableModel.APPLICATION_COLUMN) {
             setText(jobDescription.getApplicationName());
-        } else if (column == 8) {
+        } else if (column == JobTableModel.PROCESS_COUNT_COLUMN) {
             setText("" + jobDescription.getProcessCount());
-        } else if (column == 9) {
+        } else if (column == JobTableModel.RESOURCE_COUNT_COLUMN) {
             setText("" + jobDescription.getResourceCount());
-        } else if (column == 10) {
+        } else if (column == JobTableModel.OUTPUT_COLUMN) {
             JButton button = new JButton("output");
             button.setMargin(new Insets(2, 2, 2, 2));
-            button.setPreferredSize(new Dimension(10, 10));
+//            button.setPreferredSize(new Dimension(10, 10));
             button.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent arg0) {
+                    System.err.println("Output!");
                     JDialog dialog = new JDialog(SwingUtilities
                             .getWindowAncestor(table), "Output Files for "
                             + job.getDescription().getName());
@@ -161,7 +162,7 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
 
             });
             try {
-                button.setEnabled(job != null && job.isFinished());
+                button.setEnabled(job != null);
             } catch (Exception e) {
                 button.setEnabled(false);
             }
