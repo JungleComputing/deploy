@@ -39,7 +39,7 @@ public class ExperimentsPanel extends JPanel implements StateListener,
 
         // initial content: world map, init button
         setLayout(new BorderLayout());
-        worldMap = new WorldMapPanel(gui, 15);
+        worldMap = new WorldMapPanel(gui, 15, true);
         add(worldMap, BorderLayout.CENTER);
 
         initButton = new JButton("init");

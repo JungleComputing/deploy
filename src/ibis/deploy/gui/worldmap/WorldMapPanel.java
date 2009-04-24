@@ -47,8 +47,12 @@ public class WorldMapPanel extends JPanel {
 
     private Set<Waypoint> waypoints = new HashSet<Waypoint>();
 
-    public WorldMapPanel(final GUI gui, final int zoom) {
+    // if true, only yes/no selection is supported for each cluster, instead of
+    // the "count" normally available
+    private final boolean booleanSelect;
 
+    public WorldMapPanel(final GUI gui, final int zoom, boolean booleanSelect) {
+        this.booleanSelect = booleanSelect;
         JMenuBar menuBar = gui.getMenuBar();
         JMenu menu = null;
         for (int i = 0; i < menuBar.getMenuCount(); i++) {
@@ -158,23 +162,15 @@ public class WorldMapPanel extends JPanel {
             }
 
             public void mouseEntered(MouseEvent e) {
-                // TODO Auto-generated method stub
-
             }
 
             public void mouseExited(MouseEvent e) {
-                // TODO Auto-generated method stub
-
             }
 
             public void mousePressed(MouseEvent e) {
-                // TODO Auto-generated method stub
-
             }
 
             public void mouseReleased(MouseEvent e) {
-                // TODO Auto-generated method stub
-
             }
 
         });
@@ -226,25 +222,23 @@ public class WorldMapPanel extends JPanel {
 
         private static final int WIDTH = 256;
         private static final int HEIGHT = 256;
-        
-        
+
         WorldMap() {
 
-            //create loading image in color of background
-            
-            BufferedImage image = new BufferedImage(WIDTH,
-                    HEIGHT,
+            // create loading image in color of background
+
+            BufferedImage image = new BufferedImage(WIDTH, HEIGHT,
                     BufferedImage.TYPE_INT_RGB);
-            
-            for(int x = 0; x < WIDTH;x++) {
-                for(int y = 0; y < HEIGHT; y++)
+
+            for (int x = 0; x < WIDTH; x++) {
+                for (int y = 0; y < HEIGHT; y++)
                     image.setRGB(x, y, Color.decode("#99b3cc").getRGB());
             }
-            
+
             getMainMap().setLoadingImage(image);
-            
-            //debug: show tiles borders and coordinates
-            //getMainMap().setDrawTileBorders(true);
+
+            // debug: show tiles borders and coordinates
+            // getMainMap().setDrawTileBorders(true);
 
         }
 
@@ -418,9 +412,9 @@ public class WorldMapPanel extends JPanel {
             // Color clusterFillColor = new Color(100, 100, 255, 150);
             Color clusterTextColor = new Color(255, 255, 255, 255);
 
-            // Color selectedBorderColor = new Color(255, 100, 100, 255);
+            Color selectedBorderColor = new Color(255, 100, 100, 255);
             // Color selectedArcColor = new Color(255, 100, 100, 200);
-            // Color selectedFillColor = new Color(255, 100, 100, 80);
+            Color selectedFillColor = new Color(255, 100, 100, 200);
             Color selectedTextColor = new Color(255, 100, 100, 100);
 
             // draw a line from where the cluster is drawn to where it actually
@@ -436,7 +430,13 @@ public class WorldMapPanel extends JPanel {
             final int radius = cwp.getRadius();
             final int diameter = 2 * radius;
 
-            if (cwp.isSelected()) {
+            if (cwp.isSelected() && booleanSelect) {
+                g.setPaint(selectedFillColor);
+                g.fillOval(x - radius, y - radius, diameter, diameter);
+                g.setPaint(selectedBorderColor);
+                g.drawOval(x - radius, y - radius, diameter, diameter);
+            } else if (cwp.isSelected()) {
+
                 g.setPaint(Utils.getColor(cwp.getCluster().getColorCode()));
                 g.fillArc(x - radius, y - radius, diameter, diameter, 90, -(cwp
                         .getResourceCount() * 360)
@@ -447,12 +447,14 @@ public class WorldMapPanel extends JPanel {
                 g.fillArc(x - radius, y - radius, diameter, diameter, 90, 360
                         - (cwp.getResourceCount() * 360)
                         / Math.max(1, cwp.getCluster().getNodes()));
+                g.setPaint(clusterBorderColor);
+                g.drawOval(x - radius, y - radius, diameter, diameter);
             } else {
                 g.setPaint(clusterFillColor);
                 g.fillOval(x - radius, y - radius, diameter, diameter);
+                g.setPaint(clusterBorderColor);
+                g.drawOval(x - radius, y - radius, diameter, diameter);
             }
-            g.setPaint(clusterBorderColor);
-            g.drawOval(x - radius, y - radius, diameter, diameter);
 
             // draw cluster name
             String clusterName = cwp.getCluster().getName();
@@ -507,7 +509,9 @@ public class WorldMapPanel extends JPanel {
             // g.drawLine(0, 0, x, y);
 
             // draw usage
-            if (cwp.isSelected()) {
+            
+            if (cwp.isSelected() && !booleanSelect) {
+
                 String usageString = cwp.getResourceCount()
                         + "/"
                         + ((cwp.getCluster().getNodes() > 0) ? cwp.getCluster()
@@ -539,7 +543,9 @@ public class WorldMapPanel extends JPanel {
                 g.drawString(usageString, x + -width / 2, y + height / 2 - 3); // text
                 g.setPaint(clusterTextColor);
                 g.drawString(usageString, x + -width / 2, y + height / 2 - 3); // text
+
             }
+
             g.setFont(original);
             return false;
         }
