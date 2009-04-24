@@ -2,7 +2,6 @@ package ibis.deploy.gui.experiment.jobs;
 
 import ibis.deploy.JobDescription;
 import ibis.deploy.gui.GUI;
-import ibis.deploy.gui.WorkSpaceChangedListener;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -20,6 +19,7 @@ import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableRowSorter;
 
 public class JobTablePanel extends JPanel {
 
@@ -32,22 +32,29 @@ public class JobTablePanel extends JPanel {
         setLayout(new BorderLayout());
         JTable table = new JTable(model);
 
-        table.setDefaultRenderer(Object.class, new JobTableRenderer(gui));
         table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         table.setRowSelectionAllowed(true);
         table.setRowHeight(30);
         table.setDragEnabled(false);
         table.setIntercellSpacing(new Dimension(5, 5));
 
+        JobTableRenderer renderer = new JobTableRenderer(gui, model);
+
+        TableRowSorter<JobTableModel> sorter = new TableRowSorter<JobTableModel>(
+                model);
+        sorter.setSortsOnUpdates(true);
+        table.setRowSorter(sorter);
+
         TableColumn column = null;
         for (int i = 0; i < table.getColumnCount(); i++) {
             column = table.getColumnModel().getColumn(i);
-            if (i == JobTableModel.CONTROL_COLUMN) {
+            column.setCellRenderer(renderer);
+            if (i == JobRow.CONTROL_COLUMN) {
                 column.setCellEditor(new ButtonEditor());
                 column.setMaxWidth(30);// first column is fixed
                 column.setPreferredWidth(30);
                 column.setMinWidth(30);
-            } else if (i == JobTableModel.OUTPUT_COLUMN) {
+            } else if (i == JobRow.OUTPUT_COLUMN) {
                 column.setCellEditor(new ButtonEditor());
                 column.setMaxWidth(52);// last column is fixed
                 column.setPreferredWidth(52);
@@ -57,22 +64,10 @@ public class JobTablePanel extends JPanel {
             }
         }
 
-        for (JobDescription jobDescription : gui.getExperiment().getJobs()) {
-            model.addRow(new JobRowObject(jobDescription, null));
+        // initialize table with all existing jobs
+        for (JobDescription description : gui.getExperiment().getJobs()) {
+            model.addJob(description, false);
         }
-
-        gui.addExperimentWorkSpaceListener(new WorkSpaceChangedListener() {
-
-            public void workSpaceChanged(GUI gui) {
-                model.clear();
-                for (JobDescription jobDescription : gui.getExperiment()
-                        .getJobs()) {
-                    model.addRow(new JobRowObject(jobDescription, null));
-                }
-                model.fireTableDataChanged();
-            }
-
-        });
 
         // Create the scroll pane and add the table to it.
         JScrollPane scrollPane = new JScrollPane(table);
@@ -111,7 +106,7 @@ public class JobTablePanel extends JPanel {
         }
 
         public void cancelCellEditing() {
-            this.listener.editingCanceled(new ChangeEvent(object));
+            this.listener.editingCanceled(new ChangeEvent(this));
         }
 
         public boolean isCellEditable(EventObject eventObject) {
@@ -127,7 +122,7 @@ public class JobTablePanel extends JPanel {
         }
 
         public synchronized boolean stopCellEditing() {
-            this.listener.editingStopped(new ChangeEvent(object));
+            this.listener.editingStopped(new ChangeEvent(this));
             return true;
         }
 

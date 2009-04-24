@@ -23,6 +23,34 @@ import javax.swing.JTextArea;
 
 public class OutputPanel extends JPanel {
 
+    private final class ShowFileListener extends MouseAdapter {
+        private final File file;
+
+        private ShowFileListener(File file) {
+            this.file = file;
+        }
+
+        @Override
+        public void mouseClicked(MouseEvent arg0) {
+            if (file.exists()) {
+                try {
+                    java.awt.Desktop.getDesktop().browse(file.toURI());
+                } catch (IOException e) {
+
+                    JOptionPane.showMessageDialog(OutputPanel.this, e
+                            .getMessage(), "Failed to open '" + file.getName()
+                            + "'", JOptionPane.PLAIN_MESSAGE);
+                    e.printStackTrace(System.err);
+                }
+            } else {
+                JOptionPane.showMessageDialog(OutputPanel.this,
+                        "File not Found", "file \"" + file
+                                + "\" does not exist",
+                        JOptionPane.PLAIN_MESSAGE);
+            }
+        }
+    }
+
     /**
      * 
      */
@@ -39,28 +67,13 @@ public class OutputPanel extends JPanel {
         setBorder(BorderFactory.createTitledBorder("Output Files for '"
                 + job.getDescription().getName() + "'"));
 
-        final String stdout = job.getDescription().getPoolName() + "."
-                + job.getDescription().getName() + ".out";
+        final File stdout = new File(job.getDescription().getPoolName() + "."
+                + job.getDescription().getName() + ".out");
         JLabel stdoutLabel = new JLabel("<html><a href=.>" + stdout
                 + "</a></html>", JLabel.TRAILING);
 
         stdoutLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        stdoutLabel.addMouseListener(new MouseAdapter() {
-
-            @Override
-            public void mouseClicked(MouseEvent arg0) {
-                try {
-                    java.awt.Desktop.getDesktop().browse(
-                            new File(stdout).toURI());
-                } catch (IOException e) {
-                    JOptionPane.showMessageDialog(OutputPanel.this, e
-                            .getMessage(), "Failed to open '" + stdout + "'",
-                            JOptionPane.PLAIN_MESSAGE);
-                    e.printStackTrace(System.err);
-                }
-            }
-
-        });
+        stdoutLabel.addMouseListener(new ShowFileListener(stdout));
         JPanel stdoutPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         stdoutPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         JLabel label = new JLabel("Standard Output: ");
@@ -69,27 +82,13 @@ public class OutputPanel extends JPanel {
         stdoutPanel.add(stdoutLabel);
         container.add(stdoutPanel, Component.LEFT_ALIGNMENT);
 
-        final String stderr = job.getDescription().getPoolName() + "."
-                + job.getDescription().getName() + ".err";
+        final File stderr = new File(job.getDescription().getPoolName() + "."
+                + job.getDescription().getName() + ".err");
         JLabel stderrLabel = new JLabel("<html><a href=.>" + stderr
                 + "</a></html>", JLabel.TRAILING);
         stderrLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        stderrLabel.addMouseListener(new MouseAdapter() {
-
-            @Override
-            public void mouseClicked(MouseEvent arg0) {
-                try {
-                    java.awt.Desktop.getDesktop().browse(
-                            new File(stderr).toURI());
-                } catch (IOException e) {
-                    JOptionPane.showMessageDialog(OutputPanel.this, e
-                            .getMessage(), "Failed to open '" + stderr + "'",
-                            JOptionPane.PLAIN_MESSAGE);
-                    e.printStackTrace(System.err);
-                }
-            }
-
-        });
+        stderrLabel.addMouseListener(new ShowFileListener(stderr));
+        
         JPanel stderrPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         stderrPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         stderrPanel.add(new JLabel("Standard Error: "));
@@ -102,29 +101,14 @@ public class OutputPanel extends JPanel {
             container.add(new JLabel("No other output files"));
         } else {
             for (final File outputFile : job.getApplication().getOutputFiles()) {
+                File file = new File(outputFile.getName());
+
                 JLabel outputFileLabel = new JLabel("<html><a href=.>"
                         + outputFile.getName() + "</a></html>");
                 outputFileLabel.setCursor(Cursor
                         .getPredefinedCursor(Cursor.HAND_CURSOR));
                 container.add(outputFileLabel);
-                outputFileLabel.addMouseListener(new MouseAdapter() {
-
-                    @Override
-                    public void mouseClicked(MouseEvent arg0) {
-                        try {
-                            java.awt.Desktop.getDesktop().browse(
-                                    new File(outputFile.getName()).toURI());
-                        } catch (IOException e) {
-
-                            JOptionPane.showMessageDialog(OutputPanel.this, e
-                                    .getMessage(), "Failed to open '"
-                                    + outputFile.getName() + "'",
-                                    JOptionPane.PLAIN_MESSAGE);
-                            e.printStackTrace(System.err);
-                        }
-                    }
-
-                });
+                outputFileLabel.addMouseListener(new ShowFileListener(file));
 
             }
         }

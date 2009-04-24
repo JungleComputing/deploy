@@ -57,7 +57,7 @@ public class ExperimentsPanel extends JPanel implements StateListener,
     private void createContent() {
         removeAll();
 
-        JobTableModel jobTableModel = new JobTableModel();
+        JobTableModel jobTableModel = new JobTableModel(gui);
 
         SmartSocketsVizPanel smartSockets = new SmartSocketsVizPanel(gui,
                 jobTableModel);

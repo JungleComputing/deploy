@@ -1,6 +1,6 @@
 package ibis.deploy;
 
-import ibis.smartsockets.viz.UniquePaint;
+import ibis.smartsockets.viz.UniqueColor;
 
 import java.awt.Color;
 import java.util.HashMap;
@@ -31,10 +31,10 @@ public class Colors {
     }
 
     public static void main(String[] arguments) {
-        UniquePaint paint = new UniquePaint();
+        UniqueColor uniqueColor = new UniqueColor();
 
         for (int i = 0; i < (3 * 12); i++) {
-            Color color = (Color) paint.getUniquePaint().paint;
+            Color color = uniqueColor.getUniqueColor();
 
             System.err.printf("\"#%02X%02X%02X\",", color.getRed(), color
                     .getGreen(), color.getBlue());

@@ -1,99 +1,194 @@
 package ibis.deploy.gui.experiment.jobs;
 
-import ibis.deploy.State;
+import ibis.deploy.Job;
+import ibis.deploy.JobDescription;
+import ibis.deploy.gui.GUI;
+import ibis.deploy.gui.WorkSpaceChangedListener;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JOptionPane;
 import javax.swing.table.AbstractTableModel;
 
-public class JobTableModel extends AbstractTableModel {
-    
-    public static final int CONTROL_COLUMN = 0;
-    public static final int POOL_COLUMN = 1;
-    public static final int NAME_COLUMN = 2;
-    public static final int JOB_STATUS_COLUMN = 3;
-    public static final int HUB_STATUS_COLUMN = 4;
-    public static final int CLUSTER_COLUMN = 5;
-    public static final int MIDDLEWARE_COLUMN = 6;
-    public static final int APPLICATION_COLUMN = 7;
-    public static final int PROCESS_COUNT_COLUMN = 8;
-    public static final int RESOURCE_COUNT_COLUMN = 9;
-    
-    public static final int OUTPUT_COLUMN = 10;
-    
-    public static final int NUMBER_OF_COLUMNS = 11;
-    
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-    /**
-     * 
-     */
+public class JobTableModel extends AbstractTableModel {
+
+    private static final Logger logger = LoggerFactory
+            .getLogger(JobTableModel.class);
+
     private static final long serialVersionUID = -2478479107636581568L;
 
-    private String[] columnNames = new String[] { "", "pool", "name", "job status",
-            "hub status", "cluster", "middleware", "application", "process count", "resource count",
-            "output" };
+    private String[] columnNames = new String[] { "", "pool", "name",
+            "job status", "hub status", "cluster", "middleware", "application",
+            "process count", "resource count", "output" };
 
-    private List<JobRowObject> jobRows = new ArrayList<JobRowObject>();
+    private final GUI gui;
 
+    private final List<JobRow> jobRows;
+
+    public JobTableModel(GUI gui) {
+        this.gui = gui;
+        jobRows = new ArrayList<JobRow>();
+
+        gui.addExperimentWorkSpaceListener(new WorkSpaceChangedListener() {
+
+            public void workSpaceChanged(GUI gui) {
+                logger.error("Workspace changed not supported yet");
+
+                // setJobs(gui.getExperiment().getJobs());
+            }
+        });
+    }
+
+    @Override
     public String getColumnName(int col) {
         return columnNames[col].toString();
     }
 
+    @Override
     public int getRowCount() {
         return jobRows.size();
     }
 
+    @Override
     public int getColumnCount() {
         return columnNames.length;
     }
 
+    @Override
     public Object getValueAt(int row, int col) {
-        return jobRows.get(row);
+        return jobRows.get(row).getValue(col);
     }
 
+    @Override
     public boolean isCellEditable(int row, int col) {
-        return col == CONTROL_COLUMN || col == OUTPUT_COLUMN;
+        return col == JobRow.CONTROL_COLUMN || col == JobRow.OUTPUT_COLUMN;
     }
 
+    @Override
     public Class<?> getColumnClass(int column) {
-        return JobRowObject.class;
+        return JobRow.getColumnClass(column);
     }
 
+    @Override
     public void setValueAt(Object value, final int row, final int col) {
-        if (row >= jobRows.size()) {
-            // this can happen when we get an upcall for a state change, before
-            // the row is added!
-            return;
+        // Ignored, as only the start/stop button and output button set this
+        // value, due to the trick required to get them in the table.
+    }
+
+    public void addJob(JobDescription description, boolean start) {
+        try {
+
+            JobRow row = new JobRow(description, this, gui);
+            int index = jobRows.size();
+
+            jobRows.add(row);
+            fireTableRowsInserted(index, index);
+
+            if (start) {
+                start(index);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(gui.getFrame(), e.getMessage(),
+                    "Job creation failed: " + e, JOptionPane.PLAIN_MESSAGE);
+            e.printStackTrace(System.err);
         }
-        if (col == JobTableModel.JOB_STATUS_COLUMN) {
-            jobRows.get(row).setJobState((State) value);
-            // the start/stop button
-            fireTableCellUpdated(row, CONTROL_COLUMN);
-            // the output value
-            fireTableCellUpdated(row, OUTPUT_COLUMN);
-        } else if (col == JobTableModel.HUB_STATUS_COLUMN) {
-            jobRows.get(row).setHubState((State) value);
-            fireTableCellUpdated(row, CONTROL_COLUMN);
-        } else {
-            jobRows.set(row, (JobRowObject) value);
+    }
+
+    public Job getJob(int row) {
+        if (row > jobRows.size()) {
+            logger.error("tried to get job for non existing row: " + row
+                    + " table size = " + jobRows.size());
         }
-        fireTableCellUpdated(row, col);
+        return jobRows.get(row).getJob();
     }
 
-    public void addRow(JobRowObject jobRow) {
-        jobRows.add(jobRow);
+    public JobDescription getJobDescription(int row) {
+        if (row > jobRows.size()) {
+            logger.error("tried to get job description for non existing row: "
+                    + row + " table size = " + jobRows.size());
+        }
+        return jobRows.get(row).getJobDescription();
     }
 
-    public void setRow(Object value, int row) {
-        jobRows.set(row, (JobRowObject) value);
+    private boolean isSelected(int row, int[] selectedRows) {
+        for (int selectedRow : selectedRows) {
+            if (selectedRow == row) {
+                return true;
+            }
+        }
+        return false;
     }
 
-    public void removeRow(int row) {
-        jobRows.remove(row);
+    public void start(int... rows) {
+        for (int row = 0; row > jobRows.size(); row++) {
+            if (isSelected(row, rows)) {
+                jobRows.get(row).start();
+                fireTableRowsUpdated(row, row);
+            }
+        }
     }
 
-    public void clear() {
+    public void startAll() {
+        for (JobRow row : jobRows) {
+            row.start();
+        }
+    }
+
+    public void stop(int... rows) {
+        for (int row = 0; row > jobRows.size(); row++) {
+            if (isSelected(row, rows)) {
+                jobRows.get(row).start();
+                fireTableRowsUpdated(row, row);
+            }
+        }
+    }
+
+    public void stopAll() {
+        for (JobRow row : jobRows) {
+            row.stop();
+        }
+    }
+
+    public void remove(int... selectedRows) {
+        // remove in reverse
+        for (int row = jobRows.size() - 1; row >= 0; row--) {
+            if (isSelected(row, selectedRows)) {
+                jobRows.get(row).stop();
+                jobRows.remove(row);
+            }
+        }
+
+        fireTableDataChanged();
+    }
+
+    public void removeAll() {
+        for (JobRow row : jobRows) {
+            row.stop();
+        }
         jobRows.clear();
+        fireTableDataChanged();
     }
+
+    public void fireTableCellUpdated(JobRow jobRow, int... columns) {
+        for (int row = 0; row < jobRows.size(); row++) {
+            if (jobRows.get(row).equals(jobRow)) {
+                for (int column : columns) {
+                    fireTableCellUpdated(row, column);
+                }
+            }
+        }
+    }
+
+    public void fireTableRowUpdated(JobRow jobRow) {
+        for (int row = 0; row < jobRows.size(); row++) {
+            if (jobRows.get(row).equals(jobRow)) {
+                fireTableRowsUpdated(row, row);
+            }
+        }
+    }
+
 }

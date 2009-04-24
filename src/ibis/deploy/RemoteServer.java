@@ -2,13 +2,12 @@ package ibis.deploy;
 
 import ibis.ipl.IbisProperties;
 import ibis.ipl.server.RemoteClient;
+import ibis.ipl.server.ServerProperties;
 import ibis.util.ThreadPool;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.resources.JavaSoftwareDescription;
@@ -233,10 +232,16 @@ public class RemoteServer implements Runnable, Hub {
                 sd.addPostStagedFile(gatFile, GAT.createFile(context, "."));
             }
         }
-        
-        
+
         sd.addJavaSystemProperty(IbisProperties.LOCATION, cluster.getName());
-        sd.addJavaSystemProperty(IbisProperties.LOCATION_COLOR, cluster.getColorCode());
+
+        if (hubOnly) {
+            sd.addJavaSystemProperty(ServerProperties.VIZ_INFO,
+                    "H^Ibis Smartsockets Hub @ " + cluster.getName() + "^" + cluster.getColorCode());
+        } else {
+            sd.addJavaSystemProperty(ServerProperties.VIZ_INFO,
+                    "S^Ibis Server @ " + cluster.getName() + "^" + cluster.getColorCode());
+        }
 
         if (cluster.getServerSystemProperties() != null) {
             sd.getJavaSystemProperties().putAll(

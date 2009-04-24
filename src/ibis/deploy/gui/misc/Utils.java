@@ -32,7 +32,7 @@ public class Utils {
         if (color == null) {
             return null;
         }
-        return new Color(color.getRed(), color.getGreen(), color.getBlue(), 125);
+        return new Color(color.getRed()  , color.getGreen(), color.getBlue(), 135);
     }
 
     /**

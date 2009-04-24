@@ -1,12 +1,8 @@
 package ibis.deploy.gui.experiment.composer;
 
 import ibis.deploy.AlreadyExistsException;
-import ibis.deploy.Job;
 import ibis.deploy.JobDescription;
-import ibis.deploy.State;
-import ibis.deploy.StateListener;
 import ibis.deploy.gui.GUI;
-import ibis.deploy.gui.experiment.jobs.JobRowObject;
 import ibis.deploy.gui.experiment.jobs.JobTableModel;
 import ibis.deploy.gui.misc.Utils;
 
@@ -17,7 +13,6 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.event.TableModelEvent;
 
 public class RunButtonPanel extends JPanel {
 
@@ -37,14 +32,16 @@ public class RunButtonPanel extends JPanel {
         JButton createAndRunButton = Utils.createImageButton(
                 "/images/go-next.png", "create and start this job",
                 "Create & Start");
+        
+        
         createButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
                 try {
                     JobDescription result = getJobDescription(gui);
+                    //cause elements to fill job description with user selections
                     gui.fireSubmitJob(result);
-                    model.addRow(new JobRowObject(result, null));
-                    model.fireTableChanged(new TableModelEvent(model));
+                    model.addJob(result, false);
                 } catch (Exception e) {
                     JOptionPane.showMessageDialog(getRootPane(),
                             e.getMessage(), "Job creation failed",
@@ -59,34 +56,9 @@ public class RunButtonPanel extends JPanel {
             public void actionPerformed(ActionEvent event) {
                 try {
                     JobDescription result = getJobDescription(gui);
+                    //cause elements to fill job description with user selections
                     gui.fireSubmitJob(result);
-                    // result = result.resolve(gui.getApplicationSet(), gui
-                    // .getGrid());
-                    // result.checkSettings();
-                    final int row = model.getRowCount();
-                    final JobRowObject jobRow = new JobRowObject(result, null);
-                    Job job = gui.getDeploy().submitJob(result,
-                            gui.getApplicationSet(), gui.getGrid(),
-                            new StateListener() {
-
-                                public void stateUpdated(State state,
-                                        Exception e) {
-                                    jobRow.setJobState(state);
-                                    model.setValueAt(state, row, 4);
-                                }
-
-                            }, new StateListener() {
-
-                                public void stateUpdated(State state,
-                                        Exception e) {
-                                    jobRow.setHubState(state);
-                                    model.setValueAt(state, row, 5);
-                                }
-
-                            });
-                    jobRow.setJob(job);
-                    model.addRow(jobRow);
-                    model.fireTableChanged(new TableModelEvent(model));
+                    model.addJob(result, true);
                 } catch (Exception e) {
                     JOptionPane.showMessageDialog(getRootPane(),
                             e.getMessage(), "Job creation failed",
@@ -104,7 +76,7 @@ public class RunButtonPanel extends JPanel {
         JobDescription result = null;
         while (result == null) {
             try {
-                result = gui.getExperiment().createNewJob("job-" + id);
+                result = gui.getExperiment().createNewJob(String.format("job-%02d",id));
             } catch (AlreadyExistsException e) {
                 id++;
             }

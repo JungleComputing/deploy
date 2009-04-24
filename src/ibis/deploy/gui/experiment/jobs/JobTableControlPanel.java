@@ -20,27 +20,25 @@ public class JobTableControlPanel extends JPanel {
     public JobTableControlPanel(final GUI gui, final JTable table) {
         setLayout(new FlowLayout(FlowLayout.CENTER, 2, 2));
         JButton runAllButton = Utils.createImageButton(
-                new SubmitExistingJobAction(0, true, false, table, gui,
-                        getRootPane()), "/images/go-next.png",
+                new StartAction(true, table), "/images/go-next.png",
                 "Runs all jobs of this expirement", "Start All");
         JButton runSelectedButton = Utils.createImageButton(
-                new SubmitExistingJobAction(0, true, true, table, gui,
-                        getRootPane()), "/images/go-next.png",
+                new StartAction(false, table), "/images/go-next.png",
                 "Runs selected jobs of this expirement", "Start Selected");
         JButton stopAllButton = Utils.createImageButton(
-                new StopExistingJobAction(0, true, false, table),
+                new StopAction(true, table),
                 "/images/process-stop.png",
                 "Stops all jobs of this expirement", "Stop All");
         JButton stopSelectedButton = Utils.createImageButton(
-                new StopExistingJobAction(0, true, true, table),
+                new StopAction(false, table),
                 "/images/process-stop.png",
                 "Stops selected jobs of this expirement", "Stop Selected");
         JButton removeAllButton = Utils.createImageButton(
-                new RemoveExistingJobAction(0, true, false, table, gui),
+                new RemoveAction(true, table),
                 "/images/list-remove.png",
                 "Remove all jobs from this experiment", "Remove All");
         JButton removeSelectedButton = Utils.createImageButton(
-                new RemoveExistingJobAction(0, true, true, table, gui),
+                new RemoveAction(false, table),
                 "/images/list-remove.png",
                 "Remove selected jobs from this experiment", "Remove Selected");
         

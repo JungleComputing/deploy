@@ -18,6 +18,7 @@ import ibis.deploy.gui.misc.SmartSocketsVizAction;
 import ibis.deploy.gui.misc.Utils;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -443,6 +444,10 @@ public class GUI {
 
     public void addExperimentWorkSpaceListener(WorkSpaceChangedListener listener) {
         experimentListeners.add(listener);
+    }
+
+    public JFrame getFrame() {
+        return frame;
     }
 
 }

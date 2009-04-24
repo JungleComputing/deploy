@@ -11,10 +11,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.RenderingHints;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
@@ -32,8 +29,6 @@ import org.jdesktop.swingx.JXMapViewer;
 import org.jdesktop.swingx.mapviewer.Waypoint;
 import org.jdesktop.swingx.mapviewer.WaypointPainter;
 import org.jdesktop.swingx.mapviewer.WaypointRenderer;
-import org.jdesktop.swingx.painter.MattePainter;
-import org.jdesktop.swingx.painter.Painter;
 
 public class WorldMapPanel extends JPanel {
 
@@ -227,7 +222,7 @@ public class WorldMapPanel extends JPanel {
         private static final long serialVersionUID = -6194956781979564591L;
         private boolean initialized = false;
         private static final int MAX_DEPTH = 5;
-        private static final int MIN_DISTANCE = 4;
+        private static final double MIN_DISTANCE = 3.5;
 
         private static final int WIDTH = 256;
         private static final int HEIGHT = 256;

@@ -8,7 +8,6 @@ import ibis.deploy.gui.misc.Utils;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -23,76 +22,66 @@ import javax.swing.table.TableCellRenderer;
 
 class JobTableRenderer extends JLabel implements TableCellRenderer {
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = -1269380843774208099L;
 
     private GUI gui;
 
-    public JobTableRenderer(GUI gui) {
+    private final JobTableModel model;
+
+    public JobTableRenderer(GUI gui, JobTableModel model) {
         super();
         this.gui = gui;
+        this.model = model;
     }
 
     public Component getTableCellRendererComponent(final JTable table,
-            final Object object, boolean isSelected, boolean hasFocus,
+            final Object value, boolean isSelected, boolean hasFocus,
             final int row, int column) {
         setText("");
         setOpaque(isSelected);
         setBackground(UIManager.getColor("Table.selectionBackground"));
         setForeground(Color.BLACK);
-        final Job job = ((JobRowObject) object).getJob();
-        JobDescription jobDescription = null;
-        JobRowObject data = (JobRowObject) object;
-        try {
-            jobDescription = ((JobRowObject) object).getJobDescription()
-                    .resolve(gui.getApplicationSet(), gui.getGrid());
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        if (column == JobTableModel.CONTROL_COLUMN) {
-            boolean startedAndNotFinished = false;
-            if (job != null) {
-                startedAndNotFinished = true;
-                try {
-                    startedAndNotFinished = !job.isFinished();
-                } catch (Exception e) {
-                    startedAndNotFinished = false;
-                }
-            }
-            if (startedAndNotFinished) {
-                // job submitted, not yet stopped
+        
+        if (column == JobRow.CONTROL_COLUMN) {
+            boolean start = (Boolean) value;
+
+            if (start) {
+                final JButton startButton = Utils.createImageButton(
+
+                "/images/media-playback-start.png", null, null);
+
+                startButton.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent arg0) {
+                        startButton.setEnabled(false);
+                        model.start(table.convertRowIndexToModel(row));
+                    }
+                });
+
+                return startButton;
+            } else {
                 final JButton stopButton = Utils.createImageButton(
                         "/images/media-playback-stop.png", null, null);
                 stopButton.addActionListener(new ActionListener() {
 
                     public void actionPerformed(ActionEvent arg0) {
                         stopButton.setEnabled(false);
-                        job.kill();
+                        model.stop(table.convertRowIndexToModel(row));
                     }
                 });
                 return stopButton;
-            } else {
-                // job not yet submitted or stopped
-                final JButton startButton = Utils.createImageButton(
-                        new SubmitExistingJobAction(row, false, false, table,
-                                gui, getRootPane()),
-                        "/images/media-playback-start.png", null, null);
-                return startButton;
             }
-        } else if (column == JobTableModel.POOL_COLUMN) {
-            setText(jobDescription.getPoolName());
-        } else if (column == JobTableModel.NAME_COLUMN) {
-            setText(jobDescription.getName());
-        } else if (column == JobTableModel.JOB_STATUS_COLUMN) {
-            State state = data.getJobState();
+        } else if (column == JobRow.POOL_COLUMN) {
+            setText("" + value);
+        } else if (column == JobRow.NAME_COLUMN) {
+            setText("" + value);
+        } else if (column == JobRow.JOB_STATUS_COLUMN) {
+            State state = (State) value;
 
-            if (state != null) {
+            if (state != null && state != State.UNKNOWN) {
                 if (state == State.DEPLOYED) {
                     // green
-                    setForeground(Color.decode("#00CC00"));
+                    setForeground(Color.decode("#16B400"));
                 } else if (state == State.ERROR) {
                     setForeground(Color.RED);
                 } else {
@@ -101,13 +90,13 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
 
                 setText(state.toString());
             }
-        } else if (column == JobTableModel.HUB_STATUS_COLUMN) {
-            State state = data.getHubState();
+        } else if (column == JobRow.HUB_STATUS_COLUMN) {
+            State state = (State) value;
 
-            if (state != null) {
+            if (state != null && state != State.UNKNOWN) {
                 if (state == State.DEPLOYED) {
                     // green
-                    setForeground(Color.decode("#00CC00"));
+                    setForeground(Color.decode("#16B400"));
                 } else if (state == State.ERROR) {
                     setForeground(Color.RED);
                 } else {
@@ -116,8 +105,11 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
 
                 setText(state.toString());
             }
-        } else if (column == JobTableModel.CLUSTER_COLUMN) {
+        } else if (column == JobRow.CLUSTER_COLUMN) {
             setOpaque(true);
+
+            JobDescription jobDescription = model.getJobDescription(table
+                    .convertRowIndexToModel(row));
 
             if (isSelected) {
                 setBackground(Utils.getColor(jobDescription
@@ -128,23 +120,24 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
             }
 
             setText(jobDescription.getClusterName());
-        } else if (column == JobTableModel.MIDDLEWARE_COLUMN) {
-            String adaptor = jobDescription.getClusterOverrides()
-                    .getJobAdaptor();
-            if (adaptor.equalsIgnoreCase("sshTrilead")) {
+        } else if (column == JobRow.MIDDLEWARE_COLUMN) {
+            String adaptor = (String) value;
+            if (adaptor != null && adaptor.equalsIgnoreCase("sshTrilead")) {
                 adaptor = "ssh";
             }
             setText(adaptor);
-        } else if (column == JobTableModel.APPLICATION_COLUMN) {
-            setText(jobDescription.getApplicationName());
-        } else if (column == JobTableModel.PROCESS_COUNT_COLUMN) {
-            setText("" + jobDescription.getProcessCount());
-        } else if (column == JobTableModel.RESOURCE_COUNT_COLUMN) {
-            setText("" + jobDescription.getResourceCount());
-        } else if (column == JobTableModel.OUTPUT_COLUMN) {
+        } else if (column == JobRow.APPLICATION_COLUMN) {
+            setText("" + value);
+        } else if (column == JobRow.PROCESS_COUNT_COLUMN) {
+            setText("" + value);
+        } else if (column == JobRow.RESOURCE_COUNT_COLUMN) {
+            setText("" + value);
+        } else if (column == JobRow.OUTPUT_COLUMN) {
+            final Job job = model.getJob(table.convertRowIndexToModel(row));
+
             JButton button = new JButton("output");
             button.setMargin(new Insets(2, 2, 2, 2));
-//            button.setPreferredSize(new Dimension(10, 10));
+            // button.setPreferredSize(new Dimension(10, 10));
             button.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent arg0) {
