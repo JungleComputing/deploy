@@ -133,6 +133,8 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
         } else if (column == JobRow.RESOURCE_COUNT_COLUMN) {
             setText("" + value);
         } else if (column == JobRow.OUTPUT_COLUMN) {
+            boolean enabled = (Boolean) value;
+
             final Job job = model.getJob(table.convertRowIndexToModel(row));
 
             JButton button = new JButton("output");
@@ -154,11 +156,8 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
                 }
 
             });
-            try {
-                button.setEnabled(job != null);
-            } catch (Exception e) {
-                button.setEnabled(false);
-            }
+            button.setEnabled(enabled);
+          
             return button;
         }
         return this;

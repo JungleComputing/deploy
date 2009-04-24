@@ -27,11 +27,11 @@ public class JobTableModel extends AbstractTableModel {
 
     private final GUI gui;
 
-    private final List<JobRow> jobRows;
+    private final List<JobRow> rows;
 
     public JobTableModel(GUI gui) {
         this.gui = gui;
-        jobRows = new ArrayList<JobRow>();
+        rows = new ArrayList<JobRow>();
 
         gui.addExperimentWorkSpaceListener(new WorkSpaceChangedListener() {
 
@@ -50,7 +50,7 @@ public class JobTableModel extends AbstractTableModel {
 
     @Override
     public int getRowCount() {
-        return jobRows.size();
+        return rows.size();
     }
 
     @Override
@@ -60,7 +60,7 @@ public class JobTableModel extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int row, int col) {
-        return jobRows.get(row).getValue(col);
+        return rows.get(row).getValue(col);
     }
 
     @Override
@@ -83,9 +83,9 @@ public class JobTableModel extends AbstractTableModel {
         try {
 
             JobRow row = new JobRow(description, this, gui);
-            int index = jobRows.size();
+            int index = rows.size();
 
-            jobRows.add(row);
+            rows.add(row);
             fireTableRowsInserted(index, index);
 
             if (start) {
@@ -99,23 +99,23 @@ public class JobTableModel extends AbstractTableModel {
     }
 
     public Job getJob(int row) {
-        if (row > jobRows.size()) {
+        if (row > rows.size()) {
             logger.error("tried to get job for non existing row: " + row
-                    + " table size = " + jobRows.size());
+                    + " table size = " + rows.size());
         }
-        return jobRows.get(row).getJob();
+        return rows.get(row).getJob();
     }
 
     public JobDescription getJobDescription(int row) {
-        if (row > jobRows.size()) {
+        if (row > rows.size()) {
             logger.error("tried to get job description for non existing row: "
-                    + row + " table size = " + jobRows.size());
+                    + row + " table size = " + rows.size());
         }
-        return jobRows.get(row).getJobDescription();
+        return rows.get(row).getJobDescription();
     }
 
-    private boolean isSelected(int row, int[] selectedRows) {
-        for (int selectedRow : selectedRows) {
+    private boolean isSelected(int row, int[] selection) {
+        for (int selectedRow : selection) {
             if (selectedRow == row) {
                 return true;
             }
@@ -123,42 +123,44 @@ public class JobTableModel extends AbstractTableModel {
         return false;
     }
 
-    public void start(int... rows) {
-        for (int row = 0; row > jobRows.size(); row++) {
-            if (isSelected(row, rows)) {
-                jobRows.get(row).start();
+    public void start(int... selection) {
+        for (int row = 0; row < rows.size(); row++) {
+            if (isSelected(row, selection)) {
+                rows.get(row).start();
                 fireTableRowsUpdated(row, row);
             }
         }
     }
 
     public void startAll() {
-        for (JobRow row : jobRows) {
+        for (JobRow row : rows) {
             row.start();
         }
+        fireTableRowsUpdated(0, rows.size());
     }
 
-    public void stop(int... rows) {
-        for (int row = 0; row > jobRows.size(); row++) {
-            if (isSelected(row, rows)) {
-                jobRows.get(row).start();
+    public void stop(int... selection) {
+        for (int row = 0; row < rows.size(); row++) {
+            if (isSelected(row, selection)) {
+                rows.get(row).stop();
                 fireTableRowsUpdated(row, row);
             }
         }
     }
 
     public void stopAll() {
-        for (JobRow row : jobRows) {
+        for (JobRow row : rows) {
             row.stop();
         }
+        fireTableRowsUpdated(0, rows.size());
     }
 
-    public void remove(int... selectedRows) {
+    public void remove(int... selection) {
         // remove in reverse
-        for (int row = jobRows.size() - 1; row >= 0; row--) {
-            if (isSelected(row, selectedRows)) {
-                jobRows.get(row).stop();
-                jobRows.remove(row);
+        for (int row = rows.size() - 1; row >= 0; row--) {
+            if (isSelected(row, selection)) {
+                rows.get(row).stop();
+                rows.remove(row);
             }
         }
 
@@ -166,16 +168,16 @@ public class JobTableModel extends AbstractTableModel {
     }
 
     public void removeAll() {
-        for (JobRow row : jobRows) {
+        for (JobRow row : rows) {
             row.stop();
         }
-        jobRows.clear();
+        rows.clear();
         fireTableDataChanged();
     }
 
     public void fireTableCellUpdated(JobRow jobRow, int... columns) {
-        for (int row = 0; row < jobRows.size(); row++) {
-            if (jobRows.get(row).equals(jobRow)) {
+        for (int row = 0; row < rows.size(); row++) {
+            if (rows.get(row).equals(jobRow)) {
                 for (int column : columns) {
                     fireTableCellUpdated(row, column);
                 }
@@ -184,8 +186,8 @@ public class JobTableModel extends AbstractTableModel {
     }
 
     public void fireTableRowUpdated(JobRow jobRow) {
-        for (int row = 0; row < jobRows.size(); row++) {
-            if (jobRows.get(row).equals(jobRow)) {
+        for (int row = 0; row < rows.size(); row++) {
+            if (rows.get(row).equals(jobRow)) {
                 fireTableRowsUpdated(row, row);
             }
         }

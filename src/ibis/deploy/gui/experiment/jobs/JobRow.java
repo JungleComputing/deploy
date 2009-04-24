@@ -147,13 +147,14 @@ public class JobRow {
 
     void start() {
         if (job != null && !job.isFinished()) {
+            System.err.println("Job already started");
             // job already started
             return;
         }
 
         try {
-
-            this.job = gui.getDeploy().submitJob(jobDescription,
+            System.err.println("submit job");
+            job = gui.getDeploy().submitJob(jobDescription,
                     gui.getApplicationSet(), gui.getGrid(),
                     new StateListener() {
 
@@ -169,7 +170,7 @@ public class JobRow {
 
                     });
             
-            this.jobDescription = job.getDescription();
+            jobDescription = job.getDescription();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(gui.getFrame(), e.getMessage(),
                     "Job submission failed: " + e, JOptionPane.PLAIN_MESSAGE);
