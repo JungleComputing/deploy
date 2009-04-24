@@ -132,7 +132,6 @@
 
         <copy todir="lib-zorilla">
             <fileset dir="external/zorilla" />
-            <fileset dir="lib/ipl" />
             <fileset dir="lib/javagat" includes="*.jar,adaptors/LocalAdaptor/*,adaptors/SshTrileadAdaptor/*,adaptors/shared/*" />
         </copy>
 
