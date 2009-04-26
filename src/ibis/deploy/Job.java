@@ -306,9 +306,10 @@ public class Job implements Runnable {
         // tell job to pre-stage from cache dir
         org.gridlab.gat.io.File gatFile = GAT.createFile(context, "any://"
                 + host + "/" + fileCacheDir + "/" + src.getName());
+
         org.gridlab.gat.io.File gatDstFile = GAT.createFile(context, dstDir
-                .getPath()
-                + "/" + src.getName());
+                .getPath());
+
         sd.addPreStagedFile(gatFile, gatDstFile);
         return;
     }
@@ -565,12 +566,10 @@ public class Job implements Runnable {
         RemoteServer localHub = null;
 
         try {
-            String hubList;
             String hubAddress;
 
             if (hubPolicy == HubPolicy.OFF) {
                 hubAddress = "";
-                hubList = "";
             } else if (hubPolicy == HubPolicy.PER_JOB) {
                 forwarder.setState(State.WAITING);
 
@@ -584,21 +583,31 @@ public class Job implements Runnable {
 
                 // create list of hubs, add to software description
                 hubAddress = localHub.getAddress();
-                hubList = hubAddress + ",";
             } else if (hubPolicy == HubPolicy.PER_CLUSTER) {
                 forwarder.setState(State.WAITING);
 
                 sharedHub.waitUntilRunning();
 
                 hubAddress = sharedHub.getAddress();
-                hubList = hubAddress + ",";
             } else {
                 throw new Exception("Unknown Hub Policy");
             }
-
-            for (String address : rootHub.getHubs()) {
-                hubList = hubList + address + ",";
+            
+            if (hubAddress == null) {
+                logger.error("Could not get address of hub for job " + this);
+                hubAddress = "";
             }
+
+            String hubList = hubAddress;
+            for (String address : rootHub.getHubs()) {
+                if (hubList.length() > 0) {
+                    hubList = hubList + ",";
+                }
+                hubList = hubList + address;
+                
+            }
+            
+            logger.info("Hub list = " + hubList);
 
             GATContext context = createGATContext();
 

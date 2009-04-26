@@ -68,7 +68,7 @@ class Rsync {
         return builder.start();
     }
 
-    static synchronized void rsync(File src, File dst, String host,
+    static void rsync(File src, File dst, String host,
             String userName) throws Exception {
         Process process = createProcess(src, dst, userName, host);
 
