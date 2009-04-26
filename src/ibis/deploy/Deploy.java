@@ -362,7 +362,8 @@ public class Deploy {
 
         RemoteServer result = hubs.get(clusterName);
 
-        if (result == null) {
+        if (result == null || result.isFinished()) {
+            //new server needed
             result = new RemoteServer(cluster, true, rootHub, home, verbose,
                     listener, keepSandboxes);
             hubs.put(clusterName, result);

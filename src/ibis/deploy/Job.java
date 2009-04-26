@@ -2,6 +2,8 @@ package ibis.deploy;
 
 import ibis.deploy.Deploy.HubPolicy;
 import ibis.ipl.IbisProperties;
+import ibis.ipl.registry.central.RegistryProperties;
+import ibis.ipl.registry.central.server.CentralRegistryService;
 import ibis.util.ThreadPool;
 
 import java.io.File;
@@ -385,6 +387,8 @@ public class Job implements Runnable {
         sd.addJavaSystemProperty(IbisProperties.POOL_SIZE, ""
                 + description.getPoolSize());
         sd.addJavaSystemProperty(IbisProperties.SERVER_ADDRESS, serverAddress);
+        
+        sd.addJavaSystemProperty(RegistryProperties.HEARTBEAT_INTERVAL, "30");
 
         sd.addJavaSystemProperty("ibis.deploy.job.id", description.getName());
         sd.addJavaSystemProperty("ibis.deploy.job.size", Integer
@@ -607,7 +611,7 @@ public class Job implements Runnable {
                 
             }
             
-            logger.info("Hub list = " + hubList);
+            logger.debug("Hub list = " + hubList);
 
             GATContext context = createGATContext();
 

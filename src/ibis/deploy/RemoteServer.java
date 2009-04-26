@@ -428,6 +428,10 @@ public class RemoteServer implements Runnable, Hub {
     public boolean isRunning() {
         return forwarder.isRunning();
     }
+    
+    public boolean isFinished() {
+        return forwarder.isFinished();
+    }
 
     /**
      * @see java.lang.Object#toString()
@@ -439,4 +443,5 @@ public class RemoteServer implements Runnable, Hub {
             return "Server on \"" + cluster.getName() + "\"";
         }
     }
+
 }
