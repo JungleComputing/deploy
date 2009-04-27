@@ -156,7 +156,7 @@ class StateForwarder implements MetricListener, Runnable {
         }
     }
 
-    public synchronized void waitUntilRunning() throws Exception {
+    public synchronized void waitUntilDeployed() throws Exception {
         while (currentState.ordinal() < State.DEPLOYED.ordinal()) {
             if (exception != null) {
                 throw exception;
@@ -169,6 +169,9 @@ class StateForwarder implements MetricListener, Runnable {
         }
         if (exception != null) {
             throw exception;
+        }
+        if (currentState.ordinal() > State.DEPLOYED.ordinal()) {
+            throw new Exception(name + " state passed deployed state (now " + currentState + ") while waiting for it to start");
         }
     }
 

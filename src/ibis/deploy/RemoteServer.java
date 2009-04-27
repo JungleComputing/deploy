@@ -273,6 +273,9 @@ public class RemoteServer implements Runnable, Hub {
      */
     public synchronized String getAddress() throws Exception {
         waitUntilRunning();
+        if (address == null) {
+            throw new Exception("Address cannot be retrieved");
+        }
         return address;
     }
 
@@ -416,7 +419,7 @@ public class RemoteServer implements Runnable, Hub {
      *             when the server could not be started.
      */
     public void waitUntilRunning() throws Exception {
-        forwarder.waitUntilRunning();
+        forwarder.waitUntilDeployed();
     }
 
     /**

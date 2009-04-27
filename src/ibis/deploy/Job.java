@@ -3,7 +3,6 @@ package ibis.deploy;
 import ibis.deploy.Deploy.HubPolicy;
 import ibis.ipl.IbisProperties;
 import ibis.ipl.registry.central.RegistryProperties;
-import ibis.ipl.registry.central.server.CentralRegistryService;
 import ibis.util.ThreadPool;
 
 import java.io.File;
@@ -250,6 +249,9 @@ public class Job implements Runnable {
             context.addSecurityContext(securityContext);
         }
 
+        //wait until zorilla node is up if needed.
+        context.addPreference("zorilla.wait.for.node", "true");
+
         // make sure files are readable on the other side
         context.addPreference("file.chmod", "0755");
         // make sure non existing files/directories will be created on the fly
@@ -307,10 +309,9 @@ public class Job implements Runnable {
 
         // tell job to pre-stage from cache dir
         org.gridlab.gat.io.File gatFile = GAT.createFile(context, "any://"
-                + host + "/" + fileCacheDir + "/" + src.getName());
-
-        org.gridlab.gat.io.File gatDstFile = GAT.createFile(context, dstDir
-                .getPath());
+                + host + "/" + fileCacheDir );
+        
+        org.gridlab.gat.io.File gatDstFile = GAT.createFile(context, dstDir + "/" );
 
         sd.addPreStagedFile(gatFile, gatDstFile);
         return;
