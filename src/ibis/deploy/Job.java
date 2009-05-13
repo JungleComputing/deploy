@@ -229,10 +229,10 @@ public class Job implements Runnable {
     // classpath made up of all directories, as well as jar
     private static String createClassPath(File[] libs) {
         // start with lib directory
-        String result = "lib" + File.pathSeparator;
+        String result = "." + File.pathSeparator;
 
         for (File file : libs) {
-            result = result + classpathFor(file, "lib" + File.separator);
+            result = result + classpathFor(file, "");
         }
 
         return result;
@@ -278,42 +278,38 @@ public class Job implements Runnable {
         return context;
     }
 
-    private void prestage(File src, File dstDir, JavaSoftwareDescription sd)
+    private void prestage(File src, JavaSoftwareDescription sd)
             throws Exception {
         String host = cluster.getServerURI().getHost();
         String user = cluster.getUserName();
         File clusterCacheDir = cluster.getCacheDir();
+        org.gridlab.gat.io.File gatCwd = GAT.createFile(context, ".");
 
         if (clusterCacheDir == null
                 || cluster.getJobAdaptor().equalsIgnoreCase("zorilla")) {
             org.gridlab.gat.io.File gatFile = GAT.createFile(context, src
                     .toString());
-            org.gridlab.gat.io.File gatDstFile = GAT.createFile(context, dstDir
-                    .getPath()
-                    + "/" + src.getName());
-            sd.addPreStagedFile(gatFile, gatDstFile);
+            sd.addPreStagedFile(gatFile, gatCwd);
             return;
         }
 
         String fileCacheDir = clusterCacheDir + "/" + description.getPoolName()
-                + "/" + description.getName() + "/" + dstDir;
+                + "/" + description.getName();
 
-        // create cache dir, and server dir within
+        // create cache dir on remote host
         org.gridlab.gat.io.File gatCacheDirFile = GAT.createFile(context,
                 "any://" + host + "/" + fileCacheDir);
         gatCacheDirFile.mkdirs();
 
-        // rsync to cluster cache server dir
+        // rsync to cache dir 
         File rsyncLocation = new File(fileCacheDir);
         Rsync.rsync(src, rsyncLocation, host, user);
 
         // tell job to pre-stage from cache dir
         org.gridlab.gat.io.File gatFile = GAT.createFile(context, "any://"
-                + host + "/" + fileCacheDir );
+                + host + "/" + fileCacheDir + "/" + src.getName());
         
-        org.gridlab.gat.io.File gatDstFile = GAT.createFile(context, dstDir + "/" );
-
-        sd.addPreStagedFile(gatFile, gatDstFile);
+        sd.addPreStagedFile(gatFile, gatCwd);
         return;
     }
 
@@ -415,9 +411,6 @@ public class Job implements Runnable {
             logger.debug(this + " doing pre-stage using rsync");
         }
 
-        // file referring to libs dir of sandbox
-        File libDir = new File("lib");
-
         // add library files
         for (File file : application.getLibs()) {
             if (!file.exists()) {
@@ -425,12 +418,8 @@ public class Job implements Runnable {
                         + " in libs of job does not exist");
             }
 
-            prestage(file, libDir, sd);
+            prestage(file, sd);
         }
-
-        // file referring to root of sandbox / current directory
-        File cwd = new File(".");
-        org.gridlab.gat.io.File gatCwd = GAT.createFile(context, ".");
 
         if (application.getInputFiles() != null) {
             for (File file : application.getInputFiles()) {
@@ -439,7 +428,7 @@ public class Job implements Runnable {
                             + " in input files of job does not exist");
                 }
 
-                prestage(file, cwd, sd);
+                prestage(file, sd);
             }
         }
 
@@ -449,14 +438,14 @@ public class Job implements Runnable {
             log4jFile = new File(deployHome, "log4j.properties");
         }
 
-        // add log4j file to pre-stage, and add log4j property to use it
-        org.gridlab.gat.io.File log4jGatFile = GAT.createFile(context,
-                log4jFile.getPath());
-        sd.addPreStagedFile(log4jGatFile, gatCwd);
+
+        prestage(log4jFile, sd);
         sd.addJavaSystemProperty("log4j.configuration", "file:"
                 + log4jFile.getName());
 
+        
         if (application.getOutputFiles() != null) {
+            org.gridlab.gat.io.File gatCwd = GAT.createFile(context, ".");
             for (File file : application.getOutputFiles()) {
                 org.gridlab.gat.io.File gatFile = GAT.createFile(context, file
                         .getPath());
