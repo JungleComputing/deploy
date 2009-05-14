@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
+import org.gridlab.gat.URI;
 import org.gridlab.gat.resources.JavaSoftwareDescription;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
@@ -128,8 +129,9 @@ public class RemoteServer implements Runnable, Hub {
         org.gridlab.gat.io.File gatCwd = GAT.createFile(context, ".");
 
         if (cacheDir == null) {
-            org.gridlab.gat.io.File gatFile = GAT.createFile(context, src
-                    .toString());
+            org.gridlab.gat.io.File gatFile = GAT.createFile(context, new URI
+            		(src.getAbsoluteFile().toURI())
+                    );
             sd.addPreStagedFile(gatFile, gatCwd);
             return;
         }
