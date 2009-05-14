@@ -111,7 +111,7 @@ public class RemoteServer implements Runnable, Hub {
         context.addPreference("file.create", "true");
 
         context.addPreference("resourcebroker.adaptor.name", cluster
-                .getServerAdaptor());
+                .getServerAdaptor() + ",local");
 
         context.addPreference("file.adaptor.name", Util.strings2CSS(cluster
                 .getFileAdaptors()));
