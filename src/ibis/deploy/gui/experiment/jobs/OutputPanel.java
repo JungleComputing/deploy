@@ -69,8 +69,13 @@ public class OutputPanel extends JPanel {
 
         final File stdout = new File(job.getDescription().getPoolName() + "."
                 + job.getDescription().getName() + ".out");
+        
         JLabel stdoutLabel = new JLabel("<html><a href=.>" + stdout
                 + "</a></html>", JLabel.TRAILING);
+        
+        if (!stdout.exists()) {
+            stdoutLabel.setText("unavailable");
+        }
 
         stdoutLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         stdoutLabel.addMouseListener(new ShowFileListener(stdout));
@@ -86,6 +91,11 @@ public class OutputPanel extends JPanel {
                 + job.getDescription().getName() + ".err");
         JLabel stderrLabel = new JLabel("<html><a href=.>" + stderr
                 + "</a></html>", JLabel.TRAILING);
+        
+        if (!stderr.exists()) {
+            stderrLabel.setText("unavailable");
+        }
+
         stderrLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         stderrLabel.addMouseListener(new ShowFileListener(stderr));
         
