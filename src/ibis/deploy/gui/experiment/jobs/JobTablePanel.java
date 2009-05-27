@@ -38,7 +38,7 @@ public class JobTablePanel extends JPanel {
         table.setDragEnabled(false);
         table.setIntercellSpacing(new Dimension(5, 5));
 
-        JobTableRenderer renderer = new JobTableRenderer(gui, model);
+        JobTableRenderer renderer = new JobTableRenderer(model);
 
         TableRowSorter<JobTableModel> sorter = new TableRowSorter<JobTableModel>(
                 model);

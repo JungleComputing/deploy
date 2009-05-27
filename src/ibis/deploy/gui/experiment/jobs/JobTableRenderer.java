@@ -3,7 +3,6 @@ package ibis.deploy.gui.experiment.jobs;
 import ibis.deploy.Job;
 import ibis.deploy.JobDescription;
 import ibis.deploy.State;
-import ibis.deploy.gui.GUI;
 import ibis.deploy.gui.misc.Utils;
 
 import java.awt.Color;
@@ -24,13 +23,10 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
 
     private static final long serialVersionUID = -1269380843774208099L;
 
-    private GUI gui;
-
     private final JobTableModel model;
 
-    public JobTableRenderer(GUI gui, JobTableModel model) {
+    public JobTableRenderer(JobTableModel model) {
         super();
-        this.gui = gui;
         this.model = model;
     }
 
