@@ -41,8 +41,10 @@ public class JobRow {
     private final JobTableModel model;
     private final GUI gui;
 
-    public JobRow(JobDescription jobDescription, JobTableModel model, GUI gui) throws Exception {
-        this.jobDescription = jobDescription.resolve(gui.getApplicationSet(), gui.getGrid());
+    public JobRow(JobDescription jobDescription, JobTableModel model, GUI gui)
+            throws Exception {
+        this.jobDescription = jobDescription.resolve(gui.getApplicationSet(),
+                gui.getGrid());
         this.model = model;
         this.gui = gui;
 
@@ -128,6 +130,7 @@ public class JobRow {
 
     private void setJobState(State state) {
         this.jobState = state;
+
         model.fireTableCellUpdated(this, JOB_STATUS_COLUMN, CONTROL_COLUMN);
     }
 
@@ -158,18 +161,27 @@ public class JobRow {
                     gui.getApplicationSet(), gui.getGrid(),
                     new StateListener() {
 
-                        public void stateUpdated(State state, Exception e) {
-                            setJobState(state);
+                        public void stateUpdated(final State state, Exception e) {
+                            javax.swing.SwingUtilities
+                                    .invokeLater(new Runnable() {
+                                        public void run() {
+                                            setJobState(state);
+                                        }
+                                    });
                         }
 
                     }, new StateListener() {
-
-                        public void stateUpdated(State state, Exception e) {
-                            setHubState(state);
+                        public void stateUpdated(final State state, Exception e) {
+                            javax.swing.SwingUtilities
+                                    .invokeLater(new Runnable() {
+                                        public void run() {
+                                            setHubState(state);
+                                        }
+                                    });
                         }
 
                     });
-            
+
             jobDescription = job.getDescription();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(gui.getFrame(), e.getMessage(),
