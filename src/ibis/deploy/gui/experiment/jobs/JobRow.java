@@ -145,7 +145,12 @@ public class JobRow {
             return;
         }
 
-        job.kill();
+        //kill job in a separate thread
+        new Thread() {
+            public void run() { 
+                job.kill();
+            }
+        }.start();
     }
 
     void start() {
