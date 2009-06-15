@@ -131,12 +131,12 @@ public class JobRow {
     private void setJobState(State state) {
         this.jobState = state;
 
-        model.fireTableCellUpdated(this, JOB_STATUS_COLUMN, CONTROL_COLUMN);
+        model.fireTableDataChanged();
     }
 
     private void setHubState(State state) {
         this.hubState = state;
-        model.fireTableCellUpdated(this, HUB_STATUS_COLUMN);
+        model.fireTableDataChanged();
     }
 
     void stop() {

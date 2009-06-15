@@ -1,11 +1,14 @@
 package ibis.deploy;
 
 import ibis.ipl.IbisProperties;
-import ibis.ipl.server.RemoteClient;
+import ibis.ipl.server.RegistryServiceInterface;
+import ibis.ipl.server.ServerConnection;
 import ibis.ipl.server.ServerProperties;
+import ibis.smartsockets.virtual.VirtualSocketFactory;
 import ibis.util.ThreadPool;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.gridlab.gat.GAT;
@@ -51,11 +54,11 @@ public class RemoteServer implements Runnable, Hub {
 
     private final GATContext context;
 
-    private String address;
-
     private org.gridlab.gat.resources.Job gatJob;
 
-    private RemoteClient remoteClient;
+    private ServerConnection serverConnection;
+    
+    private String address;
 
     private boolean killed = false;
 
@@ -71,7 +74,7 @@ public class RemoteServer implements Runnable, Hub {
         this.keepSandbox = keepSandbox;
         address = null;
         gatJob = null;
-        remoteClient = null;
+        serverConnection = null;
 
         this.cluster = cluster.resolve();
 
@@ -111,7 +114,8 @@ public class RemoteServer implements Runnable, Hub {
         context.addPreference("file.create", "true");
 
         context.addPreference("resourcebroker.adaptor.name", cluster
-                .getServerAdaptor() + ",local");
+                .getServerAdaptor()
+                + ",local");
 
         context.addPreference("file.adaptor.name", Util.strings2CSS(cluster
                 .getFileAdaptors()));
@@ -129,9 +133,8 @@ public class RemoteServer implements Runnable, Hub {
         org.gridlab.gat.io.File gatCwd = GAT.createFile(context, ".");
 
         if (cacheDir == null) {
-            org.gridlab.gat.io.File gatFile = GAT.createFile(context, new URI
-            		(src.getAbsoluteFile().toURI())
-                    );
+            org.gridlab.gat.io.File gatFile = GAT.createFile(context, new URI(
+                    src.getAbsoluteFile().toURI()));
             sd.addPreStagedFile(gatFile, gatCwd);
             return;
         }
@@ -239,10 +242,12 @@ public class RemoteServer implements Runnable, Hub {
 
         if (hubOnly) {
             sd.addJavaSystemProperty(ServerProperties.VIZ_INFO,
-                    "H^Smartsockets Hub @ " + cluster.getName() + "^" + cluster.getColorCode());
+                    "H^Smartsockets Hub @ " + cluster.getName() + "^"
+                            + cluster.getColorCode());
         } else {
             sd.addJavaSystemProperty(ServerProperties.VIZ_INFO,
-                    "S^Ibis Server @ " + cluster.getName() + "^" + cluster.getColorCode());
+                    "S^Ibis Server @ " + cluster.getName() + "^"
+                            + cluster.getColorCode());
         }
 
         if (cluster.getServerSystemProperties() != null) {
@@ -303,9 +308,13 @@ public class RemoteServer implements Runnable, Hub {
     synchronized void kill() {
         killed = true;
 
-        if (remoteClient != null) {
+        if (serverConnection != null) {
             // will close standard in, killing server
-            remoteClient.end();
+            try {
+                serverConnection.end(0);
+            } catch (IOException e) {
+                // IGNORE
+            }
         }
 
         if (gatJob != null) {
@@ -353,15 +362,19 @@ public class RemoteServer implements Runnable, Hub {
             new OutputPrefixForwarder(job.getStderr(), System.err,
                     "STDERR FROM " + toString() + ": ");
 
+            VirtualSocketFactory socketFactory = null;
+            if (rootHub != null) {
+                socketFactory = rootHub.getSocketFactory();
+            }
+
             // fetch server address, forward output to deploy console
             logger.debug("starting remote client");
-            RemoteClient client = new RemoteClient(job.getStdout(), job
-                    .getStdin(), System.out, "STDOUT FROM " + toString() + ": ");
-            setRemoteClient(client);
+            ServerConnection connection = new ServerConnection(job.getStdout(),
+                    job.getStdin(), System.out, "STDOUT FROM " + toString()
+                            + ": ", TIMEOUT, socketFactory);
+            setRemoteClient(connection);
 
             logger.debug("getting address via remote client");
-
-            setAddress(client.getAddress(TIMEOUT));
 
             forwarder.setState(State.DEPLOYED);
 
@@ -379,18 +392,6 @@ public class RemoteServer implements Runnable, Hub {
         }
     }
 
-    private synchronized void setAddress(String address) {
-        this.address = address;
-
-        // server already killed before it was submitted :(
-        // kill server...
-        if (killed) {
-            kill();
-        }
-
-        notifyAll();
-    }
-
     private synchronized void setGatJob(org.gridlab.gat.resources.Job gatJob)
             throws Exception {
         this.gatJob = gatJob;
@@ -402,8 +403,9 @@ public class RemoteServer implements Runnable, Hub {
         }
     }
 
-    private synchronized void setRemoteClient(RemoteClient client) {
-        this.remoteClient = client;
+    private synchronized void setRemoteClient(ServerConnection connection) throws IOException {
+        this.serverConnection = connection;
+        this.address = serverConnection.getAddress();
 
         // server already killed before it was submitted :(
         // kill server...
@@ -433,7 +435,7 @@ public class RemoteServer implements Runnable, Hub {
     public boolean isRunning() {
         return forwarder.isRunning();
     }
-    
+
     public boolean isFinished() {
         return forwarder.isFinished();
     }
@@ -447,6 +449,10 @@ public class RemoteServer implements Runnable, Hub {
         } else {
             return "Server on \"" + cluster.getName() + "\"";
         }
+    }
+
+    public RegistryServiceInterface getRegistryService() {
+        return serverConnection.getRegistryService();
     }
 
 }

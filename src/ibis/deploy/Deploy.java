@@ -1,13 +1,12 @@
 package ibis.deploy;
 
-import ibis.ipl.IbisProperties;
-import ibis.ipl.registry.central.monitor.RegistryMonitorClient;
+import ibis.ipl.server.RegistryServiceInterface;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import org.gridlab.gat.GAT;
 import org.slf4j.Logger;
@@ -23,9 +22,7 @@ import org.slf4j.LoggerFactory;
 public class Deploy {
 
     public enum HubPolicy {
-        OFF,
-        PER_CLUSTER,
-        PER_JOB,
+        OFF, PER_CLUSTER, PER_JOB,
     }
 
     /**
@@ -47,8 +44,6 @@ public class Deploy {
     // remote server (if it exists)
     private RemoteServer remoteServer;
 
-    private RegistryMonitorClient registryMonitor;
-
     // home dir of ibis-deploy
     private final File home;
 
@@ -62,7 +57,7 @@ public class Deploy {
     private Map<String, RemoteServer> hubs;
 
     private boolean keepSandboxes;
-    
+
     private HubPolicy hubPolicy;
 
     private PoolSizePrinter poolSizePrinter;
@@ -84,7 +79,7 @@ public class Deploy {
         keepSandboxes = false;
         poolSizePrinter = null;
         this.verbose = verbose;
-        
+
         hubPolicy = HubPolicy.PER_CLUSTER;
 
         jobs = new ArrayList<Job>();
@@ -146,7 +141,7 @@ public class Deploy {
     public synchronized void setKeepSandboxes(boolean keepSandboxes) {
         this.keepSandboxes = keepSandboxes;
     }
-    
+
     public synchronized void setHubPolicy(HubPolicy policy) {
         this.hubPolicy = policy;
     }
@@ -314,13 +309,14 @@ public class Deploy {
 
         Hub hub = null;
         if (hubPolicy == HubPolicy.PER_CLUSTER) {
-            hub = getClusterHub(resolvedDescription.getClusterOverrides(), false,
-                    hubListener);
+            hub = getClusterHub(resolvedDescription.getClusterOverrides(),
+                    false, hubListener);
         }
-        
+
         // start job
-        Job job = new Job(resolvedDescription, hubPolicy, hub, keepSandboxes, jobListener,
-                hubListener, rootHub, verbose, home, getServerAddress(), this);
+        Job job = new Job(resolvedDescription, hubPolicy, hub, keepSandboxes,
+                jobListener, hubListener, rootHub, verbose, home,
+                getServerAddress(), this);
 
         jobs.add(job);
 
@@ -341,8 +337,8 @@ public class Deploy {
      * @throws Exception
      *             if the hub cannot be started
      */
-    public synchronized Hub getClusterHub(Cluster cluster, boolean waitUntilRunning,
-            StateListener listener) throws Exception {
+    public synchronized Hub getClusterHub(Cluster cluster,
+            boolean waitUntilRunning, StateListener listener) throws Exception {
         if (rootHub == null) {
             throw new Exception("Ibis Deploy not initialized, cannot get hub");
         }
@@ -363,7 +359,7 @@ public class Deploy {
         RemoteServer result = hubs.get(clusterName);
 
         if (result == null || result.isFinished()) {
-            //new server needed
+            // new server needed
             result = new RemoteServer(cluster, true, rootHub, home, verbose,
                     listener, keepSandboxes);
             hubs.put(clusterName, result);
@@ -378,26 +374,22 @@ public class Deploy {
         return result;
     }
 
-    public synchronized RegistryMonitorClient getMonitor() throws Exception {
+    public synchronized RegistryServiceInterface getRegistry() throws Exception {
         if (rootHub == null) {
             throw new Exception(
                     "Ibis Deploy not initialized, cannot monitor server");
         }
 
-        if (remoteServer != null && !remoteServer.isRunning()) {
-            throw new Exception("Cannot monitor server \"" + remoteServer
-                    + "\" not running");
+        if (remoteServer != null) {
+            if (!remoteServer.isRunning()) {
+                throw new Exception("Cannot monitor server \"" + remoteServer
+                        + "\" not running");
+            }
+            return remoteServer.getRegistryService();
         }
+        
+        return rootHub.getRegistryService();
 
-        if (registryMonitor == null) {
-            Properties properties = new Properties();
-            properties.put(IbisProperties.SERVER_ADDRESS, getServerAddress());
-            properties.put(IbisProperties.HUB_ADDRESSES, getRootHubAddress());
-
-            registryMonitor = new RegistryMonitorClient(properties, false);
-        }
-
-        return registryMonitor;
     }
 
     /**
@@ -406,20 +398,8 @@ public class Deploy {
      * @return a map containing the size of each pool at the server. May be
      *         empty if the server could not be reached
      */
-    public Map<String, Integer> poolSizes() {
-        try {
-            RegistryMonitorClient registryMonitor = getMonitor();
-
-            return registryMonitor.getPoolSizes();
-        } catch (Exception e) {
-            if (isVerbose()) {
-                logger.warn("could not get pool sizes", e);
-            } else {
-                logger.warn("could not get pool sizes");
-                logger.debug("could not get pool sizes", e);
-            }
-            return new HashMap<String, Integer>();
-        }
+    public Map<String, Integer> poolSizes() throws Exception {
+        return getRegistry().getPoolSizes();
     }
 
     /**
@@ -430,20 +410,9 @@ public class Deploy {
      *             if the server is not running yet, or communicating with it
      *             failed
      */
-    public String[] getLocations(String poolName) {
-        try {
-            RegistryMonitorClient registryMonitor = getMonitor();
+    public String[] getLocations(String poolName) throws Exception {
+        return getRegistry().getLocations(poolName);
 
-            return registryMonitor.getLocations(poolName);
-        } catch (Exception e) {
-            if (isVerbose()) {
-                logger.warn("could not get locations", e);
-            } else {
-                logger.warn("could not get locations");
-                logger.debug("could not get locations", e);
-            }
-            return new String[0];
-        }
     }
 
     public synchronized Job[] getJobs() {

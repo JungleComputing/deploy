@@ -1,6 +1,9 @@
 package ibis.deploy;
 
+import ibis.ipl.server.RegistryServiceInterface;
 import ibis.ipl.server.ServerProperties;
+import ibis.smartsockets.virtual.VirtualSocketFactory;
+
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -54,7 +57,7 @@ public class RootHub implements Hub {
      * 
      */
     public String getAddress() {
-        return server.getLocalAddress();
+        return server.getAddress();
     }
 
     void addHubs(String... hubs) {
@@ -97,5 +100,13 @@ public class RootHub implements Hub {
 
     public State getState() {
         return State.DEPLOYED;
+    }
+
+    public VirtualSocketFactory getSocketFactory() {
+        return server.getSocketFactory();
+    }
+
+    public RegistryServiceInterface getRegistryService() {
+        return server.getRegistryService();
     }
 }
