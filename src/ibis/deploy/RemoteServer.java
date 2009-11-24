@@ -179,7 +179,9 @@ public class RemoteServer implements Runnable, Hub {
         }
 
         if (hubOnly && !startZorilla) {
-            arguments.add("--hub-only");
+            // Hub-only mode causes the JVM not to "end" properly sometimes
+            // Doesn't matter if a server is present anyway...
+            // arguments.add("--hub-only");
         }
 
         if (verbose) {
