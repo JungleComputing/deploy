@@ -17,7 +17,7 @@ public class MapUtilities {
 
     private static List<JXMapKit> mapKits = new ArrayList<JXMapKit>();
 
-    private static TileFactory defaultTileFactory = GoogleMapTerrainTileProvider
+    private static TileFactory defaultTileFactory = MicrosoftMapTileProvider
             .getDefaultTileFactory();
 
     private static JMenu mapMenu = new JMenu("Map Tile Provider");
@@ -31,7 +31,7 @@ public class MapUtilities {
 
         ButtonGroup group = new ButtonGroup();
         JRadioButtonMenuItem mapMenuItem = new JRadioButtonMenuItem(
-                "Google Terrain", true);
+                "Google Terrain");
         mapMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 defaultTileFactory = GoogleMapTerrainTileProvider
@@ -51,7 +51,7 @@ public class MapUtilities {
         });
         group.add(mapMenuItem);
         mapMenu.add(mapMenuItem);
-        mapMenuItem = new JRadioButtonMenuItem("Microsoft");
+        mapMenuItem = new JRadioButtonMenuItem("Microsoft", true);
         mapMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 defaultTileFactory = MicrosoftMapTileProvider

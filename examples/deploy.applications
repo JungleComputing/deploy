@@ -17,7 +17,7 @@
 # Default settings:
 #default.main.class =
 #default.arguments =
-default.libs = lib/ipl,lib/ipl-apps
+default.libs = lib/ipl,ipl-apps
 #default.input.files =
 #default.output.files =
 #default.system.properties =

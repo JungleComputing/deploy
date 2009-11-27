@@ -12,68 +12,40 @@
 
     <!-- Import environment properties -->
 
-    <property environment="env" />
-    <property name="gat-location" location="${env.GAT_LOCATION}" />
-    <property name="ipl-home" location="${env.IPL_HOME}" />
+    <property name="ipl" location="external/ipl" />
+    <property name="javagat" location="external/javagat" />
+    <property name="zorilla" location="external/zorilla" />
 
-    <target name="build" description="Build with included JavaGAT and IPL" depends="clean,copy-included,copy-included-ipl,copy-included-javagat,compile" />
+    <target name="build" description="Build with included JavaGAT and IPL" depends="clean,copy-external,compile" />
 
-    <target name="build-external" description="Build with external JavaGAT and IPL" depends="clean,copy-included,copy-external-ipl,copy-external-javagat,compile" />
-
-    <target name="build-external-ipl" description="Build with included JavaGAT and external IPL" depends="clean,copy-included,copy-included-javagat,copy-external-ipl,compile" />
-
-    <target name="build-external-javagat" description="Build with external JavaGAT and included IPL" depends="clean,copy-included,copy-external-javagat,copy-included-ipl,compile" />
-
-    <!-- copy external dependancies, except GAT and ipl -->
-    <target name="copy-included">
+    <!-- copy external dependancies -->
+    <target name="copy-external">
         <mkdir dir="lib" />
 
+        <!-- ipl -->
+
+        <copy todir="lib/ipl">
+            <fileset dir="${ipl}" />
+        </copy>
+
+        <!-- javagat -->
+
+        <copy todir="lib/javagat">
+            <fileset dir="${javagat}" />
+        </copy>
+
+        <!-- zorilla (main lib dir only) -->
+        <copy todir="lib/zorilla">
+            <fileset dir="${zorilla}" includes="*.jar" />
+        </copy>
+
+        <!-- other, and ipl apps -->
         <copy todir="lib">
-            <fileset dir="external" includes="*.jar" />
+            <fileset dir="external" includes="*.jar,ipl-apps" />
         </copy>
-    </target>
-
-    <!-- copy included IPL -->
-    <target name="copy-included-ipl">
-        <copy todir="lib/ipl">
-            <fileset dir="external/ipl" />
-        </copy>
-
-        <copy todir="lib/ipl-apps">
-            <fileset dir="external/ipl-apps" />
-        </copy>
-    </target>
-
-    <!-- copy IPL specified by $IPL_HOME  -->
-    <target name="copy-external-ipl">
-        <copy todir="lib/ipl">
-            <fileset dir="${ipl-home}/lib" />
-        </copy>
-
-        <copy todir="lib/ipl-apps">
-            <fileset dir="${ipl-home}/benchmarks/lib" />
-        </copy>
-
-        <copy todir="lib/ipl-apps">
-            <fileset dir="${ipl-home}/examples/lib" />
-        </copy>
-
 
     </target>
 
-    <!-- copy included JavaGAT -->
-    <target name="copy-included-javagat">
-        <copy todir="lib/javagat">
-            <fileset dir="external/javagat" />
-        </copy>
-    </target>
-
-    <!-- copy javaGAT specified by $GAT_LOCATION -->
-    <target name="copy-external-javagat">
-        <copy todir="lib/javagat">
-            <fileset dir="${gat-location}/lib" />
-        </copy>
-    </target>
 
     <!-- Compile -->
     <target name="compile">
@@ -89,6 +61,9 @@
                 <include name="*.jar" />
             </fileset>
             <fileset dir="lib/ipl">
+                <include name="*.jar" />
+            </fileset>
+            <fileset dir="lib/zorilla">
                 <include name="*.jar" />
             </fileset>
             <pathelement path="tmp" />
@@ -131,8 +106,9 @@
         <mkdir dir="lib-zorilla" />
 
         <copy todir="lib-zorilla">
-            <fileset dir="external/zorilla" />
+            <fileset dir="lib/ipl" />
             <fileset dir="lib/javagat" includes="*.jar,adaptors/LocalAdaptor/*,adaptors/SshTrileadAdaptor/*,adaptors/shared/*" />
+            <fileset dir="lib/zorilla" />
         </copy>
 
     </target>
