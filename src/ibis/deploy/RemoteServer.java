@@ -23,9 +23,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Server or Hub running on a remote cluster
+ * Server, Hub, or Zorilla node running on a remote cluster
  */
-public class RemoteServer implements Runnable, Hub {
+public class RemoteServer implements Runnable, Server {
 
     public static final long TIMEOUT = 1200000;
 
@@ -44,7 +44,7 @@ public class RemoteServer implements Runnable, Hub {
 
     private final Cluster cluster;
 
-    private final RootHub rootHub;
+    private final LocalServer rootHub;
 
     private final File deployHome;
 
@@ -64,7 +64,7 @@ public class RemoteServer implements Runnable, Hub {
 
     private final StateForwarder forwarder;
 
-    RemoteServer(Cluster cluster, boolean hubOnly, RootHub rootHub,
+    RemoteServer(Cluster cluster, boolean hubOnly, LocalServer rootHub,
             File deployHome, boolean verbose, StateListener listener,
             boolean keepSandbox) throws Exception {
         this.hubOnly = hubOnly;

@@ -38,8 +38,8 @@ public class Deploy {
 
     private static final Logger logger = LoggerFactory.getLogger(Deploy.class);
 
-    // "root" hub (perhaps including the server)
-    private RootHub rootHub;
+    // local "root" hub (perhaps including a server and/or a zorilla node)
+    private LocalServer localServer;
 
     // remote server (if it exists)
     private RemoteServer remoteServer;
@@ -74,7 +74,7 @@ public class Deploy {
      *             if required files cannot be found in home
      */
     public Deploy(File home, boolean verbose) throws Exception {
-        rootHub = null;
+        localServer = null;
         remoteServer = null;
         keepSandboxes = false;
         poolSizePrinter = null;
@@ -154,11 +154,11 @@ public class Deploy {
      *             if ibis-deploy has not been initialized yet.
      */
     public synchronized String getRootHubAddress() throws Exception {
-        if (rootHub == null) {
+        if (localServer == null) {
             throw new Exception("Ibis-deploy not initialized yet");
         }
 
-        return rootHub.getAddress();
+        return localServer.getAddress();
     }
 
     /**
@@ -168,12 +168,12 @@ public class Deploy {
      * @throws Exception
      *             if ibis-deploy has not been initialized yet.
      */
-    synchronized RootHub getRootHub() throws Exception {
-        if (rootHub == null) {
+    synchronized LocalServer getRootHub() throws Exception {
+        if (localServer == null) {
             throw new Exception("Ibis-deploy not initialized yet");
         }
 
-        return rootHub;
+        return localServer;
     }
 
     /**
@@ -185,12 +185,12 @@ public class Deploy {
      *             if server state cannot be retrieved.
      */
     public synchronized String getServerAddress() throws Exception {
-        if (rootHub == null) {
+        if (localServer == null) {
             throw new Exception("Ibis-deploy not initialized yet");
         }
 
         if (remoteServer == null) {
-            return rootHub.getAddress();
+            return localServer.getAddress();
         } else {
             return remoteServer.getAddress();
         }
@@ -228,20 +228,32 @@ public class Deploy {
         initialize(serverCluster, listener, false);
     }
 
+    /**
+     * Initialize this deployment object.
+     * 
+     * @param serverCluster
+     *            cluster where the server should be started, or null for a
+     *            server embedded in this JVM.
+     * @param listener
+     *            callback object for status of server
+     * @param blocking
+     *            if true, will block until the server is running
+     * @throws Exception
+     *             if the server cannot be started
+     *             
+     */
     public synchronized void initialize(Cluster serverCluster,
             StateListener listener, boolean blocking) throws Exception {
-
         logger.debug("Initializing deploy");
 
         if (serverCluster == null) {
             // rootHub includes server
-            rootHub = new RootHub(true, verbose);
-            rootHub.addListener(listener);
+            localServer = new LocalServer(true, false, verbose);
+            localServer.addListener(listener);
             remoteServer = null;
-
         } else {
-            rootHub = new RootHub(false, verbose);
-            remoteServer = new RemoteServer(serverCluster, false, rootHub,
+            localServer = new LocalServer(false, false, verbose);
+            remoteServer = new RemoteServer(serverCluster, false, localServer,
                     home, verbose,
 
                     listener, keepSandboxes);
@@ -257,7 +269,27 @@ public class Deploy {
         poolSizePrinter = new PoolSizePrinter(this);
 
         logger.info("Ibis Deploy initialized, root hub address is "
-                + rootHub.getAddress());
+                + localServer.getAddress());
+    }
+
+    /**
+     * Initialize this deployment object. Will also start a build-in Zorilla node.
+     * Additionally, a Zorilla node is either started or used on each cluster specified.
+     * 
+     * @param clusters
+     *             clusters used for zorilla. Will start a zorilla if needed.
+     * @throws Exception
+     *             if Ibis-Deploy cannot be started for some reason.
+     *             
+     */
+    public synchronized void initializeZorilla(Cluster... clusters) throws Exception {
+        logger.debug("Initializing deploy, Zorilla mode...");
+        
+        localServer = new LocalServer(true, true, verbose);
+        
+        
+        
+        
     }
 
     /**
@@ -284,7 +316,7 @@ public class Deploy {
             ApplicationSet applicationSet, Grid grid,
             StateListener jobListener, StateListener hubListener)
             throws Exception {
-        if (rootHub == null) {
+        if (localServer == null) {
             throw new Exception("Ibis-deploy not initialized yet");
         }
 
@@ -307,7 +339,7 @@ public class Deploy {
 
         resolvedDescription.checkSettings();
 
-        Hub hub = null;
+        Server hub = null;
         if (hubPolicy == HubPolicy.PER_CLUSTER) {
             hub = getClusterHub(resolvedDescription.getClusterOverrides(),
                     false, hubListener);
@@ -315,7 +347,7 @@ public class Deploy {
 
         // start job
         Job job = new Job(resolvedDescription, hubPolicy, hub, keepSandboxes,
-                jobListener, hubListener, rootHub, verbose, home,
+                jobListener, hubListener, localServer, verbose, home,
                 getServerAddress(), this);
 
         jobs.add(job);
@@ -337,9 +369,9 @@ public class Deploy {
      * @throws Exception
      *             if the hub cannot be started
      */
-    public synchronized Hub getClusterHub(Cluster cluster,
+    public synchronized Server getClusterHub(Cluster cluster,
             boolean waitUntilRunning, StateListener listener) throws Exception {
-        if (rootHub == null) {
+        if (localServer == null) {
             throw new Exception("Ibis Deploy not initialized, cannot get hub");
         }
 
@@ -352,15 +384,15 @@ public class Deploy {
         }
 
         if (clusterName.equals("local")) {
-            rootHub.addListener(listener);
-            return rootHub;
+            localServer.addListener(listener);
+            return localServer;
         }
 
         RemoteServer result = hubs.get(clusterName);
 
         if (result == null || result.isFinished()) {
             // new server needed
-            result = new RemoteServer(cluster, true, rootHub, home, verbose,
+            result = new RemoteServer(cluster, true, localServer, home, verbose,
                     listener, keepSandboxes);
             hubs.put(clusterName, result);
         } else {
@@ -375,7 +407,7 @@ public class Deploy {
     }
 
     public synchronized RegistryServiceInterface getRegistry() throws Exception {
-        if (rootHub == null) {
+        if (localServer == null) {
             throw new Exception(
                     "Ibis Deploy not initialized, cannot monitor server");
         }
@@ -388,7 +420,7 @@ public class Deploy {
             return remoteServer.getRegistryService();
         }
         
-        return rootHub.getRegistryService();
+        return localServer.getRegistryService();
 
     }
 
@@ -472,10 +504,10 @@ public class Deploy {
             remoteServer.kill();
         }
 
-        if (rootHub != null) {
-            logger.info("killing root Hub " + rootHub);
-            rootHub.killAll();
-            rootHub.kill();
+        if (localServer != null) {
+            logger.info("killing root Hub " + localServer);
+            localServer.killAll();
+            localServer.kill();
         }
 
         logger.info("ending GAT");

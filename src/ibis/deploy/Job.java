@@ -41,13 +41,13 @@ public class Job implements Runnable {
     private final HubPolicy hubPolicy;
 
     // hub shared between all jobs on this cluster (if applicable)
-    private final Hub sharedHub;
+    private final Server sharedHub;
 
     private final boolean keepSandbox;
 
     private final GATContext context;
 
-    private final RootHub rootHub;
+    private final LocalServer rootHub;
 
     private final boolean verbose;
 
@@ -86,9 +86,9 @@ public class Job implements Runnable {
      * @throws Exception
      *             if the listener could not be attached to this job
      */
-    Job(JobDescription description, HubPolicy hubPolicy, Hub hub,
+    Job(JobDescription description, HubPolicy hubPolicy, Server hub,
             boolean keepSandbox, StateListener jobListener,
-            StateListener hubListener, RootHub rootHub, boolean verbose,
+            StateListener hubListener, LocalServer rootHub, boolean verbose,
             File deployHome, String serverAddress,
 
             Deploy deploy) throws Exception {

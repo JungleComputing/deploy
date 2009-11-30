@@ -1,17 +1,17 @@
 package ibis.deploy;
 
-public interface Hub {
+public interface Server {
 
     /**
-     * Ensure this hub is running, wait for it if needed.
+     * Ensure this server is running, wait for it if needed.
      * 
      * @throws Exception
-     *             when the hub could not be started.
+     *             when the server could not be started.
      */
     void waitUntilRunning() throws Exception;
 
     /**
-     * Get the address of this hub. Also waits until it is running.
+     * Get the address of this server. Also waits until it is running.
      * 
      * @return the address of this server
      * @throws Exception

@@ -14,39 +14,58 @@ import org.slf4j.LoggerFactory;
  * default server port (usually 8888)
  * 
  */
-public class RootHub implements Hub {
+public class LocalServer implements Server {
 
-    private static final Logger logger = LoggerFactory.getLogger(RootHub.class);
+    private static final Logger logger = LoggerFactory.getLogger(LocalServer.class);
 
     private final boolean isServer;
+
+    private final boolean isZorilla;
+
+    // used in case of a local Zorilla node
+    private final ibis.zorilla.Node zorilla;
 
     // used in case of a local server
     private final ibis.ipl.server.Server server;
 
-    RootHub(boolean isServer, boolean verbose) throws Exception {
+    LocalServer(boolean isServer, boolean isZorilla, boolean verbose)
+            throws Exception {
         this.isServer = isServer;
+        this.isZorilla = isZorilla;
 
-        
-        if (isServer) {
+        if (isZorilla) {
+            logger.debug("Starting build-in Zorilla node, with server");
+        } else if (isServer) {
             logger.debug("Starting build-in server");
         } else {
             logger.debug("Starting build-in hub");
         }
-        
-        Properties properties = new Properties();
-        properties.put(ServerProperties.HUB_ONLY, !isServer + "");
-        properties.put(ServerProperties.PRINT_ERRORS, "true");
-        properties.put(ServerProperties.VIZ_INFO, "D^Ibis Deploy @ local^" + Grid.LOCAL_COLOR);
 
+        if (isZorilla) {
+            zorilla = new ibis.zorilla.Node(null);
+            server = zorilla.getIPLServer();
+        } else {
+            zorilla = null;
 
-        if (verbose) {
-            properties.put(ServerProperties.PRINT_EVENTS, "true");
-            properties.put(ServerProperties.PRINT_STATS, "true");
+            Properties properties = new Properties();
+            properties.put(ServerProperties.HUB_ONLY, !isServer + "");
+            properties.put(ServerProperties.PRINT_ERRORS, "true");
+            properties.put(ServerProperties.VIZ_INFO, "D^Ibis Deploy @ local^"
+                    + Grid.LOCAL_COLOR);
+
+            if (verbose) {
+                properties.put(ServerProperties.PRINT_EVENTS, "true");
+                properties.put(ServerProperties.PRINT_STATS, "true");
+            }
+
+            server = new ibis.ipl.server.Server(properties);
         }
 
-        server = new ibis.ipl.server.Server(properties);
-
         logger.debug(server.toString());
+    }
+    
+    void addZorillaNode(String nodes) {
+        zorilla.discoveryService();
     }
 
     /**
