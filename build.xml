@@ -18,30 +18,34 @@
 
     <target name="build" description="Build with included JavaGAT and IPL" depends="clean,copy-external,compile" />
 
+    <path id="default.classpath">
+        <fileset dir="lib">
+            <include name="*.jar" />
+        </fileset>
+        <pathelement path="tmp" />
+    </path>
+
+
     <!-- copy external dependancies -->
     <target name="copy-external">
         <mkdir dir="lib" />
+        <mkdir dir="lib-server" />
+        <mkdir dir="lib-zorilla" />
 
-        <!-- ipl -->
-
-        <copy todir="lib/ipl">
-            <fileset dir="${ipl}" />
-        </copy>
-
-        <!-- javagat -->
-
-        <copy todir="lib/javagat">
+        <copy todir="lib">
+            <fileset dir="external" includes="*.jar" />
+            <fileset dir="${zorilla}" includes="*.jar" />
             <fileset dir="${javagat}" />
         </copy>
 
-        <!-- zorilla (main lib dir only) -->
-        <copy todir="lib/zorilla">
-            <fileset dir="${zorilla}" includes="*.jar" />
+        <copy todir="lib-server">
+            <!-- <fileset dir="lib/ipl" includes="commons*,ibis*,ipl*,jstun*,log4j*,sbbi*,slf4j*,smartsockets*,trilead*" /> -->
+            <fileset dir="${ipl}" />
         </copy>
 
-        <!-- other, and ipl apps -->
-        <copy todir="lib">
-            <fileset dir="external" includes="*.jar,ipl-apps" />
+        <copy todir="lib-zorilla">
+            <fileset dir="${javagat}" />
+            <fileset dir="${zorilla}" />
         </copy>
 
     </target>
@@ -53,21 +57,6 @@
         <mkdir dir="tmp/images" />
         <mkdir dir="lib" />
 
-        <path id="default.classpath">
-            <fileset dir="lib">
-                <include name="*.jar" />
-            </fileset>
-            <fileset dir="lib/javagat">
-                <include name="*.jar" />
-            </fileset>
-            <fileset dir="lib/ipl">
-                <include name="*.jar" />
-            </fileset>
-            <fileset dir="lib/zorilla">
-                <include name="*.jar" />
-            </fileset>
-            <pathelement path="tmp" />
-        </path>
 
         <copy todir="tmp/images">
             <fileset dir="images" includes="*" />
@@ -99,17 +88,7 @@
 
         <mkdir dir="lib-server" />
 
-        <copy todir="lib-server">
-            <fileset dir="lib/ipl" includes="commons*,ibis*,ipl*,jstun*,log4j*,sbbi*,slf4j*,smartsockets*,trilead*" />
-        </copy>
 
-        <mkdir dir="lib-zorilla" />
-
-        <copy todir="lib-zorilla">
-            <fileset dir="lib/ipl" />
-            <fileset dir="lib/javagat" includes="*.jar,adaptors/LocalAdaptor/*,adaptors/SshTrileadAdaptor/*,adaptors/shared/*" />
-            <fileset dir="lib/zorilla" />
-        </copy>
 
     </target>
 

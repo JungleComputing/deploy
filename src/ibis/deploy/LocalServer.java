@@ -16,7 +16,8 @@ import org.slf4j.LoggerFactory;
  */
 public class LocalServer implements Server {
 
-    private static final Logger logger = LoggerFactory.getLogger(LocalServer.class);
+    private static final Logger logger = LoggerFactory
+            .getLogger(LocalServer.class);
 
     private final boolean isServer;
 
@@ -63,7 +64,7 @@ public class LocalServer implements Server {
 
         logger.debug(server.toString());
     }
-    
+
     void addZorillaNode(String nodes) {
         zorilla.discoveryService();
     }
@@ -87,8 +88,16 @@ public class LocalServer implements Server {
         return server.getHubs();
     }
 
-    void kill() {
-        server.end(-1);
+    public void kill() {
+        if (zorilla != null) {
+            zorilla.end(-1);
+        } else if (server != null) {
+            server.end(-1);
+        }
+    }
+
+    public boolean isFinished() {
+        return false;
     }
 
     void killAll() {
@@ -103,11 +112,13 @@ public class LocalServer implements Server {
      * @see java.lang.Object#toString()
      */
     public String toString() {
-        if (isServer) {
+        if (isZorilla) {
+            return "Local Zorilla Node @ " + getAddress();
+        } else if (isServer) {
             return "Local Server @ " + getAddress();
+        } else {
+            return "Local Hub @ " + getAddress();
         }
-        return "Local Hub @ " + getAddress();
-
     }
 
     public void addListener(StateListener listener) {

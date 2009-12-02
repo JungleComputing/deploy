@@ -1,6 +1,7 @@
 package ibis.deploy.gui;
 
 import ibis.deploy.ApplicationSet;
+import ibis.deploy.Cluster;
 import ibis.deploy.Deploy;
 import ibis.deploy.Experiment;
 import ibis.deploy.Grid;
@@ -66,7 +67,7 @@ public class GUI {
 
     private JMenuBar menuBar = null;
 
-//    private Boolean sharedHubs;
+    // private Boolean sharedHubs;
 
     private static class Shutdown extends Thread {
         private final GUI gui;
@@ -131,6 +132,9 @@ public class GUI {
         frame.setIconImage(Utils.createImageIcon("/images/favicon.ico", null)
                 .getImage());
 
+        // center on screen
+        frame.setLocationRelativeTo(null);
+
         this.menuBar = new JMenuBar();
         JMenu menu = new JMenu("File");
 
@@ -164,8 +168,8 @@ public class GUI {
                 HubPolicy.OFF, this));
         hubPolicy.add(menuItem);
         subMenu.add(menuItem);
-        menuItem = new JRadioButtonMenuItem(new HubPolicyAction("One hub per cluster",
-                HubPolicy.PER_CLUSTER, this));
+        menuItem = new JRadioButtonMenuItem(new HubPolicyAction(
+                "One hub per cluster", HubPolicy.PER_CLUSTER, this));
         menuItem.setSelected(true);
         hubPolicy.add(menuItem);
         subMenu.add(menuItem);
@@ -186,7 +190,8 @@ public class GUI {
         frame.getContentPane().setLayout(new BorderLayout());
         frame.getContentPane().add(new RootPanel(this), BorderLayout.CENTER);
 
-        frame.setPreferredSize(new Dimension(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT));
+        frame.setPreferredSize(new Dimension(DEFAULT_SCREEN_WIDTH,
+                DEFAULT_SCREEN_HEIGHT));
 
         frame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent we) {
@@ -213,6 +218,8 @@ public class GUI {
         File experimentFile = null;
         boolean verbose = false;
         boolean keepSandboxes = false;
+        boolean zorilla = false;
+        String serverCluster = null;
 
         for (int i = 0; i < arguments.length; i++) {
             if (arguments[i].equals("-v")) {
@@ -223,6 +230,11 @@ public class GUI {
                 System.exit(0);
             } else if (arguments[i].equals("-k")) {
                 keepSandboxes = true;
+            } else if (arguments[i].equals("-s")) {
+                i++;
+                serverCluster = arguments[i];
+            } else if (arguments[i].equals("-z")) {
+                zorilla = true;
             } else if (arguments[i].endsWith(".grid")) {
                 if (gridFile != null) {
                     System.err
@@ -323,12 +335,51 @@ public class GUI {
             System.err.println(workspace.toPrintString());
         }
 
-        try {
-            deploy = new Deploy(null, verbose);
-            deploy.setKeepSandboxes(keepSandboxes);
-        } catch (Exception e) {
-            System.err.println("Could not initialize ibis-deploy: " + e);
-            System.exit(1);
+        Cluster cluster = null;
+        if (serverCluster == null) {
+            logger.info("Initializing Ibis Deploy, using build-in server");
+
+            cluster = null;
+
+            // init with build-in server
+            try {
+                deploy = new Deploy(null, verbose, keepSandboxes, cluster,
+                        null, true);
+            } catch (Exception e) {
+                System.err.println("Could not initialize ibis-deploy: " + e);
+                System.exit(1);
+            }
+        } else {
+            logger
+                    .info("Initializing Command Line Ibis Deploy, using server on cluster \""
+                            + serverCluster + "\"");
+
+            if (workspace.getGrid() == null) {
+                System.err.println("ERROR: Server cluster " + serverCluster
+                        + " not found, no grid file specified");
+                System.exit(1);
+            }
+
+            cluster = workspace.getGrid().getCluster(serverCluster);
+
+            InitializationFrame initWindow = new InitializationFrame();
+
+            try {
+                deploy = new Deploy(null, verbose, keepSandboxes, cluster,
+                        initWindow, true);
+            } catch (Exception e) {
+                System.err.println("Could not initialize ibis-deploy: " + e);
+                System.exit(1);
+            }
+
+            // will call dispose in the Swing thread
+            initWindow.remove();
+
+            if (cluster == null) {
+                System.err.println("ERROR: Server cluster " + serverCluster
+                        + " not found in grid");
+                System.exit(1);
+            }
         }
 
     }
@@ -390,13 +441,13 @@ public class GUI {
         return menuBar;
     }
 
-//    public Boolean getSharedHubs() {
-//        return sharedHubs;
-//    }
-//
-//    public void setSharedHubs(boolean sharedHubs) {
-//        this.sharedHubs = sharedHubs;
-//    }
+    // public Boolean getSharedHubs() {
+    // return sharedHubs;
+    // }
+    //
+    // public void setSharedHubs(boolean sharedHubs) {
+    // this.sharedHubs = sharedHubs;
+    // }
 
     public void fireSubmitJob(JobDescription jobDescription) {
         for (SubmitJobListener listener : submitJobListeners) {
@@ -448,5 +499,4 @@ public class GUI {
     public JFrame getFrame() {
         return frame;
     }
-
 }

@@ -19,8 +19,12 @@ public interface Server {
      */
     String getAddress() throws Exception;
 
-    public void addListener(StateListener listener);
+    void addListener(StateListener listener);
 
-    public State getState();
+    State getState();
+    
+    boolean isFinished();
+    
+    void kill();
 
 }

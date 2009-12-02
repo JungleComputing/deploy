@@ -39,10 +39,10 @@ public class Deploy {
     private static final Logger logger = LoggerFactory.getLogger(Deploy.class);
 
     // local "root" hub (perhaps including a server and/or a zorilla node)
-    private LocalServer localServer;
+    private final LocalServer localServer;
 
     // remote server (if it exists)
-    private RemoteServer remoteServer;
+    private final RemoteServer remoteServer;
 
     // home dir of ibis-deploy
     private final File home;
@@ -50,20 +50,41 @@ public class Deploy {
     // promote some logging prints from debug to info
     private boolean verbose;
 
+    private boolean keepSandboxes;
+
     // submitted jobs
     private List<Job> jobs;
 
     // Map<gridName, Map<clusterName, Server>> with "shared" hubs
-    private Map<String, RemoteServer> hubs;
+    private Map<String, Server> hubs;
 
-    private boolean keepSandboxes;
+    private HubPolicy hubPolicy = HubPolicy.PER_CLUSTER;
 
-    private HubPolicy hubPolicy;
+    private final PoolSizePrinter poolSizePrinter;
 
-    private PoolSizePrinter poolSizePrinter;
+    private static File checkHome(File home) throws Exception {
+        if (home == null) {
+            String homeProperty = System.getProperty(HOME_PROPERTY);
+            if (homeProperty == null || homeProperty.length() == 0) {
+                homeProperty = System.getProperty("user.dir");
+            }
+            home = new File(homeProperty);
+        }
+
+        for (String fileName : REQUIRED_FILES) {
+            if (!new File(home, fileName).exists()) {
+                throw new Exception("required file/dir \"" + fileName
+                        + "\" not found in ibis deploy home (" + home + ")");
+            }
+        }
+
+        return home;
+    }
+    
 
     /**
-     * Create a new (uninitialized) deployment interface.
+     * Create a new deployment interface. Also deploys the server, embedded in
+     * this JVM. Convenience constructor provides all possible defaults.
      * 
      * @param home
      *            "home" directory of ibis-deploy. If null, the default location
@@ -71,166 +92,27 @@ public class Deploy {
      *            property is unspecified, final default value is the current
      *            working directory.
      * @throws Exception
-     *             if required files cannot be found in home
-     */
-    public Deploy(File home, boolean verbose) throws Exception {
-        localServer = null;
-        remoteServer = null;
-        keepSandboxes = false;
-        poolSizePrinter = null;
-        this.verbose = verbose;
-
-        hubPolicy = HubPolicy.PER_CLUSTER;
-
-        jobs = new ArrayList<Job>();
-        hubs = new HashMap<String, RemoteServer>();
-
-        if (home == null) {
-            String homeProperty = System.getProperty(HOME_PROPERTY);
-            if (homeProperty == null || homeProperty.length() == 0) {
-                homeProperty = System.getProperty("user.dir");
-            }
-            this.home = new File(homeProperty);
-        } else {
-            this.home = home;
-        }
-
-        checkFiles();
-    }
-
-    /**
-     * Returns the home directory of ibis-deploy used to fetch server libraries,
-     * images, etc.
+     *             if required files cannot be found in home, or the server
+     *             cannot be started.
      * 
-     * @return the home directory of ibis-deploy
      */
-    public File getHome() {
-        return home;
-    }
-
-    // is verbose mode turned on?
-    boolean isVerbose() {
-        return verbose;
+    public Deploy(File home) throws Exception {
+        this(home, false, false, null, null, true);
     }
 
     /**
-     * Checks if required files are in the specified home dir
+     * Create a new deployment interface. Also deploys the server, either
+     * locally or remotely.
      * 
      * @param home
-     *            ibis-deploy home dir
-     * @throws Exception
-     *             if one or more files are missing
-     */
-    private void checkFiles() throws Exception {
-        for (String fileName : REQUIRED_FILES) {
-            if (!new File(home, fileName).exists()) {
-                throw new Exception("required file/dir \"" + fileName
-                        + "\" not found in ibis deploy home (" + home + ")");
-            }
-        }
-    }
-
-    /**
-     * If set to true, will keep all sandboxes for jobs (not for hubs and
-     * servers though). This is turned of by default
-     * 
+     *            "home" directory of ibis-deploy. If null, the default location
+     *            is used from the "ibis.deploy.home" system property. If this
+     *            property is unspecified, final default value is the current
+     *            working directory.
+     * @param verbose
+     *            If true, start Ibis-Deploy in verbose mode
      * @param keepSandboxes
-     *            if true, ibis-deploy will keep all sandboxes for jobs from now
-     *            on.
-     */
-    public synchronized void setKeepSandboxes(boolean keepSandboxes) {
-        this.keepSandboxes = keepSandboxes;
-    }
-
-    public synchronized void setHubPolicy(HubPolicy policy) {
-        this.hubPolicy = policy;
-    }
-
-    /**
-     * Returns the address of the build-in root hub.
-     * 
-     * @return the address of the build-in root hub.
-     * @throws Exception
-     *             if ibis-deploy has not been initialized yet.
-     */
-    public synchronized String getRootHubAddress() throws Exception {
-        if (localServer == null) {
-            throw new Exception("Ibis-deploy not initialized yet");
-        }
-
-        return localServer.getAddress();
-    }
-
-    /**
-     * Returns the build-in root hub.
-     * 
-     * @return the build-in root hub.
-     * @throws Exception
-     *             if ibis-deploy has not been initialized yet.
-     */
-    synchronized LocalServer getRootHub() throws Exception {
-        if (localServer == null) {
-            throw new Exception("Ibis-deploy not initialized yet");
-        }
-
-        return localServer;
-    }
-
-    /**
-     * Retrieves address of server. May block if server has not been started
-     * yet.
-     * 
-     * @return address of server
-     * @throws Exception
-     *             if server state cannot be retrieved.
-     */
-    public synchronized String getServerAddress() throws Exception {
-        if (localServer == null) {
-            throw new Exception("Ibis-deploy not initialized yet");
-        }
-
-        if (remoteServer == null) {
-            return localServer.getAddress();
-        } else {
-            return remoteServer.getAddress();
-        }
-    }
-
-    /**
-     * Initialize this deployment object. Will wait until the server is actually
-     * running
-     * 
-     * @param serverCluster
-     *            cluster where the server should be started, or null for a
-     *            server embedded in this JVM.
-     * 
-     * @throws Exception
-     *             if the server cannot be started
-     */
-    public synchronized void initialize(Cluster serverCluster) throws Exception {
-        initialize(serverCluster, null, true);
-    }
-
-    /**
-     * Initialize this deployment object. Will NOT wait until the server is
-     * actually running
-     * 
-     * @param serverCluster
-     *            cluster where the server should be started, or null for a
-     *            server embedded in this JVM.
-     * @param listener
-     *            callback object for status of server
-     * @throws Exception
-     *             if the server cannot be started
-     */
-    public synchronized void initialize(Cluster serverCluster,
-            StateListener listener) throws Exception {
-        initialize(serverCluster, listener, false);
-    }
-
-    /**
-     * Initialize this deployment object.
-     * 
+     *            If true, will keep sandboxes of servers and jobs
      * @param serverCluster
      *            cluster where the server should be started, or null for a
      *            server embedded in this JVM.
@@ -239,12 +121,22 @@ public class Deploy {
      * @param blocking
      *            if true, will block until the server is running
      * @throws Exception
-     *             if the server cannot be started
-     *             
+     *             if required files cannot be found in home, or the server
+     *             cannot be started.
+     * 
      */
-    public synchronized void initialize(Cluster serverCluster,
-            StateListener listener, boolean blocking) throws Exception {
+    public Deploy(File home, boolean verbose, boolean keepSandboxes,
+            Cluster serverCluster, StateListener listener, boolean blocking)
+            throws Exception {
         logger.debug("Initializing deploy");
+
+        this.verbose = verbose;
+        this.keepSandboxes = keepSandboxes;
+
+        jobs = new ArrayList<Job>();
+        hubs = new HashMap<String, Server>();
+
+        this.home = checkHome(home);
 
         if (serverCluster == null) {
             // rootHub includes server
@@ -272,24 +164,146 @@ public class Deploy {
                 + localServer.getAddress());
     }
 
+
     /**
-     * Initialize this deployment object. Will also start a build-in Zorilla node.
-     * Additionally, a Zorilla node is either started or used on each cluster specified.
+     * Create a new deployment interface. Also deploys Zorilla, embedded in this
+     * JVM, and on each specified cluster.
      * 
-     * @param clusters
-     *             clusters used for zorilla. Will start a zorilla if needed.
+     * @param home
+     *            "home" directory of ibis-deploy. If null, the default location
+     *            is used from the "ibis.deploy.home" system property. If this
+     *            property is unspecified, final default value is the current
+     *            working directory.
+     * @param serverCluster
+     *            cluster where the server should be started, or null for a
+     *            server embedded in this JVM.
      * @throws Exception
-     *             if Ibis-Deploy cannot be started for some reason.
-     *             
+     *             if required files cannot be found in home, or the server
+     *             cannot be started.
+     * 
      */
-    public synchronized void initializeZorilla(Cluster... clusters) throws Exception {
-        logger.debug("Initializing deploy, Zorilla mode...");
-        
+    public Deploy(File home, boolean verbose, boolean keepSandboxes,
+            Cluster... zorillaClusters) throws Exception {
+        this.verbose = verbose;
+        this.keepSandboxes = keepSandboxes;
+
+        jobs = new ArrayList<Job>();
+        hubs = new HashMap<String, Server>();
+
+        this.home = checkHome(home);
+
         localServer = new LocalServer(true, true, verbose);
+        remoteServer = null;
+
+        for (Cluster cluster : zorillaClusters) {
+            if (cluster.getJobAdaptor().equalsIgnoreCase("zorilla")) {
+                // this cluster has an existing zorilla node running, add it to
+                // the
+                // hub/zorilla network
+                localServer.addZorillaNode(cluster.getJobURI()
+                        .getSchemeSpecificPart());
+            } else {
+                // start a Zorilla node on the provided cluster
+
+                RemoteZorilla node = new RemoteZorilla(cluster, localServer,
+                        home, verbose, null, keepSandboxes);
+
+                node.waitUntilRunning();
+
+                hubs.put(cluster.getName(), node);
+            }
+        }
         
-        
-        
-        
+        // print pool size statistics
+        poolSizePrinter = new PoolSizePrinter(this);
+
+        logger.info("Ibis Deploy initialized, root hub/server/zorilla address is "
+                + localServer.getAddress());
+    }
+
+    /**
+     * Returns the home directory of ibis-deploy used to fetch server libraries,
+     * images, etc.
+     * 
+     * @return the home directory of ibis-deploy
+     */
+    public File getHome() {
+        return home;
+    }
+
+    // is verbose mode turned on?
+    boolean isVerbose() {
+        return verbose;
+    }
+
+    /**
+     * If set to true, will keep all sandboxes for jobs. This is turned off by
+     * default
+     * 
+     * @param keepSandboxes
+     *            if true, ibis-deploy will keep all sandboxes for jobs from now
+     *            on.
+     */
+    public synchronized void setKeepSandboxes(boolean keepSandboxes) {
+        this.keepSandboxes = keepSandboxes;
+    }
+
+    public synchronized void setHubPolicy(HubPolicy policy) {
+        this.hubPolicy = policy;
+    }
+
+    /**
+     * Returns the address of the build-in root hub.
+     * 
+     * @return the address of the build-in root hub.
+     * @throws Exception
+     *             if ibis-deploy has not been initialized yet.
+     */
+    public String getRootHubAddress() throws Exception {
+        return localServer.getAddress();
+    }
+
+    /**
+     * Returns the build-in root hub.
+     * 
+     * @return the build-in root hub.
+     * @throws Exception
+     *             if ibis-deploy has not been initialized yet.
+     */
+    LocalServer getRootHub() throws Exception {
+        return localServer;
+    }
+    
+    /**
+     * Returns the build-in root hub.
+     * 
+     * @return the build-in root hub.
+     * @throws Exception
+     *             if ibis-deploy has not been initialized yet.
+     */
+    public Server getServer() throws Exception {
+        if (remoteServer == null) {
+            return localServer;
+        } else {
+            return remoteServer;
+        }
+    }
+
+
+    /**
+     * Retrieves address of server. May block if server has not been started
+     * yet.
+     * 
+     * @return address of server
+     * @throws Exception
+     *             if server state cannot be retrieved.
+     */
+    public String getServerAddress() throws Exception {
+        if (remoteServer == null) {
+            return localServer.getAddress();
+        } else {
+            return remoteServer.getAddress();
+        }
     }
 
     /**
@@ -316,10 +330,6 @@ public class Deploy {
             ApplicationSet applicationSet, Grid grid,
             StateListener jobListener, StateListener hubListener)
             throws Exception {
-        if (localServer == null) {
-            throw new Exception("Ibis-deploy not initialized yet");
-        }
-
         if (remoteServer != null && !remoteServer.isRunning()) {
             throw new Exception("Cannot submit job (yet), server \""
                     + remoteServer + "\" not running");
@@ -388,15 +398,15 @@ public class Deploy {
             return localServer;
         }
 
-        RemoteServer result = hubs.get(clusterName);
+        Server result = hubs.get(clusterName);
 
         if (result == null || result.isFinished()) {
             // new server needed
-            result = new RemoteServer(cluster, true, localServer, home, verbose,
-                    listener, keepSandboxes);
+            result = new RemoteServer(cluster, true, localServer, home,
+                    verbose, listener, keepSandboxes);
             hubs.put(clusterName, result);
         } else {
-            result.addStateListener(listener);
+            result.addListener(listener);
         }
 
         if (waitUntilRunning) {
@@ -419,7 +429,7 @@ public class Deploy {
             }
             return remoteServer.getRegistryService();
         }
-        
+
         return localServer.getRegistryService();
 
     }
@@ -494,7 +504,7 @@ public class Deploy {
             job.kill();
         }
 
-        for (RemoteServer hub : hubs.values()) {
+        for (Server hub : hubs.values()) {
             logger.info("killing Hub " + hub);
             hub.kill();
         }

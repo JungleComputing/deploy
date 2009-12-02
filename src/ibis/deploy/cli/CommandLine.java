@@ -184,15 +184,12 @@ public class CommandLine {
                 System.exit(1);
             }
 
-            Deploy deploy = new Deploy(null, verbose);
-
-            deploy.setKeepSandboxes(keepSandboxes);
-
+            Cluster cluster = null;
             if (serverCluster == null) {
                 logger
                         .info("Initializing Command Line Ibis Deploy, using build-in server");
 
-                deploy.initialize(null);
+                cluster = null;
             } else {
                 logger
                         .info("Initializing Command Line Ibis Deploy, using server on cluster \""
@@ -204,16 +201,16 @@ public class CommandLine {
                     System.exit(1);
                 }
 
-                Cluster cluster = grid.getCluster(serverCluster);
+                cluster = grid.getCluster(serverCluster);
 
                 if (cluster == null) {
                     System.err.println("ERROR: Server cluster " + serverCluster
                             + " not found in grid");
                     System.exit(1);
                 }
-
-                deploy.initialize(cluster);
             }
+            
+            Deploy deploy = new Deploy(null, verbose, keepSandboxes, cluster, null, true);
 
             // run experiments
             for (Experiment experiment : experiments) {

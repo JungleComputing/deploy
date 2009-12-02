@@ -1,16 +1,15 @@
 package ibis.deploy;
 
 import ibis.ipl.IbisProperties;
-import ibis.ipl.server.RegistryServiceInterface;
-import ibis.ipl.server.ServerConnection;
 import ibis.ipl.server.ServerProperties;
-import ibis.smartsockets.virtual.VirtualSocketFactory;
 import ibis.util.ThreadPool;
+import ibis.zorilla.util.Remote;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.URI;
@@ -25,7 +24,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Server, Hub, or Zorilla node running on a remote cluster
  */
-public class RemoteServer implements Runnable, Server {
+public class RemoteZorilla implements Runnable, Server {
 
     public static final long TIMEOUT = 1200000;
 
@@ -36,15 +35,11 @@ public class RemoteServer implements Runnable, Server {
     }
 
     private static final Logger logger = LoggerFactory
-            .getLogger(RemoteServer.class);
-
-    private final String id;
-
-    private final boolean hubOnly;
+            .getLogger(RemoteZorilla.class);
 
     private final Cluster cluster;
 
-    private final LocalServer rootHub;
+    private final LocalServer localZorillaNode;
 
     private final File deployHome;
 
@@ -56,37 +51,30 @@ public class RemoteServer implements Runnable, Server {
 
     private org.gridlab.gat.resources.Job gatJob;
 
-    private ServerConnection serverConnection;
-    
+    private Remote remote;
+
     private String address;
 
     private boolean killed = false;
 
     private final StateForwarder forwarder;
 
-    RemoteServer(Cluster cluster, boolean hubOnly, LocalServer rootHub,
+    RemoteZorilla(Cluster cluster, LocalServer localZorillaNode,
             File deployHome, boolean verbose, StateListener listener,
             boolean keepSandbox) throws Exception {
-        this.hubOnly = hubOnly;
-        this.rootHub = rootHub;
+        this.localZorillaNode = localZorillaNode;
         this.deployHome = deployHome;
         this.verbose = verbose;
         this.keepSandbox = keepSandbox;
         address = null;
         gatJob = null;
-        serverConnection = null;
+        remote = null;
 
         this.cluster = cluster.resolve();
 
         this.cluster.checkSettings("Server", true);
 
         this.context = createGATContext();
-
-        if (hubOnly) {
-            id = "Hub-" + getNextID();
-        } else {
-            id = "Server-" + getNextID();
-        }
 
         forwarder = new StateForwarder(this.toString());
         if (listener != null) {
@@ -178,12 +166,6 @@ public class RemoteServer implements Runnable, Server {
             startZorilla = cluster.getStartZorilla();
         }
 
-        if (hubOnly && !startZorilla) {
-            // Hub-only mode causes the JVM not to "end" properly sometimes
-            // Doesn't matter if a server is present anyway...
-            // arguments.add("--hub-only");
-        }
-
         if (verbose) {
             arguments.add("--events");
             arguments.add("--stats");
@@ -191,7 +173,7 @@ public class RemoteServer implements Runnable, Server {
 
         // list of other hubs
         arguments.add("--hub-addresses");
-        arguments.add(Util.strings2CSS(rootHub.getHubs()));
+        arguments.add(Util.strings2CSS(localZorillaNode.getHubs()));
 
         sd.setJavaArguments(arguments.toArray(new String[0]));
 
@@ -242,15 +224,8 @@ public class RemoteServer implements Runnable, Server {
 
         sd.addJavaSystemProperty(IbisProperties.LOCATION, cluster.getName());
 
-        if (hubOnly) {
-            sd.addJavaSystemProperty(ServerProperties.VIZ_INFO,
-                    "H^Smartsockets Hub @ " + cluster.getName() + "^"
-                            + cluster.getColorCode());
-        } else {
-            sd.addJavaSystemProperty(ServerProperties.VIZ_INFO,
-                    "S^Ibis Server @ " + cluster.getName() + "^"
-                            + cluster.getColorCode());
-        }
+        sd.addJavaSystemProperty(ServerProperties.VIZ_INFO, "Z^Zorilla @ "
+                + cluster.getName() + "^" + cluster.getColorCode());
 
         if (cluster.getServerSystemProperties() != null) {
             sd.getJavaSystemProperties().putAll(
@@ -288,7 +263,6 @@ public class RemoteServer implements Runnable, Server {
         return address;
     }
 
-  
     public State getState() {
         return forwarder.getState();
     }
@@ -307,13 +281,9 @@ public class RemoteServer implements Runnable, Server {
     public synchronized void kill() {
         killed = true;
 
-        if (serverConnection != null) {
+        if (remote != null) {
             // will close standard in, killing server
-            try {
-                serverConnection.end(0);
-            } catch (IOException e) {
-                // IGNORE
-            }
+            remote.end();
         }
 
         if (gatJob != null) {
@@ -361,17 +331,13 @@ public class RemoteServer implements Runnable, Server {
             new OutputPrefixForwarder(job.getStderr(), System.err,
                     "STDERR FROM " + toString() + ": ");
 
-            VirtualSocketFactory socketFactory = null;
-            if (rootHub != null) {
-                socketFactory = rootHub.getSocketFactory();
-            }
-
             // fetch server address, forward output to deploy console
             logger.debug("starting remote client");
-            ServerConnection connection = new ServerConnection(job.getStdout(),
-                    job.getStdin(), System.out, "STDOUT FROM " + toString()
-                            + ": ", TIMEOUT, socketFactory);
-            setRemoteClient(connection);
+
+            Remote remote = new Remote(job.getStdout(), job.getStdin(),
+                    System.out, "STDOUT FROM " + toString() + ": ");
+
+            setRemoteClient(remote);
 
             logger.debug("getting address via remote client");
 
@@ -379,9 +345,10 @@ public class RemoteServer implements Runnable, Server {
 
             logger.debug("address is " + getAddress());
 
-            if (rootHub != null) {
+            if (localZorillaNode != null) {
                 logger.debug("adding server to root hub");
-                rootHub.addHubs(this.getAddress());
+                localZorillaNode.addHubs(this.getAddress());
+                localZorillaNode.addZorillaNode(this.getAddress());
             }
 
             logger.info(this + " now running (address = " + getAddress() + ")");
@@ -402,9 +369,9 @@ public class RemoteServer implements Runnable, Server {
         }
     }
 
-    private synchronized void setRemoteClient(ServerConnection connection) throws IOException {
-        this.serverConnection = connection;
-        this.address = serverConnection.getAddress();
+    private synchronized void setRemoteClient(Remote remote) throws IOException {
+        this.remote = remote;
+        this.address = remote.getAddress(TIMEOUT);
 
         // server already killed before it was submitted :(
         // kill server...
@@ -443,15 +410,7 @@ public class RemoteServer implements Runnable, Server {
      * @see java.lang.Object#toString()
      */
     public String toString() {
-        if (hubOnly) {
-            return "Hub \"" + id + "\" on \"" + cluster.getName() + "\"";
-        } else {
-            return "Server on \"" + cluster.getName() + "\"";
-        }
-    }
-
-    public RegistryServiceInterface getRegistryService() {
-        return serverConnection.getRegistryService();
+        return "Zorilla node on \"" + cluster.getName() + "\"";
     }
 
 }
