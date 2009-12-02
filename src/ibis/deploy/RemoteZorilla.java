@@ -72,7 +72,7 @@ public class RemoteZorilla implements Runnable, Server {
 
         this.cluster = cluster.resolve();
 
-        this.cluster.checkSettings("Server", true);
+        this.cluster.checkSettings("Zorilla", true);
 
         this.context = createGATContext();
 
@@ -129,16 +129,16 @@ public class RemoteZorilla implements Runnable, Server {
 
         // create cache dir, and server dir within
         org.gridlab.gat.io.File gatCacheDirFile = GAT.createFile(context,
-                "any://" + host + "/" + cacheDir + "/server/");
+                "any://" + host + "/" + cacheDir + "/zorilla/");
         gatCacheDirFile.mkdirs();
 
         // rsync to cluster cache server dir
-        File rsyncLocation = new File(cacheDir + "/server/");
+        File rsyncLocation = new File(cacheDir + "/zorilla/");
         Rsync.rsync(src, rsyncLocation, host, user);
 
         // tell job to pre-stage from cache dir
         org.gridlab.gat.io.File gatFile = GAT.createFile(context, "any://"
-                + host + "/" + cacheDir + "/server/" + src.getName());
+                + host + "/" + cacheDir + "/zorilla/" + src.getName());
         sd.addPreStagedFile(gatFile, gatCwd);
         return;
     }
@@ -152,61 +152,31 @@ public class RemoteZorilla implements Runnable, Server {
         logger.debug("executable: " + sd.getExecutable());
 
         // main class and options
-        sd.setJavaMain("ibis.ipl.server.Server");
+        sd.setJavaMain("ibis.zorilla.Main");
 
         List<String> arguments = new ArrayList<String>();
 
         arguments.add("--remote");
         arguments.add("--port");
         arguments.add("0");
-        arguments.add("--errors");
-
-        boolean startZorilla = false;
-        if (cluster.getStartZorilla() != null) {
-            startZorilla = cluster.getStartZorilla();
-        }
-
-        if (verbose) {
-            arguments.add("--events");
-            arguments.add("--stats");
-        }
 
         // list of other hubs
         arguments.add("--hub-addresses");
         arguments.add(Util.strings2CSS(localZorillaNode.getHubs()));
 
+        arguments.add("--peers");
+        arguments.add(Util.strings2CSS(localZorillaNode.getHubs()));
+
         sd.setJavaArguments(arguments.toArray(new String[0]));
 
-        // add server libraries to pre-stage, use rsync if specified
-        File serverLibs = new File(deployHome, "lib-server");
-        prestage(serverLibs, cluster, sd);
+        // add zorilla libs
+        File zorillaLibs = new File(deployHome, "lib-zorilla");
+        prestage(zorillaLibs, cluster, sd);
 
-        if (startZorilla) {
-            // add zorilla libs too
-            File zorillaLibs = new File(deployHome, "lib-zorilla");
-            prestage(zorillaLibs, cluster, sd);
+        // classpath includes zorilla
+        sd.setJavaClassPath(".:lib-zorilla:lib-zorilla/*");
 
-            // add list of slave nodes, be a master
-            if (cluster.getNodeHostnames() != null) {
-                sd.addJavaSystemProperty("zorilla.slaves", cluster
-                        .getNodeHostnames());
-                sd.addJavaSystemProperty("zorilla.master", "true");
-            }
-
-            // classpath includes zorilla
-            sd
-                    .setJavaClassPath(".:lib-server:lib-server/*:lib-zorilla:lib-zorilla/*");
-
-            sd
-                    .addJavaSystemProperty("gat.adaptor.path",
-                            "lib-zorilla/adaptors");
-
-            // always keep sandbox for now...
-            sd.addAttribute("sandbox.delete", "false");
-        } else {
-            // regular classpath
-            sd.setJavaClassPath(".:lib-server:lib-server/*");
-        }
+        sd.addJavaSystemProperty("gat.adaptor.path", "lib-zorilla/adaptors");
 
         // add server log4j file
         File log4j = new File(deployHome, "log4j.properties");
@@ -316,7 +286,7 @@ public class RemoteZorilla implements Runnable, Server {
                         + jobDescription);
             }
 
-            logger.debug("creating resource broker for hub");
+            logger.debug("creating resource broker for zorilla");
 
             forwarder.setState(State.SUBMITTING);
 

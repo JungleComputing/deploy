@@ -235,6 +235,9 @@ public class GUI {
                 serverCluster = arguments[i];
             } else if (arguments[i].equals("-z")) {
                 zorilla = true;
+            } else if (arguments[i].startsWith("-")) {
+                System.err.println("unknown option: " + arguments[i]);
+                System.exit(1);
             } else if (arguments[i].endsWith(".grid")) {
                 if (gridFile != null) {
                     System.err
@@ -335,51 +338,54 @@ public class GUI {
             System.err.println(workspace.toPrintString());
         }
 
-        Cluster cluster = null;
-        if (serverCluster == null) {
-            logger.info("Initializing Ibis Deploy, using build-in server");
+        try {
+            if (zorilla) {
+                if (workspace.getGrid() == null) {
+                    System.err.println("ERROR: Cannot initialize zorilla " +
+                    		"mode, no grid file specified");
+                    System.exit(1);
+                }
+                
+                System.err.println(workspace.getGrid().toPrintString());
+                deploy = new Deploy(null, verbose, keepSandboxes, workspace.getGrid().getClusters());
+            } else if (serverCluster == null) {
+                logger.info("Initializing Ibis Deploy, using build-in server");
 
-            cluster = null;
+                // init with build-in server
 
-            // init with build-in server
-            try {
-                deploy = new Deploy(null, verbose, keepSandboxes, cluster,
-                        null, true);
-            } catch (Exception e) {
-                System.err.println("Could not initialize ibis-deploy: " + e);
-                System.exit(1);
-            }
-        } else {
-            logger
-                    .info("Initializing Command Line Ibis Deploy, using server on cluster \""
-                            + serverCluster + "\"");
+                deploy = new Deploy(null, verbose, keepSandboxes, null, null,
+                        true);
+            } else {
+                logger.info("Initializing Command Line Ibis Deploy"
+                                + ", using server on cluster \""
+                                + serverCluster + "\"");
 
-            if (workspace.getGrid() == null) {
-                System.err.println("ERROR: Server cluster " + serverCluster
-                        + " not found, no grid file specified");
-                System.exit(1);
-            }
+                if (workspace.getGrid() == null) {
+                    System.err.println("ERROR: Server cluster " + serverCluster
+                            + " not found, no grid file specified");
+                    System.exit(1);
+                }
 
-            cluster = workspace.getGrid().getCluster(serverCluster);
+                Cluster cluster = workspace.getGrid().getCluster(serverCluster);
 
-            InitializationFrame initWindow = new InitializationFrame();
-
-            try {
+                if (cluster == null) {
+                    System.err.println("ERROR: Server cluster " + serverCluster
+                            + " not found in grid");
+                    System.exit(1);
+                }
+                
+                InitializationFrame initWindow = new InitializationFrame();
                 deploy = new Deploy(null, verbose, keepSandboxes, cluster,
                         initWindow, true);
-            } catch (Exception e) {
-                System.err.println("Could not initialize ibis-deploy: " + e);
-                System.exit(1);
+                // will call dispose in the Swing thread
+                initWindow.remove();
+
             }
 
-            // will call dispose in the Swing thread
-            initWindow.remove();
-
-            if (cluster == null) {
-                System.err.println("ERROR: Server cluster " + serverCluster
-                        + " not found in grid");
-                System.exit(1);
-            }
+        } catch (Exception e) {
+            System.err.println("Could not initialize ibis-deploy: " + e);
+            e.printStackTrace(System.err);
+            System.exit(1);
         }
 
     }

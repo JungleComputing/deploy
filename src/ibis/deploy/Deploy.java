@@ -80,7 +80,6 @@ public class Deploy {
 
         return home;
     }
-    
 
     /**
      * Create a new deployment interface. Also deploys the server, embedded in
@@ -164,7 +163,6 @@ public class Deploy {
                 + localServer.getAddress());
     }
 
-
     /**
      * Create a new deployment interface. Also deploys Zorilla, embedded in this
      * JVM, and on each specified cluster.
@@ -196,7 +194,12 @@ public class Deploy {
         remoteServer = null;
 
         for (Cluster cluster : zorillaClusters) {
-            if (cluster.getJobAdaptor().equalsIgnoreCase("zorilla")) {
+            cluster = cluster.resolve();
+
+            if (cluster.getName().equalsIgnoreCase("local")) {
+                // NOTHING
+            } else if (cluster.getJobAdaptor() != null
+                    && cluster.getJobAdaptor().equalsIgnoreCase("zorilla")) {
                 // this cluster has an existing zorilla node running, add it to
                 // the
                 // hub/zorilla network
@@ -213,12 +216,13 @@ public class Deploy {
                 hubs.put(cluster.getName(), node);
             }
         }
-        
+
         // print pool size statistics
         poolSizePrinter = new PoolSizePrinter(this);
 
-        logger.info("Ibis Deploy initialized, root hub/server/zorilla address is "
-                + localServer.getAddress());
+        logger
+                .info("Ibis Deploy initialized, root hub/server/zorilla address is "
+                        + localServer.getAddress());
     }
 
     /**
@@ -273,7 +277,7 @@ public class Deploy {
     LocalServer getRootHub() throws Exception {
         return localServer;
     }
-    
+
     /**
      * Returns the build-in root hub.
      * 
@@ -288,7 +292,6 @@ public class Deploy {
             return remoteServer;
         }
     }
-
 
     /**
      * Retrieves address of server. May block if server has not been started
