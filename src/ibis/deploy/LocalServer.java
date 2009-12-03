@@ -3,6 +3,7 @@ package ibis.deploy;
 import ibis.ipl.server.RegistryServiceInterface;
 import ibis.ipl.server.ServerProperties;
 import ibis.smartsockets.virtual.VirtualSocketFactory;
+import ibis.zorilla.ZorillaProperties;
 
 import java.util.Properties;
 
@@ -43,7 +44,13 @@ public class LocalServer implements Server {
         }
 
         if (isZorilla) {
-            zorilla = new ibis.zorilla.Node(null);
+            Properties properties = new Properties();
+            
+            properties.put(ZorillaProperties.VIZ_INFO, "DZ^Ibis Deploy with Zorilla Node @ local^"
+                    + Grid.LOCAL_COLOR);
+            
+            
+            zorilla = new ibis.zorilla.Node(properties);
             server = zorilla.getIPLServer();
         } else {
             zorilla = null;

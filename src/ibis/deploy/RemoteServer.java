@@ -57,7 +57,7 @@ public class RemoteServer implements Runnable, Server {
     private org.gridlab.gat.resources.Job gatJob;
 
     private ServerConnection serverConnection;
-    
+
     private String address;
 
     private boolean killed = false;
@@ -173,12 +173,7 @@ public class RemoteServer implements Runnable, Server {
         arguments.add("0");
         arguments.add("--errors");
 
-        boolean startZorilla = false;
-        if (cluster.getStartZorilla() != null) {
-            startZorilla = cluster.getStartZorilla();
-        }
-
-        if (hubOnly && !startZorilla) {
+        if (hubOnly) {
             // Hub-only mode causes the JVM not to "end" properly sometimes
             // Doesn't matter if a server is present anyway...
             // arguments.add("--hub-only");
@@ -199,32 +194,8 @@ public class RemoteServer implements Runnable, Server {
         File serverLibs = new File(deployHome, "lib-server");
         prestage(serverLibs, cluster, sd);
 
-        if (startZorilla) {
-            // add zorilla libs too
-            File zorillaLibs = new File(deployHome, "lib-zorilla");
-            prestage(zorillaLibs, cluster, sd);
-
-            // add list of slave nodes, be a master
-            if (cluster.getNodeHostnames() != null) {
-                sd.addJavaSystemProperty("zorilla.slaves", cluster
-                        .getNodeHostnames());
-                sd.addJavaSystemProperty("zorilla.master", "true");
-            }
-
-            // classpath includes zorilla
-            sd
-                    .setJavaClassPath(".:lib-server:lib-server/*:lib-zorilla:lib-zorilla/*");
-
-            sd
-                    .addJavaSystemProperty("gat.adaptor.path",
-                            "lib-zorilla/adaptors");
-
-            // always keep sandbox for now...
-            sd.addAttribute("sandbox.delete", "false");
-        } else {
-            // regular classpath
-            sd.setJavaClassPath(".:lib-server:lib-server/*");
-        }
+        // classpath
+        sd.setJavaClassPath(".:lib-server:lib-server/*");
 
         // add server log4j file
         File log4j = new File(deployHome, "log4j.properties");
@@ -288,7 +259,6 @@ public class RemoteServer implements Runnable, Server {
         return address;
     }
 
-  
     public State getState() {
         return forwarder.getState();
     }
@@ -402,7 +372,8 @@ public class RemoteServer implements Runnable, Server {
         }
     }
 
-    private synchronized void setRemoteClient(ServerConnection connection) throws IOException {
+    private synchronized void setRemoteClient(ServerConnection connection)
+            throws IOException {
         this.serverConnection = connection;
         this.address = serverConnection.getAddress();
 

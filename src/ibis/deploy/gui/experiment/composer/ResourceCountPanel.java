@@ -22,7 +22,7 @@ public class ResourceCountPanel extends JPanel {
     private static final long serialVersionUID = 6119634435992528982L;
 
     private final JSpinner resourceCountSpinner = new JSpinner(
-            new SpinnerNumberModel(1, 1, Integer.MAX_VALUE, 1));
+            new SpinnerNumberModel(1, 0, Integer.MAX_VALUE, 1));
 
     public ResourceCountPanel(final GUI gui, final WorldMapPanel worldMapPanel) {
         setLayout(new FlowLayout(FlowLayout.LEFT));

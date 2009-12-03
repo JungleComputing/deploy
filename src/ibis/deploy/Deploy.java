@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.gridlab.gat.GAT;
+import org.gridlab.gat.URI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -180,8 +181,8 @@ public class Deploy {
      *             cannot be started.
      * 
      */
-    public Deploy(File home, boolean verbose, boolean keepSandboxes,
-            Cluster... zorillaClusters) throws Exception {
+    public Deploy(File home, boolean verbose, boolean keepSandboxes, Grid grid)
+            throws Exception {
         this.verbose = verbose;
         this.keepSandboxes = keepSandboxes;
 
@@ -193,10 +194,11 @@ public class Deploy {
         localServer = new LocalServer(true, true, verbose);
         remoteServer = null;
 
-        for (Cluster cluster : zorillaClusters) {
+        for (Cluster cluster : grid.getClusters()) {
             cluster = cluster.resolve();
 
-            if (cluster.getName().equalsIgnoreCase("local")) {
+            if (cluster.getName().equalsIgnoreCase("local")
+                    || cluster.getName().equalsIgnoreCase("zorilla")) {
                 // NOTHING
             } else if (cluster.getJobAdaptor() != null
                     && cluster.getJobAdaptor().equalsIgnoreCase("zorilla")) {
@@ -216,6 +218,19 @@ public class Deploy {
                 hubs.put(cluster.getName(), node);
             }
         }
+
+        //make sure a zorilla cluster is present so the user can select it.
+        Cluster zorilla = grid.getCluster("zorilla");
+        if (zorilla == null) {
+            zorilla = grid.createNewCluster("zorilla");
+        }
+        zorilla.setServerURI(new URI("zorilla"));
+        zorilla.setServerAdaptor("zorilla");
+        zorilla.setJobURI(new URI("zorilla:" + localServer.getAddress()));
+        zorilla.setJobAdaptor("zorilla");
+        zorilla.addFileAdaptor("local");
+        
+        hubs.put("zorilla", localServer);
 
         // print pool size statistics
         poolSizePrinter = new PoolSizePrinter(this);

@@ -340,14 +340,16 @@ public class GUI {
 
         try {
             if (zorilla) {
-                if (workspace.getGrid() == null) {
+                Grid grid = workspace.getGrid();
+                
+                if (grid == null) {
                     System.err.println("ERROR: Cannot initialize zorilla " +
                     		"mode, no grid file specified");
                     System.exit(1);
                 }
                 
-                System.err.println(workspace.getGrid().toPrintString());
-                deploy = new Deploy(null, verbose, keepSandboxes, workspace.getGrid().getClusters());
+                deploy = new Deploy(null, verbose, keepSandboxes, grid);
+                System.err.println(grid.toPrintString());
             } else if (serverCluster == null) {
                 logger.info("Initializing Ibis Deploy, using build-in server");
 
