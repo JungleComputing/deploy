@@ -1,7 +1,6 @@
 package ibis.deploy;
 
 import ibis.ipl.IbisProperties;
-import ibis.ipl.server.ServerProperties;
 import ibis.util.ThreadPool;
 import ibis.zorilla.ZorillaProperties;
 import ibis.zorilla.util.Remote;
@@ -161,6 +160,23 @@ public class RemoteZorilla implements Runnable, Server {
         arguments.add("--port");
         arguments.add("0");
 
+        if (cluster.getJobAdaptor() != null) {
+            arguments.add("--resource-adaptor");
+            arguments.add(cluster.getJobAdaptor());
+
+            arguments.add("--resource-uri");
+            arguments.add(cluster.getJobURI().toString());
+
+            arguments.add("--nodes");
+            arguments.add("" + cluster.getNodes());
+
+            arguments.add("--cores");
+            arguments.add("" + cluster.getCores());
+
+            arguments.add("--memory");
+            arguments.add("" + cluster.getMemory());
+        }
+
         // list of other hubs
         arguments.add("--hub-addresses");
         arguments.add(Util.strings2CSS(localZorillaNode.getHubs()));
@@ -194,7 +210,7 @@ public class RemoteZorilla implements Runnable, Server {
         }
 
         sd.addJavaSystemProperty(IbisProperties.LOCATION, cluster.getName());
-        
+
         sd.addJavaSystemProperty(ZorillaProperties.VIZ_INFO, "Z^Zorilla @ "
                 + cluster.getName() + "^" + cluster.getColorCode());
 

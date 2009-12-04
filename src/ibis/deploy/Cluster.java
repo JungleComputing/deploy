@@ -66,6 +66,8 @@ public class Cluster {
         out
                 .println("# cores               Total number of cores of this cluster (integer)");
         out
+                .println("# memory               Amount of memory per node in Megabytes (integer)");
+        out
                 .println("# latitude            Latitude position of this cluster (double)");
         out
                 .println("# longitude           Longitude position of this cluster (double)");
@@ -145,6 +147,9 @@ public class Cluster {
     // number of cores of this cluster (in total, not per node)
     private int cores;
 
+    // amount of memory per node, in Megabytes
+    private int memory;
+
     // Latitude position of this cluster
     private double latitude;
 
@@ -184,6 +189,7 @@ public class Cluster {
         serverSystemProperties = null;
         nodes = 0;
         cores = 0;
+        memory = 0;
         latitude = 0;
         longitude = 0;
         startZorilla = null;
@@ -212,6 +218,7 @@ public class Cluster {
         serverSystemProperties = null;
         nodes = 0;
         cores = 0;
+        memory = 0;
         latitude = 0;
         longitude = 0;
         startZorilla = null;
@@ -264,6 +271,7 @@ public class Cluster {
 
         nodes = properties.getIntProperty(prefix + "nodes", 0);
         cores = properties.getIntProperty(prefix + "cores", 0);
+        memory = properties.getIntProperty(prefix + "memory", 0);
         latitude = properties.getDoubleProperty(prefix + "latitude", 0);
         longitude = properties.getDoubleProperty(prefix + "longitude", 0);
 
@@ -289,8 +297,8 @@ public class Cluster {
                 && jobWrapperScript == null && userName == null
                 && cacheDir == null && serverOutputFiles == null
                 && serverSystemProperties == null && nodes == 0 && cores == 0
-                && latitude == 0 && longitude == 0 && startZorilla == null
-                && nodeHostnames == null;
+                && memory == 0 && latitude == 0 && longitude == 0
+                && startZorilla == null && nodeHostnames == null;
     }
 
     /**
@@ -363,6 +371,10 @@ public class Cluster {
 
         if (other.cores != 0) {
             cores = other.cores;
+        }
+        
+        if (other.memory != 0) {
+            memory = other.memory;
         }
 
         if (other.latitude != 0) {
@@ -774,6 +786,25 @@ public class Cluster {
     public void setCores(int cores) {
         this.cores = cores;
     }
+    
+    /**
+     * Amount of memory per node in Megabytes
+     * 
+     * @return Amount of memory per node in Megabytes. Returns 0 if unknown
+     */
+    public int getMemory() {
+        return memory;
+    }
+
+    /**
+     * Sets Amount of memory per node in Megabytes
+     * 
+     * @param memory
+     *            Amount of memory per node in Megabytes. 0 for unknown
+     */
+    public void setMemory(int memory) {
+        this.memory = memory;
+    }
 
     /**
      * Latitude position of this cluster
@@ -844,21 +875,21 @@ public class Cluster {
         return color;
     }
 
-//    public Color getColor() {
-//        if (color == null || color.equals("")) {
-//            return null;
-//        }
-//        return Color.decode(color);
-//    }
-//
-//    public Color getLightColor() {
-//        Color color = getColor();
-//        
-//        if (color == null) {
-//            return null;
-//        }
-//        return new Color(color.getRed(), color.getGreen(), color.getBlue(), 125);
-//    }
+    // public Color getColor() {
+    // if (color == null || color.equals("")) {
+    // return null;
+    // }
+    // return Color.decode(color);
+    // }
+    //
+    // public Color getLightColor() {
+    // Color color = getColor();
+    //        
+    // if (color == null) {
+    // return null;
+    // }
+    // return new Color(color.getRed(), color.getGreen(), color.getBlue(), 125);
+    // }
 
     public void setColor(String color) {
         this.color = color;
@@ -1061,6 +1092,13 @@ public class Cluster {
         } else if (printComments) {
             out.println("#" + dotPrefix + "cores = ");
         }
+        
+        if (memory > 0) {
+            out.println(dotPrefix + "memory = " + memory);
+            empty = false;
+        } else if (printComments) {
+            out.println("#" + dotPrefix + "memory = ");
+        }
 
         if (latitude != 0) {
             out.println(dotPrefix + "latitude = " + latitude);
@@ -1132,6 +1170,7 @@ public class Cluster {
                 + Util.toCSString(getServerSystemProperties()) + "\n";
         result += " Nodes = " + getNodes() + "\n";
         result += " Cores = " + getCores() + "\n";
+        result += " Memory = " + getMemory() + "\n";
         result += " Latitude = " + getLatitude() + "\n";
         result += " Longitude = " + getLongitude() + "\n";
         result += " Start Zorilla = " + getStartZorilla() + "\n";
