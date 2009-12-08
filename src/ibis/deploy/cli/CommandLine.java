@@ -59,6 +59,8 @@ public class CommandLine {
         System.err.println("-s CLUSTER\tRun server on specified cluster");
         System.err.println("-v\t\tVerbose mode");
         System.err.println("-k\t\tKeep sandboxes");
+        System.err
+                .println("-p PORT\t\tLocal port number (defaults to random free port)");
         System.err.println("-h | --help\tThis message");
     }
 
@@ -76,6 +78,7 @@ public class CommandLine {
         Grid grid = null;
         String serverCluster = null;
         ApplicationSet applications = null;
+        int port = 0;
 
         if (arguments.length == 0) {
             printUsage();
@@ -92,6 +95,9 @@ public class CommandLine {
                     verbose = true;
                 } else if (arguments[i].equals("-k")) {
                     keepSandboxes = true;
+                } else if (arguments[i].equals("-p")) {
+                    i++;
+                    port = Integer.parseInt(arguments[i]);
                 } else if (arguments[i].equals("-h")
                         || arguments[i].equals("--help")) {
                     printUsage();
@@ -209,8 +215,9 @@ public class CommandLine {
                     System.exit(1);
                 }
             }
-            
-            Deploy deploy = new Deploy(null, verbose, keepSandboxes, cluster, null, true);
+
+            Deploy deploy = new Deploy(null, verbose, keepSandboxes, port,
+                    cluster, null, true);
 
             // run experiments
             for (Experiment experiment : experiments) {

@@ -209,6 +209,7 @@ public class GUI {
                 .println("Usage: ibis-deploy-gui [OPTIONS] [GRID_FILE] [APP_FILE] [EXPERIMENT_FILE] [WORKSPACE_FILE]");
         System.err.println("Options:");
         System.err.println("-v\t\tVerbose mode");
+        System.err.println("-p PORT\t\tLocal port number (defaults to random free port)");
         System.err.println("-h | --help\tThis message");
     }
 
@@ -220,6 +221,7 @@ public class GUI {
         boolean keepSandboxes = false;
         boolean zorilla = false;
         String serverCluster = null;
+        int port = 0;
 
         for (int i = 0; i < arguments.length; i++) {
             if (arguments[i].equals("-v")) {
@@ -233,6 +235,9 @@ public class GUI {
             } else if (arguments[i].equals("-s")) {
                 i++;
                 serverCluster = arguments[i];
+            } else if (arguments[i].equals("-p")) {
+                i++;
+                port = Integer.parseInt(arguments[i]);
             } else if (arguments[i].equals("-z")) {
                 zorilla = true;
             } else if (arguments[i].startsWith("-")) {
@@ -348,14 +353,13 @@ public class GUI {
                     System.exit(1);
                 }
                 
-                deploy = new Deploy(null, verbose, keepSandboxes, grid);
-                System.err.println(grid.toPrintString());
+                deploy = new Deploy(null, verbose, keepSandboxes, port, grid);
             } else if (serverCluster == null) {
                 logger.info("Initializing Ibis Deploy, using build-in server");
 
                 // init with build-in server
 
-                deploy = new Deploy(null, verbose, keepSandboxes, null, null,
+                deploy = new Deploy(null, verbose, keepSandboxes, port, null, null,
                         true);
             } else {
                 logger.info("Initializing Command Line Ibis Deploy"
@@ -377,7 +381,7 @@ public class GUI {
                 }
                 
                 InitializationFrame initWindow = new InitializationFrame();
-                deploy = new Deploy(null, verbose, keepSandboxes, cluster,
+                deploy = new Deploy(null, verbose, keepSandboxes, port, cluster,
                         initWindow, true);
                 // will call dispose in the Swing thread
                 initWindow.remove();

@@ -97,7 +97,7 @@ public class Deploy {
      * 
      */
     public Deploy(File home) throws Exception {
-        this(home, false, false, null, null, true);
+        this(home, false, false, 0, null, null, true);
     }
 
     /**
@@ -113,6 +113,9 @@ public class Deploy {
      *            If true, start Ibis-Deploy in verbose mode
      * @param keepSandboxes
      *            If true, will keep sandboxes of servers and jobs
+     * @param port
+     *            port used to bind local hub/server to. Defaults to
+     *            automatically allocated free port.
      * @param serverCluster
      *            cluster where the server should be started, or null for a
      *            server embedded in this JVM.
@@ -125,7 +128,7 @@ public class Deploy {
      *             cannot be started.
      * 
      */
-    public Deploy(File home, boolean verbose, boolean keepSandboxes,
+    public Deploy(File home, boolean verbose, boolean keepSandboxes, int port,
             Cluster serverCluster, StateListener listener, boolean blocking)
             throws Exception {
         logger.debug("Initializing deploy");
@@ -140,11 +143,11 @@ public class Deploy {
 
         if (serverCluster == null) {
             // rootHub includes server
-            localServer = new LocalServer(true, false, verbose);
+            localServer = new LocalServer(true, false, verbose, port);
             localServer.addListener(listener);
             remoteServer = null;
         } else {
-            localServer = new LocalServer(false, false, verbose);
+            localServer = new LocalServer(false, false, verbose, port);
             remoteServer = new RemoteServer(serverCluster, false, localServer,
                     home, verbose,
 
@@ -173,16 +176,22 @@ public class Deploy {
      *            is used from the "ibis.deploy.home" system property. If this
      *            property is unspecified, final default value is the current
      *            working directory.
-     * @param serverCluster
-     *            cluster where the server should be started, or null for a
-     *            server embedded in this JVM.
+     * @param verbose
+     *            If true, start Ibis-Deploy in verbose mode
+     * @param keepSandboxes
+     *            If true, will keep sandboxes of servers and jobs
+     * @param port
+     *            port used to bind local hub/server to. Defaults to
+     *            automatically allocated free port.
+     * @param grid
+     *            Grid used
      * @throws Exception
      *             if required files cannot be found in home, or the server
      *             cannot be started.
      * 
      */
-    public Deploy(File home, boolean verbose, boolean keepSandboxes, Grid grid)
-            throws Exception {
+    public Deploy(File home, boolean verbose, boolean keepSandboxes, int port,
+            Grid grid) throws Exception {
         this.verbose = verbose;
         this.keepSandboxes = keepSandboxes;
 
@@ -191,7 +200,7 @@ public class Deploy {
 
         this.home = checkHome(home);
 
-        localServer = new LocalServer(true, true, verbose);
+        localServer = new LocalServer(true, true, verbose, port);
         remoteServer = null;
 
         for (Cluster cluster : grid.getClusters()) {
@@ -219,7 +228,7 @@ public class Deploy {
             }
         }
 
-        //make sure a zorilla cluster is present so the user can select it.
+        // make sure a zorilla cluster is present so the user can select it.
         Cluster zorilla = grid.getCluster("zorilla");
         if (zorilla == null) {
             zorilla = grid.createNewCluster("zorilla");
@@ -229,7 +238,7 @@ public class Deploy {
         zorilla.setJobURI(new URI("zorilla:" + localServer.getAddress()));
         zorilla.setJobAdaptor("zorilla");
         zorilla.addFileAdaptor("local");
-        
+
         hubs.put("zorilla", localServer);
 
         // print pool size statistics

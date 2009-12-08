@@ -3,7 +3,7 @@ package ibis.deploy;
 import ibis.ipl.server.RegistryServiceInterface;
 import ibis.ipl.server.ServerProperties;
 import ibis.smartsockets.virtual.VirtualSocketFactory;
-import ibis.zorilla.ZorillaProperties;
+import ibis.zorilla.Config;
 
 import java.util.Properties;
 
@@ -11,8 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Server or Hub running on the local machine (inside the deploy jvm). Runs on
- * default server port (usually 8888)
+ * Server or Hub running on the local machine (inside the deploy jvm).
  * 
  */
 public class LocalServer implements Server {
@@ -30,7 +29,7 @@ public class LocalServer implements Server {
     // used in case of a local server
     private final ibis.ipl.server.Server server;
 
-    LocalServer(boolean isServer, boolean isZorilla, boolean verbose)
+    LocalServer(boolean isServer, boolean isZorilla, boolean verbose, int port)
             throws Exception {
         this.isServer = isServer;
         this.isZorilla = isZorilla;
@@ -45,11 +44,13 @@ public class LocalServer implements Server {
 
         if (isZorilla) {
             Properties properties = new Properties();
-            
-            properties.put(ZorillaProperties.VIZ_INFO, "DZ^Ibis Deploy with Zorilla Node @ local^"
-                    + Grid.LOCAL_COLOR);
-            
-            
+
+            properties.put(Config.VIZ_INFO,
+                    "DZ^Ibis Deploy with Zorilla Node @ local^"
+                            + Grid.LOCAL_COLOR);
+            properties.put(Config.PORT, "" + port);
+            properties.put(Config.RESOURCE_CORES, "0");
+
             zorilla = new ibis.zorilla.Node(properties);
             server = zorilla.getIPLServer();
         } else {
@@ -60,6 +61,7 @@ public class LocalServer implements Server {
             properties.put(ServerProperties.PRINT_ERRORS, "true");
             properties.put(ServerProperties.VIZ_INFO, "D^Ibis Deploy @ local^"
                     + Grid.LOCAL_COLOR);
+            properties.put(ServerProperties.PORT, "" + port);
 
             if (verbose) {
                 properties.put(ServerProperties.PRINT_EVENTS, "true");
@@ -72,8 +74,8 @@ public class LocalServer implements Server {
         logger.debug(server.toString());
     }
 
-    void addZorillaNode(String nodes) {
-        zorilla.discoveryService();
+    void addZorillaNode(String node) {
+        zorilla.discoveryService().addPeer(node);
     }
 
     /**

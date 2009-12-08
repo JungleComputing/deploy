@@ -131,6 +131,8 @@ public class JobRow {
     private void setJobState(State state) {
         this.jobState = state;
 
+        logger.info("JobRow: Job" + this + " state now " + state);
+        
         model.fireTableDataChanged();
     }
 

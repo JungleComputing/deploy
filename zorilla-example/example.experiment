@@ -29,9 +29,9 @@
 
 # Details of job "VUJob"
 VUJob.application.name = RegistryBenchmark
-VUJob.process.count = 8
-VUJob.cluster.name = VU
-VUJob.resource.count = 2
+VUJob.process.count = 10
+VUJob.cluster.name = zorilla
+VUJob.resource.count = 0
 #VUJob.runtime =
 #VUJob.pool.name =
 #VUJob.pool.size =
@@ -39,9 +39,9 @@ VUJob.resource.count = 2
 
 # Details of job "localJob"
 localJob.application.name = RegistryBenchmark
-localJob.process.count = 1
-localJob.cluster.name = local
-localJob.resource.count = 1
+localJob.process.count = 10
+localJob.cluster.name = zorilla
+localJob.resource.count = 0
 #localJob.runtime =
 #localJob.pool.name =
 #localJob.pool.size =
