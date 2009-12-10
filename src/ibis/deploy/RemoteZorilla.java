@@ -8,7 +8,9 @@ import ibis.zorilla.util.Remote;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -95,6 +97,9 @@ public class RemoteZorilla implements Runnable, Server {
                     null, null, cluster.getUserName(), null);
             context.addSecurityContext(securityContext);
         }
+
+        context.addPreference("sshtrilead.stoppable", "true");
+
         // ensure files are readable on the other side
         context.addPreference("file.chmod", "0755");
         // make sure non existing files/directories will be created on the
@@ -166,7 +171,6 @@ public class RemoteZorilla implements Runnable, Server {
 
             arguments.add("--resource-uri");
             arguments.add(cluster.getJobURI().toString());
-            
 
             arguments.add("--nodes");
             arguments.add("" + cluster.getNodes());
@@ -177,14 +181,13 @@ public class RemoteZorilla implements Runnable, Server {
             arguments.add("--memory");
             arguments.add("" + cluster.getMemory());
         }
-        
+
         if (cluster.getJobWrapperScript() != null) {
             arguments.add("--resource-wrapper");
             arguments.add("" + cluster.getJobWrapperScript().getName());
-            
+
             prestage(cluster.getJobWrapperScript(), cluster, sd);
         }
-
 
         // list of other hubs
         arguments.add("--hub-addresses");
@@ -204,10 +207,20 @@ public class RemoteZorilla implements Runnable, Server {
 
         sd.addJavaSystemProperty("gat.adaptor.path", "lib-zorilla/adaptors");
 
+        sd
+                .addJavaSystemProperty(
+                        "java.library.path",
+                        "/usr/local/Cluster-Apps/mx/mx-1.2.0j/lib64:/usr/local/Cluster-Apps/mpich/mx/gcc/64/1.2.7..3//lib/shared:/usr/local/Cluster-Apps/sge/lib/lx26-amd64:/usr/local/globus/globus-4.0.3/lib");
+
+        Map<String, Object> environment = new HashMap<String, Object>();
+        environment.put("SGE_ROOT", "/usr/local/Cluster-Apps/sge");
+        environment.put("SGE_ARCH", "lx26-amd64");
+
+        sd.setEnvironment(environment);
+
         // add server log4j file
         File log4j = new File(deployHome, "log4j.properties");
         prestage(log4j, cluster, sd);
-        
 
         // add server output files to post-stage
         if (cluster.getServerOutputFiles() != null) {
