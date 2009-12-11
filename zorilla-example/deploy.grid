@@ -57,7 +57,7 @@ VU.job.uri = sge://localhost
 #VU.java.path = /usr/local/package/jdk1.5/bin/java
 VU.cache.dir = ibis-deploy-cache
 #VU.server.output.files =
-#VU.server.system.properties =
+VU.server.system.properties = java.library.path=/usr/local/Cluster-Apps/sge/lib/lx26-amd64
 VU.nodes = 1
 VU.cores = 1
 VU.memory = 4000

@@ -98,7 +98,7 @@ public class RemoteZorilla implements Runnable, Server {
             context.addSecurityContext(securityContext);
         }
 
-        context.addPreference("sshtrilead.stoppable", "true");
+        //context.addPreference("sshtrilead.stoppable", "true");
 
         // ensure files are readable on the other side
         context.addPreference("file.chmod", "0755");
@@ -207,15 +207,10 @@ public class RemoteZorilla implements Runnable, Server {
 
         sd.addJavaSystemProperty("gat.adaptor.path", "lib-zorilla/adaptors");
 
-        sd
-                .addJavaSystemProperty(
-                        "java.library.path",
-                        "/usr/local/Cluster-Apps/mx/mx-1.2.0j/lib64:/usr/local/Cluster-Apps/mpich/mx/gcc/64/1.2.7..3//lib/shared:/usr/local/Cluster-Apps/sge/lib/lx26-amd64:/usr/local/globus/globus-4.0.3/lib");
-
+        //FIXME:remove DAS specific SGE hack 
         Map<String, Object> environment = new HashMap<String, Object>();
         environment.put("SGE_ROOT", "/usr/local/Cluster-Apps/sge");
         environment.put("SGE_ARCH", "lx26-amd64");
-
         sd.setEnvironment(environment);
 
         // add server log4j file
