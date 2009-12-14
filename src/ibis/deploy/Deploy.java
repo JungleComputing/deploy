@@ -149,7 +149,7 @@ public class Deploy {
         } else {
             localServer = new LocalServer(false, false, verbose, port);
             remoteServer = new RemoteServer(serverCluster, false, localServer,
-                    home, verbose,
+                    this.home, verbose,
 
                     listener, keepSandboxes);
 
@@ -220,7 +220,7 @@ public class Deploy {
                 // start a Zorilla node on the provided cluster
 
                 RemoteZorilla node = new RemoteZorilla(cluster, localServer,
-                        home, verbose, null, keepSandboxes);
+                        this.home, verbose, null, keepSandboxes);
 
                 node.waitUntilRunning();
 

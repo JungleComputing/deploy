@@ -71,7 +71,7 @@ public class RemoteZorilla implements Runnable, Server {
         address = null;
         gatJob = null;
         remote = null;
-
+        
         this.cluster = cluster.resolve();
 
         this.cluster.checkSettings("Zorilla", true);
