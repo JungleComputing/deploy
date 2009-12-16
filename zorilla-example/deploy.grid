@@ -48,7 +48,7 @@ default.cores = 1
 
 # DAS-3
 
-# Details of cluster "VU"
+# SGE
 VU.server.uri = any://fs0.das3.cs.vu.nl
 VU.job.adaptor = sge
 VU.job.uri = any://fs0.das3.cs.vu.nl/jobmanager-sge
@@ -59,18 +59,7 @@ VU.latitude = 52.336062
 VU.longitude = 4.872222
 VU.server.system.properties = java.library.path=/usr/local/Cluster-Apps/sge/lib/lx26-amd64
 
-# Details of cluster "UvA"
-UvA.server.uri = any://fs2.das3.science.uva.nl
-UvA.job.adaptor = globus
-UvA.job.uri = any://fs2.das3.science.uva.nl/jobmanager-sge
-UvA.file.adaptors = local,globus,sshtrilead
-UvA.cache.dir = dog-demo-cache
-#UvA.nodes = 41
-#UvA.cores = 164
-UvA.latitude = 52.36637614192115
-UvA.longitude = 4.925994873046875
-
-# Details of cluster "Leiden"
+# prun
 Leiden.server.uri = any://fs1.das3.liacs.nl
 Leiden.job.adaptor = sshtrilead
 Leiden.job.uri = any://fs1.das3.liacs.nl/jobmanager-sge
@@ -82,17 +71,29 @@ Leiden.wrapper.script = zorilla/das3.script
 Leiden.latitude = 52.16
 Leiden.longitude = 4.49
 
-#Delft.server.uri = any://fs3.das3.tudelft.nl
-#Delft.job.adaptor = globus
-#Delft.job.uri = any://fs3.das3.tudelft.nl/jobmanager-sge
-#Delft.file.adaptors = local,globus,sshtrilead
+# Globus
+UvA.server.uri = any://fs2.das3.science.uva.nl
+UvA.job.adaptor = globus
+UvA.job.uri = any://fs2.das3.science.uva.nl/jobmanager-sge
+UvA.file.adaptors = local,globus,sshtrilead
+UvA.cache.dir = dog-demo-cache
+#UvA.nodes = 41
+#UvA.cores = 164
+UvA.latitude = 52.36637614192115
+UvA.longitude = 4.925994873046875
+
+# Globus
+Delft.server.uri = any://fs3.das3.tudelft.nl
+Delft.job.adaptor = globus
+Delft.job.uri = any://fs3.das3.tudelft.nl/jobmanager-sge
+Delft.file.adaptors = local,globus,sshtrilead
 #Delft.cache.dir = dog-demo-cache
 #Delft.nodes = 68
 #Delft.cores = 136
-#Delft.latitude = 52.015
-#Delft.longitude = 4.356667
+Delft.latitude = 52.015
+Delft.longitude = 4.356667
 
-# Details of cluster "MultimediaN"
+# Globus
 MultimediaN.server.uri = any://fs4.das3.science.uva.nl
 MultimediaN.job.adaptor = globus
 MultimediaN.job.uri = any://fs4.das3.science.uva.nl/jobmanager-sge
@@ -104,31 +105,27 @@ MultimediaN.longitude = 4.942474365234375
 
 ##INTRIGGER
 
-# Details of cluster "Chiba"
-#Chiba.server.uri = any://chiba100.intrigger.nii.ac.jp
-#Chiba.job.adaptor = sshtrilead
-#Chiba.job.uri =  multissh:chiba1[12-26]
-#Chiba.java.path = /usr/local/jdk/bin/java
+# Multi-ssh
+Chiba.server.uri = any://chiba100.intrigger.nii.ac.jp
+Chiba.job.adaptor = sshtrilead
+Chiba.job.uri =  multissh:chiba1[12-26]
+Chiba.java.path = /usr/local/jdk/bin/java
 #Chiba.nodes = 58
 #Chiba.cores = 116
-#Chiba.latitude = 38.27268853598097
-#Chiba.longitude = 140.2734375
-#Chiba.node.hostnames = chiba1[12-26]
+Chiba.latitude = 38.27268853598097
+Chiba.longitude = 140.2734375
 
-# Details of cluster "Tsukuba"
-#Tsukuba.server.adaptor = 
-#Tsukuba.server.uri = any://163.220.103.168
-#Tsukuba.job.adaptor = sshtrilead
-#Tsukuba.job.uri = multissh:tsukuba00[1-9]
-#Tsukuba.java.path = /usr/local/jdk/bin/java
+# Multi-ssh
+Tsukuba.server.uri = any://163.220.103.168
+Tsukuba.job.adaptor = sshtrilead
+Tsukuba.job.uri = multissh:tsukuba00[1-9]
+Tsukuba.java.path = /usr/local/jdk/bin/java
 #Tsukuba.nodes = 16
 #Tsukuba.cores = 128
-#Tsukuba.latitude = 34.59704151614417
-#Tsukuba.longitude = 136.7578125
-#Tsukuba.node.hostnames = tsukuba00[1-9]
+Tsukuba.latitude = 34.59704151614417
+Tsukuba.longitude = 136.7578125
 
-
-# Details of cluster "DesktopGrid"
+# Zorilla
 #DesktopGrid.server.uri = any://zorilla.cs.vu.nl
 #DesktopGrid.job.adaptor = zorilla
 #DesktopGrid.job.uri = zorilla:zorilla.cs.vu.nl-5444
@@ -138,7 +135,7 @@ MultimediaN.longitude = 4.942474365234375
 #DesktopGrid.latitude = 52.336062
 #DesktopGrid.longitude = 4.8722220000001
 
-# Details of cluster "EC2"
+# Zorilla
 #EC2.server.uri = any://174.129.5.131
 #EC2.job.adaptor = zorilla
 #EC2.job.uri = zorilla:174.129.5.131-5444
@@ -149,6 +146,7 @@ MultimediaN.longitude = 4.942474365234375
 #EC2.latitude = 45.583289756006316
 #EC2.longitude = -115.3125
 
+# Multi-ssh
 #Yorda.server.uri = ssh://yorda.evl.uic.edu
 #Yorda.job.adaptor = SshTrilead
 #Yorda.job.uri = ssh://yorda.evl.uic.edu
@@ -162,6 +160,7 @@ MultimediaN.longitude = 4.942474365234375
 #Yorda.latitude = 42.009509
 #Yorda.longitude = -87.556915
 
+# Multi-ssh
 #Hiroshi.server.uri = ssh://advnet.cs.usyd.edu.au
 #Hiroshi.job.adaptor = SshTrilead
 #Hiroshi.job.uri = ssh://advnet.cs.usyd.edu.au
@@ -176,7 +175,7 @@ MultimediaN.longitude = 4.942474365234375
 #Hiroshi.longitude = 151.274872
 #Hiroshi.server.system.properties=smartsockets.external.manual=129.78.10.77
 
-# Standalone machine
+# SSH
 #Sedna.server.adaptor = SshTrilead
 #Sedna.server.uri = ssh://sedna.cs.vu.nl
 #Sedna.job.adaptor = local

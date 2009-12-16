@@ -162,8 +162,8 @@ public class RemoteZorilla implements Runnable, Server {
         List<String> arguments = new ArrayList<String>();
 
         arguments.add("--remote");
-        arguments.add("--port");
-        arguments.add("0");
+        //arguments.add("--port");
+        //arguments.add("0");
 
         if (cluster.getJobAdaptor() != null) {
             arguments.add("--resource-adaptor");
