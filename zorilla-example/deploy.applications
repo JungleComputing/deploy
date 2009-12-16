@@ -63,3 +63,7 @@ RegistryUpcalls.main.class = ibis.ipl.examples.RegistryUpcalls
 #RegistryUpcalls.system.properties =
 #RegistryUpcalls.java.options =
 #RegistryUpcalls.log4j.file =
+
+Go.main.class = go.dac.Main
+Go.arguments = --size,4,--stones,4
+Go.libs = /home/ndrost/workspace/ipl/lib,/home/ndrost/workspace/go/lib
