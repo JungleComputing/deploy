@@ -42,9 +42,12 @@ default.java.path = /usr/local/package/jdk1.6.0-linux-amd64/bin/java
 #default.latitude = 
 #default.longitude = 
 default.memory = 4000
-default.cache.dir = dog-demo-cache
+default.cache.dir = ibis-deploy-cache
 default.nodes = 1
 default.cores = 1
+
+#default.server.system.properties=smartsockets.modules.order=hubrouted,direct
+
 
 # DAS-3
 
@@ -64,7 +67,6 @@ Leiden.server.uri = any://fs1.das3.liacs.nl
 Leiden.job.adaptor = sshtrilead
 Leiden.job.uri = any://fs1.das3.liacs.nl/jobmanager-sge
 Leiden.file.adaptors = local,globus,sshtrilead
-Leiden.cache.dir = dog-demo-cache
 Leiden.wrapper.script = zorilla/das3.script
 #Leiden.nodes = 32
 #Leiden.cores = 64
@@ -76,32 +78,32 @@ UvA.server.uri = any://fs2.das3.science.uva.nl
 UvA.job.adaptor = globus
 UvA.job.uri = any://fs2.das3.science.uva.nl/jobmanager-sge
 UvA.file.adaptors = local,globus,sshtrilead
-UvA.cache.dir = dog-demo-cache
+#UvA.cache.dir = dog-demo-cache
 #UvA.nodes = 41
 #UvA.cores = 164
 UvA.latitude = 52.36637614192115
 UvA.longitude = 4.925994873046875
 
 # Globus
-Delft.server.uri = any://fs3.das3.tudelft.nl
-Delft.job.adaptor = globus
-Delft.job.uri = any://fs3.das3.tudelft.nl/jobmanager-sge
-Delft.file.adaptors = local,globus,sshtrilead
+#Delft.server.uri = any://fs3.das3.tudelft.nl
+#Delft.job.adaptor = globus
+#Delft.job.uri = any://fs3.das3.tudelft.nl/jobmanager-sge
+#Delft.file.adaptors = local,globus,sshtrilead
 #Delft.cache.dir = dog-demo-cache
 #Delft.nodes = 68
 #Delft.cores = 136
-Delft.latitude = 52.015
-Delft.longitude = 4.356667
+#Delft.latitude = 52.015
+##Delft.longitude = 4.356667
 
 # Globus
-MultimediaN.server.uri = any://fs4.das3.science.uva.nl
-MultimediaN.job.adaptor = globus
-MultimediaN.job.uri = any://fs4.das3.science.uva.nl/jobmanager-sge
-MultimediaN.file.adaptors = local,globus,sshtrilead
+#MultimediaN.server.uri = any://fs4.das3.science.uva.nl
+#MultimediaN.job.adaptor = globus
+#MultimediaN.job.uri = any://fs4.das3.science.uva.nl/jobmanager-sge
+#MultimediaN.file.adaptors = local,globus,sshtrilead
 #MultimediaN.nodes = 46
 #MultimediaN.cores = 92
-MultimediaN.latitude = 52.3605059352529
-MultimediaN.longitude = 4.942474365234375
+#MultimediaN.latitude = 52.3605059352529
+#MultimediaN.longitude = 4.942474365234375
 
 ##INTRIGGER
 
@@ -147,18 +149,19 @@ Tsukuba.longitude = 136.7578125
 #EC2.longitude = -115.3125
 
 # Multi-ssh
-#Yorda.server.uri = ssh://yorda.evl.uic.edu
-#Yorda.job.adaptor = SshTrilead
+Yorda.server.uri = ssh://yorda.evl.uic.edu
+Yorda.job.adaptor = SshTrilead
 #Yorda.job.uri = ssh://yorda.evl.uic.edu
-#Yorda.file.adaptors = SshTrilead,Local
-#Yorda.java.path = /home/sara/fjseins/jre1.6.0_06/bin/java
+Yorda.job.uri = multissh:yorda[3-20]-10
+Yorda.file.adaptors = SshTrilead,Local
+Yorda.java.path = /home/sara/fjseins/jre1.6.0_06/bin/java
 #Yorda.job.wrapper.script = demo/yorda.script
-#Yorda.user.name = fjseins
+Yorda.user.name = fjseins
 #Yorda.cache.dir = dog-demo-cache
 #Yorda.nodes = 20
 #Yorda.cores = 20
-#Yorda.latitude = 42.009509
-#Yorda.longitude = -87.556915
+Yorda.latitude = 42.009509
+Yorda.longitude = -87.556915
 
 # Multi-ssh
 #Hiroshi.server.uri = ssh://advnet.cs.usyd.edu.au
@@ -176,16 +179,16 @@ Tsukuba.longitude = 136.7578125
 #Hiroshi.server.system.properties=smartsockets.external.manual=129.78.10.77
 
 # SSH
-#Sedna.server.adaptor = SshTrilead
-#Sedna.server.uri = ssh://sedna.cs.vu.nl
-#Sedna.job.adaptor = local
-#Sedna.job.uri = local:///
-#Sedna.file.adaptors = SshTrilead,Local
-#Sedna.java.path = /usr/bin/java
-#Sedna.nodes = 1
-#Sedna.cores = 1
-#Sedna.latitude = 52.336062
-#Sedna.longitude = 4.8722220000001
+Sedna.server.adaptor = SshTrilead
+Sedna.server.uri = ssh://sedna.cs.vu.nl
+Sedna.job.adaptor = local
+Sedna.job.uri = local:///
+Sedna.file.adaptors = SshTrilead,Local
+Sedna.java.path = /usr/bin/java
+Sedna.nodes = 1
+Sedna.cores = 1
+Sedna.latitude = 52.336062
+Sedna.longitude = 4.8722220000001
 #Sedna.cache.dir = dog-demo-cache
 
 # Settings overriding default "local" cluster

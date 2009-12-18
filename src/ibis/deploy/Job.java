@@ -184,7 +184,7 @@ public class Job implements Runnable {
             if (deploy.poolSizes().containsKey(description.getPoolName())) {
                 for (String string : deploy.getLocations(description
                         .getPoolName())) {
-                    if (string.equals(location)) {
+                    if (string.startsWith(location)) {
                         forwarder.setState(State.DEPLOYED);
                         return;
                     }

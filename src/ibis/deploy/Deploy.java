@@ -222,7 +222,7 @@ public class Deploy {
                 RemoteZorilla node = new RemoteZorilla(cluster, localServer,
                         this.home, verbose, null, keepSandboxes);
 
-                node.waitUntilRunning();
+                //node.waitUntilRunning();
 
                 hubs.put(cluster.getName(), node);
             }
