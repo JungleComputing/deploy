@@ -84,26 +84,27 @@ UvA.file.adaptors = local,globus,sshtrilead
 UvA.latitude = 52.36637614192115
 UvA.longitude = 4.925994873046875
 
-# Globus
-#Delft.server.uri = any://fs3.das3.tudelft.nl
-#Delft.job.adaptor = globus
-#Delft.job.uri = any://fs3.das3.tudelft.nl/jobmanager-sge
-#Delft.file.adaptors = local,globus,sshtrilead
-#Delft.cache.dir = dog-demo-cache
+# prun
+Delft.server.uri = any://fs3.das3.tudelft.nl
+Delft.job.adaptor = sshtrilead
+Delft.job.uri = any://fs3.das3.tudelft.nl/jobmanager-sge
+Delft.file.adaptors = local,globus,sshtrilead
+Delft.wrapper.script = zorilla/das3.script
 #Delft.nodes = 68
 #Delft.cores = 136
-#Delft.latitude = 52.015
-##Delft.longitude = 4.356667
+Delft.latitude = 52.015
+Delft.longitude = 4.356667
 
-# Globus
-#MultimediaN.server.uri = any://fs4.das3.science.uva.nl
-#MultimediaN.job.adaptor = globus
-#MultimediaN.job.uri = any://fs4.das3.science.uva.nl/jobmanager-sge
-#MultimediaN.file.adaptors = local,globus,sshtrilead
+# prun
+MultimediaN.server.uri = any://fs4.das3.science.uva.nl
+MultimediaN.job.adaptor = sshtrilead
+MultimediaN.job.uri = any://fs4.das3.science.uva.nl/jobmanager-sge
+MultimediaN.file.adaptors = local,globus,sshtrilead
+MultimediaN.wrapper.script = zorilla/das3.script
 #MultimediaN.nodes = 46
 #MultimediaN.cores = 92
-#MultimediaN.latitude = 52.3605059352529
-#MultimediaN.longitude = 4.942474365234375
+MultimediaN.latitude = 52.3605059352529
+MultimediaN.longitude = 4.942474365234375
 
 ##INTRIGGER
 
