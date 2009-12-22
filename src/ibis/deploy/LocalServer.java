@@ -110,7 +110,13 @@ public class LocalServer implements Server {
     }
 
     void killAll() {
-        // TODO:implement using Smartsockets kill mechanism
+        if (zorilla != null) {
+            try {
+                zorilla.floodService().killNetwork();
+            } catch (Exception e) {
+                //IGNORE
+            }
+        }
     }
 
     public void waitUntilRunning() {

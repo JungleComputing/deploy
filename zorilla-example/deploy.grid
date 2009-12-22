@@ -128,14 +128,14 @@ Tsukuba.latitude = 34.59704151614417
 Tsukuba.longitude = 136.7578125
 
 # Zorilla
-#DesktopGrid.server.uri = any://zorilla.cs.vu.nl
-#DesktopGrid.job.adaptor = zorilla
-#DesktopGrid.job.uri = zorilla:zorilla.cs.vu.nl-5444
-#DesktopGrid.java.path = /usr/bin/java
-#DesktopGrid.nodes = 20
-#DesktopGrid.cores = 20
-#DesktopGrid.latitude = 52.336062
-#DesktopGrid.longitude = 4.8722220000001
+DesktopGrid.server.uri = any://zorilla.cs.vu.nl
+DesktopGrid.job.adaptor = zorilla
+DesktopGrid.job.uri = zorilla:zorilla.cs.vu.nl-5444
+DesktopGrid.java.path = /usr/bin/java
+DesktopGrid.nodes = 20
+DesktopGrid.cores = 20
+DesktopGrid.latitude = 52.336062
+DesktopGrid.longitude = 4.8722220000001
 
 # Zorilla
 #EC2.server.uri = any://174.129.5.131
@@ -179,16 +179,16 @@ Yorda.longitude = -87.556915
 #Hiroshi.server.system.properties=smartsockets.external.manual=129.78.10.77
 
 # SSH
-Sedna.server.adaptor = SshTrilead
-Sedna.server.uri = ssh://sedna.cs.vu.nl
-Sedna.job.adaptor = local
-Sedna.job.uri = local:///
-Sedna.file.adaptors = SshTrilead,Local
-Sedna.java.path = /usr/bin/java
-Sedna.nodes = 1
-Sedna.cores = 1
-Sedna.latitude = 52.336062
-Sedna.longitude = 4.8722220000001
+#Sedna.server.adaptor = SshTrilead
+#Sedna.server.uri = ssh://sedna.cs.vu.nl
+#Sedna.job.adaptor = local
+#Sedna.job.uri = local:///
+#Sedna.file.adaptors = SshTrilead,Local
+#Sedna.java.path = /usr/bin/java
+#Sedna.nodes = 1
+#Sedna.cores = 1
+#Sedna.latitude = 52.336062
+#Sedna.longitude = 4.8722220000001
 #Sedna.cache.dir = dog-demo-cache
 
 # Settings overriding default "local" cluster
