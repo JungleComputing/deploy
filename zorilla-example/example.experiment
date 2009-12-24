@@ -28,14 +28,20 @@
 #default.shared.hub =
 
 # Details of job "VUJob"
-Job.application.name = Go
-Job.process.count = 40
-Job.cluster.name = zorilla
-Job.resource.count = 40
+Small.application.name = Go
+Small.process.count = 40
+Small.cluster.name = zorilla
+Small.resource.count = 40
 #VUJob.runtime =
 #VUJob.pool.name =
 #VUJob.pool.size =
 #VUJob.shared.hub =
+
+Big.application.name = Go
+Big.application.arguments= --size,4,--stones,2
+Big.process.count = 400
+Big.cluster.name = zorilla
+Big.resource.count = 400
 
 # Details of job "localJob"
 #localJob.application.name = RegistryBenchmark
