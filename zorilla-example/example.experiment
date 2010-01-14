@@ -38,10 +38,16 @@ Small.resource.count = 40
 #VUJob.shared.hub =
 
 Big.application.name = Go
-Big.application.arguments= --size,4,--stones,2
+Big.application.arguments= --size,4,--stones,1
 Big.process.count = 400
 Big.cluster.name = zorilla
 Big.resource.count = 400
+
+Medium.application.name = Go
+Medium.application.arguments= --size,4,--stones,1
+Medium.process.count = 40
+Medium.cluster.name = zorilla
+Medium.resource.count = 40
 
 # Details of job "localJob"
 #localJob.application.name = RegistryBenchmark
