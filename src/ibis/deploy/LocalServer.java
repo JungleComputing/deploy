@@ -111,6 +111,7 @@ public class LocalServer implements Server {
 
     void killAll() {
         if (zorilla != null) {
+            logger.info("Broadcasting kill across zorilla network");
             try {
                 zorilla.floodService().killNetwork();
             } catch (Exception e) {

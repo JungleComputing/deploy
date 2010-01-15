@@ -542,8 +542,8 @@ public class Deploy {
         }
 
         if (localServer != null) {
-            logger.info("killing root Hub " + localServer);
             localServer.killAll();
+            logger.info("killing root Hub " + localServer);
             localServer.kill();
         }
 
