@@ -29,6 +29,7 @@
 
 # Details of job "VUJob"
 Small.application.name = Go
+Small.application.arguments= --size,4,--stones,2
 Small.process.count = 40
 Small.cluster.name = zorilla
 Small.resource.count = 40

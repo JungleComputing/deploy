@@ -51,6 +51,10 @@ public class LocalServer implements Server {
             properties.put(Config.PORT, "" + port);
             properties.put(Config.RESOURCE_CORES, "0");
 
+            if (verbose) {
+                properties.put(Config.VERBOSE, "true");
+            }
+
             zorilla = new ibis.zorilla.Node(properties);
             server = zorilla.getIPLServer();
         } else {
@@ -115,7 +119,7 @@ public class LocalServer implements Server {
             try {
                 zorilla.floodService().killNetwork();
             } catch (Exception e) {
-                //IGNORE
+                // IGNORE
             }
         }
     }

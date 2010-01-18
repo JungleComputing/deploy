@@ -472,9 +472,9 @@ public class Deploy {
     }
 
     /**
-     * Returns a map containing the size of each pool at the server
+     * Returns a map containing all locations of a pool at the server
      * 
-     * @return a map containing the size of each pool at the server
+     * @return a map containing all locations of a pool at the server
      * @throws Exception
      *             if the server is not running yet, or communicating with it
      *             failed
