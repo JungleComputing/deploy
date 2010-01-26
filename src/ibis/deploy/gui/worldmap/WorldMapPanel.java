@@ -7,6 +7,7 @@ import ibis.deploy.gui.experiment.composer.ClusterSelectionPanel;
 import ibis.deploy.gui.misc.Utils;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -15,8 +16,10 @@ import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import javax.swing.BoxLayout;
@@ -26,15 +29,15 @@ import javax.swing.JPanel;
 
 import org.jdesktop.swingx.JXMapKit;
 import org.jdesktop.swingx.JXMapViewer;
+import org.jdesktop.swingx.mapviewer.GeoPosition;
 import org.jdesktop.swingx.mapviewer.Waypoint;
 import org.jdesktop.swingx.mapviewer.WaypointPainter;
 import org.jdesktop.swingx.mapviewer.WaypointRenderer;
 
 public class WorldMapPanel extends JPanel {
-
-    /**
-     * 
-     */
+	/**
+	 * 
+	 */
     private static final long serialVersionUID = -846163477030295465L;
 
     // private static final int INITIAL_MAP_ZOOM = 15;
@@ -81,13 +84,12 @@ public class WorldMapPanel extends JPanel {
         final JXMapKit worldMap = new WorldMap();
         MapUtilities.register(worldMap);
         add(worldMap);
+        worldMap.setAlignmentX(Component.LEFT_ALIGNMENT);
         worldMap.setTileFactory(MapUtilities.getDefaultTileFactory());
         worldMap.setMiniMapVisible(false);
         worldMap.setAddressLocationShown(false);
         worldMap.getMainMap().setZoom(zoom);
-        worldMap.getMainMap()
-                .setCenterPosition(MapUtilities.INITIAL_MAP_CENTER);
-
+        worldMap.getMainMap().setCenterPosition(MapUtilities.INITIAL_MAP_CENTER);
         worldMap.getMainMap().setHorizontalWrapped(false);
 
         for (Cluster cluster : gui.getGrid().getClusters()) {
@@ -101,7 +103,8 @@ public class WorldMapPanel extends JPanel {
                 for (Cluster cluster : gui.getGrid().getClusters()) {
                     waypoints.add(new ClusterWaypoint(cluster, false));
                 }
-                worldMap.setZoom(zoom);
+                //worldMap.setZoom(zoom);
+                ((WorldMap) worldMap).setZoomRelativeToClusters();
                 worldMap.getMainMap().repaint();
             }
         });
@@ -147,7 +150,7 @@ public class WorldMapPanel extends JPanel {
                                             .getResourceCount());
                         }
                     } else {
-                        selectedWaypoint = tmpWaypoint;
+                        selectedWaypoint = tmpWaypoint; 
                         selectedCluster = selectedWaypoint.getCluster();
                         if (clusterSelectionPanel != null) {
                             clusterSelectionPanel.setSelected(selectedCluster);
@@ -174,7 +177,6 @@ public class WorldMapPanel extends JPanel {
             }
 
         });
-
     }
 
     public void setResourceCount(int resourceCount) {
@@ -212,7 +214,7 @@ public class WorldMapPanel extends JPanel {
     // HELPER CLASSES
 
     private final class WorldMap extends JXMapKit {
-        /**
+    	/**
          * 
          */
         private static final long serialVersionUID = -6194956781979564591L;
@@ -238,8 +240,8 @@ public class WorldMapPanel extends JPanel {
             getMainMap().setLoadingImage(image);
 
             // debug: show tiles borders and coordinates
-            // getMainMap().setDrawTileBorders(true);
-
+            //getMainMap().setDrawTileBorders(true);
+           
         }
 
         private void doFit() {
@@ -250,23 +252,132 @@ public class WorldMapPanel extends JPanel {
                 for (Waypoint otherWaypoint : waypoints) {
                     if (currentWaypoint != otherWaypoint) {
                         adjustPosition((ClusterWaypoint) currentWaypoint,
-                                (ClusterWaypoint) otherWaypoint, 0);
+                               (ClusterWaypoint) otherWaypoint, 0);
                     }
                 }
-            }
+            } 
         }
 
         @Override
         public void setZoom(int zoom) {
             doFit();
             super.setZoom(zoom);
+            repaint();
+        }
+        
+        /**
+         * Based on the current zoom level, it sets the maximum size for the map
+         * @param zoom
+         */
+        public void adjustMapSize(int zoom)
+        {
+        	//calculate actual map size
+        	Dimension mapSize = getMainMap().getTileFactory().getMapSize(zoom);
+        	int mapWidth = (int)mapSize.getWidth() * getMainMap().getTileFactory().getTileSize(zoom);
+        	int mapHeight = (int) mapSize.getHeight() * getMainMap().getTileFactory().getTileSize(zoom);
+        	
+        	Dimension newSize = new Dimension(mapWidth, mapHeight);
+        	
+        	setPreferredSize(newSize); 
+        	setMaximumSize(newSize);
+        	
+        	revalidate(); // revalidate to force the layout manager to recompute sizes
+        	
+        	getMainMap().setCenter(getMainMap().getCenter()); //the map doesn't automatically center itself       	
+        }
+        
+        /**
+         * Sets the zoom level to the minimum value which allows all the clusters to be displayed
+         */
+        public void setZoomRelativeToClusters()
+        {
+        	Set<GeoPosition> positions = new HashSet<GeoPosition>();
+        	Iterator<Waypoint> iterator = waypoints.iterator();
+        	
+        	while(iterator.hasNext())
+        		positions.add(iterator.next().getPosition());
+        	
+        	//this method only increases the zoom until all clusters are visible
+        	//if the zoom level is high enough to make everything visible, it does nothing
+        	getMainMap().calculateZoomFrom(positions);
+        	
+        	//if the zoom level is too large - decrease it in order to only show the 
+        	//part of the map which contains clusters
+        	calculateZoomDecreaseFrom(positions);
+        }
+        
+        /**
+         * Decreases the zoom level until minimun zoom for all clusters to be visible is reached.
+         * Based on the calculateZoomFrom method from the JXMapViewer.
+         * @param positions - set of positions for the clusters
+         */
+        private void calculateZoomDecreaseFrom(Set<GeoPosition> positions) 
+        {
+            //if there's a single node, just set zoom level to 1 to make that area visible
+            if(positions.size() < 2) 
+            {
+            	setZoom(1);
+                return;
+            }
+            
+            int zoom = getMainMap().getZoom();
+            Rectangle2D bounds = generateBoundingRect(positions, zoom);
+            
+            int count = 0;
+            
+            //zoom in as long as all nodes are still contained in the viewport
+            while(getMainMap().getViewportBounds().contains(bounds)) 
+            {
+                //calculate the position of the center of the new bounding rectangle
+                Point2D center = new Point2D.Double(bounds.getX() + bounds.getWidth()/2,
+                        							bounds.getY() + bounds.getHeight()/2);
+                
+                //transform it to geographical coordinates
+                GeoPosition centerpx = getMainMap().getTileFactory().pixelToGeo(center,zoom);
+                
+                setCenterPosition(centerpx);
+                count++;
+                if(count > 30) break;
+                
+                //after recenter, zoom level is too low, vieport no longer contains all points
+                if(!getMainMap().getViewportBounds().contains(bounds)) 
+                    break;
+                
+                zoom = zoom - 1;
+                if(zoom < 1) //we've reached the lowest zoom level
+                    break;
+                
+                setZoom(zoom);
+                bounds = generateBoundingRect(positions, zoom);
+            }
+            //increase zoom with one more level, to make sure everyting fits in the viewport
+            setZoom(zoom+1);
+        }
+        
+        
+        /**
+         * Generate bounding rectangle for a set of points
+         */
+        private Rectangle2D generateBoundingRect(final Set<GeoPosition> positions, int zoom) 
+        {
+            Point2D initialPoint = getMainMap().getTileFactory().geoToPixel(positions.iterator().next(), zoom);
+            Rectangle2D rect = new Rectangle2D.Double(initialPoint.getX(), initialPoint.getY(),0,0);
+            
+            for(GeoPosition position : positions) 
+            {
+                Point2D point = getMainMap().getTileFactory().geoToPixel(position, zoom);
+                rect.add(point);
+            }
+            return rect;
         }
 
         public void paint(Graphics g) {
             if (!initialized) {
                 doFit();
+                setZoomRelativeToClusters(); 
                 initialized = true;
             }
+            adjustMapSize(getMainMap().getZoom());
             super.paint(g);
         }
 
