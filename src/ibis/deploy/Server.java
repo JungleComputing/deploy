@@ -1,5 +1,8 @@
 package ibis.deploy;
 
+import ibis.ipl.server.ManagementServiceInterface;
+import ibis.ipl.server.RegistryServiceInterface;
+
 public interface Server {
 
     /**
@@ -26,5 +29,9 @@ public interface Server {
     boolean isFinished();
     
     void kill();
+    
+    public RegistryServiceInterface getRegistryService();
 
+    public ManagementServiceInterface getManagementService(); 
+    
 }

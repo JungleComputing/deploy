@@ -1,6 +1,7 @@
 package ibis.deploy;
 
 import ibis.ipl.IbisProperties;
+import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
 import ibis.ipl.server.ServerConnection;
 import ibis.ipl.server.ServerProperties;
@@ -423,6 +424,10 @@ public class RemoteServer implements Runnable, Server {
 
     public RegistryServiceInterface getRegistryService() {
         return serverConnection.getRegistryService();
+    }
+    
+    public ManagementServiceInterface getManagementService() {
+        return serverConnection.getManagementService();
     }
 
 }

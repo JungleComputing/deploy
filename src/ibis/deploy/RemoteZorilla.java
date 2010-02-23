@@ -1,6 +1,8 @@
 package ibis.deploy;
 
 import ibis.ipl.IbisProperties;
+import ibis.ipl.server.ManagementServiceInterface;
+import ibis.ipl.server.RegistryServiceInterface;
 import ibis.util.ThreadPool;
 import ibis.zorilla.Config;
 import ibis.zorilla.util.Remote;
@@ -416,6 +418,14 @@ public class RemoteZorilla implements Runnable, Server {
      */
     public String toString() {
         return "Zorilla node on \"" + cluster.getName() + "\"";
+    }
+    
+    public RegistryServiceInterface getRegistryService() {
+        throw new Error("not implemented");
+    }
+    
+    public ManagementServiceInterface getManagementService() {
+        throw new Error("not implemented");
     }
 
 }

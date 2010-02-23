@@ -1,5 +1,6 @@
 package ibis.deploy;
 
+import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
 import ibis.ipl.server.ServerProperties;
 import ibis.smartsockets.virtual.VirtualSocketFactory;
@@ -103,7 +104,7 @@ public class LocalServer implements Server {
 
     public void kill() {
         if (zorilla != null) {
-            zorilla.end(-1);
+            zorilla.end();
         } else if (server != null) {
             server.end(-1);
         }
@@ -158,5 +159,9 @@ public class LocalServer implements Server {
 
     public RegistryServiceInterface getRegistryService() {
         return server.getRegistryService();
+    }
+    
+    public ManagementServiceInterface getManagementService() {
+        return server.getManagementService();
     }
 }
