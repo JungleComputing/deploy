@@ -76,6 +76,7 @@ public class Grid {
                         clusterName, this);
                 if (clusterName.equals("local")) {
                     cluster.setColor(LOCAL_COLOR);
+                    cluster.setVisibleOnMap(false);
                 } else {
                     cluster.setColor(getNextColor());
                 }
@@ -87,6 +88,7 @@ public class Grid {
         if (!hasCluster("local")) {
             Cluster local = new Cluster("local", this);
             local.setColor(LOCAL_COLOR);
+            local.setVisibleOnMap(false);
             clusters.add(local);
         }
     }
@@ -141,6 +143,7 @@ public class Grid {
         // add "local" cluster if it doesn't exist yet
         if (!hasCluster("local")) {
             Cluster local = new Cluster("local", this);
+            local.setVisibleOnMap(false);
             clusters.add(local);
         }
     }
@@ -156,6 +159,7 @@ public class Grid {
             localDefaults = Cluster.getLocalCluster();
             localDefaults.setColor(getNextColor());
             Cluster local = new Cluster("local", this);
+            local.setVisibleOnMap(false);
             clusters.add(local);
         } catch (Exception e) {
             throw new RuntimeException(e);

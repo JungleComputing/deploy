@@ -43,11 +43,17 @@ public final class WorldMap extends JXMapKit
     private static final int WIDTH = 256;
     private static final int HEIGHT = 256;
     
-    private Set<Waypoint> waypoints;
+    private ArrayList<ClusterWaypoint> visibleWaypoints;
+    
+    private WorldMapPanel parentPanel = null;
 
     public WorldMap(WorldMapPanel parentPanel, int zoom) 
     {
-        // create loading image in color of background
+    	ClusterWaypoint cwp;
+    	
+    	this.parentPanel = parentPanel;
+    	
+    	// create loading image in color of background
         BufferedImage image = new BufferedImage(WIDTH, HEIGHT,
                 BufferedImage.TYPE_INT_RGB);
 
@@ -71,8 +77,15 @@ public final class WorldMap extends JXMapKit
         getMainMap().setCenterPosition(MapUtilities.INITIAL_MAP_CENTER);
         getMainMap().setHorizontalWrapped(false);
         
-        //keep a reference to the list of waypoints
-        this.waypoints = parentPanel.getWaypoints();
+        visibleWaypoints = new ArrayList<ClusterWaypoint>();
+		
+		//create a list including only the clusters to be displayed
+		for(Waypoint waypoint : parentPanel.getWaypoints())
+		{
+			cwp = (ClusterWaypoint) waypoint;
+			if(cwp.getCluster().isVisibleOnMap())
+				visibleWaypoints.add(cwp);
+		}
         
         //create overlay painters for the map
         CompoundPainter<JXMapViewer> cp = new CompoundPainter<JXMapViewer>();
@@ -80,7 +93,7 @@ public final class WorldMap extends JXMapKit
         //normal waypoint painter
         WaypointPainter<JXMapViewer> painter = new WaypointPainter<JXMapViewer>();
         painter.setRenderer(new ClusterWaypointRenderer(parentPanel.getBooleanSelect()));
-        painter.setWaypoints(waypoints);
+        painter.setWaypoints(parentPanel.getWaypoints());
         
         //pie chart waypoint painter which contains the other three painters
         WaypointPainter<JXMapViewer> pieChartClusterPainter = new WaypointPainter<JXMapViewer>();
@@ -98,8 +111,8 @@ public final class WorldMap extends JXMapKit
     }
 
     private void doFit() {
-        for (Waypoint waypoint : waypoints) {
-            ((ClusterWaypoint) waypoint).resetOffset();
+        for (ClusterWaypoint waypoint : visibleWaypoints) {
+            waypoint.resetOffset();
         }
 //        for (Waypoint currentWaypoint : waypoints) {
 //            for (Waypoint otherWaypoint : waypoints) {
@@ -113,7 +126,7 @@ public final class WorldMap extends JXMapKit
 
     @Override
     public void setZoom(int zoom) {
-        if(waypoints != null) //change the zoom only after initialization
+        if(visibleWaypoints != null) //change the zoom only after initialization
         {
 	    	doFit();
 	        super.setZoom(zoom);
@@ -150,7 +163,7 @@ public final class WorldMap extends JXMapKit
     public void setZoomRelativeToClusters()
     {
     	Set<GeoPosition> positions = new HashSet<GeoPosition>();
-    	Iterator<Waypoint> iterator = waypoints.iterator();
+    	Iterator<ClusterWaypoint> iterator = visibleWaypoints.iterator();
     	
     	while(iterator.hasNext())
     		positions.add(iterator.next().getPosition());
@@ -216,7 +229,7 @@ public final class WorldMap extends JXMapKit
     /**
      * Generate bounding rectangle for a set of points
      */
-    private Rectangle2D generateBoundingRect(final Set<GeoPosition> positions) 
+    private Rectangle2D generateBoundingRect(Set<GeoPosition> positions) 
     {
         int zoom = getMainMap().getZoom();
     	Point2D initialPoint = getMainMap().getTileFactory().geoToPixel(positions.iterator().next(), zoom);
@@ -282,9 +295,10 @@ public final class WorldMap extends JXMapKit
     
     /**
      * Updates the list of labels that is shown when the mouse is
-     * over a cluster or a pie chart
+     * over a cluster or a pie chart. If the user clicks on a cluster, the selected
+     * cluster is updated
      */
-    public void updateTooltipLabels(Point mousePoint)
+    public void updateOnMouseAction(Point mousePoint, boolean isSelection)
     {
     	Point2D clusterPoint = null;
         Point2D closestPoint = null;
@@ -296,75 +310,84 @@ public final class WorldMap extends JXMapKit
 					
     	if(labelPainter != null && pieChartPainter != null)
     	{
-    		ArrayList<String> labels = labelPainter.labels;
-            labels.clear();
             
             Point location;
-            ClusterWaypoint cwp;
+            ClusterWaypoint closestCluster = null;
             
             Rectangle mapBounds = getMainMap().getBounds(); 
             
             //first check is the mouse is over one of the normal cluster waypoints
-    		for(Waypoint wp : waypoints)
+    		for(ClusterWaypoint cwp : visibleWaypoints)
             {
-            	cwp = (ClusterWaypoint) wp;
             	if(cwp.show)//only check if the waypoint is displayed
             	{
-                	clusterPoint = getMainMap().convertGeoPositionToPoint(wp.getPosition());
+                	clusterPoint = getMainMap().convertGeoPositionToPoint(cwp.getPosition());
                 	
                 	//only take the cluster into consideration if it's within the visible bounds
-                	if(clusterPoint.getX() > mapBounds.getX() &&
-                			clusterPoint.getX() < mapBounds.getX()+mapBounds.getWidth() &&
-                			clusterPoint.getY() > mapBounds.getY() &&
-                			clusterPoint.getY() < mapBounds.getX()+mapBounds.getHeight())
+                	if(mapBounds.contains(clusterPoint))
                 	{
 	                	dist = clusterPoint.distance(mousePoint);
 	                	
 	                	if(dist <= cwp.getRadius()) 
 	                	{
 	        				closestPoint = clusterPoint;
-	        				labels.add(cwp.getName());
+	        				closestCluster = cwp;
+	        				labelPainter.setLabel(cwp.getName());
 	        				break;
 	                	}
                 	}
             	}
             }
             
-            if(closestPoint != null) // the mouse was over one of the clusters
+            if(closestPoint != null && closestCluster != null) // the mouse was over one of the clusters
             {
             	location = new Point((int)closestPoint.getX(), (int)closestPoint.getY());
             	labelPainter.setLocation(location);
+            	
+            	if(isSelection)//we also had selection
+            	{
+            		parentPanel.setSelected(closestCluster.getCluster());
+            		parentPanel.getClusterSelectionPanel().setSelected(closestCluster.getCluster());
+            	}
             }
             else //also check the pie chart waypoints
         	{
-            	PieChartWaypoint piechartwp;
+            	PieChartWaypoint piechartwp, closestPie = null;
             	
             	for(Waypoint pwp : pieChartPainter.getWaypoints())
                 {
                 	piechartwp = (PieChartWaypoint) pwp;
                 	clusterPoint = getMainMap().convertGeoPositionToPoint(pwp.getPosition());
                 	
+                	
                 	//only continue checking if the center of the piechart is in the visible area 
-                	if(clusterPoint.getX() > mapBounds.getX() &&
-                			clusterPoint.getX() < mapBounds.getX()+mapBounds.getWidth() &&
-                			clusterPoint.getY() > mapBounds.getY() &&
-                			clusterPoint.getY() < mapBounds.getX()+mapBounds.getHeight())
+                	if(mapBounds.contains(clusterPoint))
                 	{
 	                	dist = clusterPoint.distance(mousePoint);
 	                	
-	                	if(dist <= piechartwp.getRadius())
+	                	if(dist <= piechartwp.getRadius() + piechartwp.getPieChartGap())
 	                	{
-	        				closestPoint = clusterPoint;
-	        				labels.addAll(piechartwp.clusterNames);
+	                		closestPoint = clusterPoint;
+	        				closestPie = piechartwp;
+	        				
+	        				closestCluster = closestPie.getSelectedCluster(mousePoint, clusterPoint);
+	        				
+	        				labelPainter.setLabel(closestCluster.getName());
 	        				break;
 	                	}
                 	}
                 }
             	
-            	if(closestPoint != null)//the mouse was over one of the piecharts
+            	if(closestPoint != null && closestPie != null)//the mouse was over one of the piecharts
             	{
                 	location = new Point((int)closestPoint.getX(), (int)closestPoint.getY());
-                	labelPainter.setLocation(location);
+                	labelPainter.setLocation(closestPie.getLabelLocation(mousePoint, clusterPoint));
+                	
+                	if(isSelection)	
+                	{
+                		parentPanel.setSelected(closestCluster.getCluster());
+                		parentPanel.getClusterSelectionPanel().setSelected(closestCluster.getCluster());
+                	}
                 }
             	else //the mouse wasn't over anything        	
             		labelPainter.setLocation(null);
@@ -382,77 +405,72 @@ public final class WorldMap extends JXMapKit
      */
 	private void regroupClusters()
 	{
-		HashMap<ClusterWaypoint, HashSet<ClusterWaypoint>> set = new HashMap<ClusterWaypoint, HashSet<ClusterWaypoint>>();
+		HashMap<ClusterWaypoint, HashSet<ClusterWaypoint>> adjacencyList = new HashMap<ClusterWaypoint, HashSet<ClusterWaypoint>>();
 		HashMap<Waypoint, Boolean> visited = new HashMap<Waypoint, Boolean>(); //will be used during DFS
 		
 		double distance, minDistance;
-		ClusterWaypoint cwptmp;
+		ClusterWaypoint cwp;
 		
-		for(Waypoint waypoint : waypoints)
+		for(ClusterWaypoint waypoint : visibleWaypoints)
 		{
-			set.put((ClusterWaypoint)waypoint, new HashSet<ClusterWaypoint>());
+			adjacencyList.put(waypoint, new HashSet<ClusterWaypoint>());
 			visited.put(waypoint, false);
 		}
 		
-		//create adjacency lists for all clusters (build the graph)
-		for(Waypoint waypoint : waypoints)
+		//create adjacency lists for all visible clusters (build the graph)
+		for(ClusterWaypoint waypoint : visibleWaypoints)
 		{
-			ClusterWaypoint cwp1 = (ClusterWaypoint) waypoint;
-			cwp1.show = true;
+			waypoint.show = true;
 			
-			for(Waypoint secondWaypoint: waypoints)
+			for(ClusterWaypoint secondWaypoint: visibleWaypoints)
 			{
 				if(secondWaypoint != waypoint)
 				{	
-    				ClusterWaypoint cwp2 = (ClusterWaypoint) secondWaypoint;
-    				distance = cwp1.computeDistanceTo(getMainMap(), cwp2);
-    	            minDistance = cwp1.getRadius()+ cwp2.getRadius();
+    				distance = waypoint.computeDistance(getMainMap(), secondWaypoint);
+    	            minDistance = waypoint.getRadius() + secondWaypoint.getRadius()
+    	            	+ 2 * PieChartWaypoint.fixedGap;
     	            
     	            if(distance <= minDistance)//the two clusters overlap
     	            {
-    	            	set.get(cwp1).add(cwp2);
-    	            	set.get(cwp2).add(cwp1);
+    	            	adjacencyList.get(waypoint).add(secondWaypoint);
+    	            	adjacencyList.get(secondWaypoint).add(waypoint);
     	            }
 				}
 			}
 		}
-
 		
 		ArrayList<ClusterWaypoint> connectedComponent = new ArrayList<ClusterWaypoint>();
 		Set<Waypoint> pieChartWaypointSet = new HashSet<Waypoint>();
-		PieChartWaypoint pieChart, tempWp;
+		PieChartWaypoint pieChart, oldPieChartWp;
 		Iterator<ClusterWaypoint> iter;
 		WaypointPainter<JXMapViewer> pieChartClusterPainter = getPieChartPainter(); 
 		
-		if(pieChartClusterPainter != null) //it's been initialized
+		if(pieChartClusterPainter != null) //the painter has been initialized
 		{
 			Set<Waypoint> oldPieCharts = pieChartClusterPainter.getWaypoints();
 			
-			for(Waypoint waypoint : waypoints)
+			for(ClusterWaypoint waypoint : visibleWaypoints)
 			{
-				cwptmp = (ClusterWaypoint) waypoint; 
-				
 				connectedComponent.clear(); // reuse the same structure
 				
 				//compute the connected component for each unvisited node
-				if(! visited.get(cwptmp))
-					DFS(cwptmp, set, visited, connectedComponent);
+				if(!visited.get(waypoint))
+					DFS(waypoint, adjacencyList, visited, connectedComponent);
 				
-				//the component does  not consist of a single cluster
-				if(connectedComponent.size() > 1)
+				if(connectedComponent.size() > 1)//the component does  not consist of a single cluster
 				{
 	    			pieChart = null;
 					for(Waypoint wp:oldPieCharts)
 	    			{
-	    				tempWp = (PieChartWaypoint) wp;
-	    				if(tempWp.containsSameClustersAs(connectedComponent))
+	    				oldPieChartWp = (PieChartWaypoint) wp;
+	    				if(oldPieChartWp.containsSameClustersAs(connectedComponent))
 	    				{
-	    					pieChart = tempWp; // we can reuse the existing piechart
+	    					pieChart = oldPieChartWp; // we can reuse the existing pie chart
 	    					break;
 	    				}
 	    			}
 					
-					if(pieChart == null) //that piechart doesn't exist yet
+					if(pieChart == null) //that pie chart doesn't exist yet, we need to create it
 						pieChart = new PieChartWaypoint(connectedComponent);
 	    			pieChartWaypointSet.add(pieChart);
 	    			

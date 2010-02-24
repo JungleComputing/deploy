@@ -1,5 +1,6 @@
 package ibis.deploy.gui.editor;
 
+import ibis.deploy.gui.misc.Utils;
 import ibis.deploy.gui.worldmap.MapUtilities;
 
 import java.awt.BorderLayout;
@@ -21,7 +22,7 @@ public class MapEditor {
     private JLabel coordinatesLabel = new JLabel();
 
     private static final GeoPosition DEFAULT_GEO_POSITION = new GeoPosition(
-            52.332933, 4.866064);
+            Utils.localClusterLatitude, Utils.localClusterLongitude);
 
     // map editor doesn't support default values, since it isn't straightforward
     // to implement it. Map editor uses two values which both could be defaults.

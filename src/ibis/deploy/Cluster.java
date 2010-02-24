@@ -1,5 +1,7 @@
 package ibis.deploy;
 
+import ibis.deploy.gui.misc.Utils;
+
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -95,10 +97,12 @@ public class Cluster {
         result.setNodes(1);
         result.setCores(Runtime.getRuntime().availableProcessors());
 
-        result.setLatitude(52.332933);
-        result.setLongitude(4.866064);
+        result.setLatitude(Utils.localClusterLatitude);
+        result.setLongitude(Utils.localClusterLongitude);
 
         result.setStartZorilla(null);
+        
+        result.setVisibleOnMap(false);
 
         return result;
     }
@@ -161,6 +165,8 @@ public class Cluster {
     private String nodeHostnames;
 
     private String color;
+    
+    private boolean visibleOnMap;
 
     /**
      * Creates a new cluster with a given name. Clusters cannot be created
@@ -195,6 +201,7 @@ public class Cluster {
         startZorilla = null;
         nodeHostnames = null;
         color = null;
+        visibleOnMap = true;
     }
 
     /**
@@ -224,6 +231,7 @@ public class Cluster {
         startZorilla = null;
         nodeHostnames = null;
         color = null;
+        visibleOnMap = true;
     }
 
     /**
@@ -288,6 +296,7 @@ public class Cluster {
         nodeHostnames = properties.getProperty(prefix + "node.hostnames");
 
         this.color = null;
+        visibleOnMap = true;
     }
 
     public boolean isEmpty() {
@@ -396,6 +405,8 @@ public class Cluster {
         if (other.color != null) {
             color = other.color;
         }
+        
+        visibleOnMap = other.visibleOnMap;
     }
 
     /**
@@ -1178,6 +1189,16 @@ public class Cluster {
         result += " Color = " + getColorCode() + "\n";
 
         return result;
+    }
+    
+    public boolean isVisibleOnMap()
+    {
+    	return visibleOnMap;
+    }
+    
+    public void setVisibleOnMap(boolean visible)
+    {
+    	visibleOnMap = visible;
     }
 
 }

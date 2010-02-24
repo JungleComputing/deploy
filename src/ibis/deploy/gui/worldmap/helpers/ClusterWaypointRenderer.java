@@ -25,42 +25,35 @@ public class ClusterWaypointRenderer implements WaypointRenderer
 	{
         ClusterWaypoint cwp = (ClusterWaypoint) wp;
         
-        if(cwp.show)
+        if(cwp.show && cwp.getCluster().isVisibleOnMap())
         {
         	final int x = cwp.getOffset().width;
             final int y = cwp.getOffset().height;
 
-            Color clusterBorderColor = Utils.getColor(cwp.getCluster()
-                    .getColorCode());
-            if (clusterBorderColor == null) {
-                clusterBorderColor = new Color(100, 100, 255, 255);
-            }
-            Color clusterFillColor = Utils.getLightColor(cwp.getCluster()
-                    .getColorCode());
-            if (clusterFillColor == null) {
-                clusterFillColor = new Color(100, 100, 255, 150);
-            }
+            Color clusterBorderColor = Utils.getColor(cwp.getCluster().getColorCode());
+            if (clusterBorderColor == null) 
+                clusterBorderColor = Utils.defaultClusterBorderColor;
+
+            Color clusterFillColor = Utils.getLightColor(cwp.getCluster().getColorCode());
+            if (clusterFillColor == null) 
+                clusterFillColor = Utils.defaultClusterFillColor;
 
             // Color clusterBorderColor = new Color(100, 100, 255, 255);
             // Color clusterFillColor = new Color(100, 100, 255, 150);
             //Color clusterTextColor = new Color(255, 255, 255, 255);
 
-            Color selectedBorderColor = new Color(255, 100, 100, 255);
+            Color selectedBorderColor = Utils.selectedClusterBorderColor;
             // Color selectedArcColor = new Color(255, 100, 100, 200);
-            Color selectedFillColor = new Color(255, 100, 100, 200);
+            Color selectedFillColor = Utils.selectedClusterFillColor;
             //Color selectedTextColor = new Color(255, 100, 100, 100);
 
-            // draw a line from where the cluster is drawn to where it actually
-            // is
-            // g.setPaint(Color.BLACK);
-            // g.drawLine(0, 0, x, y);
 
             // String numberNodesString = ""
             // + ((cwp.getCluster().getNodes() > 0) ? cwp.getCluster()
             // .getNodes() : "n.a.");
 
             // draw circle
-            final int radius = cwp.getRadius();//*8/map.getZoom();
+            final int radius = cwp.getRadius();
             final int diameter = 2 * radius;
 
             if (cwp.isSelected() && booleanSelect) 

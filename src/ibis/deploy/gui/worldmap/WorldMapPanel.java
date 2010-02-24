@@ -25,6 +25,8 @@ import org.jdesktop.swingx.JXMapViewer;
 import org.jdesktop.swingx.mapviewer.Waypoint;
 import org.jdesktop.swingx.mapviewer.WaypointPainter;
 
+import com.sun.java.swing.plaf.nimbus.ToolTipPainter;
+
 public class WorldMapPanel extends JPanel {
 	/**
 	 * 
@@ -70,15 +72,16 @@ public class WorldMapPanel extends JPanel {
                 menu.add(MapUtilities.getMapMenu());
             }
         }
-
-        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
-        final WorldMap worldMap = new WorldMap(this, zoom);
-        add(worldMap);
-
+        
+        //create cluster waypoints
         for (Cluster cluster : gui.getGrid().getClusters()) {
             waypoints.add(new ClusterWaypoint(cluster, false));
 
         }
+
+        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+        final WorldMap worldMap = new WorldMap(this, zoom);
+        add(worldMap);
 
         gui.addGridWorkSpaceListener(new WorkSpaceChangedListener() 
         {
@@ -100,7 +103,7 @@ public class WorldMapPanel extends JPanel {
             //@SuppressWarnings("unchecked")
             public void mouseClicked(MouseEvent e) 
             {
-            	
+            	worldMap.updateOnMouseAction(e.getPoint(), true);
 //            	WaypointPainter<JXMapViewer> wpainter = worldMap.getClusterPainter();
 //
 //            	if(wpainter != null)//we have such a painter
@@ -155,6 +158,8 @@ public class WorldMapPanel extends JPanel {
             }
 
             public void mouseExited(MouseEvent e) {
+            	worldMap.getTooltipPainter().setLocation(null);
+            	worldMap.repaint();
             }
 
             public void mousePressed(MouseEvent e) {
@@ -170,11 +175,11 @@ public class WorldMapPanel extends JPanel {
         {
         	public void mouseMoved(MouseEvent e) 
 			{
-        		worldMap.updateTooltipLabels(e.getPoint());
+        		worldMap.updateOnMouseAction(e.getPoint(), false);
 			}
 			
 			public void mouseDragged(MouseEvent e) {
-				worldMap.updateTooltipLabels(e.getPoint());
+				worldMap.updateOnMouseAction(e.getPoint(), false);
 			}
 		});
         
@@ -185,7 +190,7 @@ public class WorldMapPanel extends JPanel {
 			@Override
 			public void mouseWheelMoved(MouseWheelEvent e) 
 			{
-				worldMap.updateTooltipLabels(e.getPoint());
+				worldMap.updateOnMouseAction(e.getPoint(), false);
 			}
 		});
     }
@@ -238,6 +243,11 @@ public class WorldMapPanel extends JPanel {
     public Set<Waypoint> getWaypoints()
     {
     	return waypoints;
+    }
+    
+    public ClusterSelectionPanel getClusterSelectionPanel()
+    {
+    	return clusterSelectionPanel;
     }
 
 }

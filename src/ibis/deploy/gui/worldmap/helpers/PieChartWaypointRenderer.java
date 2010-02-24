@@ -6,61 +6,71 @@ import ibis.deploy.gui.worldmap.helpers.PieChartWaypoint;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.geom.Arc2D;
 
 import org.jdesktop.swingx.JXMapViewer;
 import org.jdesktop.swingx.mapviewer.Waypoint;
 import org.jdesktop.swingx.mapviewer.WaypointRenderer;
 
 public class PieChartWaypointRenderer implements WaypointRenderer 
-{
-    private final Color clusterSelectedColor = new Color(255, 100, 100, 200);
-    private final Color clusterDefaultColor = new Color(100, 100, 255, 255);
-	
+{	
 	public boolean paintWaypoint(Graphics2D g, JXMapViewer map, Waypoint wp) 
     {
-        PieChartWaypoint cwp = (PieChartWaypoint) wp;
+        PieChartWaypoint pieChartCwp = (PieChartWaypoint) wp;
         
-        final int x = 0;
-        final int y = 0;
+        final int x = 0, y = 0;
         
-        final int radius = cwp.getRadius();
+        final int radius = pieChartCwp.getRadius();
         final int diameter = 2 * radius;
         
         int i;
         int angle = 0;
-        int newAngle;
+        int stepAngle = (int)360 / pieChartCwp.clusters.size();
         
-        Color clusterColor; 
+        Color clusterColor, clusterBorderColor; 
         ClusterWaypoint clusterwp;
         
-        for(i = 0; i < cwp.percentages.size(); i++)
+        for(i = 0; i < pieChartCwp.clusters.size(); i++)
         {
-        	clusterwp = cwp.clusters.get(i);
+        	clusterwp = pieChartCwp.clusters.get(i);
         	clusterColor = null;
         	
-        	//set the color of the slice
+        	//get the color of the slice and of its border
         	if(clusterwp.isSelected())
-    			clusterColor = clusterSelectedColor;
+        	{
+        		clusterColor = Utils.selectedClusterFillColor;
+        		clusterBorderColor = Utils.selectedClusterBorderColor;
+        	}
     		else
-    			clusterColor = Utils.getLightColor(clusterwp.getCluster().getColorCode()); 
+			{
+				clusterColor = Utils.getLightColor(clusterwp.getCluster().getColorCode()); 
+				clusterBorderColor = Utils.getColor(clusterwp.getCluster().getColorCode());
+			}
     		if (clusterColor == null) 
-            {
-            	clusterColor = clusterDefaultColor; 
-            }
+            	clusterColor = Utils.defaultClusterFillColor; 
+            if (clusterBorderColor == null) 
+                clusterBorderColor = Utils.defaultClusterBorderColor;
+            
+    		g.rotate(Math.toRadians(angle));
+    		g.translate(pieChartCwp.getPieChartGap(), 0);
+
+    		//draw the pie slice
+        	g.setColor(clusterColor);
+        	g.fillArc(x - radius,y -radius, diameter, diameter, -stepAngle/2 , stepAngle);
         	
-    		newAngle = (int)(360 * cwp.percentages.get(i));
-        	g.setPaint(clusterColor);
-        	//draw the pie slice
-        	g.fillArc(x - radius, y - radius, diameter, diameter, angle, newAngle);
         	
-//        	g.setPaint(Color.black);
-//        	g.fillArc(x - radius, y - radius, diameter, diameter, angle, 2);
+        	//draw the border of the pie slice
+        	Arc2D arc = new Arc2D.Double(x - radius,y -radius,diameter, diameter, 
+        			-stepAngle/2 , stepAngle, Arc2D.PIE);
+        	g.setColor(clusterBorderColor);
+        	g.draw(arc);
+
+    		g.translate(-pieChartCwp.getPieChartGap(), 0);
+    		g.rotate(-Math.toRadians(angle));
         	
-        	angle += newAngle;
+        	angle += stepAngle;
         }
-        
-        g.setPaint(Color.black);
-        g.drawOval(x - radius, y - radius, diameter, diameter);
+    
         return false;
     }
 

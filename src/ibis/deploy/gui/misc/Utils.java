@@ -11,6 +11,15 @@ import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
 public class Utils {
+	
+	public static final double localClusterLatitude = 52.332933;
+	public static final double localClusterLongitude = 4.866064;
+	
+	public static final Color selectedClusterFillColor = new Color(255, 100, 100, 200);
+    public static final Color selectedClusterBorderColor = new Color(255, 100, 100, 255);
+    
+    public static final Color defaultClusterBorderColor = new Color(100, 100, 255, 255);
+    public static final Color defaultClusterFillColor = new Color(100, 100, 255, 150);
 
     /** Returns an JLabel, or null if the path was invalid. */
     public static JLabel createImageLabel(String path, String description) {
