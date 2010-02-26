@@ -219,16 +219,18 @@ public class Job implements Runnable {
         // both directory itself, and all files in that dir (*)
         String result = prefix + file.getName() + File.pathSeparator;
         for (File child : file.listFiles()) {
-            result = result
-                    + classpathFor(child, prefix + file.getName()
-                            + File.separator);
+            if (!child.isHidden()) {
+                result = result
+                        + classpathFor(child, prefix + file.getName()
+                                + File.separator);
+            }
         }
         return result;
     }
 
     // classpath made up of all directories, as well as jar
     private static String createClassPath(File[] libs) {
-        // start with lib directory
+        // start with cwd
         String result = "." + File.pathSeparator;
 
         for (File file : libs) {
@@ -249,7 +251,7 @@ public class Job implements Runnable {
             context.addSecurityContext(securityContext);
         }
 
-        //wait until zorilla node is up if needed.
+        // wait until zorilla node is up if needed.
         context.addPreference("zorilla.wait.for.node", "true");
 
         // make sure files are readable on the other side
@@ -301,14 +303,14 @@ public class Job implements Runnable {
                 "any://" + host + "/" + fileCacheDir);
         gatCacheDirFile.mkdirs();
 
-        // rsync to cache dir 
+        // rsync to cache dir
         File rsyncLocation = new File(fileCacheDir);
         Rsync.rsync(src, rsyncLocation, host, user);
 
         // tell job to pre-stage from cache dir
         org.gridlab.gat.io.File gatFile = GAT.createFile(context, "any://"
                 + host + "/" + fileCacheDir + "/" + src.getName());
-        
+
         sd.addPreStagedFile(gatFile, gatCwd);
         return;
     }
@@ -384,7 +386,7 @@ public class Job implements Runnable {
         sd.addJavaSystemProperty(IbisProperties.POOL_SIZE, ""
                 + description.getPoolSize());
         sd.addJavaSystemProperty(IbisProperties.SERVER_ADDRESS, serverAddress);
-        
+
         sd.addJavaSystemProperty(RegistryProperties.HEARTBEAT_INTERVAL, "30");
 
         sd.addJavaSystemProperty("ibis.deploy.job.id", description.getName());
@@ -438,12 +440,10 @@ public class Job implements Runnable {
             log4jFile = new File(deployHome, "log4j.properties");
         }
 
-
         prestage(log4jFile, sd);
         sd.addJavaSystemProperty("log4j.configuration", "file:"
                 + log4jFile.getName());
 
-        
         if (application.getOutputFiles() != null) {
             org.gridlab.gat.io.File gatCwd = GAT.createFile(context, ".");
             for (File file : application.getOutputFiles()) {
@@ -586,7 +586,7 @@ public class Job implements Runnable {
             } else {
                 throw new Exception("Unknown Hub Policy");
             }
-            
+
             if (hubAddress == null) {
                 logger.error("Could not get address of hub for job " + this);
                 hubAddress = "";
@@ -598,9 +598,9 @@ public class Job implements Runnable {
                     hubList = hubList + ",";
                 }
                 hubList = hubList + address;
-                
+
             }
-            
+
             logger.debug("Hub list = " + hubList);
 
             GATContext context = createGATContext();
