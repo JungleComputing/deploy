@@ -49,8 +49,6 @@ public final class WorldMap extends JXMapKit
 
     public WorldMap(WorldMapPanel parentPanel, int zoom) 
     {
-    	ClusterWaypoint cwp;
-    	
     	this.parentPanel = parentPanel;
     	
     	// create loading image in color of background
@@ -78,14 +76,8 @@ public final class WorldMap extends JXMapKit
         getMainMap().setHorizontalWrapped(false);
         
         visibleWaypoints = new ArrayList<ClusterWaypoint>();
-		
-		//create a list including only the clusters to be displayed
-		for(Waypoint waypoint : parentPanel.getWaypoints())
-		{
-			cwp = (ClusterWaypoint) waypoint;
-			if(cwp.getCluster().isVisibleOnMap())
-				visibleWaypoints.add(cwp);
-		}
+        
+        updateWaypoints();
         
         //create overlay painters for the map
         CompoundPainter<JXMapViewer> cp = new CompoundPainter<JXMapViewer>();
@@ -102,12 +94,29 @@ public final class WorldMap extends JXMapKit
         //tooltip painter for displaying the names of the clusters
         ToolTipPainter<JXMapViewer> tooltipPainter = new ToolTipPainter<JXMapViewer>(parentPanel);
         
-        //add cluster painter on 1st position, piechart painter on 2nd and tooltip painter on 3rd
+        //add cluster painter on 1st position, pie chart painter on 2nd and tooltip painter on 3rd
         cp.setPainters(painter, pieChartClusterPainter, tooltipPainter);
         cp.setCacheable(false); //so that the overlay is repainted when the user pans    
         
         //add the overlays to the  map
         getMainMap().setOverlayPainter(cp);
+    }
+    
+    public void updateWaypoints()
+    {
+    	ClusterWaypoint cwp; 
+    	
+    	visibleWaypoints.clear();//remove the old visible waypoints
+    	if(getPieChartPainter() != null) //clear the existing pie charts
+    		getPieChartPainter().getWaypoints().clear();
+    	
+    	//create a list including only the clusters to be displayed
+		for(Waypoint waypoint : parentPanel.getWaypoints())
+		{
+			cwp = (ClusterWaypoint) waypoint;
+			if(cwp.getCluster().isVisibleOnMap())
+				visibleWaypoints.add(cwp);
+		}
     }
 
     private void doFit() {
@@ -152,7 +161,7 @@ public final class WorldMap extends JXMapKit
     	setPreferredSize(newSize); 
     	setMaximumSize(newSize);
     	
-    	revalidate(); // revalidate to force the layout manager to recompute sizes
+    	revalidate(); //revalidate to force the layout manager to recompute sizes
     	
     	getMainMap().setCenter(getMainMap().getCenter()); //the map doesn't automatically center itself       	
     }
@@ -184,8 +193,13 @@ public final class WorldMap extends JXMapKit
      */
     private void calculateZoomDecreaseFrom(Set<GeoPosition> positions) 
     {
-        //if there's a single node, just set zoom level to 1 to make that area visible
-        if(positions.size() < 2) 
+        
+    	if(positions.size() == 0) // no nodes, just display the whole map
+    	{
+    		setZoom(getMainMap().getTileFactory().getInfo().getMaximumZoomLevel());
+    		return;
+    	}
+    	else if(positions.size() == 1) //if there's a single node, just set zoom level to 1 to make that area visible
         {
         	setZoom(1);
             return;
@@ -409,7 +423,6 @@ public final class WorldMap extends JXMapKit
 		HashMap<Waypoint, Boolean> visited = new HashMap<Waypoint, Boolean>(); //will be used during DFS
 		
 		double distance, minDistance;
-		ClusterWaypoint cwp;
 		
 		for(ClusterWaypoint waypoint : visibleWaypoints)
 		{

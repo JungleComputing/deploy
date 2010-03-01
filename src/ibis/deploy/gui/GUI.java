@@ -431,11 +431,15 @@ public class GUI {
     public void clearWorkspace() throws Exception {
         workspace = new Workspace();
         fireWorkSpaceUpdated();
+        workspaceLocation = Workspace.DEFAULT_LOCATION;
+        frame.setTitle("Ibis Deploy - " + Workspace.DEFAULT_LOCATION);
     }
 
     public void loadWorkspace(File location) throws Exception {
         workspace = new Workspace(location);
         fireWorkSpaceUpdated();
+        workspaceLocation = location;
+        frame.setTitle("Ibis Deploy - " + workspaceLocation.getName());
     }
 
     public void saveWorkspace() throws Exception {

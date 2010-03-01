@@ -1,7 +1,7 @@
 package ibis.deploy.gui.worldmap.helpers;
 
 import ibis.deploy.Cluster;
-import ibis.deploy.gui.misc.Utils;
+import ibis.deploy.gui.worldmap.MapUtilities;
 
 import java.awt.Dimension;
 import java.awt.geom.Point2D;
@@ -23,9 +23,9 @@ public class ClusterWaypoint extends Waypoint {
 
     public ClusterWaypoint(Cluster cluster, boolean selected) {
         super(
-                cluster.getLatitude() == 0 && cluster.getLongitude() == 0 ? Utils.localClusterLatitude
+                cluster.getLatitude() == 0 && cluster.getLongitude() == 0 ? MapUtilities.localClusterLatitude
                         : cluster.getLatitude(), cluster.getLatitude() == 0
-                        && cluster.getLongitude() == 0 ? Utils.localClusterLongitude : cluster
+                        && cluster.getLongitude() == 0 ? MapUtilities.localClusterLongitude : cluster
                         .getLongitude());
         this.selected = selected;
         this.cluster = cluster;

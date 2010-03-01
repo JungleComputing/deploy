@@ -26,13 +26,23 @@ public class NewWorkSpaceAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent arg0) {
-        try {
-            gui.clearWorkspace();
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(frame, e.getMessage(),
-                    "Reset experiment workspace failed",
-                    JOptionPane.PLAIN_MESSAGE);
-            e.printStackTrace(System.err);
+    	int choice = JOptionPane.showConfirmDialog(frame,
+                "Are you sure you want to discard changes to \"" + gui.getWorkspaceLocation() + "\"?",
+                "Discard changes?", JOptionPane.YES_NO_OPTION);
+
+        if (choice == JOptionPane.YES_OPTION) 
+        {
+	    	try 
+	    	{
+	            gui.clearWorkspace();
+	        } 
+	    	catch (Exception e) 
+	        {
+	            JOptionPane.showMessageDialog(frame, e.getMessage(),
+	                    "Reset experiment workspace failed",
+	                    JOptionPane.PLAIN_MESSAGE);
+	            e.printStackTrace(System.err);
+	        }
         }
 
     }

@@ -1,6 +1,7 @@
 package ibis.deploy.gui.worldmap.helpers;
 
 import ibis.deploy.gui.misc.Utils;
+import ibis.deploy.gui.worldmap.MapUtilities;
 import ibis.deploy.gui.worldmap.helpers.ClusterWaypoint;
 import ibis.deploy.gui.worldmap.helpers.PieChartWaypoint;
 
@@ -38,8 +39,8 @@ public class PieChartWaypointRenderer implements WaypointRenderer
         	//get the color of the slice and of its border
         	if(clusterwp.isSelected())
         	{
-        		clusterColor = Utils.selectedClusterFillColor;
-        		clusterBorderColor = Utils.selectedClusterBorderColor;
+        		clusterColor = MapUtilities.selectedClusterFillColor;
+        		clusterBorderColor = MapUtilities.selectedClusterBorderColor;
         	}
     		else
 			{
@@ -47,9 +48,9 @@ public class PieChartWaypointRenderer implements WaypointRenderer
 				clusterBorderColor = Utils.getColor(clusterwp.getCluster().getColorCode());
 			}
     		if (clusterColor == null) 
-            	clusterColor = Utils.defaultClusterFillColor; 
+            	clusterColor = MapUtilities.defaultClusterFillColor; 
             if (clusterBorderColor == null) 
-                clusterBorderColor = Utils.defaultClusterBorderColor;
+                clusterBorderColor = MapUtilities.defaultClusterBorderColor;
             
     		g.rotate(Math.toRadians(angle));
     		g.translate(pieChartCwp.getPieChartGap(), 0);

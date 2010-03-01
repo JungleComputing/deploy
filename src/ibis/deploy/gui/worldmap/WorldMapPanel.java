@@ -12,7 +12,6 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import java.awt.geom.Point2D;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -21,11 +20,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 
-import org.jdesktop.swingx.JXMapViewer;
 import org.jdesktop.swingx.mapviewer.Waypoint;
-import org.jdesktop.swingx.mapviewer.WaypointPainter;
-
-import com.sun.java.swing.plaf.nimbus.ToolTipPainter;
 
 public class WorldMapPanel extends JPanel {
 	/**
@@ -90,8 +85,13 @@ public class WorldMapPanel extends JPanel {
                 for (Cluster cluster : gui.getGrid().getClusters()) {
                     waypoints.add(new ClusterWaypoint(cluster, false));
                 }
+                
+                worldMap.updateWaypoints();
+                
                 //worldMap.setZoom(zoom);
                 worldMap.setZoomRelativeToClusters();
+                
+                selectedWaypoint = null;
                 worldMap.getMainMap().repaint();
             }
         });

@@ -1,6 +1,7 @@
 package ibis.deploy.gui.worldmap.helpers;
 
 import ibis.deploy.gui.misc.Utils;
+import ibis.deploy.gui.worldmap.MapUtilities;
 import ibis.deploy.gui.worldmap.helpers.ClusterWaypoint;
 
 import java.awt.Color;
@@ -32,19 +33,19 @@ public class ClusterWaypointRenderer implements WaypointRenderer
 
             Color clusterBorderColor = Utils.getColor(cwp.getCluster().getColorCode());
             if (clusterBorderColor == null) 
-                clusterBorderColor = Utils.defaultClusterBorderColor;
+                clusterBorderColor = MapUtilities.defaultClusterBorderColor;
 
             Color clusterFillColor = Utils.getLightColor(cwp.getCluster().getColorCode());
             if (clusterFillColor == null) 
-                clusterFillColor = Utils.defaultClusterFillColor;
+                clusterFillColor = MapUtilities.defaultClusterFillColor;
 
             // Color clusterBorderColor = new Color(100, 100, 255, 255);
             // Color clusterFillColor = new Color(100, 100, 255, 150);
             //Color clusterTextColor = new Color(255, 255, 255, 255);
 
-            Color selectedBorderColor = Utils.selectedClusterBorderColor;
+            Color selectedBorderColor = MapUtilities.selectedClusterBorderColor;
             // Color selectedArcColor = new Color(255, 100, 100, 200);
-            Color selectedFillColor = Utils.selectedClusterFillColor;
+            Color selectedFillColor = MapUtilities.selectedClusterFillColor;
             //Color selectedTextColor = new Color(255, 100, 100, 100);
 
 

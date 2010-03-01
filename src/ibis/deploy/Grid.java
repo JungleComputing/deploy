@@ -1,5 +1,7 @@
 package ibis.deploy;
 
+import ibis.util.TypedProperties;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -28,12 +30,18 @@ public class Grid {
     };
     
     // cluster representing defaults
-    private final Cluster defaults;
+    private Cluster defaults;
 
     // cluster representing defaults for local machine.
-    private final Cluster localDefaults;
+    private Cluster localDefaults;
 
     private final List<Cluster> clusters;
+    
+    private DeployProperties defaultProperties;
+    
+    private String prefix;
+    
+    public boolean hasDefaults = false;
 
     private int nextColor = 0;
 
@@ -62,44 +70,9 @@ public class Grid {
         }
 
         DeployProperties properties = new DeployProperties();
-
         properties.loadFromFile(file.getAbsolutePath());
-
-        defaults = new Cluster(properties, "defaults", "default", null);
-
-        localDefaults = Cluster.getLocalCluster();
-
-        String[] clusterNames = properties.getElementList();
-        if (clusterNames != null) {
-            for (String clusterName : clusterNames) {
-                Cluster cluster = new Cluster(properties, clusterName,
-                        clusterName, this);
-                if (clusterName.equals("local")) {
-                    cluster.setColor(LOCAL_COLOR);
-                    cluster.setVisibleOnMap(false);
-                } else {
-                    cluster.setColor(getNextColor());
-                }
-                clusters.add(cluster);
-            }
-        }
-
-        // add "local" cluster if it doesn't exist yet
-        if (!hasCluster("local")) {
-            Cluster local = new Cluster("local", this);
-            local.setColor(LOCAL_COLOR);
-            local.setVisibleOnMap(false);
-            clusters.add(local);
-        }
-    }
-
-    private synchronized String getNextColor() {
-        String result = COLORS[nextColor];
-
-        nextColor++;
-        nextColor = nextColor % COLORS.length;
-
-        return result;
+        
+        loadSettingsFromProperties(properties, null);
     }
 
     /**
@@ -115,14 +88,32 @@ public class Grid {
      * 
      */
     public Grid(DeployProperties properties, String prefix) throws Exception {
-        clusters = new ArrayList<Cluster>();
-
-        if (prefix == null) {
+    	clusters = new ArrayList<Cluster>();
+    	loadSettingsFromProperties(properties, prefix);
+    }
+    
+    /**
+     * Initializes the grid using data from the given properties 
+     * 
+     * @param properties
+     *            properties of the grid
+     * @param prefix
+     *            prefix to use on all keys
+     **/
+    private void loadSettingsFromProperties(DeployProperties properties, String prefix) throws Exception
+    {
+    	this.prefix = prefix;
+    	
+    	if (prefix == null) {
             prefix = "";
         } else {
             prefix = prefix + ".";
         }
 
+    	defaultProperties = new DeployProperties();
+    	defaultProperties.addProperties(properties.filter("default"));
+    	hasDefaults = !defaultProperties.isEmpty();
+    	
         defaults = new Cluster(properties, "defaults", prefix + "default", null);
 
         localDefaults = Cluster.getLocalCluster();
@@ -136,13 +127,19 @@ public class Grid {
                 if (!clusterName.equals("local")) {
                     cluster.setColor(getNextColor());
                 }
+                else
+                {
+                	cluster.setColor(LOCAL_COLOR);
+                    cluster.setVisibleOnMap(false);
+                }
                 clusters.add(cluster);
             }
         }
-
+        
         // add "local" cluster if it doesn't exist yet
         if (!hasCluster("local")) {
             Cluster local = new Cluster("local", this);
+            local.setColor(LOCAL_COLOR);
             local.setVisibleOnMap(false);
             clusters.add(local);
         }
@@ -152,7 +149,10 @@ public class Grid {
      * Constructs a new empty grid.
      */
     public Grid() {
-        clusters = new ArrayList<Cluster>();
+        hasDefaults = false;
+        defaultProperties = new DeployProperties();
+        
+    	clusters = new ArrayList<Cluster>();
         try {
             defaults = new Cluster("defaults", null);
             // add a default local cluster.
@@ -164,6 +164,15 @@ public class Grid {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+    
+    private synchronized String getNextColor() {
+        String result = COLORS[nextColor];
+
+        nextColor++;
+        nextColor = nextColor % COLORS.length;
+
+        return result;
     }
 
     /**
@@ -356,4 +365,8 @@ public class Grid {
         return result;
     }
 
+    public DeployProperties getDefaultProperties()
+    {
+    	return defaultProperties;
+    }
 }

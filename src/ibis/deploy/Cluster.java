@@ -1,6 +1,7 @@
 package ibis.deploy;
 
-import ibis.deploy.gui.misc.Utils;
+import ibis.deploy.gui.worldmap.MapUtilities;
+import ibis.util.TypedProperties;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -97,8 +98,8 @@ public class Cluster {
         result.setNodes(1);
         result.setCores(Runtime.getRuntime().availableProcessors());
 
-        result.setLatitude(Utils.localClusterLatitude);
-        result.setLongitude(Utils.localClusterLongitude);
+        result.setLatitude(MapUtilities.localClusterLatitude);
+        result.setLongitude(MapUtilities.localClusterLongitude);
 
         result.setStartZorilla(null);
         
@@ -408,6 +409,8 @@ public class Cluster {
         
         visibleOnMap = other.visibleOnMap;
     }
+    
+   
 
     /**
      * Returns grid of this cluster.
