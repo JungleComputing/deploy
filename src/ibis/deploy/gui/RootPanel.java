@@ -3,6 +3,7 @@ package ibis.deploy.gui;
 import ibis.deploy.gui.applications.ApplicationEditorPanel;
 import ibis.deploy.gui.clusters.ClusterEditorPanel;
 import ibis.deploy.gui.experiment.ExperimentsPanel;
+import ibis.deploy.gui.performance.PerformancePanel;
 import ibis.deploy.gui.misc.Utils;
 
 import java.awt.BorderLayout;
@@ -43,6 +44,10 @@ public class RootPanel extends JPanel {
         tabs.setTabComponentAt(2, new TabTitlePanel("Clusters", Utils
                 .createImageIcon("/images/network-transmit-receive.png",
                         "Clusters Tab")));
+        tabs.add(new PerformancePanel(gui));
+        tabs.setTabComponentAt(3, new TabTitlePanel("Performance", Utils
+                .createImageIcon("/images/network-transmit-receive.png",
+                        "Performance Tab")));
         add(tabs, BorderLayout.CENTER);
 
     }
