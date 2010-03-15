@@ -73,7 +73,7 @@ public class RemoteZorilla implements Runnable, Server {
         address = null;
         gatJob = null;
         remote = null;
-        
+
         this.cluster = cluster.resolve();
 
         this.cluster.checkSettings("Zorilla", true);
@@ -100,7 +100,7 @@ public class RemoteZorilla implements Runnable, Server {
             context.addSecurityContext(securityContext);
         }
 
-        //context.addPreference("sshtrilead.stoppable", "true");
+        // context.addPreference("sshtrilead.stoppable", "true");
 
         // ensure files are readable on the other side
         context.addPreference("file.chmod", "0755");
@@ -164,25 +164,27 @@ public class RemoteZorilla implements Runnable, Server {
         List<String> arguments = new ArrayList<String>();
 
         arguments.add("--remote");
-        //arguments.add("--port");
-        //arguments.add("0");
+        // arguments.add("--port");
+        // arguments.add("0");
 
         if (cluster.getJobAdaptor() != null) {
             arguments.add("--resource-adaptor");
             arguments.add(cluster.getJobAdaptor());
+        }
 
+        if (cluster.getJobURI() != null) {
             arguments.add("--resource-uri");
             arguments.add(cluster.getJobURI().toString());
-
-            arguments.add("--nodes");
-            arguments.add("" + cluster.getNodes());
-
-            arguments.add("--cores");
-            arguments.add("" + cluster.getCores());
-
-            arguments.add("--memory");
-            arguments.add("" + cluster.getMemory());
         }
+
+        arguments.add("--nodes");
+        arguments.add("" + cluster.getNodes());
+
+        arguments.add("--cores");
+        arguments.add("" + cluster.getCores());
+
+        arguments.add("--memory");
+        arguments.add("" + cluster.getMemory());
 
         if (cluster.getJobWrapperScript() != null) {
             arguments.add("--resource-wrapper");
@@ -209,7 +211,7 @@ public class RemoteZorilla implements Runnable, Server {
 
         sd.addJavaSystemProperty("gat.adaptor.path", "lib-zorilla/adaptors");
 
-        //FIXME:remove DAS specific SGE hack 
+        // FIXME:remove DAS specific SGE hack
         Map<String, Object> environment = new HashMap<String, Object>();
         environment.put("SGE_ROOT", "/usr/local/Cluster-Apps/sge");
         environment.put("SGE_ARCH", "lx26-amd64");
@@ -419,11 +421,11 @@ public class RemoteZorilla implements Runnable, Server {
     public String toString() {
         return "Zorilla node on \"" + cluster.getName() + "\"";
     }
-    
+
     public RegistryServiceInterface getRegistryService() {
         throw new Error("not implemented");
     }
-    
+
     public ManagementServiceInterface getManagementService() {
         throw new Error("not implemented");
     }
