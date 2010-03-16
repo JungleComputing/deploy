@@ -46,6 +46,9 @@ public class Vobject {
 		
 		//set the size and radius to default
 		setSize(1.0f, 0.25f);
+		
+		//Register the new object with the Performance visualization object
+		this.glName = perfvis.registerGLObject(this);
 	}
 	
 	public void setSize(float width, float height) {
@@ -56,10 +59,6 @@ public class Vobject {
 		this.radius = (float) Math.sqrt(  Math.pow(width, 2)
 			 							+ Math.pow(height, 2)
 			 							+ Math.pow(width, 2));
-	}
-	
-	public void setGLName(int glName) {
-		this.glName = glName;
 	}
 	
 	public void setLocation(float[] newLocation) {
@@ -88,5 +87,9 @@ public class Vobject {
 
 	public float getRadius() {		
 		return radius;
+	}
+	
+	public int getGLName() {
+		return glName;
 	}
 }

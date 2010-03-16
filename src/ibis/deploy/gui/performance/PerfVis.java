@@ -1,6 +1,7 @@
 package ibis.deploy.gui.performance;
 
 import ibis.deploy.gui.GUI;
+import ibis.deploy.gui.performance.Vrarchy.Vobject;
 import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
 import ibis.deploy.gui.performance.hierarchy.Hpool;
 import ibis.deploy.gui.performance.visuals.*;
@@ -73,7 +74,7 @@ public class PerfVis implements GLEventListener {
 
 	private int updateInterval;
 	
-	
+	private HashMap<Integer, Vobject> glNameRegistry;
 			
 	PerfVis() {
 		glu = new GLU();
@@ -91,6 +92,12 @@ public class PerfVis implements GLEventListener {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public int registerGLObject(Vobject visual) {
+		int name = glNameRegistry.size();
+		glNameRegistry.put(name, visual);
+		return name;
 	}
 	
 	public void setScope(int scope) throws ModeUnknownException {

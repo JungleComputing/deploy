@@ -72,18 +72,12 @@ public class Vnode extends Vobject implements VobjectInterface {
 		}
 	}
 	
-	public void setStatValues(Float[] values) throws ValuesMismatchException, ValueOutOfBoundsException {
+	public void setValues(Float[] values) throws ValuesMismatchException, ValueOutOfBoundsException {
 		if (this.elements.length != values.length) {
 			throw new ValuesMismatchException();
 		}
 		for (int i = 0; i < elements.length; i++) {
 			elements[i].setValue(values[i]);
-		}
-	}
-	
-	public void setGLNames(int nodeGLNames[]) {			
-		for (int i = 0; i < elements.length; i++) {
-			elements[i].setGLName(nodeGLNames[i]);
 		}
 	}
 	

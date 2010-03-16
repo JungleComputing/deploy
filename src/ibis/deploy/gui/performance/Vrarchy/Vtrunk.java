@@ -58,12 +58,6 @@ public class Vtrunk extends Vobject implements VobjectInterface {
 		}
 	}
 	
-	public void setGLNames(int glNames[]) {		
-		for (int i = 0; i < links.length; i++) {
-			links[i].setGLName(glNames[i]);
-		}
-	}
-	
 	public void drawThis(GL gl, int glMode) {
 		//Save the old matrix mode and transformation matrix
 		IntBuffer oldMode = IntBuffer.allocate(1);		

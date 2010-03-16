@@ -66,19 +66,13 @@ public class Vsite extends Vobject implements VobjectInterface {
 		}
 	}
 	
-	public void setNodeValues(Float[][] values) throws ValuesMismatchException, ValueOutOfBoundsException {
+	public void setValues(Float[][] values) throws ValuesMismatchException, ValueOutOfBoundsException {
 		if (this.nodes.length != values.length) {
 			throw new ValuesMismatchException();
 		}
 		for (int i = 0; i < nodes.length; i++) {
-			nodes[i].setStatValues(values[i]);
+			nodes[i].setValues(values[i]);
 		}		
-	}
-	
-	public void setGLNames(int nodeGLNames[][]) {		
-		for (int i = 0; i < nodes.length; i++) {
-			nodes[i].setGLNames(nodeGLNames[i]);
-		}
 	}
 	
 	public void drawThis(GL gl, int glMode) {

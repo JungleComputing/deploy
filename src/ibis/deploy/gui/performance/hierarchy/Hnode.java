@@ -1,52 +1,58 @@
 package ibis.deploy.gui.performance.hierarchy;
 
 import ibis.deploy.gui.performance.PerfVis;
-import ibis.deploy.gui.performance.stats.CpuUsage;
-import ibis.deploy.gui.performance.stats.MemUsage;
-import ibis.deploy.gui.performance.stats.SingleStat;
+import ibis.deploy.gui.performance.Vrarchy.Vnode;
+import ibis.deploy.gui.performance.hierarchy.stats.*;
 import ibis.deploy.gui.performance.visuals.Collection;
 import ibis.ipl.IbisIdentifier;
 
 import javax.media.opengl.GL;
 
-public class Hnode extends Hobject implements HobjectInterface {
+public class Hnode extends Hobject implements HobjectInterface {	
+	//TODO More stats? then give them names and colors
 	public static final String[] DISPLAYNAMES = {"CPU", "MEM"};
 	public static final Float[][] DISPLAYCOLORS = {Collection.CPU_HIGH_COLOR, Collection.MEM_HIGH_COLOR};
 	
-	protected SingleStat[] theStats;
+	protected Hsinglestat[] theStats;
+	
+	protected IbisIdentifier ibis;
 
-	public Hnode(PerfVis perfvis, int glName, IbisIdentifier ibis) {
-		super(perfvis, glName);
+	public Hnode(PerfVis perfvis, IbisIdentifier ibis) {
+		super(perfvis);
+		
+		this.ibis = ibis;
 		
 		//TODO More stats!
-		theStats = new SingleStat[DISPLAYNAMES.length];
-		theStats[0] = new CpuUsage(perfvis, ibis, DISPLAYCOLORS[0]);
-		theStats[1] = new MemUsage(perfvis, ibis, DISPLAYCOLORS[1]);
+		theStats = new Hsinglestat[DISPLAYNAMES.length];
+		theStats[0] = new HcpuUsage(perfvis, ibis, DISPLAYCOLORS[0]);
+		theStats[1] = new HmemUsage(perfvis, ibis, DISPLAYCOLORS[1]);
 		
-		theNames = new String[DISPLAYNAMES.length];		
+		myVisual = new Vnode(perfvis, DISPLAYCOLORS);	
+		this.glName = myVisual.getGLName();
+		
+		theNames = new String[DISPLAYNAMES.length];
 		
 		for (int i=0; i < DISPLAYNAMES.length; i++) {
-			theNames[i] = ibis + " " + DISPLAYNAMES[i];			
+			theNames[i] = ibis + " " + DISPLAYNAMES[i];
 		}
-		
-		theVobjects = new Collection[1];
-		theVobjects[0] = new Collection(perfvis, theNames, DISPLAYCOLORS);		
 	}
 	
 	public void drawThis(GL gl, int glMode) {		
 		if (perfvis.getCurrentZoom() == PerfVis.ZOOM_NODES) {
 			try {			
-				theVobjects[0].setSize(width, height);
-				theVobjects[0].setGLName(glName);
-				theVobjects[0].setLocation(location);
+				((Vnode) myVisual).setSize(width, height);
+				((Vnode) myVisual).setLocation(location);
 				
-				((Collection) theVobjects[0]).setForm(perfvis.getCurrentCollectionForm(), perfvis.getCurrentElementForm());
-				((Collection) theVobjects[0]).setSeparation(0.0f);
+				((Vnode) myVisual).setForm(perfvis.getCurrentCollectionForm(), perfvis.getCurrentElementForm());
+				((Vnode) myVisual).setSeparation(0.0f);
 				
-				Float[] values = {theStats[0].value, theStats[1].value};
-				((Collection) theVobjects[0]).setValues(values);				
+				Float[] values = new Float[DISPLAYNAMES.length];
+				for (int i=0; i<DISPLAYNAMES.length; i++) {
+					values[i] = theStats[i].getValue();
+				}
+				((Vnode) myVisual).setValues(values);				
 				
-				((Collection) theVobjects[0]).drawThis(gl, glMode);			
+				((Vnode) myVisual).drawThis(gl, glMode);			
 			
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -62,20 +68,20 @@ public class Hnode extends Hobject implements HobjectInterface {
 				
 		//set the HUD value
 		if (perfvis.getSelection() == glName) {
-			Float[] values = {theStats[0].value, theStats[1].value};
-			perfvis.setHUDValues(theNames, values);				
+			Float[] values = new Float[DISPLAYNAMES.length];
+			for (int i=0; i<DISPLAYNAMES.length; i++) {
+				values[i] = theStats[i].getValue();
+			}
+			perfvis.setHUDValues(DISPLAYNAMES, values);				
 		}
 	}
 	
 	public float getStat(int i) {
-		return theStats[i].value;
+		return theStats[i].getValue();
 	}
 	
-	public float getCPU() {		
-		return theStats[0].value;		
+	public IbisIdentifier getIbis() {
+		return ibis;
 	}
 	
-	public float getMEM() {		
-		return theStats[1].value;		
-	}
 }
