@@ -23,10 +23,7 @@ public class ClusterWaypoint extends Waypoint {
 
     public ClusterWaypoint(Cluster cluster, boolean selected) {
         super(
-                cluster.getLatitude() == 0 && cluster.getLongitude() == 0 ? MapUtilities.localClusterLatitude
-                        : cluster.getLatitude(), cluster.getLatitude() == 0
-                        && cluster.getLongitude() == 0 ? MapUtilities.localClusterLongitude : cluster
-                        .getLongitude());
+                cluster.getLatitude(), cluster.getLongitude());
         this.selected = selected;
         this.cluster = cluster;
         this.resourceCount = 1;

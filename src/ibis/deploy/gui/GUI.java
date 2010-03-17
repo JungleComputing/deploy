@@ -132,9 +132,6 @@ public class GUI {
         frame.setIconImage(Utils.createImageIcon("/images/favicon.ico", null)
                 .getImage());
 
-        // center on screen
-        frame.setLocationRelativeTo(null);
-
         this.menuBar = new JMenuBar();
         JMenu menu = new JMenu("File");
 
@@ -201,6 +198,10 @@ public class GUI {
 
         // Display the window.
         frame.pack();
+        
+        // center on screen
+        frame.setLocationRelativeTo(null);
+        
         frame.setVisible(true);
     }
 

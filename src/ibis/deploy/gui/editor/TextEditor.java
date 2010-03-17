@@ -1,86 +1,120 @@
 package ibis.deploy.gui.editor;
 
+import ibis.deploy.gui.clusters.ClusterEditorTabPanel;
+import ibis.deploy.gui.misc.Utils;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 
-import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-public class TextEditor {
+public class TextEditor implements KeyListener, ChangeableField
+{
 
     private final JTextField textField = new JTextField();
-
-    private final JCheckBox useDefaultCheckBox = new JCheckBox();
-
-    private final String defaultValue;
+    
+    private final JPanel tabPanel;
+    
+    private String initialText;
 
     private final JLabel label = new JLabel("", JLabel.TRAILING);
 
-    public TextEditor(JPanel form, final String text, Object value,
-            Object defaultValue) {
-        this(form, text, (value == null) ? null : value.toString(),
-                (defaultValue == null) ? null : defaultValue.toString());
+    /**
+     * @param form - parent JPanel
+     * @param text - label text
+     * @param value - initial text value for the editor
+     */
+    public TextEditor(JPanel tabPanel, JPanel form, final String text, Object value) 
+    {
+        this(tabPanel, form, text, (value == null) ? null : value.toString());
     }
 
-    public TextEditor(JPanel form, final String text, String value,
-            String defaultValue) {
-        this.defaultValue = defaultValue;
+    /**
+     * @param form - parent JPanel
+     * @param text - label text
+     * @param value - initial text value for the editor
+     */
+    public TextEditor(JPanel tabPanel, JPanel form, final String text, String value) 
+    {
 
-        // determine whether this text editor holds a default value
-        final boolean useDefault = value == null;
-
-        // set the check box
-        useDefaultCheckBox
-                .setToolTipText("<html>check this box to overwrite the <code><i>default</i></code> value</html>");
-        // if the value is 'nullified' or 'denullified' enable or disable the
-        // editing components and invoke the edited method
-        useDefaultCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setUseDefault(!useDefaultCheckBox.isSelected());
-            }
-        });
-
-        // initialize the components in enabled or disabled state
-        setUseDefault(useDefault);
-
-        // set the text of the text field to the appropriate value
-        if (value != null && !useDefault) {
+        this.tabPanel = tabPanel;  
+        
+    	if (value != null) {
             textField.setText(value);
+            this.initialText = value;
         }
+    	else
+    		initialText = "";
+    	
+    	textField.addKeyListener(this);
 
         JPanel container = new JPanel(new BorderLayout());
+        
+        //make the container higher, so that all fields in the parent panel are the same height
+        container.setPreferredSize(new Dimension(label.getPreferredSize().width, 
+        		Utils.defaultFieldHeight));
+        
         JPanel labelPanel = new JPanel(new BorderLayout());
-        labelPanel.add(useDefaultCheckBox, BorderLayout.WEST);
         labelPanel.add(label, BorderLayout.EAST);
         container.add(labelPanel, BorderLayout.WEST);
         label.setText(text);
         label.setLabelFor(textField);
-        label.setPreferredSize(new Dimension(150,
+        label.setPreferredSize(new Dimension(Utils.defaultLabelWidth,
                 label.getPreferredSize().height));
         container.add(textField, BorderLayout.CENTER);
         form.add(container);
     }
 
-    public String getText() {
-        if (!useDefaultCheckBox.isSelected()) {
-            return null;
-        } else {
-            return textField.getText();
-        }
+    /**
+     * @return - text contained by the text field
+     */
+    public String getText() 
+    {
+    	return textField.getText().trim();
     }
-
-    private void setUseDefault(boolean useDefault) {
-        useDefaultCheckBox.setSelected(!useDefault);
-
-        if (useDefault) {
-            textField.setText(defaultValue);
-        }
-        label.setEnabled(!useDefault);
-        textField.setEnabled(!useDefault);
+    
+    /**
+     * @param text - new value for the text field
+     */
+    public void setText(String text)
+    {
+    	textField.setText(text);
     }
+    
+    @Override
+    public void refreshInitialValue()
+    {
+    	initialText = textField.getText();
+    	if(initialText == null)
+    		initialText = "";
+    }
+    
+    @Override
+	public void keyPressed(KeyEvent arg0) {
+	}
 
+	@Override
+	public void keyReleased(KeyEvent arg0) {
+		if(tabPanel instanceof ClusterEditorTabPanel)
+			((ClusterEditorTabPanel) tabPanel).checkForChanges();
+	}
+
+	@Override
+	public void keyTyped(KeyEvent arg0) {
+		
+	}
+
+	/**
+	 * @return - true if the text field contains a different value than
+	 * the initial value
+	 */
+	@Override
+	public boolean hasChanged() 
+	{
+		return !textField.getText().equals(initialText);
+	}
 }

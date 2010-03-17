@@ -1,24 +1,27 @@
 package ibis.deploy.gui.editor;
 
+import ibis.deploy.gui.clusters.ClusterEditorTabPanel;
 import ibis.deploy.gui.misc.Utils;
-
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-public class FileArrayEditor {
+public class FileArrayEditor implements KeyListener, ChangeableField 
+{
 
     /**
      * 
@@ -33,8 +36,6 @@ public class FileArrayEditor {
 
     private final List<JButton> openButtons = new ArrayList<JButton>();
 
-    private final JCheckBox useDefaultCheckBox = new JCheckBox();
-
     private final JPanel arrayPanel = new JPanel();
 
     private final JPanel addPanel = new JPanel(new BorderLayout());
@@ -42,78 +43,79 @@ public class FileArrayEditor {
     private final JButton addButton = Utils.createImageButton(
             "/images/list-add-small.png", "add a new item", null);
 
-    private final JLabel label = new JLabel("", JLabel.TRAILING);
+    private final JLabel label;
 
-    private final File[] defaultValues;
+    private JPanel parentPanel;
+    
+    private File[] initialValues;
+    
+    private final JPanel tabPanel;
 
-    private JPanel parent;
-
-    public FileArrayEditor(final JPanel form, final String text, File[] values,
-            File[] defaultValues) {
-        this.parent = form;
-        this.defaultValues = defaultValues;
-
-        // determine whether this text editor holds a default value
-        boolean useDefault = values == null;
-
-        // set the check box
-        useDefaultCheckBox
-                .setToolTipText("<html>check this box to overwrite the <code><i>default</i></code> value(s)</html>");
-        // if the value is 'nullified' or 'denullified' enable or disable the
-        // editing components and invoke the edited method
-        useDefaultCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setUseDefault(!useDefaultCheckBox.isSelected());
-            }
-        });
-
-        // initialize the components in enabled or disabled state
-        setUseDefault(useDefault);
-
-        // set the text of the text fields to the appropriate values
-        arrayPanel.setLayout(new BoxLayout(arrayPanel, BoxLayout.PAGE_AXIS));
-
-        if (!useDefault) {
-            if (values != null) {
-                for (File value : values) {
-                    addField(value, arrayPanel);
-                }
-            }
-        }
+    /**
+     * @param form - parent panel
+     * @param text - label text
+     * @param values - initial values for file paths
+     */
+    public FileArrayEditor(final JPanel tabPanel, final JPanel form, 
+    		final String text, File[] values) {
+        this.parentPanel = form;
+        this.tabPanel = tabPanel;
+        
+        if(values != null)
+        	this.initialValues = values;
+        else
+        	initialValues = new File[0];
 
         JPanel container = new JPanel(new BorderLayout());
+        
+        addPanel.add(addButton, BorderLayout.WEST);
+        arrayPanel.add(addPanel);
+        arrayPanel.setLayout(new BoxLayout(arrayPanel, BoxLayout.PAGE_AXIS));
 
         addButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
                 addField(new File("."), arrayPanel);
-                setUseDefault(false);
                 arrayPanel.getRootPane().repaint();
+                
+                informParent();
             }
 
         });
+        
+        //add the files in the list to the panel
+        if (values != null) {
+            for (File value : values) {
+                addField(value, arrayPanel);
+            }
+        }
 
-        addPanel.add(addButton, BorderLayout.WEST);
-        arrayPanel.add(addPanel);
-        arrayPanel.setLayout(new BoxLayout(arrayPanel, BoxLayout.PAGE_AXIS));
-
-        JPanel labelPanel = new JPanel(new BorderLayout());
-        labelPanel.add(useDefaultCheckBox, BorderLayout.WEST);
-        labelPanel.add(label, BorderLayout.EAST);
-        container.add(labelPanel, BorderLayout.WEST);
-        label.setText(text);
+        JPanel labelPanel = new JPanel();
+        labelPanel.setLayout(new BoxLayout(labelPanel, BoxLayout.Y_AXIS));
+        label = new JLabel(text, JLabel.TRAILING);
+        label.setAlignmentX(Component.RIGHT_ALIGNMENT);
         label.setLabelFor(arrayPanel);
-        label.setPreferredSize(new Dimension(150,
-                label.getPreferredSize().height));
+        label.setPreferredSize(new Dimension(Utils.defaultLabelWidth,
+                label.getPreferredSize().height)); 
+        labelPanel.add(label);
+        labelPanel.add(Box.createVerticalGlue());
+        
+        container.add(labelPanel, BorderLayout.WEST);
         container.add(arrayPanel, BorderLayout.CENTER);
         form.add(container);
     }
 
-    private void addField(File value, final JPanel panel) {
+    /**
+     * @param value - path of the file
+     * @param panel - parent panel
+     */
+    private void addField(File value, final JPanel panel) 
+    {
         final JPanel arrayItemPanel = new JPanel(new BorderLayout());
         final JTextField textField = new JTextField(value.getPath());
         textFields.add(textField);
         arrayItemPanel.add(textField, BorderLayout.CENTER);
+        textField.addKeyListener(this);
 
         final JFileChooser fileChooser = new JFileChooser(value);
         fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
@@ -128,12 +130,17 @@ public class FileArrayEditor {
                 int returnVal = fileChooser.showOpenDialog(panel);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     textField.setText(fileChooser.getSelectedFile().getPath());
+                    
+                    informParent();
                 }
             }
 
         });
 
         arrayItemPanel.add(openButton, BorderLayout.EAST);
+        
+        final Component rigidArea = Box.createRigidArea(new Dimension(0, Utils.gapHeight));
+        panel.add(rigidArea);
 
         final JButton removeButton = Utils.createImageButton(
                 "/images/list-remove-small.png", "remove item", null);
@@ -146,61 +153,101 @@ public class FileArrayEditor {
                 arrayItemPanel.remove(openButton);
                 arrayItemPanel.remove(removeButton);
                 panel.remove(arrayItemPanel);
+                panel.remove(rigidArea);
                 panel.getRootPane().repaint();
-
+                
+                informParent();
             }
         });
         arrayItemPanel.add(removeButton, BorderLayout.WEST);
-        panel.add(arrayItemPanel, panel.getComponentCount() - 1);
+        panel.add(arrayItemPanel);
     }
 
+    /**
+     * @return - array containing the files in the editor
+     */
     public File[] getFileArray() {
-        if (!useDefaultCheckBox.isSelected()) {
-            return null;
+        if (textFields.size() > 0) {
+            File[] result = new File[textFields.size()];
+            int i = 0;
+            for (JTextField textField : textFields) {
+                result[i] = new File(textField.getText());
+                i++;
+            }
+            return result;
         } else {
-            if (textFields.size() > 0) {
-                File[] result = new File[textFields.size()];
-                int i = 0;
-                for (JTextField textField : textFields) {
-                    result[i] = new File(textField.getText());
-                    i++;
-                }
-                return result;
-            } else {
-                return null;
-            }
+            return null;
         }
     }
-
-    private void setUseDefault(boolean useDefault) {
-        useDefaultCheckBox.setSelected(!useDefault);
-
-        // if default is true, remove everything from the arraypanel and add the
-        // defaults
-        if (useDefault) {
-            arrayPanel.removeAll();
-            arrayPanel.add(addPanel);
-
-            if (defaultValues != null) {
-                for (File value : defaultValues) {
-                    addField(value, arrayPanel);
-                }
+    
+    /**
+     * resets the files in the editor to the given values
+     * @param values - list of new file paths
+     */
+    public void setFileArray(File[] values)
+    {
+    	arrayPanel.removeAll();
+    	arrayPanel.add(addPanel);
+    	
+    	//add the files in the list to the panel
+        if (values != null) 
+        {
+            for (File value : values) {
+                addField(value, arrayPanel);
             }
-            arrayPanel.repaint();
         }
-        for (JTextField textField : textFields) {
-            textField.setEnabled(!useDefault);
-        }
-        for (JButton button : removeButtons) {
-            button.setEnabled(!useDefault);
-        }
-        for (JButton button : openButtons) {
-            button.setEnabled(!useDefault);
-        }
-        addButton.setEnabled(!useDefault);
-        label.setEnabled(!useDefault);
-        if (parent.getRootPane() != null) {
-            parent.getRootPane().repaint();
-        }
+        parentPanel.getRootPane().repaint();
     }
+    
+    public void refreshInitialValue()
+    {
+    	initialValues = getFileArray();
+    	if(initialValues == null)
+    		initialValues = new File[0];
+    }
+    
+    @Override
+	public void keyPressed(KeyEvent arg0) {
+	}
+
+	@Override
+	public void keyReleased(KeyEvent arg0) {
+		informParent();
+	}
+
+	@Override
+	public void keyTyped(KeyEvent arg0) {
+		
+	}
+
+	@Override
+	/**
+	 * @return - true if any of the text fields contain a different value than
+	 * their initial value. Also return true if the number of fields has changed
+	 */
+	public boolean hasChanged() 
+	{
+		if(textFields.size() != initialValues.length)
+			return true;
+		
+		int i = 0;
+		for (JTextField tf : textFields) 
+		{
+            if(!tf.getText().equalsIgnoreCase(initialValues[i].getPath()))
+            	return true;
+            i++;
+        }
+		
+		return false;
+	}
+	
+	/**
+	 * Informs the parent panel to check for changes
+	 */
+	private void informParent()
+	{
+		//the editor's configuration has changed, the parent panel must check for changes
+        if(tabPanel instanceof ClusterEditorTabPanel)
+			((ClusterEditorTabPanel) tabPanel).checkForChanges();
+	}
 }

@@ -25,8 +25,6 @@ public class MapUtilities {
 
     public static final GeoPosition INITIAL_MAP_CENTER = new GeoPosition(
             52.332042, 4.866736);
-
-    public static final int MIN_ZOOM = 16;
     
 	public static final double localClusterLatitude = 52.332933;
 	public static final double localClusterLongitude = 4.866064;

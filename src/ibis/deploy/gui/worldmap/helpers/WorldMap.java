@@ -194,16 +194,13 @@ public final class WorldMap extends JXMapKit
     private void calculateZoomDecreaseFrom(Set<GeoPosition> positions) 
     {
         
-    	if(positions.size() == 0) // no nodes, just display the whole map
+    	if(positions.size() <= 1) // no nodes or a single node, just display the whole map
     	{
     		setZoom(getMainMap().getTileFactory().getInfo().getMaximumZoomLevel());
+    		if(positions.size() == 1)
+    			setAddressLocation(positions.iterator().next());
     		return;
     	}
-    	else if(positions.size() == 1) //if there's a single node, just set zoom level to 1 to make that area visible
-        {
-        	setZoom(1);
-            return;
-        }
         
         int zoom = getMainMap().getZoom();
         Rectangle2D bounds = generateBoundingRect(positions);

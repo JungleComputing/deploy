@@ -95,7 +95,7 @@ public class TextMapArrayEditor {
         container.add(labelPanel, BorderLayout.WEST);
         label.setText(text);
         label.setLabelFor(arrayPanel);
-        label.setPreferredSize(new Dimension(150,
+        label.setPreferredSize(new Dimension(Utils.defaultLabelWidth,
                 label.getPreferredSize().height));
         container.add(arrayPanel, BorderLayout.CENTER);
         form.add(container);

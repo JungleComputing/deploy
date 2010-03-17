@@ -1,90 +1,102 @@
 package ibis.deploy.gui.editor;
 
+import ibis.deploy.gui.clusters.ClusterEditorTabPanel;
 import ibis.deploy.gui.misc.Utils;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
-public class NumberEditor {
+public class NumberEditor implements ChangeListener, ChangeableField 
+{
 
-    private final JSpinner spinner = new JSpinner(new SpinnerNumberModel(1, 1,
-            Integer.MAX_VALUE, 1));
-
-    private final JCheckBox useDefaultCheckBox = new JCheckBox();
-
-    private final int defaultValue;
-
-    private final JButton openButton = Utils.createImageButton(
-            "/images/document-open.png", "select a file", null);
+    private final JSpinner spinner = new JSpinner(new SpinnerNumberModel(1, 1, Integer.MAX_VALUE, 1));
 
     private final JLabel label = new JLabel("", JLabel.TRAILING);
+    
+    private final JPanel tabPanel;
+    
+    private int initialValue;
 
-    public NumberEditor(JPanel form, final String text, int value,
-            int defaultValue) {
-        this.defaultValue = defaultValue;
-
-        // determine whether this text editor holds a default value
-        final boolean useDefault = value <= 0;
-
-        // set the check box
-        useDefaultCheckBox
-                .setToolTipText("<html>check this box to overwrite the <code><i>default</i></code> value</html>");
-        // if the value is 'nullified' or 'denullified' enable or disable the
-        // editing components and invoke the edited method
-        useDefaultCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setUseDefault(!useDefaultCheckBox.isSelected());
-            }
-        });
-
-        // initialize the components in enabled or disabled state
-        setUseDefault(useDefault);
+    /**
+     * @param form - parent panel
+     * @param text - label text
+     * @param value - initial value for the spinner
+     */
+    public NumberEditor(JPanel tabPanel, JPanel form, final String text, int value) 
+    {
 
         // set the text of the text field to the appropriate value
-        if (value > 0 && !useDefault) {
+        if (value > 0) 
+        {
             spinner.setValue(value);
+            initialValue = value;
         }
+        else 
+    	{
+        	spinner.setValue(1);
+        	initialValue = 1;
+    	}
+        
+        this.tabPanel = tabPanel;
+        spinner.addChangeListener(this);
 
         JPanel container = new JPanel(new BorderLayout());
+        
+        //make the container higher, so that all fields in the parent panel are the same height
+        container.setPreferredSize(new Dimension(label.getPreferredSize().width, 
+        		Utils.defaultFieldHeight));
+        
         JPanel labelPanel = new JPanel(new BorderLayout());
-        labelPanel.add(useDefaultCheckBox, BorderLayout.WEST);
         labelPanel.add(label, BorderLayout.EAST);
         container.add(labelPanel, BorderLayout.WEST);
         label.setText(text);
         label.setLabelFor(spinner);
-        label.setPreferredSize(new Dimension(150,
+        label.setPreferredSize(new Dimension(Utils.defaultLabelWidth,
                 label.getPreferredSize().height));
+        
         container.add(spinner, BorderLayout.CENTER);
         form.add(container);
     }
 
-    public int getValue() {
-        if (!useDefaultCheckBox.isSelected()) {
-            return -1;
-        } else {
-            return ((SpinnerNumberModel) spinner.getModel()).getNumber()
-                    .intValue();
-        }
+    /**
+     * @return - the value stored by the spinner
+     */
+    public int getValue() 
+    {
+    	return ((SpinnerNumberModel) spinner.getModel()).getNumber().intValue();
+    }
+    
+    /**
+     * @param value - new value for the spinner
+     */
+    public void setValue(int value)
+    {
+    	spinner.setValue(value);
+    }
+    
+    public void refreshInitialValue()
+    {
+    	initialValue = ((SpinnerNumberModel) spinner.getModel()).getNumber().intValue();
     }
 
-    private void setUseDefault(boolean useDefault) {
-        useDefaultCheckBox.setSelected(!useDefault);
+	@Override
+	public boolean hasChanged() 
+	{
+		return getValue() != initialValue;
+	}
 
-        if (useDefault) {
-            spinner.setValue(defaultValue);
-        }
-        label.setEnabled(!useDefault);
-        spinner.setEnabled(!useDefault);
-        openButton.setEnabled(!useDefault);
-    }
+	@Override
+	public void stateChanged(ChangeEvent arg0) 
+	{
+		if(tabPanel instanceof ClusterEditorTabPanel)
+			((ClusterEditorTabPanel) tabPanel).checkForChanges();
+	}
 
 }

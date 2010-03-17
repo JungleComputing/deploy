@@ -86,5 +86,9 @@ public class Utils {
             return null;
         }
     }
+    
+    public static int defaultFieldHeight = 26; // this is the default height for comboboxes
+    public static int defaultLabelWidth = 150; 
+    public static int gapHeight = 3;
 
 }

@@ -6,6 +6,7 @@ import ibis.deploy.gui.editor.FileArrayEditor;
 import ibis.deploy.gui.editor.TextArrayEditor;
 import ibis.deploy.gui.editor.TextEditor;
 import ibis.deploy.gui.editor.TextMapArrayEditor;
+import ibis.deploy.gui.misc.Utils;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -43,12 +44,11 @@ public class ApplicationEditorTabPanel extends JPanel {
         JPanel formPanel = new JPanel();
         formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.PAGE_AXIS));
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
-        final TextEditor nameEditor = (noNameEditor) ? null : new TextEditor(
-                formPanel, "Name: ", source.getName(), "");
+        final TextEditor nameEditor = (noNameEditor) ? null : new TextEditor(this, 
+                formPanel, "Name: ", source.getName());
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
-        final TextEditor mainEditor = new TextEditor(formPanel, "Main Class: ",
-                source.getMainClass(), defaults == null ? null : defaults
-                        .getMainClass());
+        final TextEditor mainEditor = new TextEditor(this, formPanel, "Main Class: ",
+                source.getMainClass());
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
         final TextArrayEditor argumentsEditor = new TextArrayEditor(formPanel,
                 "Arguments: ", source.getArguments(), defaults == null ? null
@@ -63,17 +63,14 @@ public class ApplicationEditorTabPanel extends JPanel {
                 "JVM Options: ", source.getJVMOptions(),
                 defaults == null ? null : defaults.getJVMOptions());
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
-        final FileArrayEditor libsEditor = new FileArrayEditor(formPanel,
-                "Libraries: ", source.getLibs(), defaults == null ? null
-                        : defaults.getLibs());
+        final FileArrayEditor libsEditor = new FileArrayEditor(this, formPanel,
+                "Libraries: ", source.getLibs());
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
-        final FileArrayEditor inputFilesEditor = new FileArrayEditor(formPanel,
-                "Input Files: ", source.getInputFiles(),
-                defaults == null ? null : defaults.getInputFiles());
+        final FileArrayEditor inputFilesEditor = new FileArrayEditor(this, formPanel,
+                "Input Files: ", source.getInputFiles());
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
         final FileArrayEditor outputFilesEditor = new FileArrayEditor(
-                formPanel, "Output Files: ", source.getOutputFiles(),
-                defaults == null ? null : defaults.getOutputFiles());
+                this, formPanel, "Output Files: ", source.getOutputFiles());
         formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
 
         container.add(formPanel, BorderLayout.NORTH);
@@ -113,7 +110,6 @@ public class ApplicationEditorTabPanel extends JPanel {
                 source.setOutputFiles(outputFilesEditor.getFileArray());
                 applicationEditorPanel.fireApplicationEdited(source);
             }
-
         });
     }
 }
