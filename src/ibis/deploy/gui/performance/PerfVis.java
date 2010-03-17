@@ -39,6 +39,7 @@ public class PerfVis implements GLEventListener {
 	public static final int STAT_ALL = 0;
 	public static final int STAT_CPU = 1;
 	public static final int STAT_MEM = 2;
+	public static final int STAT_LINKS = 3;	
 	public int currentStat = 0;
 	
 	public int currentCollectionForm = Collection.CITYSCAPE;	
@@ -91,7 +92,7 @@ public class PerfVis implements GLEventListener {
 			this.manInterface = gui.getDeploy().getServer().getManagementService();
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
+		}				
 	}
 	
 	public int registerGLObject(Vobject visual) {

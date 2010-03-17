@@ -3,6 +3,7 @@ package ibis.deploy.gui.performance.hierarchy;
 import javax.media.opengl.GL;
 
 import ibis.deploy.gui.performance.PerfVis;
+import ibis.deploy.gui.performance.Vrarchy.Vsite;
 import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
 import ibis.deploy.gui.performance.exceptions.ValuesMismatchException;
 import ibis.deploy.gui.performance.visuals.Collection;
@@ -16,14 +17,13 @@ public class Hsite extends Hobject implements HobjectInterface{
 	
 	private Float[] theValues;	
 		
-	Hsite(PerfVis perfvis, int glName, String name, IbisIdentifier[] ibises) {		
-		super(perfvis, glName);
+	Hsite(PerfVis perfvis, String name, IbisIdentifier[] ibises) {		
+		super(perfvis);
 		
 		theNodes  = new Hnode[ibises.length];		
 		
 		for (int i=0; i<ibises.length; i++) {
-			int nextname = (glName+Hnode.DISPLAYNAMES.length*3) + (Hnode.DISPLAYNAMES.length*i);
-			theNodes[i] = new Hnode(perfvis, nextname, ibises[i]);			
+			theNodes[i] = new Hnode(perfvis, ibises[i]);			
 		}
 		
 		theNames = new String[Hnode.DISPLAYNAMES.length*3];
@@ -40,9 +40,8 @@ public class Hsite extends Hobject implements HobjectInterface{
 			Float[] newColors_low = {Hnode.DISPLAYCOLORS[i/3][0]*0.33f, Hnode.DISPLAYCOLORS[i/3][1]*0.33f, Hnode.DISPLAYCOLORS[i/3][2]*0.33f};
 			colors[i+2] = newColors_low;
 		}
-		theVobjects = new VisualizationElement[2];
-		theVobjects[0] = new Collection(perfvis, theNames, colors);
-		
+		myVisual = new Vsite(perfvis, colors);
+				
 		String[][] nodeNames = new String[theNodes.length][];
 		for (int i=0; i<theNodes.length; i++) {
 			nodeNames[i] = theNodes[i].theNames;

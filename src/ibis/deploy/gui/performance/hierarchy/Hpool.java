@@ -59,7 +59,7 @@ public class Hpool extends Hobject implements HobjectInterface{
 			tempLocation_one = locations[i].split("@");
 			
 			if (!locationsMap.containsKey(tempLocation_one[1])) {
-				int locationSize = 0, l = 0;
+				int locationSize = 0;
 				IbisIdentifier[] localIbises = new IbisIdentifier[0];
 				
 				//Determine which ibises belong to this site
