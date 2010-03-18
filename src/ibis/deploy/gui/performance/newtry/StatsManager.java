@@ -2,10 +2,12 @@ package ibis.deploy.gui.performance.newtry;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import ibis.deploy.gui.performance.PerfVis;
 import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
+import ibis.deploy.gui.performance.newtry.stats.*;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.support.management.AttributeDescription;
 
@@ -13,7 +15,6 @@ public class StatsManager {
 	//Variables needed for the operation of this class
 	private PerfVis perfvis;	
 	private Map<String, Integer> poolSizes;
-	HashMap<String, AttributeDescription[]> statistics;
 	private HashMap<IbisIdentifier, String> ibisesToPools;
 	private HashMap<IbisIdentifier, String> ibisesToSites;
 	
@@ -26,6 +27,8 @@ public class StatsManager {
 	private HashMap<IbisIdentifier, IbisIdentifier[]> linksIbisesToIbises;
 	
 	private HashMap<IbisIdentifier, IbisManager> ibisesToManagers;
+	
+	private HashMap<String, StatisticsObject> availableStatistics; 
 	
 	public StatsManager(PerfVis perfvis) {
 		this.perfvis = perfvis;
@@ -47,76 +50,64 @@ public class StatsManager {
 		linksSitesToSites 	= new HashMap<String, String[]>();
 		linksIbisesToIbises = new HashMap<IbisIdentifier, IbisIdentifier[]>();
 		
-		//The attributes we could get
-		statistics = new HashMap<String, AttributeDescription[]>();
-		AttributeDescription[] necessaryStatistics;
-		
-		//CPU	
-		necessaryStatistics = new AttributeDescription[3];
-		necessaryStatistics[0] = new AttributeDescription("java.lang:type=OperatingSystem", "ProcessCpuTime");
-		necessaryStatistics[1] = new AttributeDescription("java.lang:type=Runtime", "Uptime");
-		necessaryStatistics[2] = new AttributeDescription("java.lang:type=OperatingSystem", "AvailableProcessors");
-		statistics.put("CPU", necessaryStatistics);
-		
-		//MEM
-		necessaryStatistics = new AttributeDescription[2];
-		necessaryStatistics[0] = new AttributeDescription("java.lang:type=Memory", "HeapMemoryUsage");
-		necessaryStatistics[1] = new AttributeDescription("java.lang:type=Memory", "NonHeapMemoryUsage");
-		statistics.put("MEM", necessaryStatistics);
-		
-		//Connections
-		necessaryStatistics = new AttributeDescription[1];
-		necessaryStatistics[0] = new AttributeDescription("ibis", "connections");
-		statistics.put("CONN", necessaryStatistics);
-		
-		//Links
-		necessaryStatistics = new AttributeDescription[2];
-		necessaryStatistics[0] = new AttributeDescription("ibis", "vivaldi");		
-		necessaryStatistics[1] = new AttributeDescription("ibis", "bytesSent");
-		statistics.put("LINKS", necessaryStatistics);
+		availableStatistics = new HashMap<String, StatisticsObject>();
+		availableStatistics.put(CPUStatistic.NAME, new CPUStatistic());
+		availableStatistics.put(MEMStatistic.NAME, new MEMStatistic());
+		availableStatistics.put(ConnStatistic.NAME,  new ConnStatistic());
+		availableStatistics.put(CoordsStatistic.NAME,new CoordsStatistic());
+		availableStatistics.put(LinksStatistic.NAME, new LinksStatistic());		
 	}
 	
-	public void update() {
+	@SuppressWarnings("unchecked")
+	public void update() {		
 		//Update the size of all pools and sites
 		initPools();
 		
-		//And update the network between ibises and sites
-		if (perfvis.getCurrentStat() == PerfVis.STAT_ALL || perfvis.getCurrentStat() == PerfVis.STAT_LINKS) {
-			try {
-				initLinks();
-			} catch (StatNotRequestedException e) {			
-				e.printStackTrace();
+		//for all pools
+		for (Map.Entry<String, IbisIdentifier[]> entry : poolsToIbises.entrySet()) {			
+			//check which statistics we are interested in
+			List<StatisticsObject> currentPoolInterest = perfvis.getCurrentUpdateInterest(entry.getKey());
+						
+			//calculate the size of the AttributeDescription array
+			int attributesCount = 0;
+			StatisticsObject[] currentInterest = (StatisticsObject[]) currentPoolInterest.toArray();
+			for (int i=0; i<currentInterest.length; i++) {
+				attributesCount += currentInterest[i].getAttributesCountNeeded();
 			}
-		}
-		
-		
-		
-		//Forall ibises, call the update function
-		for (Map.Entry<String, IbisIdentifier[]> entry : poolsToIbises.entrySet()) {
-			IbisIdentifier[] ibises = entry.getValue();
-			for (int i=0; i<ibises.length; i++) {
-				ibisesToManagers.get(ibises[i]).update();
-			}
-		}
-	}
-	
-	public void initLinks() throws StatNotRequestedException {		
-		//forall sites
-		for (Map.Entry<String, IbisIdentifier[]> entry : sitesToIbises.entrySet()) {
-			IbisIdentifier[] ibises = entry.getValue();
-			HashMap<String, Integer> destinationSites = new HashMap<String, Integer>();
-			//and all ibises in each site
-			for (int i=0; i<ibises.length; i++) {
-				//determine the links between ibises
-				IbisIdentifier[] destinations = ibisesToManagers.get(ibises[i]).getConnections();
-				linksIbisesToIbises.put(ibises[i], destinations);
-				
-				//and between sites
-				for (int j=0; j<destinations.length; j++) {
-					destinationSites.put(ibisesToSites.get(destinations[i]), 1);
+			
+			AttributeDescription[] descriptions = new AttributeDescription[attributesCount];
+			HashMap<StatisticsObject, Integer> attributeIndexes = new HashMap<StatisticsObject, Integer>();; 
+			
+			//fill the array with the necessary attributes and remember their starting indexes
+			attributesCount = 0;
+			for (int i=0; i<currentInterest.length; i++) {
+				attributeIndexes.put(currentInterest[i], attributesCount);
+				for (int j=0; j<currentInterest[i].getAttributesCountNeeded(); j++) {
+					descriptions[attributesCount+j] = currentInterest[i].getNecessaryAttributes()[j];
 				}
 				
-				linksSitesToSites.put(entry.getKey(), (String[]) destinationSites.entrySet().toArray());
+				attributesCount += currentInterest[i].getAttributesCountNeeded();
+			}
+			
+			//For all ibises in this pool, update
+			IbisIdentifier[] ibises = entry.getValue();
+			for (int i=0; i<ibises.length; i++) {				
+				//And for all the statistics we are interested in
+				for (int j=0; j<currentInterest.length; j++) {
+					//clone the statistics objects and update them
+					ibisesToManagers.get(ibises[i]).update((HashMap<StatisticsObject, Integer>) attributeIndexes.clone());
+				}
+			}
+			
+			//check whether we are interested in the connections (and therefore, links)
+			//Now that all the ibises have been updated, we should be able to get the 
+			//necessary stats from thier managers
+			if (currentPoolInterest.contains(availableStatistics.get("CONN"))) {
+				try {
+					initLinks();
+				} catch (StatNotRequestedException e) {			
+					e.printStackTrace();
+				}
 			}
 		}
 	}
@@ -215,5 +206,29 @@ public class StatsManager {
 		}
 	}
 	
+	public void initLinks() throws StatNotRequestedException {		
+		//forall sites
+		for (Map.Entry<String, IbisIdentifier[]> entry : sitesToIbises.entrySet()) {
+			IbisIdentifier[] ibises = entry.getValue();
+			HashMap<String, Integer> destinationSites = new HashMap<String, Integer>();
+			//and all ibises in each site
+			for (int i=0; i<ibises.length; i++) {
+				//determine the links between ibises
+				IbisIdentifier[] destinations = (IbisIdentifier[]) ibisesToManagers.get(ibises[i]).getValues("CONN");
+				linksIbisesToIbises.put(ibises[i], destinations);
+				
+				//and between sites
+				for (int j=0; j<destinations.length; j++) {
+					destinationSites.put(ibisesToSites.get(destinations[i]), 1);
+				}
+				
+				linksSitesToSites.put(entry.getKey(), (String[]) destinationSites.entrySet().toArray());
+			}
+		}
+	}
+	
+	public HashMap<String, StatisticsObject> getAvalableStatistics() {
+		return availableStatistics;
+	}
 }
 

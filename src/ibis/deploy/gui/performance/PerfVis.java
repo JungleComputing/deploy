@@ -4,13 +4,17 @@ import ibis.deploy.gui.GUI;
 import ibis.deploy.gui.performance.Vrarchy.Vobject;
 import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
 import ibis.deploy.gui.performance.hierarchy.Hpool;
+import ibis.deploy.gui.performance.newtry.StatsManager;
+import ibis.deploy.gui.performance.newtry.stats.StatisticsObject;
 import ibis.deploy.gui.performance.visuals.*;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
 
 import java.awt.Point;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -77,7 +81,9 @@ public class PerfVis implements GLEventListener {
 	private int updateInterval;
 	
 	private HashMap<Integer, Vobject> glNameRegistry;
-			
+	
+	private StatsManager statman;
+	
 	PerfVis() {
 		glu = new GLU();
 	}
@@ -93,7 +99,9 @@ public class PerfVis implements GLEventListener {
 			this.manInterface = gui.getDeploy().getServer().getManagementService();
 		} catch (Exception e) {
 			e.printStackTrace();
-		}				
+		}	
+		
+		statman = new StatsManager(this);
 	}
 	
 	public int registerGLObject(Vobject visual) {
@@ -429,6 +437,13 @@ public class PerfVis implements GLEventListener {
 	public void setHUDValues(String[] names, Float[] values) {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	public List<StatisticsObject> getCurrentUpdateInterest(String poolName) {
+		//TODO Fix, now it just wants all of them
+		List<StatisticsObject> getCurrentPoolInterest = new ArrayList<StatisticsObject>();
+		getCurrentPoolInterest.addAll(statman.getAvalableStatistics().values());
+		return getCurrentPoolInterest;
 	}
 	
 	
