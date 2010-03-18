@@ -39,7 +39,8 @@ public class PerfVis implements GLEventListener {
 	public static final int STAT_ALL = 0;
 	public static final int STAT_CPU = 1;
 	public static final int STAT_MEM = 2;
-	public static final int STAT_LINKS = 3;	
+	public static final int STAT_COORDS = 3;
+	public static final int STAT_LINKS = 4;	
 	public int currentStat = 0;
 	
 	public int currentCollectionForm = Collection.CITYSCAPE;	

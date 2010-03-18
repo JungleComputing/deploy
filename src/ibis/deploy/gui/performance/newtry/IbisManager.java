@@ -11,16 +11,16 @@ import ibis.ipl.support.management.AttributeDescription;
 import ibis.ipl.support.vivaldi.Coordinates;
 
 public class IbisManager {
+	//Variables needed for the operation of this class
 	private PerfVis perfvis;
-	private IbisIdentifier ibis;
-	
+	private IbisIdentifier ibis;	
 	private AttributeDescription[] descriptions;
-	private HashMap<String, Float> statValues;
-	private float coordinates[];
-	
-	private IbisIdentifier[] connections;
-	
 	private long cpu_prev, upt_prev, sent_prev, sent_max;
+	
+	//Variables available to the StatsManager
+	private IbisIdentifier[] connections;
+	private HashMap<String, Float> statValues;
+	private float coordinates[];	
 	
 	public IbisManager(PerfVis perfvis, IbisIdentifier ibis, AttributeDescription[] descriptions) {
 		this.perfvis = perfvis;
@@ -46,6 +46,9 @@ public class IbisManager {
 			}
 			if (perfvis.getCurrentStat() == PerfVis.STAT_ALL || perfvis.getCurrentStat() == PerfVis.STAT_MEM) {
 				updateMEM(results);
+			}
+			if (perfvis.getCurrentStat() == PerfVis.STAT_ALL || perfvis.getCurrentStat() == PerfVis.STAT_COORDS) {
+				updateCoordinates(results);
 			}
 			if (perfvis.getCurrentStat() == PerfVis.STAT_ALL || perfvis.getCurrentStat() == PerfVis.STAT_LINKS) {
 				updateLinks(results);
@@ -84,16 +87,19 @@ public class IbisManager {
 		statValues.put("MEM_nonheap", (float) mem_nonheap_used / (float) mem_nonheap_max);
 	}
 	
-	private void updateLinks(Object[] results) {
+	private void updateCoordinates(Object[] results) {
 		Coordinates coord 				= (Coordinates) 	results[5];
-		this.connections 				= (IbisIdentifier[])results[6];
-		Long bytesSent					= (Long) 			results[7] - sent_prev;
 		
 		double[] unUsableCoords = coord.getCoordinates();
 		coordinates[0] = (float) unUsableCoords[0];
 		coordinates[1] = (float) unUsableCoords[1];
 		coordinates[2] = (float) unUsableCoords[2];
-		
+	}
+	
+	private void updateLinks(Object[] results) {		
+		this.connections 				= (IbisIdentifier[])results[6];
+		Long bytesSent					= (Long) 			results[7] - sent_prev;
+			
 		sent_prev = (Long) results[7];
 		
 		sent_max = Math.max(sent_max, bytesSent);

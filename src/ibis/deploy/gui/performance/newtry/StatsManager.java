@@ -3,35 +3,29 @@ package ibis.deploy.gui.performance.newtry;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import ibis.deploy.gui.performance.PerfVis;
-import ibis.deploy.gui.performance.hierarchy.Hnode;
-import ibis.deploy.gui.performance.hierarchy.Hpool;
-import ibis.deploy.gui.performance.hierarchy.Hsite;
+import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.support.management.AttributeDescription;
-import ibis.ipl.support.vivaldi.Coordinates;
 
 public class StatsManager {
-	private final static String[] NODESTATS = {"CPU Used", "MEM Used", "Connections"};
-	private final static String[] LINKSTATS = {"SENT"};
+	//Variables needed for the operation of this class
+	private PerfVis perfvis;	
+	private Map<String, Integer> poolSizes;
+	private AttributeDescription[] statsToGet;
+	private HashMap<IbisIdentifier, String> ibisesToPools;
+	private HashMap<IbisIdentifier, String> ibisesToSites;
 	
-	AttributeDescription[] statsToGet;
+	//useful variables for visualization
+	private HashMap<String, String[]> poolsToSites;
+	private HashMap<String, IbisIdentifier[]> poolsToIbises;	
+	private HashMap<String, IbisIdentifier[]> sitesToIbises;
 	
-	HashMap<String, String[]> poolsToSites;
-	HashMap<String, IbisIdentifier[]> poolsToIbises;	
-	HashMap<String, IbisIdentifier[]> sitesToIbises;
+	private HashMap<String, String[]> linksSitesToSites;
+	private HashMap<IbisIdentifier, IbisIdentifier[]> linksIbisesToIbises;
 	
-	HashMap<String, String> linksPoolsToPools;
-	HashMap<String, String> linksSitestToSites;
-	HashMap<IbisIdentifier, IbisIdentifier> linksIbisesToIbises;
-	
-	HashMap<IbisIdentifier, IbisManager> ibisesToManagers;
-	
-	PerfVis perfvis;
-	
-	Map<String, Integer> poolSizes;
+	private HashMap<IbisIdentifier, IbisManager> ibisesToManagers;
 	
 	public StatsManager(PerfVis perfvis) {
 		this.perfvis = perfvis;
@@ -41,16 +35,17 @@ public class StatsManager {
 		
 		//Maps to store ibises and their groups
 		poolsToSites = new HashMap<String, String[]>();
-		poolsToIbises = new HashMap<String, IbisIdentifier[]>();
+		poolsToIbises = new HashMap<String, IbisIdentifier[]>();		
 		sitesToIbises = new HashMap<String, IbisIdentifier[]>();
+		ibisesToPools = new HashMap<IbisIdentifier, String>();
+		ibisesToSites = new HashMap<IbisIdentifier, String>();
 		
 		//Map used to store all of the returned values from the ibises
 		ibisesToManagers = new HashMap<IbisIdentifier, IbisManager>();
 		
 		//Maps to store network links 
-		linksPoolsToPools 	= new HashMap<String, String>();
-		linksSitestToSites 	= new HashMap<String, String>();
-		linksIbisesToIbises = new HashMap<IbisIdentifier, IbisIdentifier>();
+		linksSitesToSites 	= new HashMap<String, String[]>();
+		linksIbisesToIbises = new HashMap<IbisIdentifier, IbisIdentifier[]>();
 		
 		//The attributes we need to get
 		//processCpuTime, upTime, cpus, mem_heap, mem_nonheap, vivaldi, connections, sent
@@ -66,27 +61,50 @@ public class StatsManager {
 		//Links
 		statsToGet[5] = new AttributeDescription("ibis", "vivaldi");
 		statsToGet[6] = new AttributeDescription("ibis", "connections");
-		statsToGet[7] = new AttributeDescription("ibis", "bytesSent");
-				
-		initPools();
-		
-
-		
+		statsToGet[7] = new AttributeDescription("ibis", "bytesSent");				
 	}
 	
 	public void update() {
-		//Forall pools
+		//Update the size of all pools and sites
+		initPools();
+		
+		//And update the network between ibises and sites
+		if (perfvis.getCurrentStat() == PerfVis.STAT_ALL || perfvis.getCurrentStat() == PerfVis.STAT_LINKS) {
+			try {
+				initLinks();
+			} catch (StatNotRequestedException e) {			
+				e.printStackTrace();
+			}
+		}
+		
+		//Forall ibises, call the update function
 		for (Map.Entry<String, IbisIdentifier[]> entry : poolsToIbises.entrySet()) {
 			IbisIdentifier[] ibises = entry.getValue();
-			//and all ibises in each pool
 			for (int i=0; i<ibises.length; i++) {
 				ibisesToManagers.get(ibises[i]).update();
 			}
 		}
 	}
 	
-	public void initLinks() {
-		//TODO			
+	public void initLinks() throws StatNotRequestedException {		
+		//forall sites
+		for (Map.Entry<String, IbisIdentifier[]> entry : sitesToIbises.entrySet()) {
+			IbisIdentifier[] ibises = entry.getValue();
+			HashMap<String, Integer> destinationSites = new HashMap<String, Integer>();
+			//and all ibises in each site
+			for (int i=0; i<ibises.length; i++) {
+				//determine the links between ibises
+				IbisIdentifier[] destinations = ibisesToManagers.get(ibises[i]).getConnections();
+				linksIbisesToIbises.put(ibises[i], destinations);
+				
+				//and between sites
+				for (int j=0; j<destinations.length; j++) {
+					destinationSites.put(ibisesToSites.get(destinations[i]), 1);
+				}
+				
+				linksSitesToSites.put(entry.getKey(), (String[]) destinationSites.entrySet().toArray());
+			}
+		}
 	}
 	
 	public void initPools() {
@@ -109,6 +127,7 @@ public class StatsManager {
 		        		//Create managers for all attached ibises		        		
 	        			for (int i=0; i<ibises.length; i++) {
 	        				ibisesToManagers.put(ibises[i], new IbisManager(perfvis, ibises[i], statsToGet));
+	        				ibisesToPools.put(ibises[i], poolName);
 	        			}			        		
 		            }
 	            }
@@ -173,6 +192,7 @@ public class StatsManager {
 				ibisLocationName = ibises[j].location().toString().split("@")[1];
 				if (ibisLocationName.compareTo(siteNames[i]) == 0) {
 					localIbises[k] = ibises[j];
+					ibisesToSites.put(ibises[j], ibisLocationName);
 					k++;
 				}
 			}
