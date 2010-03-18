@@ -13,8 +13,7 @@ import ibis.ipl.support.vivaldi.Coordinates;
 public class IbisManager {
 	//Variables needed for the operation of this class
 	private PerfVis perfvis;
-	private IbisIdentifier ibis;	
-	private AttributeDescription[] descriptions;
+	private IbisIdentifier ibis;
 	private long cpu_prev, upt_prev, sent_prev, sent_max;
 	
 	//Variables available to the StatsManager
@@ -22,26 +21,25 @@ public class IbisManager {
 	private HashMap<String, Float> statValues;
 	private float coordinates[];	
 	
-	public IbisManager(PerfVis perfvis, IbisIdentifier ibis, AttributeDescription[] descriptions) {
+	public IbisManager(PerfVis perfvis, IbisIdentifier ibis, HashMap<String, AttributeDescription[]> statisticsDescriptions) {
 		this.perfvis = perfvis;
 		this.ibis = ibis;
-		this.descriptions = descriptions;
 		
 		statValues = new HashMap<String, Float>();
 		coordinates = new float[3];
 		
 		sent_max = 0;
-		
-		update();
 	}
 	
-	public void update() {
-		try {
-			Object[] results = perfvis.getManInterface().getAttributes(ibis, descriptions);
-			
+	public void update(String[] statsToUpdate) {
+		try {			
 			statValues.clear();
 			
-			if (perfvis.getCurrentStat() == PerfVis.STAT_ALL || perfvis.getCurrentStat() == PerfVis.STAT_CPU) {
+			AttributeDescription[] descriptionsToUse;
+					
+			Object[] results = perfvis.getManInterface().getAttributes(ibis, descriptionsToUse);
+			
+			if (perfvis.getCurrentStat() == PerfVis.STAT_ALL || perfvis.getCurrentStat() == PerfVis.STAT_CPU) {				
 				updateCPU(results);
 			}
 			if (perfvis.getCurrentStat() == PerfVis.STAT_ALL || perfvis.getCurrentStat() == PerfVis.STAT_MEM) {
@@ -74,8 +72,8 @@ public class IbisManager {
 	}
 	
 	private void updateMEM(Object[] results) {
-		CompositeData mem_heap_recvd	= (CompositeData) results[3];	
-		CompositeData mem_nonheap_recvd	= (CompositeData) results[4];
+		CompositeData mem_heap_recvd	= (CompositeData) results[0];	
+		CompositeData mem_nonheap_recvd	= (CompositeData) results[1];
 		
 		Long mem_heap_max 	= (Long) mem_heap_recvd.get("max");
 		Long mem_heap_used 	= (Long) mem_heap_recvd.get("used");
@@ -88,7 +86,7 @@ public class IbisManager {
 	}
 	
 	private void updateCoordinates(Object[] results) {
-		Coordinates coord 				= (Coordinates) 	results[5];
+		Coordinates coord 				= (Coordinates) 	results[0];
 		
 		double[] unUsableCoords = coord.getCoordinates();
 		coordinates[0] = (float) unUsableCoords[0];
@@ -96,9 +94,12 @@ public class IbisManager {
 		coordinates[2] = (float) unUsableCoords[2];
 	}
 	
-	private void updateLinks(Object[] results) {		
-		this.connections 				= (IbisIdentifier[])results[6];
-		Long bytesSent					= (Long) 			results[7] - sent_prev;
+	private void updateConnections(Object[] results) {
+		this.connections = (IbisIdentifier[])results[0];	
+	}
+	
+	private void updateLinks(Object[] results) {				
+		Long bytesSent = (Long) results[0] - sent_prev;
 			
 		sent_prev = (Long) results[7];
 		

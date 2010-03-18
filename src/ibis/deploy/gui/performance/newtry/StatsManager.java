@@ -13,7 +13,7 @@ public class StatsManager {
 	//Variables needed for the operation of this class
 	private PerfVis perfvis;	
 	private Map<String, Integer> poolSizes;
-	private AttributeDescription[] statsToGet;
+	HashMap<String, AttributeDescription[]> statistics;
 	private HashMap<IbisIdentifier, String> ibisesToPools;
 	private HashMap<IbisIdentifier, String> ibisesToSites;
 	
@@ -47,21 +47,33 @@ public class StatsManager {
 		linksSitesToSites 	= new HashMap<String, String[]>();
 		linksIbisesToIbises = new HashMap<IbisIdentifier, IbisIdentifier[]>();
 		
-		//The attributes we need to get
-		//processCpuTime, upTime, cpus, mem_heap, mem_nonheap, vivaldi, connections, sent
-		//CPU
-		statsToGet[0] = new AttributeDescription("java.lang:type=OperatingSystem", "ProcessCpuTime");
-		statsToGet[1] = new AttributeDescription("java.lang:type=Runtime", "Uptime");
-		statsToGet[2] = new AttributeDescription("java.lang:type=OperatingSystem", "AvailableProcessors");
+		//The attributes we could get
+		statistics = new HashMap<String, AttributeDescription[]>();
+		AttributeDescription[] necessaryStatistics;
+		
+		//CPU	
+		necessaryStatistics = new AttributeDescription[3];
+		necessaryStatistics[0] = new AttributeDescription("java.lang:type=OperatingSystem", "ProcessCpuTime");
+		necessaryStatistics[1] = new AttributeDescription("java.lang:type=Runtime", "Uptime");
+		necessaryStatistics[2] = new AttributeDescription("java.lang:type=OperatingSystem", "AvailableProcessors");
+		statistics.put("CPU", necessaryStatistics);
 		
 		//MEM
-		statsToGet[3] = new AttributeDescription("java.lang:type=Memory", "HeapMemoryUsage");
-		statsToGet[4] = new AttributeDescription("java.lang:type=Memory", "NonHeapMemoryUsage");
+		necessaryStatistics = new AttributeDescription[2];
+		necessaryStatistics[0] = new AttributeDescription("java.lang:type=Memory", "HeapMemoryUsage");
+		necessaryStatistics[1] = new AttributeDescription("java.lang:type=Memory", "NonHeapMemoryUsage");
+		statistics.put("MEM", necessaryStatistics);
+		
+		//Connections
+		necessaryStatistics = new AttributeDescription[1];
+		necessaryStatistics[0] = new AttributeDescription("ibis", "connections");
+		statistics.put("CONN", necessaryStatistics);
 		
 		//Links
-		statsToGet[5] = new AttributeDescription("ibis", "vivaldi");
-		statsToGet[6] = new AttributeDescription("ibis", "connections");
-		statsToGet[7] = new AttributeDescription("ibis", "bytesSent");				
+		necessaryStatistics = new AttributeDescription[2];
+		necessaryStatistics[0] = new AttributeDescription("ibis", "vivaldi");		
+		necessaryStatistics[1] = new AttributeDescription("ibis", "bytesSent");
+		statistics.put("LINKS", necessaryStatistics);
 	}
 	
 	public void update() {
@@ -76,6 +88,8 @@ public class StatsManager {
 				e.printStackTrace();
 			}
 		}
+		
+		
 		
 		//Forall ibises, call the update function
 		for (Map.Entry<String, IbisIdentifier[]> entry : poolsToIbises.entrySet()) {
@@ -126,7 +140,7 @@ public class StatsManager {
 		            	
 		        		//Create managers for all attached ibises		        		
 	        			for (int i=0; i<ibises.length; i++) {
-	        				ibisesToManagers.put(ibises[i], new IbisManager(perfvis, ibises[i], statsToGet));
+	        				ibisesToManagers.put(ibises[i], new IbisManager(perfvis, ibises[i]));
 	        				ibisesToPools.put(ibises[i], poolName);
 	        			}			        		
 		            }
