@@ -30,9 +30,9 @@
 # Details of job "VUJob"
 Small.application.name = Go
 Small.application.arguments= --size,4,--stones,2
-Small.process.count = 40
+Small.process.count = 10
 Small.cluster.name = zorilla
-Small.resource.count = 40
+Small.resource.count = 10
 #VUJob.runtime =
 #VUJob.pool.name =
 #VUJob.pool.size =
@@ -45,10 +45,10 @@ Big.cluster.name = zorilla
 Big.resource.count = 400
 
 Medium.application.name = Go
-Medium.application.arguments= --size,4,--stones,1
-Medium.process.count = 40
+Medium.application.arguments= --size,4,--stones,2
+Medium.process.count = 400
 Medium.cluster.name = zorilla
-Medium.resource.count = 40
+Medium.resource.count = 400
 
 # Details of job "localJob"
 #localJob.application.name = RegistryBenchmark
