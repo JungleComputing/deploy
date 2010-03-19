@@ -33,15 +33,15 @@ public class RootPanel extends JPanel {
         JTabbedPane tabs = new JTabbedPane();
         tabs.add(new ExperimentsPanel(gui));
         tabs.setTabComponentAt(0, new TabTitlePanel("Experiment", Utils
-                .createImageIcon("/images/utilities-system-monitor.png",
+                .createImageIcon("images/utilities-system-monitor.png",
                         "Experiment Tab")));
         tabs.add(new ApplicationEditorPanel(gui));
         tabs.setTabComponentAt(1, new TabTitlePanel("Applications", Utils
-                .createImageIcon("/images/applications-other.png",
+                .createImageIcon("images/applications-other.png",
                         "Applications Tab")));
         tabs.add(new ClusterEditorPanel(gui));
         tabs.setTabComponentAt(2, new TabTitlePanel("Clusters", Utils
-                .createImageIcon("/images/network-transmit-receive.png",
+                .createImageIcon("images/network-transmit-receive.png",
                         "Clusters Tab")));
         add(tabs, BorderLayout.CENTER);
 

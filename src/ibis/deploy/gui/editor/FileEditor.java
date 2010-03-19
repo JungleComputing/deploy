@@ -27,7 +27,7 @@ public class FileEditor implements KeyListener, ChangeableField
     private final JTextField textField = new JTextField();
 
     private final JButton openButton = Utils.createImageButton(
-            "/images/document-open.png", "select a file", null);
+            "images/document-open.png", "select a file", null);
 
     private String initialFile; 
 

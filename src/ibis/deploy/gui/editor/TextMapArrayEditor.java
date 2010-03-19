@@ -34,7 +34,7 @@ public class TextMapArrayEditor {
     private final JPanel addPanel = new JPanel(new BorderLayout());
 
     private final JButton addButton = Utils.createImageButton(
-            "/images/list-add-small.png", "add a new item", null);
+            "images/list-add-small.png", "add a new item", null);
 
     private final JLabel label = new JLabel("", JLabel.TRAILING);
 
@@ -146,7 +146,7 @@ public class TextMapArrayEditor {
         arrayItemPanel.add(internalPanel, BorderLayout.CENTER);
 
         final JButton removeButton = Utils.createImageButton(
-                "/images/list-remove-small.png", "remove item", null);
+                "images/list-remove-small.png", "remove item", null);
         removeButtons.add(removeButton);
         removeButton.addActionListener(new ActionListener() {
 

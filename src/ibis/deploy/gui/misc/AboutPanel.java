@@ -18,7 +18,7 @@ public class AboutPanel extends JPanel {
     private static final long serialVersionUID = 1L;
 
     public AboutPanel() {
-        JButton button = Utils.createImageButton("/images/ibis-logo-left.png",
+        JButton button = Utils.createImageButton("images/ibis-logo-left.png",
                 "www.cs.vu.nl/ibis", null);
         add(button);
         button.addActionListener(new ActionListener() {
@@ -40,7 +40,7 @@ public class AboutPanel extends JPanel {
             }
 
         });
-        button = Utils.createImageButton("/images/ibis-logo-middle.png",
+        button = Utils.createImageButton("images/ibis-logo-middle.png",
                 "www.cs.vu.nl/ibis", null);
         add(button);
         button.addActionListener(new ActionListener() {
@@ -63,7 +63,7 @@ public class AboutPanel extends JPanel {
             }
         });
 
-        button = Utils.createImageButton("/images/ibis-logo-right.png",
+        button = Utils.createImageButton("images/ibis-logo-right.png",
                 "www.cs.vu.nl", null);
         add(button);
         button.addActionListener(new ActionListener() {

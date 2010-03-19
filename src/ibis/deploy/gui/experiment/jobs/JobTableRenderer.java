@@ -44,7 +44,7 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
             if (start) {
                 final JButton startButton = Utils.createImageButton(
 
-                "/images/media-playback-start.png", null, null);
+                "images/media-playback-start.png", null, null);
 
                 startButton.addActionListener(new ActionListener() {
 
@@ -57,7 +57,7 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
                 return startButton;
             } else {
                 final JButton stopButton = Utils.createImageButton(
-                        "/images/media-playback-stop.png", null, null);
+                        "images/media-playback-stop.png", null, null);
                 stopButton.addActionListener(new ActionListener() {
 
                     public void actionPerformed(ActionEvent arg0) {

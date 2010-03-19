@@ -82,7 +82,7 @@ public class MapEditor implements PropertyChangeListener, ChangeableField
         		label.getPreferredSize().height));
         buttonPanel.add(label, BorderLayout.WEST);
         
-        final JButton mapButton = Utils.createImageButton("/images/map.png", 
+        final JButton mapButton = Utils.createImageButton("images/map.png", 
         							"Choose location using map", null); 
         
         mapButton.addActionListener(new ActionListener() 
