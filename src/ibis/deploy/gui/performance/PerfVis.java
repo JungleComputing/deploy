@@ -438,14 +438,4 @@ public class PerfVis implements GLEventListener {
 		// TODO Auto-generated method stub
 		
 	}
-	
-	public List<StatisticsObject> getCurrentUpdateInterest(String poolName) {
-		//TODO Fix, now it just wants all of them
-		List<StatisticsObject> getCurrentPoolInterest = new ArrayList<StatisticsObject>();
-		getCurrentPoolInterest.addAll(statman.getAvalableStatistics().values());
-		return getCurrentPoolInterest;
-	}
-	
-	
-
 }

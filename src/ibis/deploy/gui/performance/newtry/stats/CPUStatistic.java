@@ -4,8 +4,9 @@ import ibis.ipl.support.management.AttributeDescription;
 
 public class CPUStatistic extends StatisticsObject implements StatisticsObjectInterface {
 	public static final String NAME = "CPU";
-	public static final int DESCRIPTIONS_COUNT_NEEDED = 3;
-	public static final int VALUES_COUNT = 1;
+	public static final int DESCRIPTIONS_COUNT_NEEDED = 3;	
+	public static boolean SUPPPORTS_AVERAGING = true;
+	
 	private long cpu_prev, upt_prev;
 	
 	public CPUStatistic() {
@@ -14,8 +15,7 @@ public class CPUStatistic extends StatisticsObject implements StatisticsObjectIn
 		necessaryAttributes = new AttributeDescription[DESCRIPTIONS_COUNT_NEEDED];
 		necessaryAttributes[0] = new AttributeDescription("java.lang:type=OperatingSystem", "ProcessCpuTime");
 		necessaryAttributes[1] = new AttributeDescription("java.lang:type=Runtime", "Uptime");
-		necessaryAttributes[2] = new AttributeDescription("java.lang:type=OperatingSystem", "AvailableProcessors");
-		values = new Float[VALUES_COUNT];
+		necessaryAttributes[2] = new AttributeDescription("java.lang:type=OperatingSystem", "AvailableProcessors");		
 	}
 	
 	public void update(Object[] results) {
@@ -29,6 +29,6 @@ public class CPUStatistic extends StatisticsObject implements StatisticsObjectIn
 		cpu_prev = cpu_elapsed;
 		upt_prev = upt_elapsed;
 		
-		values[0] = (cpuUsage / 100);
-	}
+		value = (cpuUsage / 100);
+	}	
 }

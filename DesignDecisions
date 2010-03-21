@@ -3,7 +3,7 @@ Currently gathered statistics are on a per-site basis.
 
 When an ibis is added to a pool (or removed)
 - we reinitialize the entire data objects tree
-- we do a single update cycle in that pool with all available statistics, otherwise we cannot make a visualization of links etc.
+- we do a single update cycle in that pool with necessary statistics, otherwise we cannot make a visualization of links etc.
 
 A node is identified primarily by its IbisIdentifier.
 - a node can be a part of multiple pools

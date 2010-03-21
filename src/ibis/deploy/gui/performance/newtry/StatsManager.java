@@ -17,13 +17,13 @@ public class StatsManager {
 	//Variables needed for the operation of this class
 	private PerfVis perfvis;
 	private Map<String, Integer> poolSizes;	
-	
-	private List<Pool> pools;
-		
-	private HashMap<IbisIdentifier, IbisManager> ibisesToManagers;
 	private HashMap<IbisIdentifier, Node> ibisesToNodes;
+	private List<Pool> pools;	
 	
-	//The map that holds the currently available statistics, add to this when implementing new stats.
+	//The list that holds the statistics necessary for initializing the visualization 
+	private List<StatisticsObject> initStatistics;
+	
+	//The list that holds the currently available statistics, add to this when implementing new stats.
 	private List<StatisticsObject> availableStatistics;
 	
 	public StatsManager(PerfVis perfvis) {
@@ -35,17 +35,26 @@ public class StatsManager {
 		//Maps to store ibises and their groups
 		pools = new ArrayList<Pool>();
 		
-		//Map used to store all of the returned values from the ibises
-		ibisesToManagers = new HashMap<IbisIdentifier, IbisManager>();
+		//Maps used for convenience's sake		
 		ibisesToNodes = new HashMap<IbisIdentifier, Node>();
 		
-		//Map that lists all available statistics
+		//List that holds the initial statistics necessary to create the data structure (links and coordinates)
+		initStatistics = new ArrayList<StatisticsObject>();
+		initStatistics.add(new XcoordStatistic());
+		initStatistics.add(new YcoordStatistic());
+		initStatistics.add(new ZcoordStatistic());
+		initStatistics.add(new ConnStatistic());
+		
+		//List that holds all available statistics
 		availableStatistics = new ArrayList<StatisticsObject>();
 		availableStatistics.add(new CPUStatistic());
-		availableStatistics.add(new MEMStatistic());
+		availableStatistics.add(new HeapMemStatistic());
+		availableStatistics.add(new NonHeapMemStatistic());
 		availableStatistics.add(new ConnStatistic());
-		availableStatistics.add(new CoordsStatistic());
-		availableStatistics.add(new LinksStatistic());		
+		availableStatistics.add(new XcoordStatistic());
+		availableStatistics.add(new YcoordStatistic());
+		availableStatistics.add(new ZcoordStatistic());
+		availableStatistics.add(new LinksStatistic());	
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -63,10 +72,20 @@ public class StatsManager {
 				HashMap<StatisticsObject, Integer> attributeIndexes = MakeAttributeIndexesMap(currentSiteInterest);
 				
 				//all ibises in this site, update
-				IbisIdentifier[] ibises = site.getIbises();
-				for (int i=0; i<ibises.length; i++) {				
-					ibisesToManagers.get(ibises[i]).update((HashMap<StatisticsObject, Integer>) attributeIndexes.clone());				
+				for (Node node : site.getNodes()) {		
+					node.update((HashMap<StatisticsObject, Integer>) attributeIndexes.clone());				
 				}
+				
+				try {
+					site.updateAverages();
+				} catch (StatNotRequestedException e) {
+					e.printStackTrace();
+				}
+			}
+			try {
+				pool.updateAverages();
+			} catch (StatNotRequestedException e) {
+				e.printStackTrace();
 			}
 		}
 	}
@@ -86,7 +105,7 @@ public class StatsManager {
 				}
 			}
 			
-			//reinitialize the pool list
+			//reinitialize the pools list
 			for (Map.Entry<String, Integer> entry : newSizes.entrySet()) {				
 	            String poolName = entry.getKey();
 	            int newSize = entry.getValue();
@@ -126,9 +145,9 @@ public class StatsManager {
 	private List<Site> initSites(String poolName) throws IOException {		
 		List<Site> sites = new ArrayList<Site>();
 		
-		//A map of all the available statistics, we use this to initialize the visualization, 
+		//A map of all the initial statistics, we use this to initialize the visualization, 
 		//by calling update with it at least once
-		HashMap<StatisticsObject, Integer> initialAttributesMap = MakeAttributeIndexesMap(availableStatistics);
+		HashMap<StatisticsObject, Integer> initialAttributesMap = MakeAttributeIndexesMap(initStatistics);
 		
 		//Get the members of this pool
 		IbisIdentifier[] ibises = perfvis.getRegInterface().getMembers(poolName);
@@ -159,16 +178,13 @@ public class StatsManager {
 				
 				//And compare all ibises' locations to that sitename
 				if (ibisLocationName.compareTo(siteName) == 0) {
-					Node node = new Node(siteName, ibises[i]);
+					Node node = new Node(perfvis, siteName, ibises[i]);
 					nodes.add(node);
-					ibisesToNodes.put(ibises[i], node);
+					ibisesToNodes.put(ibises[i], node);	
+					
+					//Update this ibis's stats
+					node.update(initialAttributesMap);
 				}
-	
-				//Add this Ibis to the nodes list and make a manager for it
-				IbisManager manager = ibisesToManagers.put(ibises[i], new IbisManager(perfvis, ibises[i]));
-				
-				//Update this ibis's stats
-				manager.update(initialAttributesMap);								
 			}
 			sites.add(new Site(siteName, (Node[])nodes.toArray()));
 		}
@@ -176,17 +192,12 @@ public class StatsManager {
 		//For each site, check for and (if available) create this site's links
 		for (Site site : sites) {
 			List<Link> links = new ArrayList<Link>();
-			ibises = site.getIbises();
-			for (int i=0; i<ibises.length; i++) {								
-				try {
-					IbisIdentifier[] destinations;
-					destinations = (IbisIdentifier[]) ibisesToManagers.get(ibises[i]).getValues(ConnStatistic.NAME);
-					
-					for (int j=0; j<destinations.length; j++) {
-						links.add(new Link(ibisesToNodes.get(ibises[i]), ibisesToNodes.get(destinations[j])));
-					}
-				} catch (StatNotRequestedException e) {					
-					e.printStackTrace();
+			for (Node node : site.getNodes()) {					
+				IbisIdentifier[] destinations;
+				destinations = (IbisIdentifier[]) node.getConnectedIbises();
+				
+				for (int j=0; j<destinations.length; j++) {
+					links.add(new Link(node, ibisesToNodes.get(destinations[j])));
 				}
 			}
 			site.setLinks((Link[]) links.toArray());
@@ -218,5 +229,15 @@ public class StatsManager {
 		}
 		return attributeIndexes;
 	}
+
+	public List<Pool> getPools() {
+		return pools;
+	}
+
+	public List<StatisticsObject> getAvailableStatistics() {
+		return availableStatistics;
+	}
+	
+	
 }
 

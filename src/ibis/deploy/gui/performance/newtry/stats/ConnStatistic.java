@@ -15,6 +15,6 @@ public class ConnStatistic extends StatisticsObject implements StatisticsObjectI
 	}
 	
 	public void update(Object[] results) {
-		values = (IbisIdentifier[]) results[0];		
+		ibises = (IbisIdentifier[]) results[0];		
 	}
 }

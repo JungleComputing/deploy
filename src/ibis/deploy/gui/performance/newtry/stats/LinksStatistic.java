@@ -6,7 +6,6 @@ import ibis.ipl.support.management.AttributeDescription;
 public class LinksStatistic extends StatisticsObject implements StatisticsObjectInterface {
 	public static final String NAME = "LINKS";
 	public static final int DESCRIPTIONS_COUNT_NEEDED = 1;
-	public static final int VALUES_COUNT = 1;
 	private long sent_prev, sent_max;
 	
 	public LinksStatistic() {
@@ -14,7 +13,6 @@ public class LinksStatistic extends StatisticsObject implements StatisticsObject
 		
 		necessaryAttributes = new AttributeDescription[DESCRIPTIONS_COUNT_NEEDED];
 		necessaryAttributes[0] = new AttributeDescription("ibis", "bytesSent");
-		values = new Float[VALUES_COUNT];
 	}
 	
 	public void update(Object[] results) {				
@@ -23,6 +21,6 @@ public class LinksStatistic extends StatisticsObject implements StatisticsObject
 		sent_prev = (Long) results[7];
 		
 		sent_max = Math.max(sent_max, bytesSent);
-		values[0] = (float)bytesSent/(float)sent_max;
+		value = (float)bytesSent/(float)sent_max;
 	}
 }
