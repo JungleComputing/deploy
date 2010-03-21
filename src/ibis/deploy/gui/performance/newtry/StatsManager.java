@@ -1,6 +1,7 @@
 package ibis.deploy.gui.performance.newtry;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,27 +9,22 @@ import java.util.Map;
 import ibis.deploy.gui.performance.PerfVis;
 import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
 import ibis.deploy.gui.performance.newtry.stats.*;
+import ibis.deploy.gui.performance.newtry.concepts.*;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.support.management.AttributeDescription;
 
 public class StatsManager {
 	//Variables needed for the operation of this class
-	private PerfVis perfvis;	
-	private Map<String, Integer> poolSizes;
-	private HashMap<IbisIdentifier, String> ibisesToPools;
-	private HashMap<IbisIdentifier, String> ibisesToSites;
+	private PerfVis perfvis;
+	private Map<String, Integer> poolSizes;	
 	
-	//useful variables for visualization
-	private HashMap<String, String[]> poolsToSites;
-	private HashMap<String, IbisIdentifier[]> poolsToIbises;	
-	private HashMap<String, IbisIdentifier[]> sitesToIbises;
-	
-	private HashMap<String, String[]> linksSitesToSites;
-	private HashMap<IbisIdentifier, IbisIdentifier[]> linksIbisesToIbises;
-	
+	private List<Pool> pools;
+		
 	private HashMap<IbisIdentifier, IbisManager> ibisesToManagers;
+	private HashMap<IbisIdentifier, Node> ibisesToNodes;
 	
-	private HashMap<String, StatisticsObject> availableStatistics; 
+	//The map that holds the currently available statistics, add to this when implementing new stats.
+	private List<StatisticsObject> availableStatistics;
 	
 	public StatsManager(PerfVis perfvis) {
 		this.perfvis = perfvis;
@@ -37,25 +33,19 @@ public class StatsManager {
 		poolSizes = new HashMap<String, Integer>();
 		
 		//Maps to store ibises and their groups
-		poolsToSites = new HashMap<String, String[]>();
-		poolsToIbises = new HashMap<String, IbisIdentifier[]>();		
-		sitesToIbises = new HashMap<String, IbisIdentifier[]>();
-		ibisesToPools = new HashMap<IbisIdentifier, String>();
-		ibisesToSites = new HashMap<IbisIdentifier, String>();
+		pools = new ArrayList<Pool>();
 		
 		//Map used to store all of the returned values from the ibises
 		ibisesToManagers = new HashMap<IbisIdentifier, IbisManager>();
+		ibisesToNodes = new HashMap<IbisIdentifier, Node>();
 		
-		//Maps to store network links 
-		linksSitesToSites 	= new HashMap<String, String[]>();
-		linksIbisesToIbises = new HashMap<IbisIdentifier, IbisIdentifier[]>();
-		
-		availableStatistics = new HashMap<String, StatisticsObject>();
-		availableStatistics.put(CPUStatistic.NAME, new CPUStatistic());
-		availableStatistics.put(MEMStatistic.NAME, new MEMStatistic());
-		availableStatistics.put(ConnStatistic.NAME,  new ConnStatistic());
-		availableStatistics.put(CoordsStatistic.NAME,new CoordsStatistic());
-		availableStatistics.put(LinksStatistic.NAME, new LinksStatistic());		
+		//Map that lists all available statistics
+		availableStatistics = new ArrayList<StatisticsObject>();
+		availableStatistics.add(new CPUStatistic());
+		availableStatistics.add(new MEMStatistic());
+		availableStatistics.add(new ConnStatistic());
+		availableStatistics.add(new CoordsStatistic());
+		availableStatistics.add(new LinksStatistic());		
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -64,49 +54,18 @@ public class StatsManager {
 		initPools();
 		
 		//for all pools
-		for (Map.Entry<String, IbisIdentifier[]> entry : poolsToIbises.entrySet()) {			
-			//check which statistics we are interested in
-			List<StatisticsObject> currentPoolInterest = perfvis.getCurrentUpdateInterest(entry.getKey());
-						
-			//calculate the size of the AttributeDescription array
-			int attributesCount = 0;
-			StatisticsObject[] currentInterest = (StatisticsObject[]) currentPoolInterest.toArray();
-			for (int i=0; i<currentInterest.length; i++) {
-				attributesCount += currentInterest[i].getAttributesCountNeeded();
-			}
-			
-			AttributeDescription[] descriptions = new AttributeDescription[attributesCount];
-			HashMap<StatisticsObject, Integer> attributeIndexes = new HashMap<StatisticsObject, Integer>();; 
-			
-			//fill the array with the necessary attributes and remember their starting indexes
-			attributesCount = 0;
-			for (int i=0; i<currentInterest.length; i++) {
-				attributeIndexes.put(currentInterest[i], attributesCount);
-				for (int j=0; j<currentInterest[i].getAttributesCountNeeded(); j++) {
-					descriptions[attributesCount+j] = currentInterest[i].getNecessaryAttributes()[j];
-				}
+		for (Pool pool : pools) {
+			for (Site site : pool.getSites()) {
+				//check which statistics we are interested in
+				List<StatisticsObject> currentSiteInterest = site.getCurrentlyGatheredStatistics();						
 				
-				attributesCount += currentInterest[i].getAttributesCountNeeded();
-			}
-			
-			//For all ibises in this pool, update
-			IbisIdentifier[] ibises = entry.getValue();
-			for (int i=0; i<ibises.length; i++) {				
-				//And for all the statistics we are interested in
-				for (int j=0; j<currentInterest.length; j++) {
-					//clone the statistics objects and update them
-					ibisesToManagers.get(ibises[i]).update((HashMap<StatisticsObject, Integer>) attributeIndexes.clone());
-				}
-			}
-			
-			//check whether we are interested in the connections (and therefore, links)
-			//Now that all the ibises have been updated, we should be able to get the 
-			//necessary stats from thier managers
-			if (currentPoolInterest.contains(availableStatistics.get("CONN"))) {
-				try {
-					initLinks();
-				} catch (StatNotRequestedException e) {			
-					e.printStackTrace();
+				//Make a map of those statistics' necessary attributes and their indexes
+				HashMap<StatisticsObject, Integer> attributeIndexes = MakeAttributeIndexesMap(currentSiteInterest);
+				
+				//all ibises in this site, update
+				IbisIdentifier[] ibises = site.getIbises();
+				for (int i=0; i<ibises.length; i++) {				
+					ibisesToManagers.get(ibises[i]).update((HashMap<StatisticsObject, Integer>) attributeIndexes.clone());				
 				}
 			}
 		}
@@ -116,119 +75,148 @@ public class StatsManager {
 		try {
 			Map<String, Integer> newSizes = perfvis.getRegInterface().getPoolSizes();
 						
+			//Check if anything has changed since the last update, if so, clear the pools list.
+			for (Map.Entry<String, Integer> entry : newSizes.entrySet()) {
+				String poolName = entry.getKey();
+	            int newSize = entry.getValue();
+				if (newSize > 0) {
+		            if (!poolSizes.containsKey(poolName) || newSize != poolSizes.get(poolName)) {
+		            	pools.clear();
+		            }
+				}
+			}
+			
+			//reinitialize the pool list
 			for (Map.Entry<String, Integer> entry : newSizes.entrySet()) {				
 	            String poolName = entry.getKey();
 	            int newSize = entry.getValue();
 
 	            if (newSize > 0) {
-		            if (!poolSizes.containsKey(poolName) || newSize != poolSizes.get(poolName)) {
-		            	IbisIdentifier[] ibises = perfvis.getRegInterface().getMembers(poolName);
+		            if (!poolSizes.containsKey(poolName) || newSize != poolSizes.get(poolName)) {		            	
+		            	//Create and populate sites
+		            	List<Site> sites = initSites(poolName);
 		            	
-		            	poolsToIbises.remove(poolName);
-		            	poolsToIbises.put(poolName, ibises);
+		            	//Create trunks
+		            	List<Trunk> trunks = new ArrayList<Trunk>();
+		            			            	
+		            	for (Site site : sites) {
+		            		for (Link link : site.getLinks()) {
+		            			if (link.getTo().getSiteName() != site.getName()) {
+		            				//we've found an external link for this site, create a trunk to the destination site
+		            				for (Site siteTo : sites) {
+		            					String siteNameTo = link.getTo().getSiteName();
+		            					if (siteTo.getName().compareTo(siteNameTo) == 0) {
+		            						trunks.add(new Trunk(site, siteTo));		            						
+		            					}
+		            				}		            				
+		            			}
+		            		}
+		            	}
 		            	
-		            	initSites(poolName);
-		            	
-		        		//Create managers for all attached ibises		        		
-	        			for (int i=0; i<ibises.length; i++) {
-	        				ibisesToManagers.put(ibises[i], new IbisManager(perfvis, ibises[i]));
-	        				ibisesToPools.put(ibises[i], poolName);
-	        			}			        		
+		            	pools.add(new Pool(poolName, (Site[])sites.toArray(), (Trunk[])trunks.toArray()));
 		            }
 	            }
 	        }
-
 			poolSizes = newSizes;
 		} catch (Exception e) {	
 			e.printStackTrace();
 		}
 	}
 	
-	private void initSites(String poolName) throws IOException {
-		IbisIdentifier[] ibises = perfvis.getRegInterface().getMembers(poolName);
+	private List<Site> initSites(String poolName) throws IOException {		
+		List<Site> sites = new ArrayList<Site>();
 		
-		HashMap<String, Integer> siteNamesHelper = new HashMap<String, Integer>();
+		//A map of all the available statistics, we use this to initialize the visualization, 
+		//by calling update with it at least once
+		HashMap<StatisticsObject, Integer> initialAttributesMap = MakeAttributeIndexesMap(availableStatistics);
+		
+		//Get the members of this pool
+		IbisIdentifier[] ibises = perfvis.getRegInterface().getMembers(poolName);
 						
+		//Initialize the list of sites
+		List<String> siteNames = new ArrayList<String>();
 		String[] locationsPerIbis = {};
-		String[] siteNames = {};
 		try {
 			locationsPerIbis = perfvis.getRegInterface().getLocations(poolName);
 			
 			//The site name is after the @ sign, we make this array only contain unique names
 			for (int i=0; i<locationsPerIbis.length; i++) {
 				locationsPerIbis[i] = locationsPerIbis[i].split("@")[1];
-				siteNamesHelper.put(locationsPerIbis[i], 0);
-			}
-						
-			siteNames = new String[siteNamesHelper.size()];
-			int j = 0;
-			for (Map.Entry<String, Integer> entry : siteNamesHelper.entrySet()) {
-				siteNames[j] = entry.getKey();
-				j++;
-			}
-			poolsToSites.remove(poolName);
-			poolsToSites.put(poolName, siteNames);
+				siteNames.add(locationsPerIbis[i]);
+			}			
 		} catch (IOException e) {					
 			e.printStackTrace();
-		}		
-				
-		//per site, make a list of all the ibises in that site
-		String ibisLocationName;		
-		for (int i=0; i<siteNames.length;i++) {
-			int locationSize = 0;
-			IbisIdentifier[] localIbises = new IbisIdentifier[0];
+		}
+						
+		//For all sites			
+		for (String siteName : siteNames) {
+			String ibisLocationName;
+			List<Node> nodes = new ArrayList<Node>();						
 			
 			//Determine which ibises belong to this site
-			for (int j=0; j<ibises.length;j++) {
-				ibisLocationName = ibises[j].location().toString().split("@")[1];
-				
-				//First determine the amount of ibises at this site
-				if (ibisLocationName.compareTo(siteNames[i]) == 0) {
-					locationSize++;
-				}
-			}
-			
-			//Then, create a Ibisidentifier array with that size
-			localIbises = new IbisIdentifier[locationSize];							
-			
-			//And add all the site's ibises to that array
-			int k = 0;
-			for (int j=0; j<ibises.length;j++) {
-				ibisLocationName = ibises[j].location().toString().split("@")[1];
-				if (ibisLocationName.compareTo(siteNames[i]) == 0) {
-					localIbises[k] = ibises[j];
-					ibisesToSites.put(ibises[j], ibisLocationName);
-					k++;
-				}
-			}
-			sitesToIbises.remove(siteNames[i]);
-			sitesToIbises.put(siteNames[i], localIbises);
-		}
-	}
-	
-	public void initLinks() throws StatNotRequestedException {		
-		//forall sites
-		for (Map.Entry<String, IbisIdentifier[]> entry : sitesToIbises.entrySet()) {
-			IbisIdentifier[] ibises = entry.getValue();
-			HashMap<String, Integer> destinationSites = new HashMap<String, Integer>();
-			//and all ibises in each site
 			for (int i=0; i<ibises.length; i++) {
-				//determine the links between ibises
-				IbisIdentifier[] destinations = (IbisIdentifier[]) ibisesToManagers.get(ibises[i]).getValues("CONN");
-				linksIbisesToIbises.put(ibises[i], destinations);
+				ibisLocationName = ibises[i].location().toString().split("@")[1];
 				
-				//and between sites
-				for (int j=0; j<destinations.length; j++) {
-					destinationSites.put(ibisesToSites.get(destinations[i]), 1);
+				//And compare all ibises' locations to that sitename
+				if (ibisLocationName.compareTo(siteName) == 0) {
+					Node node = new Node(siteName, ibises[i]);
+					nodes.add(node);
+					ibisesToNodes.put(ibises[i], node);
 				}
-				
-				linksSitesToSites.put(entry.getKey(), (String[]) destinationSites.entrySet().toArray());
-			}
-		}
-	}
 	
-	public HashMap<String, StatisticsObject> getAvalableStatistics() {
-		return availableStatistics;
+				//Add this Ibis to the nodes list and make a manager for it
+				IbisManager manager = ibisesToManagers.put(ibises[i], new IbisManager(perfvis, ibises[i]));
+				
+				//Update this ibis's stats
+				manager.update(initialAttributesMap);								
+			}
+			sites.add(new Site(siteName, (Node[])nodes.toArray()));
+		}
+		
+		//For each site, check for and (if available) create this site's links
+		for (Site site : sites) {
+			List<Link> links = new ArrayList<Link>();
+			ibises = site.getIbises();
+			for (int i=0; i<ibises.length; i++) {								
+				try {
+					IbisIdentifier[] destinations;
+					destinations = (IbisIdentifier[]) ibisesToManagers.get(ibises[i]).getValues(ConnStatistic.NAME);
+					
+					for (int j=0; j<destinations.length; j++) {
+						links.add(new Link(ibisesToNodes.get(ibises[i]), ibisesToNodes.get(destinations[j])));
+					}
+				} catch (StatNotRequestedException e) {					
+					e.printStackTrace();
+				}
+			}
+			site.setLinks((Link[]) links.toArray());
+		}		
+		
+		return sites;
+	}
+		
+	public HashMap<StatisticsObject, Integer> MakeAttributeIndexesMap(List<StatisticsObject> interest) {			
+		//calculate the size of the AttributeDescription array
+		int attributesCount = 0;
+		StatisticsObject[] currentInterest = (StatisticsObject[]) interest.toArray();
+		for (int i=0; i<currentInterest.length; i++) {
+			attributesCount += currentInterest[i].getAttributesCountNeeded();
+		}
+		
+		AttributeDescription[] descriptions = new AttributeDescription[attributesCount];
+		HashMap<StatisticsObject, Integer> attributeIndexes = new HashMap<StatisticsObject, Integer>();
+		
+		//fill the array with the necessary attributes and remember their starting indexes
+		attributesCount = 0;
+		for (int i=0; i<currentInterest.length; i++) {
+			attributeIndexes.put(currentInterest[i], attributesCount);
+			for (int j=0; j<currentInterest[i].getAttributesCountNeeded(); j++) {
+				descriptions[attributesCount+j] = currentInterest[i].getNecessaryAttributes()[j];
+			}
+			
+			attributesCount += currentInterest[i].getAttributesCountNeeded();
+		}
+		return attributeIndexes;
 	}
 }
 
