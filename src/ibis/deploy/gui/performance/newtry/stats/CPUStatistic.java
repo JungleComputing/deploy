@@ -4,8 +4,7 @@ import ibis.ipl.support.management.AttributeDescription;
 
 public class CPUStatistic extends StatisticsObject implements StatisticsObjectInterface {
 	public static final String NAME = "CPU";
-	public static final int DESCRIPTIONS_COUNT_NEEDED = 3;	
-	public static boolean SUPPPORTS_AVERAGING = true;
+	public static final int DESCRIPTIONS_COUNT_NEEDED = 3;
 	
 	private long cpu_prev, upt_prev;
 	
