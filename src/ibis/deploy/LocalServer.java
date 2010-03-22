@@ -47,7 +47,7 @@ public class LocalServer implements Server {
             Properties properties = new Properties();
 
             properties.put(Config.VIZ_INFO,
-                    "DZ^Ibis Deploy with Zorilla Node @ local^"
+                    "Z^Ibis Deploy with Zorilla Node @ local^"
                             + Grid.LOCAL_COLOR);
             properties.put(Config.PORT, "" + port);
             properties.put(Config.RESOURCE_CORES, "0");
