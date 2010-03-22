@@ -90,7 +90,7 @@ public class StatsManager {
 		}
 	}
 	
-	public void initPools() {
+	private void initPools() {
 		try {
 			Map<String, Integer> newSizes = perfvis.getRegInterface().getPoolSizes();
 						
