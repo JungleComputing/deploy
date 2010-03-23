@@ -139,15 +139,15 @@ DesktopGrid.latitude = 52.336062
 DesktopGrid.longitude = 4.8722220000001
 
 # Zorilla
-#EC2.server.uri = any://174.129.5.131
-#EC2.job.adaptor = zorilla
-#EC2.job.uri = zorilla:174.129.5.131-5444
-#EC2.java.path = /home/ndrost/jdk1.6.0_10/bin/java
-#EC2.server.system.properties = smartsockets.external.stun=true,
-#EC2.nodes = 20
-#EC2.cores = 20
-#EC2.latitude = 45.583289756006316
-#EC2.longitude = -115.3125
+EC2.server.uri = any://174.129.5.131
+EC2.job.adaptor = zorilla
+EC2.job.uri = zorilla:174.129.5.131-5444
+EC2.java.path = /home/ndrost/jdk1.6.0_10/bin/java
+EC2.server.system.properties = smartsockets.external.stun=true,
+EC2.nodes = 20
+EC2.cores = 20
+EC2.latitude = 45.583289756006316
+EC2.longitude = -115.3125
 
 # Multi-ssh
 Yorda.server.uri = ssh://yorda.evl.uic.edu

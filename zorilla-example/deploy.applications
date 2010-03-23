@@ -67,3 +67,4 @@ RegistryUpcalls.main.class = ibis.ipl.examples.RegistryUpcalls
 Go.main.class = go.dac.Main
 Go.arguments = --size,4,--stones,1
 Go.libs = /home/ndrost/workspace/ipl/lib,/home/ndrost/workspace/go/lib
+Go.system.properties = ibis.registry.central.exit.on.server.failure=true
