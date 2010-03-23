@@ -100,58 +100,9 @@ public class WorldMapPanel extends JPanel {
         
         //add mouse listeners
         worldMap.getMainMap().addMouseListener(new MouseListener() {
-            //@SuppressWarnings("unchecked")
             public void mouseClicked(MouseEvent e) 
             {
             	worldMap.updateOnMouseAction(e.getPoint(), true);
-//            	WaypointPainter<JXMapViewer> wpainter = worldMap.getClusterPainter();
-//
-//            	if(wpainter != null)//we have such a painter
-//            	{
-//                    Set<Waypoint> waypoints = wpainter.getWaypoints();
-//                    double closestDistance = Double.MAX_VALUE;
-//                    ClusterWaypoint tmpWaypoint = null;
-//                    for (Waypoint wp : waypoints) 
-//                    {
-//                        ClusterWaypoint cwp = (ClusterWaypoint) wp;
-//                        Point2D clusterPoint = worldMap.getMainMap()
-//                                .convertGeoPositionToPoint(cwp.getPosition());
-//                        clusterPoint.setLocation(clusterPoint.getX()
-//                                + cwp.getOffset().width, clusterPoint.getY()
-//                                + cwp.getOffset().height);
-//                        if (e.getPoint().distance(clusterPoint)
-//                                - cwp.getRadius() < closestDistance) {
-//                            closestDistance = e.getPoint().distance(
-//                                    clusterPoint)
-//                                    - cwp.getRadius();
-//                            tmpWaypoint = cwp;
-//                        }
-//                        cwp.setSelected(false);
-//                    }
-//                    if (selectedWaypoint == tmpWaypoint) {
-//                        if (e.getButton() == MouseEvent.BUTTON1) {
-//                            selectedWaypoint.increaseResourceCount();
-//                        } else {
-//                            selectedWaypoint.decreaseResourceCount();
-//                        }
-//                        if (clusterSelectionPanel != null) {
-//                            clusterSelectionPanel
-//                                    .setResourceCount(selectedWaypoint
-//                                            .getResourceCount());
-//                        }
-//                    } else {
-//                        selectedWaypoint = tmpWaypoint; 
-//                        selectedCluster = selectedWaypoint.getCluster();
-//                        if (clusterSelectionPanel != null) {
-//                            clusterSelectionPanel.setSelected(selectedCluster);
-//                            clusterSelectionPanel
-//                                    .setResourceCount(selectedWaypoint
-//                                            .getResourceCount());
-//                        }
-//                    }
-//                    selectedWaypoint.setSelected(true);
-//                    worldMap.repaint();
-//                }
             }
 
             public void mouseEntered(MouseEvent e) {

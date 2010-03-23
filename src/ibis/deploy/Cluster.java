@@ -1,7 +1,6 @@
 package ibis.deploy;
 
 import ibis.deploy.gui.worldmap.MapUtilities;
-import ibis.util.TypedProperties;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -81,33 +80,6 @@ public class Cluster {
 
     }
 
-    /**
-     * @return a Cluster representing the local machine
-     */
-    static Cluster getLocalCluster() throws Exception {
-        Cluster result = new Cluster();
-
-        result.setName("local");
-        result.setServerAdaptor("local");
-        result.setServerURI(new URI("any://localhost"));
-        result.setJobAdaptor("local");
-        result.setJobURI(new URI("any://localhost"));
-        result.setFileAdaptors("local");
-        result.setJavaPath(System.getProperty("java.home") + File.separator
-                + "bin" + File.separator + "java");
-        result.setNodes(1);
-        result.setCores(Runtime.getRuntime().availableProcessors());
-
-        result.setLatitude(MapUtilities.localClusterLatitude);
-        result.setLongitude(MapUtilities.localClusterLongitude);
-
-        result.setStartZorilla(null);
-        
-        result.setVisibleOnMap(false);
-
-        return result;
-    }
-
     private final Grid parent;
 
     // name of this cluster
@@ -168,6 +140,32 @@ public class Cluster {
     private String color;
     
     private boolean visibleOnMap;
+    
+    /**
+     * Applies to the current cluster a set of properties that are
+     * specific for the local cluster 
+     */
+    private void applyLocalClusterSettings() throws Exception 
+    {
+        setName("local");
+        setServerAdaptor("local");
+        setServerURI(new URI("any://localhost"));
+        setJobAdaptor("local");
+        setJobURI(new URI("any://localhost"));
+        setFileAdaptors("local");
+        setJavaPath(System.getProperty("java.home") + File.separator
+                + "bin" + File.separator + "java");
+        setNodes(1);
+        setCores(Runtime.getRuntime().availableProcessors());
+
+        setLatitude(MapUtilities.localClusterLatitude);
+        setLongitude(MapUtilities.localClusterLongitude);
+
+        setStartZorilla(null);
+ 
+        setVisibleOnMap(false);
+    }
+
 
     /**
      * Creates a new cluster with a given name. Clusters cannot be created
@@ -178,38 +176,44 @@ public class Cluster {
      * @throws Exception
      *             if name is null or contains periods and/or spaces
      */
-    Cluster(String name, Grid parent) throws Exception {
-        this.parent = parent;
-
+    public Cluster(String name, Grid parent) throws Exception 
+    {
+    	this.parent = parent;
         setName(name);
 
-        serverAdaptor = null;
-        serverURI = null;
-        jobAdaptor = null;
-        jobURI = null;
-        fileAdaptors = null;
-        javaPath = null;
-        jobWrapperScript = null;
-        userName = null;
-        cacheDir = null;
-        serverOutputFiles = null;
-        serverSystemProperties = null;
-        nodes = 0;
-        cores = 0;
-        memory = 0;
-        latitude = 0;
-        longitude = 0;
-        startZorilla = null;
-        nodeHostnames = null;
-        color = null;
-        visibleOnMap = true;
+        if(name == "local")
+        	applyLocalClusterSettings();
+        else
+        {
+	        serverAdaptor = null;
+	        serverURI = null;
+	        jobAdaptor = null;
+	        jobURI = null;
+	        fileAdaptors = null;
+	        javaPath = null;
+	        jobWrapperScript = null;
+	        userName = null;
+	        cacheDir = null;
+	        serverOutputFiles = null;
+	        serverSystemProperties = null;
+	        nodes = 0;
+	        cores = 0;
+	        memory = 0;
+	        latitude = 0;
+	        longitude = 0;
+	        startZorilla = null;
+	        nodeHostnames = null;
+	        color = null;
+	        visibleOnMap = true;
+        }
     }
 
     /**
      * Creates a cluster with no parent or name.
      * 
      */
-    Cluster() {
+    Cluster() 
+    {
         name = "anonymous";
         parent = null;
         serverAdaptor = null;
@@ -254,50 +258,118 @@ public class Cluster {
             throws Exception {
         this.parent = parent;
         setName(name);
-
+        
         // add separator to prefix
         prefix = prefix + ".";
+        
+        String startZorillaString;
+        
+        String defaultPrefix = "default.";
+        
+        //first load all the default properties
+        if(name == "local")
+        {
+        	applyLocalClusterSettings(); // the default settings for the local cluster
+        }
+        else // apply the default settings from the file
+        {
+	        serverAdaptor = properties.getProperty(defaultPrefix + "server.adaptor");
+	        serverURI = properties.getURIProperty(defaultPrefix + "server.uri");
+	        jobAdaptor = properties.getProperty(defaultPrefix + "job.adaptor");
+	        jobURI = properties.getURIProperty(defaultPrefix + "job.uri");
+	
+	        // get adaptors as list of string, defaults to "null"
+	        fileAdaptors = properties.getStringListProperty(defaultPrefix
+	                + "file.adaptors");
+	
+	        javaPath = properties.getProperty(defaultPrefix + "java.path");
+	        jobWrapperScript = properties.getFileProperty(defaultPrefix
+	                + "job.wrapper.script");
+	
+	        userName = properties.getProperty(defaultPrefix + "user.name");
+	        cacheDir = properties.getFileProperty(defaultPrefix + "cache.dir");
+	        serverOutputFiles = properties.getFileListProperty(defaultPrefix
+	                + "server.output.files");
+	        serverSystemProperties = properties.getStringMapProperty(defaultPrefix
+	                + "server.system.properties");
+	
+	        nodes = properties.getIntProperty(defaultPrefix + "nodes", 0);
+	        cores = properties.getIntProperty(defaultPrefix + "cores", 0);
+	        memory = properties.getIntProperty(defaultPrefix + "memory", 0);
+	        latitude = properties.getDoubleProperty(defaultPrefix + "latitude", 0);
+	        longitude = properties.getDoubleProperty(defaultPrefix + "longitude", 0);
+	
+	        startZorillaString = properties.getProperty(defaultPrefix
+	                + "start.zorilla", null);
+	
+	        if (startZorillaString == null) {
+	            startZorilla = null;
+	        } else {
+	            startZorilla = properties.getBooleanProperty(defaultPrefix
+	                    + "start.zorilla");
+	        }
+	
+	        nodeHostnames = properties.getProperty(defaultPrefix + "node.hostnames");
+	        visibleOnMap = true;
+        }
+        
+        //load all the properties corresponding to this cluster, 
+        // but only if they are set
 
-        serverAdaptor = properties.getProperty(prefix + "server.adaptor");
-        serverURI = properties.getURIProperty(prefix + "server.uri");
-        jobAdaptor = properties.getProperty(prefix + "job.adaptor");
-        jobURI = properties.getURIProperty(prefix + "job.uri");
+        if(properties.getProperty(prefix + "server.adaptor") != null )
+        	serverAdaptor = properties.getProperty(prefix + "server.adaptor");
+        if(properties.getURIProperty(prefix + "server.uri") != null)
+        	serverURI = properties.getURIProperty(prefix + "server.uri");
+        if(properties.getProperty(prefix + "job.adaptor") != null)
+        	jobAdaptor = properties.getProperty(prefix + "job.adaptor");
+        if(properties.getURIProperty(prefix + "job.uri") != null)
+        	jobURI = properties.getURIProperty(prefix + "job.uri");
 
         // get adaptors as list of string, defaults to "null"
-        fileAdaptors = properties.getStringListProperty(prefix
+        if(properties.getStringListProperty(prefix + "file.adaptors") != null)
+        	fileAdaptors = properties.getStringListProperty(prefix
                 + "file.adaptors");
 
-        javaPath = properties.getProperty(prefix + "java.path");
-        jobWrapperScript = properties.getFileProperty(prefix
+        if(properties.getProperty(prefix + "java.path") != null)
+        	javaPath = properties.getProperty(prefix + "java.path");
+        if(properties.getFileProperty(prefix + "job.wrapper.script") != null)
+        	jobWrapperScript = properties.getFileProperty(prefix
                 + "job.wrapper.script");
 
-        userName = properties.getProperty(prefix + "user.name");
-        cacheDir = properties.getFileProperty(prefix + "cache.dir");
-        serverOutputFiles = properties.getFileListProperty(prefix
+        if(properties.getProperty(prefix + "user.name") != null)
+        	userName = properties.getProperty(prefix + "user.name");
+        if(properties.getFileProperty(prefix + "cache.dir") != null)
+        	cacheDir = properties.getFileProperty(prefix + "cache.dir");
+        if(properties.getFileListProperty(prefix + "server.output.files") != null)
+        	serverOutputFiles = properties.getFileListProperty(prefix
                 + "server.output.files");
-        serverSystemProperties = properties.getStringMapProperty(prefix
+        if(properties.getStringMapProperty(prefix + "server.system.properties") != null)
+        	serverSystemProperties = properties.getStringMapProperty(prefix
                 + "server.system.properties");
 
-        nodes = properties.getIntProperty(prefix + "nodes", 0);
-        cores = properties.getIntProperty(prefix + "cores", 0);
-        memory = properties.getIntProperty(prefix + "memory", 0);
-        latitude = properties.getDoubleProperty(prefix + "latitude", 0);
-        longitude = properties.getDoubleProperty(prefix + "longitude", 0);
+        if(properties.getIntProperty(prefix + "nodes", 0) != 0)
+        	nodes = properties.getIntProperty(prefix + "nodes", 0);
+        if(properties.getIntProperty(prefix + "cores", 0) != 0)
+        	cores = properties.getIntProperty(prefix + "cores", 0);
+        if(properties.getIntProperty(prefix + "memory", 0) != 0)
+        	memory = properties.getIntProperty(prefix + "memory", 0);
+        if(properties.getDoubleProperty(prefix + "latitude", 0) != 0)
+        	latitude = properties.getDoubleProperty(prefix + "latitude", 0);
+        if(properties.getDoubleProperty(prefix + "longitude", 0) != 0)
+        	longitude = properties.getDoubleProperty(prefix + "longitude", 0);
 
-        String startZorillaString = properties.getProperty(prefix
-                + "start.zorilla", null);
+        startZorillaString = properties.getProperty(prefix + "start.zorilla", null);
 
-        if (startZorillaString == null) {
-            startZorilla = null;
-        } else {
+        if (startZorillaString != null) 
+        {
             startZorilla = properties.getBooleanProperty(prefix
                     + "start.zorilla");
         }
 
-        nodeHostnames = properties.getProperty(prefix + "node.hostnames");
+        if(properties.getProperty(prefix + "node.hostnames") != null)
+        	nodeHostnames = properties.getProperty(prefix + "node.hostnames");
 
         this.color = null;
-        visibleOnMap = true;
     }
 
     public boolean isEmpty() {
@@ -975,16 +1047,7 @@ public class Cluster {
      */
     Cluster resolve() {
         Cluster result = new Cluster();
-        if (parent != null) {
-            if (getName().equals("local")) {
-                // local cluster has different defaults
-                result.overwrite(parent.getLocalDefaults());
-            } else {
-                result.overwrite(parent.getDefaults());
-            }
-        }
         result.overwrite(this);
-
         return result;
     }
 

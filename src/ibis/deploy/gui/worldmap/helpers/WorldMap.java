@@ -37,8 +37,6 @@ public final class WorldMap extends JXMapKit
      */
     private static final long serialVersionUID = -6194956781979564591L;
     private boolean initialized = false;
-//    private static final int MAX_DEPTH = 5;
-//    private static final double MIN_DISTANCE = 3.5;
 
     private static final int WIDTH = 256;
     private static final int HEIGHT = 256;
@@ -122,15 +120,7 @@ public final class WorldMap extends JXMapKit
     private void doFit() {
         for (ClusterWaypoint waypoint : visibleWaypoints) {
             waypoint.resetOffset();
-        }
-//        for (Waypoint currentWaypoint : waypoints) {
-//            for (Waypoint otherWaypoint : waypoints) {
-//                if (currentWaypoint != otherWaypoint) {
-//                    adjustPosition((ClusterWaypoint) currentWaypoint,
-//                           (ClusterWaypoint) otherWaypoint, 0);
-//                }
-//            }
-//        } 
+        } 
     }
 
     @Override
@@ -264,45 +254,6 @@ public final class WorldMap extends JXMapKit
         adjustMapSize();
         super.paint(g);
     }
-
-//    private void adjustPosition(ClusterWaypoint waypoint,
-//            ClusterWaypoint otherWaypoint, int depth) {
-//        // take already known offset into account
-//        Point2D p1 = getMainMap().convertGeoPositionToPoint(
-//                waypoint.getPosition());
-//        p1.setLocation(p1.getX() + waypoint.getOffset().width, p1.getY()
-//                + waypoint.getOffset().height);
-//        Point2D p2 = getMainMap().convertGeoPositionToPoint(
-//                otherWaypoint.getPosition());
-//        p2.setLocation(p2.getX() + otherWaypoint.getOffset().width, p2
-//                .getY()
-//                + otherWaypoint.getOffset().height);
-//
-//        double distance = p1.distance(p2);
-//        double minDistance = waypoint.getRadius()
-//                + otherWaypoint.getRadius() + 20;
-//        if (distance < minDistance) {
-//            // move both waypoints in half the overlap size in the
-//            // proper direction
-//            double overlap = 0.5 * (minDistance - distance) + MIN_DISTANCE;
-//            double deltaX = p1.getX() - p2.getX();
-//            double deltaY = p1.getY() - p2.getY();
-//            waypoint.addOffset((int) ((overlap / distance) * deltaX),
-//                    (int) ((overlap / distance) * deltaY));
-//            otherWaypoint.addOffset((int) ((overlap / distance) * -deltaX),
-//                    (int) ((overlap / distance) * -deltaY));
-//            for (Waypoint thirdWaypoint : waypoints) {
-//                if (thirdWaypoint != waypoint
-//                        && thirdWaypoint != otherWaypoint
-//                        && depth < MAX_DEPTH) {
-//                    adjustPosition(waypoint,
-//                            (ClusterWaypoint) thirdWaypoint, depth + 1);
-//                    adjustPosition(otherWaypoint,
-//                            (ClusterWaypoint) thirdWaypoint, depth + 1);
-//                }
-//            }
-//        }
-//    }
     
     /**
      * Updates the list of labels that is shown when the mouse is

@@ -77,13 +77,13 @@ public class MapEditor implements PropertyChangeListener, ChangeableField
         buttonPanel.setLayout(new BorderLayout());
         
         //label used just for spacing
-        final  JLabel label = new JLabel("", JLabel.TRAILING);
+        final  JLabel label = new JLabel("View on map: ", JLabel.TRAILING);
         label.setPreferredSize(new Dimension(Utils.defaultLabelWidth, 
         		label.getPreferredSize().height));
         buttonPanel.add(label, BorderLayout.WEST);
         
         final JButton mapButton = Utils.createImageButton("images/map.png", 
-        							"Choose location using map", null); 
+        							"View location on map", null); 
         
         mapButton.addActionListener(new ActionListener() 
         {

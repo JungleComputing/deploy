@@ -1,7 +1,6 @@
 package ibis.deploy.gui.worldmap.helpers;
 
 import ibis.deploy.Cluster;
-import ibis.deploy.gui.worldmap.MapUtilities;
 
 import java.awt.Dimension;
 import java.awt.geom.Point2D;

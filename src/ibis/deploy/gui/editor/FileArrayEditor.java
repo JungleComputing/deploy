@@ -41,7 +41,7 @@ public class FileArrayEditor implements KeyListener, ChangeableField
     private final JPanel addPanel = new JPanel(new BorderLayout());
 
     private final JButton addButton = Utils.createImageButton(
-            "images/list-add-small.png", "add a new item", null);
+            "images/list-add-small.png", "Add a new item", null);
 
     private final JLabel label;
 
@@ -121,7 +121,7 @@ public class FileArrayEditor implements KeyListener, ChangeableField
         fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         fileChoosers.add(fileChooser);
         final JButton openButton = Utils.createImageButton(
-                "images/document-open.png", "select a file", null);
+                "images/document-open.png", "Select a file", null);
         openButtons.add(openButton);
 
         openButton.addActionListener(new ActionListener() {
@@ -143,7 +143,7 @@ public class FileArrayEditor implements KeyListener, ChangeableField
         panel.add(rigidArea);
 
         final JButton removeButton = Utils.createImageButton(
-                "images/list-remove-small.png", "remove item", null);
+                "images/list-remove-small.png", "Remove item", null);
         removeButtons.add(removeButton);
         removeButton.addActionListener(new ActionListener() {
 

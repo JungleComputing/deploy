@@ -49,25 +49,19 @@ public class ClusterEditorTabPanel extends JPanel {
     private JButton applyButton = null;
 
     public ClusterEditorTabPanel(final Cluster source,
-            final ClusterEditorPanel clusterEditorPanel, final GUI gui) {
-        this(source, clusterEditorPanel, gui, false);
-    }
-
-    public ClusterEditorTabPanel(final Cluster source,
-            final ClusterEditorPanel clusterEditorPanelRef, final GUI gui,
-            final boolean defaultsEditor) {
+            final ClusterEditorPanel clusterEditorPanelRef, final GUI gui) {
         clusterEditorPanel = clusterEditorPanelRef;
     	
         setLayout(new BorderLayout());    	
 
-        Cluster defaults = null;
-        if (source.getGrid() != null) {
-            if (source.getName().equals("local")) {
-                defaults = source.getGrid().getLocalDefaults();
-            } else {
-                defaults = source.getGrid().getDefaults();
-            }
-        }
+//        Cluster defaults = null;
+//        if (source.getGrid() != null) {
+//            if (source.getName().equals("local")) {
+//                defaults = source.getGrid().getLocalDefaults();
+//            } else {
+//                defaults = source.getGrid().getDefaults();
+//            }
+//        }
 
         JPanel container = new JPanel(new BorderLayout());
 
@@ -79,13 +73,10 @@ public class ClusterEditorTabPanel extends JPanel {
         
         formPanel.add(new Spacer("General settings"));
         
-        final TextEditor nameEditor = defaultsEditor ? null :
-        			new TextEditor(this, formPanel, "Name: ", source.getName()); 
-        if(!defaultsEditor)
-        {
-        	fields.add(nameEditor);
-        	formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
-        }
+        final TextEditor nameEditor = new TextEditor(this, formPanel, "Name: ", 
+        		source.getName()); 
+    	fields.add(nameEditor);
+    	formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
      
         final NumberEditor nodesEditor = new NumberEditor(this, formPanel, "Nodes: ",
                 source.getNodes());
@@ -218,18 +209,16 @@ public class ClusterEditorTabPanel extends JPanel {
                 
 //            	System.out.println(source.toPrintString());
             	
-            	if (!defaultsEditor) {
-                    try 
-                    {
-                    	if(nameEditor.getText().length() > 0)
-                    		source.setName(nameEditor.getText());
-                    } catch (Exception e) {
-                        JOptionPane.showMessageDialog(getRootPane(), e
-                                .getMessage(), "Unable to apply changes",
-                                JOptionPane.PLAIN_MESSAGE);
-                        e.printStackTrace(System.err);
-                        return;
-                    }
+                try 
+                {
+                	if(nameEditor.getText().length() > 0)
+                		source.setName(nameEditor.getText());
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(getRootPane(), e
+                            .getMessage(), "Unable to apply changes",
+                            JOptionPane.PLAIN_MESSAGE);
+                    e.printStackTrace(System.err);
+                    return;
                 }
                 
                 if (nodesEditor.getValue() > 0) {
@@ -323,8 +312,7 @@ public class ClusterEditorTabPanel extends JPanel {
 
 			public void actionPerformed(ActionEvent arg0) {
 				
-				if (!defaultsEditor)
-                    nameEditor.setText(source.getName());
+				nameEditor.setText(source.getName());
                 
 				nodesEditor.setValue(source.getNodes());
 				
