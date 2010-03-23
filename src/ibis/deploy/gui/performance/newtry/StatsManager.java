@@ -9,7 +9,7 @@ import java.util.Map;
 import ibis.deploy.gui.performance.PerfVis;
 import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
 import ibis.deploy.gui.performance.newtry.stats.*;
-import ibis.deploy.gui.performance.newtry.concepts.*;
+import ibis.deploy.gui.performance.newtry.dataobjects.*;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.support.management.AttributeDescription;
 
@@ -54,7 +54,7 @@ public class StatsManager {
 		availableStatistics.add(new XcoordStatistic());
 		availableStatistics.add(new YcoordStatistic());
 		availableStatistics.add(new ZcoordStatistic());
-		availableStatistics.add(new LinksStatistic());	
+		availableStatistics.add(new BytesSentStatistic());	
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -125,14 +125,14 @@ public class StatsManager {
 		            				for (Site siteTo : sites) {
 		            					String siteNameTo = link.getTo().getSiteName();
 		            					if (siteTo.getName().compareTo(siteNameTo) == 0) {
-		            						trunks.add(new Trunk(site, siteTo));		            						
+		            						trunks.add(new Trunk(perfvis, site, siteTo));		            						
 		            					}
 		            				}		            				
 		            			}
 		            		}
 		            	}
 		            	
-		            	pools.add(new Pool(poolName, (Site[])sites.toArray(), (Trunk[])trunks.toArray()));
+		            	pools.add(new Pool(perfvis, poolName, (Site[])sites.toArray(), (Trunk[])trunks.toArray()));
 		            }
 	            }
 	        }
@@ -186,7 +186,7 @@ public class StatsManager {
 					node.update(initialAttributesMap);
 				}
 			}
-			sites.add(new Site(siteName, (Node[])nodes.toArray()));
+			sites.add(new Site(perfvis, siteName, (Node[])nodes.toArray()));
 		}
 		
 		//For each site, check for and (if available) create this site's links
@@ -197,7 +197,7 @@ public class StatsManager {
 				destinations = (IbisIdentifier[]) node.getConnectedIbises();
 				
 				for (int j=0; j<destinations.length; j++) {
-					links.add(new Link(node, ibisesToNodes.get(destinations[j])));
+					links.add(new Link(perfvis, node, ibisesToNodes.get(destinations[j])));
 				}
 			}
 			site.setLinks((Link[]) links.toArray());

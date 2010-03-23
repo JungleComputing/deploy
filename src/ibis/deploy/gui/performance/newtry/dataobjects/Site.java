@@ -1,14 +1,15 @@
-package ibis.deploy.gui.performance.newtry.concepts;
+package ibis.deploy.gui.performance.newtry.dataobjects;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import ibis.deploy.gui.performance.PerfVis;
 import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
 import ibis.deploy.gui.performance.newtry.stats.StatisticsObject;
 import ibis.ipl.IbisIdentifier;
 
-public class Site {	
+public class Site extends DataObject {	
 	private String name;
 	private Node[] nodes;
 	private Link[] links;
@@ -17,7 +18,8 @@ public class Site {
 	
 	private List<StatisticsObject> currentlyGatheredStatistics;
 
-	public Site(String name, Node[] nodes) {		
+	public Site(PerfVis perfvis, String name, Node[] nodes) {	
+		super(perfvis);
 		this.name = name;
 		this.nodes = nodes;
 		

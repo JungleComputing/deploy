@@ -3,12 +3,14 @@ package ibis.deploy.gui.performance.newtry.stats;
 import ibis.ipl.support.management.AttributeDescription;
 
 
-public class LinksStatistic extends StatisticsObject implements StatisticsObjectInterface {
+public class BytesSentStatistic extends StatisticsObject implements StatisticsObjectInterface {
 	public static final String NAME = "LINKS";
 	public static final int DESCRIPTIONS_COUNT_NEEDED = 1;
+	public static final float[] COLOR = {0.0f, 0.0f, 1.0f};
+	
 	private long sent_prev, sent_max;
 	
-	public LinksStatistic() {
+	public BytesSentStatistic() {
 		super();
 		
 		necessaryAttributes = new AttributeDescription[DESCRIPTIONS_COUNT_NEEDED];

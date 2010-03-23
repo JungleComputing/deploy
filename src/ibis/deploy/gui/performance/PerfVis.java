@@ -1,20 +1,17 @@
 package ibis.deploy.gui.performance;
 
 import ibis.deploy.gui.GUI;
-import ibis.deploy.gui.performance.Vrarchy.Vobject;
+import ibis.deploy.gui.performance.newtry.Vrarchy.Vobject;
 import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
 import ibis.deploy.gui.performance.hierarchy.Hpool;
 import ibis.deploy.gui.performance.newtry.StatsManager;
-import ibis.deploy.gui.performance.newtry.stats.StatisticsObject;
 import ibis.deploy.gui.performance.visuals.*;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
 
 import java.awt.Point;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 

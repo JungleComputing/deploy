@@ -1,4 +1,4 @@
-package ibis.deploy.gui.performance.newtry.concepts;
+package ibis.deploy.gui.performance.newtry.dataobjects;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,9 +10,8 @@ import ibis.deploy.gui.performance.newtry.stats.StatisticsObject;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.support.management.AttributeDescription;
 
-public class Node {
-	//Variables needed for the operation of this class
-	private PerfVis perfvis;
+public class Node extends DataObject {
+	//Variables needed for the operation of this class	
 	private String siteName;
 	private IbisIdentifier name;
 	
@@ -20,7 +19,7 @@ public class Node {
 	private IbisIdentifier[] connectedIbises;
 	
 	public Node(PerfVis perfvis, String siteName, IbisIdentifier name) {
-		this.perfvis = perfvis;
+		super(perfvis);
 		this.siteName = siteName;
 		this.name = name;
 		

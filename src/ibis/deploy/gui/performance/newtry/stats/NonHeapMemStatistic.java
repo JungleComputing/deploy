@@ -7,6 +7,7 @@ import javax.management.openmbean.CompositeData;
 public class NonHeapMemStatistic extends StatisticsObject implements StatisticsObjectInterface {
 	public static final String NAME = "MEM";
 	public static final int DESCRIPTIONS_COUNT_NEEDED = 1;
+	public static final float[] COLOR = {0.5f, 1.0f, 0.0f};
 	
 	public NonHeapMemStatistic() {
 		super();

@@ -7,6 +7,8 @@ import ibis.ipl.support.management.AttributeDescription;
 public class StatisticsObject {
 	public static final String NAME = "GENERIC";
 	public static final int DESCRIPTIONS_COUNT_NEEDED = 0;
+	public static float[] COLOR = {1.0f, 1.0f, 1.0f};
+	
 	protected AttributeDescription[] necessaryAttributes;
 	protected float value;
 	protected IbisIdentifier[] ibises;
@@ -33,5 +35,9 @@ public class StatisticsObject {
 	
 	public String getName() {
 		return NAME;
+	}
+	
+	public float[] getColor() {
+		return COLOR;
 	}
 }

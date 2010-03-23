@@ -1,20 +1,22 @@
-package ibis.deploy.gui.performance.newtry.concepts;
+package ibis.deploy.gui.performance.newtry.dataobjects;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import ibis.deploy.gui.performance.PerfVis;
 import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
 import ibis.deploy.gui.performance.newtry.stats.StatisticsObject;
 import ibis.ipl.IbisIdentifier;
 
-public class Pool {
+public class Pool extends DataObject {
 	private String name;
 	private Site[] sites;
 	private Trunk[] trunks;
 	private HashMap<String, Float> averageValues;
 	
-	public Pool(String name, Site[] sites, Trunk[] trunks) {
+	public Pool(PerfVis perfvis, String name, Site[] sites, Trunk[] trunks) {
+		super(perfvis);
 		this.name = name;
 		this.sites = sites;
 		this.trunks = trunks;

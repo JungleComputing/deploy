@@ -5,6 +5,7 @@ import ibis.ipl.support.management.AttributeDescription;
 public class CPUStatistic extends StatisticsObject implements StatisticsObjectInterface {
 	public static final String NAME = "CPU";
 	public static final int DESCRIPTIONS_COUNT_NEEDED = 3;
+	public static final float[] COLOR = {1.0f, 0.0f, 0.0f};
 	
 	private long cpu_prev, upt_prev;
 	
