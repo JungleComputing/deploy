@@ -26,7 +26,7 @@ public class PieChartWaypointRenderer implements WaypointRenderer
         
         int i;
         int angle = 0;
-        int stepAngle = (int)360 / pieChartCwp.clusters.size();
+        int stepAngle = 360 / pieChartCwp.clusters.size();
         
         Color clusterColor, clusterBorderColor; 
         ClusterWaypoint clusterwp;
