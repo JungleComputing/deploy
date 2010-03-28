@@ -35,7 +35,7 @@ public class Deploy {
      * Files needed by ibis-deploy. Searched for in ibis deploy home dir
      */
     public static final String[] REQUIRED_FILES = { "lib-server",
-            "log4j.properties", "lib-zorilla" };
+            "log4j.properties" };
 
     private static final Logger logger = LoggerFactory.getLogger(Deploy.class);
 
