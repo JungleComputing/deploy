@@ -213,6 +213,7 @@ public class GUI {
         System.err
                 .println("Usage: ibis-deploy-gui [OPTIONS] [GRID_FILE] [APP_FILE] [EXPERIMENT_FILE] [WORKSPACE_FILE]");
         System.err.println("Options:");
+        System.err.println("-s CLUSTER\tRun server on specified cluster");
         System.err.println("-v\t\tVerbose mode");
         System.err
                 .println("-p PORT\t\tLocal port number (defaults to random free port)");
@@ -369,7 +370,7 @@ public class GUI {
                         null, true);
             } else {
                 logger
-                        .info("Initializing Command Line Ibis Deploy"
+                        .info("Initializing Ibis Deploy"
                                 + ", using server on cluster \""
                                 + serverCluster + "\"");
 
