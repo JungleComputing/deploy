@@ -238,6 +238,7 @@ public class Deploy {
         zorilla.setJobURI(new URI("zorilla:" + localServer.getAddress()));
         zorilla.setJobAdaptor("zorilla");
         zorilla.addFileAdaptor("local");
+        zorilla.setColor("#FF0000");
 
         hubs.put("zorilla", localServer);
 
