@@ -38,11 +38,29 @@
 #VUJob.pool.size =
 #VUJob.shared.hub =
 
-Zorilla.application.name = Go
-Zorilla.application.arguments= --size,4,--stones,2
-Zorilla.process.count = 40
-Zorilla.cluster.name = zorilla
-Zorilla.resource.count = 40
+Big.application.name = Go
+Big.application.arguments= --size,4,--stones,2
+Big.process.count = 400
+Big.cluster.name = zorilla
+Big.resource.count = 400
+Big.pool.name=Big
+
+
+Small.application.name = Go
+Small.application.arguments= --size,4,--stones,2
+Small.process.count = 40
+Small.cluster.name = zorilla
+Small.resource.count = 40
+Small.pool.name=Small
+
+Fail.application.name = Go
+Fail.application.arguments= --size,4,--stones,2
+Fail.process.count = 40
+Fail.cluster.name = zorilla
+Fail.resource.count = 40
+Fail.pool.name=Fail
+
+
 
 #Medium.application.name = Go
 #Medium.application.arguments= --size,4,--stones,2

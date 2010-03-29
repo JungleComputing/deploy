@@ -56,8 +56,8 @@ VU.server.uri = any://fs0.das3.cs.vu.nl
 VU.job.adaptor = sge
 VU.job.uri = any://fs0.das3.cs.vu.nl/jobmanager-sge
 VU.file.adaptors = local,globus,sshtrilead
-VU.nodes = 32
-VU.cores = 128
+VU.nodes = 16
+VU.cores = 64
 VU.latitude = 52.336062
 VU.longitude = 4.872222
 VU.server.system.properties = java.library.path=/usr/local/Cluster-Apps/sge/lib/lx26-amd64
@@ -68,8 +68,8 @@ Leiden.job.adaptor = sshtrilead
 Leiden.job.uri = any://fs1.das3.liacs.nl/jobmanager-sge
 Leiden.file.adaptors = local,globus,sshtrilead
 Leiden.job.wrapper.script = zorilla-example/das3.script
-Leiden.nodes = 16
-Leiden.cores = 32
+Leiden.nodes = 8
+Leiden.cores = 16
 Leiden.latitude = 52.16
 Leiden.longitude = 4.49
 
@@ -79,21 +79,21 @@ UvA.job.adaptor = globus
 UvA.job.uri = any://fs2.das3.science.uva.nl/jobmanager-sge
 UvA.file.adaptors = local,globus,sshtrilead
 #UvA.cache.dir = dog-demo-cache
-UvA.nodes = 32
-UvA.cores = 128
+UvA.nodes = 16
+UvA.cores = 64
 UvA.latitude = 52.36637614192115
 UvA.longitude = 4.925994873046875
 
 # prun
-Delft.server.uri = any://fs3.das3.tudelft.nl
-Delft.job.adaptor = sshtrilead
-Delft.job.uri = any://fs3.das3.tudelft.nl/jobmanager-sge
-Delft.file.adaptors = local,globus,sshtrilead
-Delft.job.wrapper.script = zorilla-example/das3.script
-Delft.nodes = 32
-Delft.cores = 128
-Delft.latitude = 52.015
-Delft.longitude = 4.356667
+#Delft.server.uri = any://fs3.das3.tudelft.nl
+#Delft.job.adaptor = sshtrilead
+#Delft.job.uri = any://fs3.das3.tudelft.nl/jobmanager-sge
+#Delft.file.adaptors = local,globus,sshtrilead
+#Delft.job.wrapper.script = zorilla-example/das3.script
+#Delft.nodes = 32
+#Delft.cores = 128
+#Delft.latitude = 52.015
+#Delft.longitude = 4.356667
 
 # prun
 MultimediaN.server.uri = any://fs4.das3.science.uva.nl
@@ -101,32 +101,32 @@ MultimediaN.job.adaptor = sshtrilead
 MultimediaN.job.uri = any://fs4.das3.science.uva.nl/jobmanager-sge
 MultimediaN.file.adaptors = local,globus,sshtrilead
 MultimediaN.job.wrapper.script = zorilla-example/das3.script
-MultimediaN.nodes = 32
-MultimediaN.cores = 64
+MultimediaN.nodes = 16
+MultimediaN.cores = 32
 MultimediaN.latitude = 52.3605059352529
 MultimediaN.longitude = 4.942474365234375
 
 ##INTRIGGER
 
 # Multi-ssh
-Chiba.server.uri = any://chiba100.intrigger.nii.ac.jp
-Chiba.job.adaptor = sshtrilead
-Chiba.job.uri =  multissh:chiba1[12-26]
-Chiba.java.path = /usr/local/jdk/bin/java
-Chiba.nodes = 8
-Chiba.cores = 16
-Chiba.latitude = 38.27268853598097
-Chiba.longitude = 140.2734375
+#Chiba.server.uri = any://chiba100.intrigger.nii.ac.jp
+#Chiba.job.adaptor = sshtrilead
+#Chiba.job.uri =  multissh:chiba1[12-26]
+#Chiba.java.path = /usr/local/jdk/bin/java
+#Chiba.nodes = 8
+#Chiba.cores = 16
+#Chiba.latitude = 38.27268853598097
+#Chiba.longitude = 140.2734375
 
 # Multi-ssh
-Tsukuba.server.uri = any://163.220.103.168
-Tsukuba.job.adaptor = sshtrilead
-Tsukuba.job.uri = multissh:tsukuba00[1-9]
-Tsukuba.java.path = /usr/local/jdk/bin/java
-Tsukuba.nodes = 8
-Tsukuba.cores = 64
-Tsukuba.latitude = 34.59704151614417
-Tsukuba.longitude = 136.7578125
+#Tsukuba.server.uri = any://163.220.103.168
+#Tsukuba.job.adaptor = sshtrilead
+#Tsukuba.job.uri = multissh:tsukuba00[1-9]
+#Tsukuba.java.path = /usr/local/jdk/bin/java
+#Tsukuba.nodes = 8
+#Tsukuba.cores = 64
+#Tsukuba.latitude = 34.59704151614417
+#Tsukuba.longitude = 136.7578125
 
 # Zorilla
 DesktopGrid.server.uri = any://zorilla.cs.vu.nl
