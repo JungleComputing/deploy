@@ -12,7 +12,6 @@ import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 public class ClusterListTopPanel extends JPanel {
@@ -21,6 +20,8 @@ public class ClusterListTopPanel extends JPanel {
      * 
      */
     private static final long serialVersionUID = 6183574615247336429L;
+
+    private static long ID_COUNTER = 0;
 
     public ClusterListTopPanel(final GUI gui, final JList clusterList,
             final HashMap<Cluster, JPanel> editClusterPanels,
@@ -36,8 +37,15 @@ public class ClusterListTopPanel extends JPanel {
 
             public void actionPerformed(ActionEvent arg0) {
                 try {
+                    String clusterName = "New-Cluster-" + ID_COUNTER;
+                    ID_COUNTER++;
+                    while (gui.getGrid().hasCluster(clusterName)) {
+                        clusterName = "New-Cluster-" + ID_COUNTER;
+                        ID_COUNTER++;
+                    }
+
                     Cluster newCluster = gui.getGrid().createNewCluster(
-                            "New-Cluster");
+                            clusterName);
                     ((DefaultListModel) clusterList.getModel())
                             .addElement(newCluster);
                     editClusterPanels.put(newCluster,
@@ -56,8 +64,8 @@ public class ClusterListTopPanel extends JPanel {
 
             public void actionPerformed(ActionEvent arg0) {
                 try {
-                    // defaults cannot be removed
-                    if (clusterList.getSelectedIndex() >= 1) {
+                    // make sure that there is something selected in the list
+                    if (clusterList.getSelectedIndex() >= 0) {
                         Cluster selectedCluster = (Cluster) ((DefaultListModel) clusterList
                                 .getModel())
                                 .get(clusterList.getSelectedIndex());
@@ -69,10 +77,6 @@ public class ClusterListTopPanel extends JPanel {
                                 .removeElementAt(clusterList.getSelectedIndex());
                         clusterEditorPanel.repaint();
                         gui.fireGridUpdated();
-                    } else if (clusterList.getSelectedIndex() == 0) {
-                        JOptionPane.showMessageDialog(getRootPane(),
-                                "Cannot remove the defaults", "Error",
-                                JOptionPane.PLAIN_MESSAGE);
                     }
                 } catch (Exception e) {
                     // ignore name is never null

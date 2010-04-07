@@ -31,8 +31,8 @@ public class ClusterListPanel extends JPanel {
     public ClusterListPanel(final GUI gui, final JPanel editPanel,
             final ClusterEditorPanel clusterEditorPanelRef) {
 
-    	this.clusterEditorPanel = clusterEditorPanelRef;
-    	
+        this.clusterEditorPanel = clusterEditorPanelRef;
+
         setLayout(new BorderLayout());
         final DefaultListModel model = new DefaultListModel();
         final JList clusterList = new JList(model);

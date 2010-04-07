@@ -31,6 +31,8 @@ public class ApplicationListPanel extends JPanel {
     public ApplicationListPanel(final GUI gui, final JPanel editPanel,
             final ApplicationEditorPanel applicationEditorPanel) {
 
+        this.applicationEditorPanel = applicationEditorPanel;
+
         setLayout(new BorderLayout());
         final DefaultListModel model = new DefaultListModel();
         final JList applicationList = new JList(model);
@@ -77,13 +79,7 @@ public class ApplicationListPanel extends JPanel {
     private void init(GUI gui, DefaultListModel model,
             Map<Application, JPanel> editApplicationPanels) {
 
-        try {
-            gui.getApplicationSet().getDefaults().setName(DEFAULTS);
-        } catch (Exception e) {
-            // ignore
-        }
         model.clear();
-        model.addElement(gui.getApplicationSet().getDefaults());
 
         for (Application application : gui.getApplicationSet()
                 .getApplications()) {
@@ -92,14 +88,11 @@ public class ApplicationListPanel extends JPanel {
 
         // create a hash map with all the panels
         editApplicationPanels.clear();
-        editApplicationPanels.put(gui.getApplicationSet().getDefaults(),
-                new ApplicationEditorTabPanel(gui.getApplicationSet()
-                        .getDefaults(), applicationEditorPanel, gui, true));
         for (Application application : gui.getApplicationSet()
                 .getApplications()) {
             editApplicationPanels.put(application,
                     new ApplicationEditorTabPanel(application,
-                            applicationEditorPanel, gui, false));
+                            applicationEditorPanel, gui));
         }
 
     }

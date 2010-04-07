@@ -42,11 +42,11 @@ public class ApplicationEditorPanel extends JPanel {
     }
 
     public void fireApplicationEdited(Application application) {
-        if (application == gui.getApplicationSet().getDefaults()) {
-            // TODO special code that updates each open tab!
-            System.out.println("TODO special code that updates each open tab!");
-            return;
-        }
+//        if (application == gui.getApplicationSet().getDefaults()) {
+//            // TODO special code that updates each open tab!
+//            System.out.println("TODO special code that updates each open tab!");
+//            return;
+//        }
         for (EditorListener listener : applicationListeners) {
             listener.edited(application);
         }

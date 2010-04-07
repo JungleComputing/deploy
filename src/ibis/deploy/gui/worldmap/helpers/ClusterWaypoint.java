@@ -17,12 +17,11 @@ public class ClusterWaypoint extends Waypoint {
     private boolean selected;
 
     private Dimension offset = new Dimension(0, 0);
-    
+
     public boolean show = true;
 
     public ClusterWaypoint(Cluster cluster, boolean selected) {
-        super(
-                cluster.getLatitude(), cluster.getLongitude());
+        super(cluster.getLatitude(), cluster.getLongitude());
         this.selected = selected;
         this.cluster = cluster;
         this.resourceCount = 1;
@@ -85,13 +84,12 @@ public class ClusterWaypoint extends Waypoint {
     public void setSelected(boolean selected) {
         this.selected = selected;
     }
-    
+
     /**
      * Computes the distance to a second cluster, in pixels
      */
-    public double computeDistance(JXMapViewer map, ClusterWaypoint cwp)
-    {
-    	Point2D p1 = map.convertGeoPositionToPoint(getPosition());
+    public double computeDistance(JXMapViewer map, ClusterWaypoint cwp) {
+        Point2D p1 = map.convertGeoPositionToPoint(getPosition());
         p1.setLocation(p1.getX() + getOffset().width, p1.getY()
                 + getOffset().height);
         Point2D p2 = map.convertGeoPositionToPoint(cwp.getPosition());

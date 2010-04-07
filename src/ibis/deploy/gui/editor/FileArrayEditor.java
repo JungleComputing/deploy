@@ -1,6 +1,5 @@
 package ibis.deploy.gui.editor;
 
-import ibis.deploy.gui.clusters.ClusterEditorTabPanel;
 import ibis.deploy.gui.misc.Utils;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -20,8 +19,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-public class FileArrayEditor implements KeyListener, ChangeableField 
-{
+public class FileArrayEditor extends ChangeableField implements KeyListener {
 
     /**
      * 
@@ -46,28 +44,31 @@ public class FileArrayEditor implements KeyListener, ChangeableField
     private final JLabel label;
 
     private JPanel parentPanel;
-    
+
     private File[] initialValues;
-    
-    private final JPanel tabPanel;
 
     /**
-     * @param form - parent panel
-     * @param text - label text
-     * @param values - initial values for file paths
+     * @param form
+     *            - parent panel
+     * @param text
+     *            - label text
+     * @param values
+     *            - initial values for file paths
      */
-    public FileArrayEditor(final JPanel tabPanel, final JPanel form, 
-    		final String text, File[] values) {
+    public FileArrayEditor(final JPanel tabPanel, final JPanel form,
+            final String text, File[] values) {
+
         this.parentPanel = form;
         this.tabPanel = tabPanel;
-        
-        if(values != null)
-        	this.initialValues = values;
-        else
-        	initialValues = new File[0];
+
+        if (values != null) {
+            this.initialValues = values;
+        } else {
+            initialValues = new File[0];
+        }
 
         JPanel container = new JPanel(new BorderLayout());
-        
+
         addPanel.add(addButton, BorderLayout.WEST);
         arrayPanel.add(addPanel);
         arrayPanel.setLayout(new BoxLayout(arrayPanel, BoxLayout.PAGE_AXIS));
@@ -77,13 +78,13 @@ public class FileArrayEditor implements KeyListener, ChangeableField
             public void actionPerformed(ActionEvent e) {
                 addField(new File("."), arrayPanel);
                 arrayPanel.getRootPane().repaint();
-                
+
                 informParent();
             }
 
         });
-        
-        //add the files in the list to the panel
+
+        // add the files in the list to the panel
         if (values != null) {
             for (File value : values) {
                 addField(value, arrayPanel);
@@ -95,22 +96,23 @@ public class FileArrayEditor implements KeyListener, ChangeableField
         label = new JLabel(text, JLabel.TRAILING);
         label.setAlignmentX(Component.RIGHT_ALIGNMENT);
         label.setLabelFor(arrayPanel);
-        label.setPreferredSize(new Dimension(Utils.defaultLabelWidth,
-                label.getPreferredSize().height)); 
+        label.setPreferredSize(new Dimension(Utils.defaultLabelWidth, label
+                .getPreferredSize().height));
         labelPanel.add(label);
         labelPanel.add(Box.createVerticalGlue());
-        
+
         container.add(labelPanel, BorderLayout.WEST);
         container.add(arrayPanel, BorderLayout.CENTER);
         form.add(container);
     }
 
     /**
-     * @param value - path of the file
-     * @param panel - parent panel
+     * @param value
+     *            - path of the file
+     * @param panel
+     *            - parent panel
      */
-    private void addField(File value, final JPanel panel) 
-    {
+    private void addField(File value, final JPanel panel) {
         final JPanel arrayItemPanel = new JPanel(new BorderLayout());
         final JTextField textField = new JTextField(value.getPath());
         textFields.add(textField);
@@ -130,7 +132,6 @@ public class FileArrayEditor implements KeyListener, ChangeableField
                 int returnVal = fileChooser.showOpenDialog(panel);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     textField.setText(fileChooser.getSelectedFile().getPath());
-                    
                     informParent();
                 }
             }
@@ -138,8 +139,9 @@ public class FileArrayEditor implements KeyListener, ChangeableField
         });
 
         arrayItemPanel.add(openButton, BorderLayout.EAST);
-        
-        final Component rigidArea = Box.createRigidArea(new Dimension(0, Utils.gapHeight));
+
+        final Component rigidArea = Box.createRigidArea(new Dimension(0,
+                Utils.gapHeight));
         panel.add(rigidArea);
 
         final JButton removeButton = Utils.createImageButton(
@@ -155,7 +157,6 @@ public class FileArrayEditor implements KeyListener, ChangeableField
                 panel.remove(arrayItemPanel);
                 panel.remove(rigidArea);
                 panel.getRootPane().repaint();
-                
                 informParent();
             }
         });
@@ -179,75 +180,73 @@ public class FileArrayEditor implements KeyListener, ChangeableField
             return null;
         }
     }
-    
+
     /**
      * resets the files in the editor to the given values
-     * @param values - list of new file paths
+     * 
+     * @param values
+     *            - list of new file paths
      */
-    public void setFileArray(File[] values)
-    {
-    	arrayPanel.removeAll();
-    	arrayPanel.add(addPanel);
-    	
-    	//add the files in the list to the panel
-        if (values != null) 
-        {
+    public void setFileArray(File[] values) {
+        clearAll();
+
+        // add the files in the list to the panel
+        if (values != null) {
             for (File value : values) {
                 addField(value, arrayPanel);
             }
         }
         parentPanel.getRootPane().repaint();
     }
-    
-    public void refreshInitialValue()
-    {
-    	initialValues = getFileArray();
-    	if(initialValues == null)
-    		initialValues = new File[0];
+
+    private void clearAll() {
+        fileChoosers.clear();
+        textFields.clear();
+        removeButtons.clear();
+        openButtons.clear();
+        arrayPanel.removeAll();
+
+        arrayPanel.add(addPanel);
     }
-    
+
+    public void refreshInitialValue() {
+        initialValues = getFileArray();
+        if (initialValues == null) {
+            initialValues = new File[0];
+        }
+    }
+
     @Override
-	public void keyPressed(KeyEvent arg0) {
-	}
+    public void keyPressed(KeyEvent arg0) {
+    }
 
-	@Override
-	public void keyReleased(KeyEvent arg0) {
-		informParent();
-	}
+    @Override
+    public void keyReleased(KeyEvent arg0) {
+        informParent();
+    }
 
-	@Override
-	public void keyTyped(KeyEvent arg0) {
-		
-	}
+    @Override
+    public void keyTyped(KeyEvent arg0) {
+    }
 
-	@Override
-	/**
-	 * @return - true if any of the text fields contain a different value than
-	 * their initial value. Also return true if the number of fields has changed
-	 */
-	public boolean hasChanged() 
-	{
-		if(textFields.size() != initialValues.length)
-			return true;
-		
-		int i = 0;
-		for (JTextField tf : textFields) 
-		{
-            if(!tf.getText().equalsIgnoreCase(initialValues[i].getPath()))
-            	return true;
+    @Override
+    /**
+     * @return - true if any of the text fields contain a different value than
+     * their initial value. Also return true if the number of fields has changed
+     */
+    public boolean hasChanged() {
+        if (textFields.size() != initialValues.length) {
+            return true;
+        }
+
+        int i = 0;
+        for (JTextField tf : textFields) {
+            if (!tf.getText().equalsIgnoreCase(initialValues[i].getPath())) {
+                return true;
+            }
             i++;
         }
-		
-		return false;
-	}
-	
-	/**
-	 * Informs the parent panel to check for changes
-	 */
-	private void informParent()
-	{
-		//the editor's configuration has changed, the parent panel must check for changes
-        if(tabPanel instanceof ClusterEditorTabPanel)
-			((ClusterEditorTabPanel) tabPanel).checkForChanges();
-	}
+
+        return false;
+    }
 }

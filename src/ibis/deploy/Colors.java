@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Colors {
-    
+
     // colors used for clusters
     private static final String[] colors = { "#FF0000", "#FF8000", "#FFFF00",
             "#80FF00", "#00FF00", "#00FF80", "#00FFFF", "#007FFF", "#0000FF",

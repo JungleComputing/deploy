@@ -216,7 +216,8 @@ public class Job implements Runnable {
             return prefix + file.getName() + File.pathSeparator;
         }
         // classpath for dir "lib" with prefix "dir/" is dir/lib/*:dir/lib
-        String result = prefix + file.getName() + File.pathSeparator + prefix + file.getName() + File.separator + "*" + File.pathSeparator;
+        String result = prefix + file.getName() + File.pathSeparator + prefix
+                + file.getName() + File.separator + "*" + File.pathSeparator;
         for (File child : file.listFiles()) {
             if (child.isDirectory() && !child.isHidden()) {
                 result = result

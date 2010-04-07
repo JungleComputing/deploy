@@ -15,17 +15,16 @@ import java.util.List;
  * 
  */
 public class Grid {
-    
+
     public static final String LOCAL_COLOR = "#FF0000";
 
     // colors used for clusters
-    private static final String[] COLORS = {  "#FF8000", "#FFFF00",
-            "#80FF00", "#00FF00", "#00FF80", "#007FFF", "#0000FF", "#8000FF",
-            "#FF00FF", "#FF0080", "#FF8080", "#FFBF80", "#FFFF80", "#BFFF80",
-            "#80FF80", "#80FFBF", "#80FFFF", "#80BFFF", "#8080FF", "#BF80FF",
-            "#FF80FF", "#FF80BF", "#800000", "#804000", "#808000", "#408000",
-            "#008000", "#008040", "#008080", "#004080", "#000080", "#400080",
-    };
+    private static final String[] COLORS = { "#FF8000", "#FFFF00", "#80FF00",
+            "#00FF00", "#00FF80", "#007FFF", "#0000FF", "#8000FF", "#FF00FF",
+            "#FF0080", "#FF8080", "#FFBF80", "#FFFF80", "#BFFF80", "#80FF80",
+            "#80FFBF", "#80FFFF", "#80BFFF", "#8080FF", "#BF80FF", "#FF80FF",
+            "#FF80BF", "#800000", "#804000", "#808000", "#408000", "#008000",
+            "#008040", "#008080", "#004080", "#000080", "#400080", };
 
     private final List<Cluster> clusters;
 
@@ -57,7 +56,7 @@ public class Grid {
 
         DeployProperties properties = new DeployProperties();
         properties.loadFromFile(file.getAbsolutePath());
-        
+
         loadSettingsFromProperties(properties, null);
     }
 
@@ -74,21 +73,21 @@ public class Grid {
      * 
      */
     public Grid(DeployProperties properties, String prefix) throws Exception {
-    	clusters = new ArrayList<Cluster>();
-    	loadSettingsFromProperties(properties, prefix);
+        clusters = new ArrayList<Cluster>();
+        loadSettingsFromProperties(properties, prefix);
     }
-    
+
     /**
-     * Initializes the grid using data from the given properties 
+     * Initializes the grid using data from the given properties
      * 
      * @param properties
      *            properties of the grid
      * @param prefix
      *            prefix to use on all keys
      **/
-    private void loadSettingsFromProperties(DeployProperties properties, String prefix) throws Exception
-    {    	
-    	if (prefix == null) {
+    private void loadSettingsFromProperties(DeployProperties properties,
+            String prefix) throws Exception {
+        if (prefix == null) {
             prefix = "";
         } else {
             prefix = prefix + ".";
@@ -96,26 +95,21 @@ public class Grid {
 
         String[] clusterNames = properties.getElementList(prefix);
         if (clusterNames != null) {
-            for (String clusterName : clusterNames) 
-            {
+            for (String clusterName : clusterNames) {
                 Cluster cluster = new Cluster(properties, clusterName, prefix
                         + clusterName, this);
-                if (!clusterName.equals("local")) 
-                {
+                if (!clusterName.equals("local")) {
                     cluster.setColor(getNextColor());
-                }
-                else
-                {
-                	cluster.setColor(LOCAL_COLOR);
+                } else {
+                    cluster.setColor(LOCAL_COLOR);
                     cluster.setVisibleOnMap(false);
                 }
                 clusters.add(cluster);
             }
         }
-        
+
         // add "local" cluster if it doesn't exist yet
-        if (!hasCluster("local")) 
-        {
+        if (!hasCluster("local")) {
             Cluster local = new Cluster("local", this);
             local.setColor(LOCAL_COLOR);
             local.setVisibleOnMap(false);
@@ -126,11 +120,9 @@ public class Grid {
     /**
      * Constructs a new empty grid.
      */
-    public Grid() 
-    { 
-    	clusters = new ArrayList<Cluster>();
-        try 
-        {
+    public Grid() {
+        clusters = new ArrayList<Cluster>();
+        try {
             Cluster local = new Cluster("local", this);
             local.setColor(LOCAL_COLOR);
             local.setVisibleOnMap(false);
@@ -139,7 +131,7 @@ public class Grid {
             throw new RuntimeException(e);
         }
     }
-    
+
     private synchronized String getNextColor() {
         String result = COLORS[nextColor];
 
@@ -307,7 +299,7 @@ public class Grid {
      */
     public String toPrintString() {
         String result = "Grid containing " + clusters.size()
-                + " clusters:\n\nDefault ";
+                + " clusters:\n";
 
         for (Cluster cluster : clusters) {
             result += cluster.toPrintString() + "\n";

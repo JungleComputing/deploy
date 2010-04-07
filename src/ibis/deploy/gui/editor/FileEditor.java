@@ -1,6 +1,5 @@
 package ibis.deploy.gui.editor;
 
-import ibis.deploy.gui.clusters.ClusterEditorTabPanel;
 import ibis.deploy.gui.misc.Utils;
 
 import java.awt.BorderLayout;
@@ -17,8 +16,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-public class FileEditor implements KeyListener, ChangeableField
-{
+public class FileEditor extends ChangeableField implements KeyListener {
     /**
      * 
      */
@@ -29,28 +27,28 @@ public class FileEditor implements KeyListener, ChangeableField
     private final JButton openButton = Utils.createImageButton(
             "images/document-open.png", "Select a file", null);
 
-    private String initialFile; 
+    private String initialFile;
 
-    private final JPanel tabPanel;
-    
     private final JLabel label = new JLabel("", JLabel.TRAILING);
 
     /**
-     * @param form - parent JPanel
-     * @param text - text to be displayed in the label
-     * @param value - initial text for the textField
+     * @param form
+     *            - parent JPanel
+     * @param text
+     *            - text to be displayed in the label
+     * @param value
+     *            - initial text for the textField
      */
-    public FileEditor(final JPanel tabPanel, JPanel form, final String text, File value) 
-    {
+    public FileEditor(final JPanel tabPanel, JPanel form, final String text,
+            File value) {
 
-        if (value != null) 
-        {
-        	textField.setText(value.getPath());
-        	initialFile = value.getPath();
+        if (value != null) {
+            textField.setText(value.getPath());
+            initialFile = value.getPath();
+        } else {
+            initialFile = "";
         }
-        else
-        	initialFile = "";
-        
+
         this.tabPanel = tabPanel;
         textField.addKeyListener(this);
 
@@ -60,9 +58,9 @@ public class FileEditor implements KeyListener, ChangeableField
         labelPanel.add(label, BorderLayout.EAST);
         container.add(labelPanel, BorderLayout.WEST);
         label.setText(text);
-        label.setPreferredSize(new Dimension(Utils.defaultLabelWidth,
-                label.getPreferredSize().height));
-        
+        label.setPreferredSize(new Dimension(Utils.defaultLabelWidth, label
+                .getPreferredSize().height));
+
         final JPanel filePanel = new JPanel(new BorderLayout());
         filePanel.add(textField, BorderLayout.CENTER);
 
@@ -75,13 +73,12 @@ public class FileEditor implements KeyListener, ChangeableField
                 int returnVal = fileChooser.showOpenDialog(filePanel);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     textField.setText(fileChooser.getSelectedFile().getPath());
-                    if(tabPanel instanceof ClusterEditorTabPanel)
-            			((ClusterEditorTabPanel) tabPanel).checkForChanges();
+                    informParent();
                 }
             }
 
         });
-        
+
         label.setLabelFor(filePanel);
         filePanel.add(openButton, BorderLayout.EAST);
         container.add(filePanel, BorderLayout.CENTER);
@@ -91,55 +88,52 @@ public class FileEditor implements KeyListener, ChangeableField
     /**
      * @return - new File created using the path in the textField
      */
-    public File getFile() 
-    {
-        if(textField.getText().trim().length() > 0)	
-        	return new File(textField.getText());
-        else 
-        	return null;
+    public File getFile() {
+        if (textField.getText().trim().length() > 0) {
+            return new File(textField.getText());
+        } else {
+            return null;
+        }
     }
-    
+
     /**
      * Sets the text of the textField to the given value
-     * @param fileName - new filename to be displayed in the textField
+     * 
+     * @param fileName
+     *            - new filename to be displayed in the textField
      */
-    public void setFile(String fileName)
-    {
-    	textField.setText(fileName);
+    public void setFile(String fileName) {
+        textField.setText(fileName);
     }
-    
+
     @Override
-    public void refreshInitialValue()
-    {
-    	initialFile = textField.getText();
-    	if(initialFile == null)
-    		initialFile = "";
+    public void refreshInitialValue() {
+        initialFile = textField.getText();
+        if (initialFile == null) {
+            initialFile = "";
+        }
     }
-    
+
     @Override
-	public void keyPressed(KeyEvent arg0) {
-	}
+    public void keyPressed(KeyEvent arg0) {
+    }
 
-	@Override
-	public void keyReleased(KeyEvent arg0) {
-		if(tabPanel instanceof ClusterEditorTabPanel)
-			((ClusterEditorTabPanel) tabPanel).checkForChanges();
-		
-		//need to take care, checks are performed also when the file chooser is used
-	}
+    @Override
+    public void keyReleased(KeyEvent arg0) {
+        informParent();
+    }
 
-	@Override
-	public void keyTyped(KeyEvent arg0) {
-		
-	}
+    @Override
+    public void keyTyped(KeyEvent arg0) {
 
-	/**
-	 * @return - true if the text field contains a different value than
-	 * the initial value
-	 */
-	@Override
-	public boolean hasChanged() 
-	{
-		return !textField.getText().equals(initialFile);
-	}
+    }
+
+    /**
+     * @return - true if the text field contains a different value than the
+     *         initial value
+     */
+    @Override
+    public boolean hasChanged() {
+        return !textField.getText().equals(initialFile);
+    }
 }

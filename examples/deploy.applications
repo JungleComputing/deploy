@@ -21,7 +21,7 @@ default.libs = lib-server,ipl-apps
 #default.input.files =
 #default.output.files =
 #default.system.properties =
-#default.java.options =
+#default.jvm.options =
 #default.log4j.file =
 
 # Application "Hello"
@@ -31,7 +31,7 @@ Hello.main.class = ibis.ipl.examples.Hello
 #Hello.input.files =
 #Hello.output.files =
 #Hello.system.properties =
-#Hello.java.options =
+#Hello.jvm.options =
 #Hello.log4j.file =
 
 # Application "OneToMany"
@@ -41,7 +41,7 @@ OneToMany.main.class = ibis.ipl.examples.OneToMany
 #OneToMany.input.files =
 #OneToMany.output.files =
 #OneToMany.system.properties =
-#OneToMany.java.options =
+#OneToMany.jvm.options =
 #OneToMany.log4j.file =
 
 # Application "RegistryBenchmark"
@@ -51,7 +51,7 @@ RegistryBenchmark.arguments = --runtime,120
 #RegistryBenchmark.input.files =
 #RegistryBenchmark.output.files =
 #RegistryBenchmark.system.properties =
-#RegistryBenchmark.java.options =
+#RegistryBenchmark.jvm.options =
 #RegistryBenchmark.log4j.file =
 
 # Application "RegistryUpcalls"
@@ -61,5 +61,5 @@ RegistryUpcalls.main.class = ibis.ipl.examples.RegistryUpcalls
 #RegistryUpcalls.input.files =
 #RegistryUpcalls.output.files =
 #RegistryUpcalls.system.properties =
-#RegistryUpcalls.java.options =
+#RegistryUpcalls.jvm.options =
 #RegistryUpcalls.log4j.file =

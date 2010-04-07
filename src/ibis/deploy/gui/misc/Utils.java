@@ -32,7 +32,7 @@ public class Utils {
         if (color == null) {
             return null;
         }
-        return new Color(color.getRed()  , color.getGreen(), color.getBlue(), 135);
+        return new Color(color.getRed(), color.getGreen(), color.getBlue(), 135);
     }
 
     /**
@@ -72,17 +72,19 @@ public class Utils {
 
     /** Returns an ImageIcon, or null if the path was invalid. */
     public static ImageIcon createImageIcon(String path, String description) {
-        java.net.URL imgURL = ClassLoader.getSystemClassLoader().getResource(path);
-        
+        java.net.URL imgURL = ClassLoader.getSystemClassLoader().getResource(
+                path);
+
         if (imgURL != null) {
             return new ImageIcon(imgURL, description);
         } else {
             return null;
         }
     }
-    
-    public static int defaultFieldHeight = 26; // this is the default height for comboboxes
-    public static int defaultLabelWidth = 150; 
+
+    public static int defaultFieldHeight = 26; // this is the default height for
+                                               // comboboxes
+    public static int defaultLabelWidth = 150;
     public static int gapHeight = 3;
 
 }

@@ -12,7 +12,6 @@ import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 public class ApplicationListTopPanel extends JPanel {
@@ -21,6 +20,8 @@ public class ApplicationListTopPanel extends JPanel {
      * 
      */
     private static final long serialVersionUID = 6183574615247336429L;
+
+    private static long ID_COUNTER = 0;
 
     public ApplicationListTopPanel(final GUI gui, final JList applicationList,
             final HashMap<Application, JPanel> editApplicationPanels,
@@ -36,16 +37,23 @@ public class ApplicationListTopPanel extends JPanel {
 
             public void actionPerformed(ActionEvent arg0) {
                 try {
+                    String appName = "New-Application-" + ID_COUNTER;
+                    ID_COUNTER++;
+                    while (gui.getApplicationSet().hasApplication(appName)) {
+                        appName = "New-Application-" + ID_COUNTER;
+                        ID_COUNTER++;
+                    }
+
                     Application newApplication = gui.getApplicationSet()
-                            .createNewApplication("New-Application");
+                            .createNewApplication(appName);
                     ((DefaultListModel) applicationList.getModel())
                             .addElement(newApplication);
                     editApplicationPanels.put(newApplication,
                             new ApplicationEditorTabPanel(newApplication,
-                                    applicationEditorPanel, gui, false));
+                                    applicationEditorPanel, gui));
                 } catch (Exception e) {
                 }
-                gui.fireGridUpdated();
+                gui.fireApplicationSetUpdated();
             }
 
         });
@@ -56,8 +64,8 @@ public class ApplicationListTopPanel extends JPanel {
 
             public void actionPerformed(ActionEvent arg0) {
                 try {
-                    // defaults cannot be removed
-                    if (applicationList.getSelectedIndex() >= 1) {
+                    // make sure that something is selected
+                    if (applicationList.getSelectedIndex() >= 0) {
                         Application selectedApplication = (Application) ((DefaultListModel) applicationList
                                 .getModel()).get(applicationList
                                 .getSelectedIndex());
@@ -73,15 +81,11 @@ public class ApplicationListTopPanel extends JPanel {
                                         .getSelectedIndex());
                         applicationEditorPanel.repaint();
                         gui.fireGridUpdated();
-                    } else if (applicationList.getSelectedIndex() == 0) {
-                        JOptionPane.showMessageDialog(getRootPane(),
-                                "Cannot remove the defaults", "Error",
-                                JOptionPane.PLAIN_MESSAGE);
                     }
                 } catch (Exception e) {
                     // ignore name is never null
                 }
-                gui.fireGridUpdated();
+                gui.fireApplicationSetUpdated();
             }
 
         });
