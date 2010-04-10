@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -386,7 +387,6 @@ public class ClusterEditorTabPanel extends JPanel {
         for (ChangeableField field : fields) {
             hasChanged = hasChanged || field.hasChanged();
             if (hasChanged) {
-                System.out.println(field.getClass());
                 break;
             }
         }

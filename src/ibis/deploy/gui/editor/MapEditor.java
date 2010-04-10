@@ -2,7 +2,6 @@ package ibis.deploy.gui.editor;
 
 import ibis.deploy.gui.misc.Utils;
 import ibis.deploy.gui.worldmap.MapUtilities;
-
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -13,7 +12,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -53,8 +51,8 @@ public class MapEditor extends ChangeableField implements
     public MapEditor(final JPanel tabPanel, final JPanel form, String text,
             double latitude, double longitude) {
         this.tabPanel = tabPanel;
-        initialLatitude = truncate(latitude);
-        initialLongitude = truncate(longitude);
+        initialLatitude = Utils.truncate(latitude);
+        initialLongitude = Utils.truncate(longitude);
 
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.PAGE_AXIS));
@@ -130,7 +128,7 @@ public class MapEditor extends ChangeableField implements
      *            - new latitude value
      */
     public void setLatitude(double latitude) {
-        latitudeEditor.setValue(truncate(latitude));
+        latitudeEditor.setValue(Utils.truncate(latitude));
     }
 
     /**
@@ -138,28 +136,13 @@ public class MapEditor extends ChangeableField implements
      *            - new longitude value
      */
     public void setLongitude(double longitude) {
-        longitudeEditor.setValue(truncate(longitude));
+        longitudeEditor.setValue(Utils.truncate(longitude));
     }
 
     @Override
     public void refreshInitialValue() {
         initialLatitude = (Double) latitudeEditor.getValue();
         initialLongitude = (Double) longitudeEditor.getValue();
-    }
-
-    /**
-     * truncates a double value to only 4 decimals
-     * 
-     * @param number
-     *            - the value to be truncated
-     * @return - the value truncated to 4 decimals
-     */
-    private double truncate(double number) {
-        if (number > 0) {
-            return Math.floor(number * 10000) / 10000.0;
-        } else {
-            return Math.ceil(number * 10000) / 10000.0;
-        }
     }
 
     /**
@@ -274,10 +257,10 @@ public class MapEditor extends ChangeableField implements
                             .convertPointToGeoPosition(e.getPoint());
                     mapKit.getMainMap().setAddressLocation(clusterLocation);
 
-                    dialogLatitudeEditor.setValue(truncate(clusterLocation
-                            .getLatitude()));
-                    dialogLongitudeEditor.setValue(truncate(clusterLocation
-                            .getLongitude()));
+                    dialogLatitudeEditor.setValue(Utils
+                            .truncate(clusterLocation.getLatitude()));
+                    dialogLongitudeEditor.setValue(Utils
+                            .truncate(clusterLocation.getLongitude()));
 
                     mapKit.getMainMap().setCenterPosition(oldPosition);
                     repaint();

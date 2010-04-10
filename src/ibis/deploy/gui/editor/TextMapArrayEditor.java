@@ -234,10 +234,6 @@ public class TextMapArrayEditor extends ChangeableField implements KeyListener {
         Iterator<JTextField> valueIterator = valueTextFields.iterator();
 
         JTextField keyTF, valueTF;
-        
-//        System.out.println(initialValues.toString());
-//        if(getTextMap() != null)
-//        System.out.println(getTextMap().toString());
 
         for (String key : initialValues.keySet()) {
             keyTF = keyIterator.next();
@@ -249,8 +245,6 @@ public class TextMapArrayEditor extends ChangeableField implements KeyListener {
                 return true;
             }
         }
-        
-//        System.out.println("asadasda");
 
         return false;
     }

@@ -21,9 +21,24 @@ public class JobTableModel extends AbstractTableModel {
 
     private static final long serialVersionUID = -2478479107636581568L;
 
-    private String[] columnNames = new String[] { "", "pool", "name",
-            "job status", "hub status", "cluster", "middleware", "application",
-            "process count", "resource count", "output" };
+    public static final String CONTROL_COLUMN_NAME = "";
+    public static final String POOL_COLUMN_NAME = "pool";
+    public static final String NAME_COLUMN_NAME = "name";
+    public static final String JOB_STATUS_COLUMN_NAME = "job status";
+    public static final String HUB_STATUS_COLUMN_NAME = "hub status";
+    public static final String CLUSTER_COLUMN_NAME = "cluster";
+    public static final String MIDDLEWARE_COLUMN_NAME = "middleware";
+    public static final String APPLICATION_COLUMN_NAME = "application";
+    public static final String PROCESS_COUNT_COLUMN_NAME = "process count";
+    public static final String RESOURCE_COUNT_COLUMN_NAME = "resource count";
+    public static final String OUTPUT_COLUMN_NAME = "output";
+
+    private String[] columnNames = new String[] { CONTROL_COLUMN_NAME,
+            POOL_COLUMN_NAME, NAME_COLUMN_NAME, JOB_STATUS_COLUMN_NAME,
+            HUB_STATUS_COLUMN_NAME, CLUSTER_COLUMN_NAME,
+            MIDDLEWARE_COLUMN_NAME, APPLICATION_COLUMN_NAME,
+            PROCESS_COUNT_COLUMN_NAME, RESOURCE_COUNT_COLUMN_NAME,
+            OUTPUT_COLUMN_NAME };
 
     private final GUI gui;
 
@@ -152,7 +167,7 @@ public class JobTableModel extends AbstractTableModel {
         for (JobRow row : rows) {
             row.stop();
         }
-        fireTableRowsUpdated(0, rows.size());
+        fireTableRowsUpdated(0, rows.size() -1);
     }
 
     public void remove(int... selection) {
