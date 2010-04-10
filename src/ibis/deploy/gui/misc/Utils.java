@@ -86,5 +86,20 @@ public class Utils {
                                                // comboboxes
     public static int defaultLabelWidth = 150;
     public static int gapHeight = 3;
+    
+    /**
+     * truncates a double value to only 4 decimals
+     * 
+     * @param number
+     *            - the value to be truncated
+     * @return - the value truncated to 4 decimals
+     */
+    public static double truncate(double number) {
+        if (number > 0) {
+            return Math.floor(number * 10000) / 10000.0;
+        } else {
+            return Math.ceil(number * 10000) / 10000.0;
+        }
+    }
 
 }
