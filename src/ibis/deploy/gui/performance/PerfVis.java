@@ -2,9 +2,11 @@ package ibis.deploy.gui.performance;
 
 import ibis.deploy.gui.GUI;
 import ibis.deploy.gui.performance.newtry.Vrarchy.Vobject;
+import ibis.deploy.gui.performance.newtry.dataobjects.Pool;
 import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
 import ibis.deploy.gui.performance.hierarchy.Hpool;
 import ibis.deploy.gui.performance.newtry.StatsManager;
+import ibis.deploy.gui.performance.newtry.VisualManager;
 import ibis.deploy.gui.performance.visuals.*;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
@@ -12,6 +14,7 @@ import ibis.ipl.server.RegistryServiceInterface;
 import java.awt.Point;
 import java.nio.IntBuffer;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -50,10 +53,6 @@ public class PerfVis implements GLEventListener {
 	
 	private GLU glu;
 	GUI gui;
-
-	//Site administration variables
-	Map<String, Integer> poolSizes = new HashMap<String, Integer>();
-	Map<String, Hpool> pools;
 	
 	//Window variables
 	private double width;
@@ -74,12 +73,12 @@ public class PerfVis implements GLEventListener {
 	private RegistryServiceInterface regInterface;
 	private ManagementServiceInterface manInterface;
 	
-
 	private int updateInterval;
 	
 	private HashMap<Integer, Vobject> glNameRegistry;
 	
 	private StatsManager statman;
+	private VisualManager visman;
 	
 	PerfVis() {
 		glu = new GLU();
@@ -89,7 +88,6 @@ public class PerfVis implements GLEventListener {
 		this.gui = gui;
 		glu = new GLU();
 		this.canvas = canvas;
-		pools = new HashMap<String, Hpool>();
 		
 		try {
 			this.regInterface = gui.getDeploy().getServer().getRegistryService();
@@ -99,6 +97,7 @@ public class PerfVis implements GLEventListener {
 		}	
 		
 		statman = new StatsManager(this);
+		visman = new VisualManager(this);
 	}
 	
 	public int registerGLObject(Vobject visual) {
@@ -112,7 +111,7 @@ public class PerfVis implements GLEventListener {
 			throw new ModeUnknownException();
 		}
 		this.currentScope = scope;
-		updateGroup();
+		updateStats();
 	}
 	
 	public void setZoom(int zoom) throws ModeUnknownException {
@@ -120,7 +119,7 @@ public class PerfVis implements GLEventListener {
 			throw new ModeUnknownException();
 		}	
 		this.currentZoom = zoom;
-		updateGroup();
+		updateStats();
 	}
 	
 	public void setStat(int stat) throws ModeUnknownException {
@@ -128,7 +127,7 @@ public class PerfVis implements GLEventListener {
 			throw new ModeUnknownException();
 		}
 		this.currentStat = stat;
-		updateGroup();
+		updateStats();
 	}
 	
 	public void setCollectionForm(int form) throws ModeUnknownException {
@@ -136,7 +135,7 @@ public class PerfVis implements GLEventListener {
 			throw new ModeUnknownException();
 		}
 		this.currentCollectionForm = form;
-		updateGroup();
+		updateStats();
 	}
 	
 	public void setElementForm(int form) throws ModeUnknownException {
@@ -156,7 +155,7 @@ public class PerfVis implements GLEventListener {
 			//	pools.get(entry.getKey()).setZoom(currentZoom, currentStat);
 			//}
 			
-			updateGroup();
+			updateStats();
 									
 			updateInterval = 0;
 		} else {
@@ -173,32 +172,13 @@ public class PerfVis implements GLEventListener {
 		gl.glFlush();
 	}	
 	
-	public void updateGroup() {
-		try {
-			Map<String, Integer> newSizes = gui.getDeploy().poolSizes();			
-								
-			int i = 0;
-			
-			for (Map.Entry<String, Integer> entry : newSizes.entrySet()) {				
-	            String poolName = entry.getKey();
-	            int poolSize = entry.getValue();
-	
-	            if (poolSize > 0) {
-		            if (!poolSizes.containsKey(poolName) || poolSize != poolSizes.get(poolName)) {		            	
-		            	pools.put(poolName, new Hpool(this, i*GLNAMEMULT, poolName));		            	
-		            }		            
-		            pools.get(poolName).update();
-		            //pools.get(poolName).setName(i*GLNAMEMULT);		            
-		            i++;
-	            } else {
-	            	if (poolSizes.containsKey(poolName)) pools.remove(poolName);
-	            }	            
-	        }
-						
-			poolSizes = newSizes;
-		} catch (Exception e) {	
-			e.printStackTrace();
-		}
+	public void updateStats() {		
+		if (statman.checkPools()) {
+			//We'll need to remake the visualization tree
+			visman.reinitialize(statman.getPools());
+		} else {
+			statman.update();	
+		}			
 	}
 	
 	private void doView(GL gl) {
@@ -211,15 +191,7 @@ public class PerfVis implements GLEventListener {
 		gl.glLoadIdentity();
 		
 		doView(gl);
-		//gl.glTranslatef(3.0f,0.0f,0.0f);
-		
-		int i = 0;
-		for (Entry<String, Hpool> entry : pools.entrySet()) {		
-			//gl.glTranslatef(-1.5f,0.0f,0.0f);	
-			pools.get(entry.getKey()).setSize(0.25f, 1.0f);
-			pools.get(entry.getKey()).drawThis(gl, mode);
-			i++;
-		}
+		visman.drawAll();
 	}
 	
 	public int getSelection() {
@@ -281,7 +253,7 @@ public class PerfVis implements GLEventListener {
 		
 		canvas.requestFocusInWindow();
 			
-		updateGroup();			
+		updateStats();			
 	}
 	
 	public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {

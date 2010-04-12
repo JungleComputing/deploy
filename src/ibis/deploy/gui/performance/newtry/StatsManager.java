@@ -60,7 +60,9 @@ public class StatsManager {
 	@SuppressWarnings("unchecked")
 	public void update() {		
 		//Update the size of all pools and sites
-		initPools();
+		if (checkPools()) {
+			initPools();
+		}
 		
 		//for all pools
 		for (Pool pool : pools) {
@@ -90,21 +92,33 @@ public class StatsManager {
 		}
 	}
 	
-	private void initPools() {
+	public boolean checkPools() {
+		boolean changed = false;
+		Map<String, Integer> newSizes;
 		try {
-			Map<String, Integer> newSizes = perfvis.getRegInterface().getPoolSizes();
-						
-			//Check if anything has changed since the last update, if so, clear the pools list.
+			newSizes = perfvis.getRegInterface().getPoolSizes();		
+		
+			//Check if anything has changed since the last update
 			for (Map.Entry<String, Integer> entry : newSizes.entrySet()) {
 				String poolName = entry.getKey();
 	            int newSize = entry.getValue();
 				if (newSize > 0) {
-		            if (!poolSizes.containsKey(poolName) || newSize != poolSizes.get(poolName)) {
-		            	pools.clear();
+		            if (!poolSizes.containsKey(poolName) || newSize != poolSizes.get(poolName)) {		            	
+		            	changed = true;
 		            }
 				}
 			}
-			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return changed;
+	}
+	
+	private void initPools() {
+		pools.clear();
+		Map<String, Integer> newSizes;		
+		try {		
+			newSizes = perfvis.getRegInterface().getPoolSizes();
 			//reinitialize the pools list
 			for (Map.Entry<String, Integer> entry : newSizes.entrySet()) {				
 	            String poolName = entry.getKey();
