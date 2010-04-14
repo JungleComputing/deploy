@@ -141,7 +141,6 @@ public class TextMapArrayEditor extends ChangeableField implements KeyListener {
 
         final Component rigidArea = Box.createRigidArea(new Dimension(0,
                 Utils.gapHeight));
-        panel.add(rigidArea);
 
         final JButton removeButton = Utils.createImageButton(
                 "images/list-remove-small.png", "Remove item", null);
@@ -158,7 +157,8 @@ public class TextMapArrayEditor extends ChangeableField implements KeyListener {
             }
         });
         arrayItemPanel.add(removeButton, BorderLayout.WEST);
-        panel.add(arrayItemPanel);
+        panel.add(arrayItemPanel, panel.getComponentCount() - 1);
+        panel.add(rigidArea, panel.getComponentCount() - 1);
     }
 
     public Map<String, String> getTextMap() {

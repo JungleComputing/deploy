@@ -4,6 +4,7 @@ import ibis.deploy.Application;
 import ibis.deploy.gui.GUI;
 import ibis.deploy.gui.misc.Utils;
 
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
@@ -32,7 +33,10 @@ public class ApplicationListTopPanel extends JPanel {
         // add(label);
         JPanel buttonPanel = new JPanel();
         JButton addButton = Utils.createImageButton(
-                "images/list-add-small.png", "Add application", null);
+                "images/list-add-small.png", "Add application",
+                "Add");
+        addButton.setPreferredSize(new Dimension(Utils.buttonWidth, addButton
+                .getPreferredSize().height));
         addButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent arg0) {
@@ -59,7 +63,9 @@ public class ApplicationListTopPanel extends JPanel {
         });
         buttonPanel.add(addButton);
         JButton removeButton = Utils.createImageButton(
-                "images/list-remove-small.png", "Remove application", null);
+                "images/list-remove-small.png", "Remove selected application",
+                "Remove");
+        removeButton.setPreferredSize(new Dimension(Utils.buttonWidth, removeButton.getPreferredSize().height));
         removeButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent arg0) {

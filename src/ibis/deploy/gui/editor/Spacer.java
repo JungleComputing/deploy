@@ -1,10 +1,10 @@
 package ibis.deploy.gui.editor;
 
-import ibis.deploy.gui.misc.Utils;
+import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -16,22 +16,22 @@ public class Spacer extends JPanel {
     public Spacer(String labelText) {
         super();
 
-        setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
+        setLayout(new BorderLayout());
         setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
         JLabel label = new JLabel(labelText);
         Font font = label.getFont();
         label.setFont(font.deriveFont(Font.BOLD));
-        add(label);
+        label.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
+        add(label, BorderLayout.WEST);
         revalidate();
 
-        JPanel separatorPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
+        JPanel separatorPanel = new JPanel();
+        separatorPanel
+                .setLayout(new BoxLayout(separatorPanel, BoxLayout.Y_AXIS));
+        separatorPanel.add(Box.createRigidArea(new Dimension(0, 6)));
         JSeparator separator = new JSeparator(JSeparator.HORIZONTAL);
-        separator.setPreferredSize(new Dimension(2 * Utils.defaultLabelWidth
-                - label.getPreferredSize().width,
-                separator.getPreferredSize().height));
         separatorPanel.add(separator);
-
-        add(separatorPanel);
+        add(separatorPanel, BorderLayout.CENTER);
     }
 
 }

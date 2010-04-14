@@ -4,6 +4,7 @@ import ibis.deploy.Cluster;
 import ibis.deploy.gui.GUI;
 import ibis.deploy.gui.misc.Utils;
 
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
@@ -32,7 +33,9 @@ public class ClusterListTopPanel extends JPanel {
         // add(label);
         JPanel buttonPanel = new JPanel();
         JButton addButton = Utils.createImageButton(
-                "images/list-add-small.png", "Add cluster", null);
+                "images/list-add-small.png", "Add cluster", "Add");
+        addButton.setPreferredSize(new Dimension(Utils.buttonWidth, addButton
+                .getPreferredSize().height));
         addButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent arg0) {
@@ -59,7 +62,10 @@ public class ClusterListTopPanel extends JPanel {
         });
         buttonPanel.add(addButton);
         JButton removeButton = Utils.createImageButton(
-                "images/list-remove-small.png", "Remove cluster", null);
+                "images/list-remove-small.png", "Remove selected cluster",
+                "Remove");
+        removeButton.setPreferredSize(new Dimension(Utils.buttonWidth,
+                addButton.getPreferredSize().height));
         removeButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent arg0) {

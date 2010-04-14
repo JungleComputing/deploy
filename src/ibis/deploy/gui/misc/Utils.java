@@ -67,6 +67,7 @@ public class Utils {
         result.setVerticalTextPosition(AbstractButton.CENTER);
         result.setHorizontalTextPosition(AbstractButton.TRAILING);
         result.setToolTipText(description);
+        result.setFocusPainted(false);
         return result;
     }
 
@@ -86,6 +87,7 @@ public class Utils {
                                                // comboboxes
     public static int defaultLabelWidth = 150;
     public static int gapHeight = 3;
+    public static int buttonWidth = 80;
     
     /**
      * truncates a double value to only 4 decimals
