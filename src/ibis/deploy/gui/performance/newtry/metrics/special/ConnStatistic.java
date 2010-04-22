@@ -1,11 +1,15 @@
-package ibis.deploy.gui.performance.newtry.stats;
+package ibis.deploy.gui.performance.newtry.metrics.special;
 
+import ibis.deploy.gui.performance.newtry.metrics.MetricsObject;
+import ibis.deploy.gui.performance.newtry.metrics.MetricsObjectInterface;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.support.management.AttributeDescription;
 
-public class ConnStatistic extends StatisticsObject implements StatisticsObjectInterface {
+public class ConnStatistic extends MetricsObject implements MetricsObjectInterface {
 	public static final String NAME = "CONN";
 	public static final int DESCRIPTIONS_COUNT_NEEDED = 1;
+	
+	protected IbisIdentifier[] ibises;
 	
 	public ConnStatistic() {
 		super();
@@ -16,5 +20,9 @@ public class ConnStatistic extends StatisticsObject implements StatisticsObjectI
 	
 	public void update(Object[] results) {
 		ibises = (IbisIdentifier[]) results[0];		
+	}	
+	
+	public IbisIdentifier[] getIbises() {
+		return ibises;
 	}
 }

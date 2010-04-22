@@ -1,69 +1,42 @@
 package ibis.deploy.gui.performance.newtry.dataobjects;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
-import ibis.deploy.gui.performance.PerfVis;
 import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
-import ibis.deploy.gui.performance.newtry.stats.StatisticsObject;
+import ibis.deploy.gui.performance.newtry.metrics.MetricsObject;
 import ibis.ipl.IbisIdentifier;
+import ibis.ipl.server.ManagementServiceInterface;
 
-public class Site extends DataObject {	
-	private String name;
-	private Node[] nodes;
-	private Link[] links;
+public class Site extends IbisConcept implements IbisConceptInterface {	
+	private String name;	
 	
-	private HashMap<String, Float> averageValues;
-	
-	private List<StatisticsObject> currentlyGatheredStatistics;
+	private List<MetricsObject> currentlyGatheredStatistics;
 
-	public Site(PerfVis perfvis, String name, Node[] nodes) {	
-		super(perfvis);
+	public Site(ManagementServiceInterface manInterface, String name, Node[] nodes) {	
+		super(manInterface);
 		this.name = name;
-		this.nodes = nodes;
+				
+		this.subConcepts = nodes;
+	}
 		
-		averageValues = new HashMap<String, Float>();
-	}
-	
-	public void setLinks(Link[] links) {
-		this.links = links;
-	}
-
 	public String getName() {
 		return name;
 	}
 
-	public Node[] getNodes() {
-		return nodes;
-	}
-	
-	public Link[] getLinks() {
-		return links;
-	}
-
 	public IbisIdentifier[] getIbises() {
-		IbisIdentifier[] result = new IbisIdentifier[nodes.length];
-		for (int i=0; i< nodes.length; i++) {
-			result[i] = nodes[i].getName();
+		IbisIdentifier[] result = new IbisIdentifier[subConcepts.length];
+		for (int i=0; i< subConcepts.length; i++) {
+			result[i] = ((Node)subConcepts[i]).getName();
 		}
 		return result;
-	}
+	}	
 	
-	public List<StatisticsObject> getCurrentlyGatheredStatistics() {
-		return currentlyGatheredStatistics;
-	}
-
-	public void setCurrentlyGatheredStatistics(
-			List<StatisticsObject> currentlyGatheredStatistics) {
-		this.currentlyGatheredStatistics = currentlyGatheredStatistics;
-	}
-	
-	public void updateAverages() throws StatNotRequestedException {		
-		for (StatisticsObject stat : currentlyGatheredStatistics) {
+	public void update() throws StatNotRequestedException {		
+		for (MetricsObject stat : currentlyGatheredStatistics) {
 			String key = stat.getName();
 			List<Float> results = new ArrayList<Float>();
-			for (Node node : nodes) {			
+			for (Node node : (Node[])subConcepts) {			
 				results.add((Float)node.getValue(key));
 			}
 			float total = 0, average = 0;
@@ -71,13 +44,16 @@ public class Site extends DataObject {
 				total += entry;
 			}
 			average = total / results.size();
-			averageValues.put(key, average);
+			nodeMetricsValues.put(key, average);
+			nodeMetricsColors.put(key, stat.getColor());
 		}
 	}
-
-	public float getAverageValue(String key) {
-		return averageValues.get(key);
+	
+	public void setCurrentlyGatheredStatistics(List<MetricsObject> currentlyGatheredStatistics) {
+		this.currentlyGatheredStatistics = currentlyGatheredStatistics;
 	}
-	
-	
+
+	public List<MetricsObject> getCurrentlyGatheredStatistics() {
+		return currentlyGatheredStatistics;
+	}
 }

@@ -8,10 +8,10 @@ import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
 import javax.media.opengl.GL;
 import javax.media.opengl.glu.GLUquadric;
 
-public class Vsinglestat extends Vobject implements VobjectInterface {
-	public static final int TUBE = 1;
-	public static final int BAR = 2;
-	public static final int SPHERE = 3;	
+public class Vmetric extends Vobject implements VobjectInterface {	
+	public static final int TUBE = 4001;
+	public static final int BAR = 4002;
+	public static final int SPHERE = 4003;	
 	
 	private static final float ALPHA = 0.2f;
 	
@@ -19,15 +19,39 @@ public class Vsinglestat extends Vobject implements VobjectInterface {
 	private float alpha;
 	
 	private float value;
-	private int currentForm;
+	private Vobject from, to;
 		
-	public Vsinglestat(PerfVis perfvis, Float[] color) {
+	public Vmetric(PerfVis perfvis, Float[] color) {
 		super(perfvis);
 		this.color = color;
 		this.alpha = ALPHA;
 		
 		this.value = 1.0f;
-		this.currentForm = BAR;
+		try {
+			this.setForm(Vmetric.BAR);
+		} catch (ModeUnknownException e) {			
+			e.printStackTrace();
+		}
+		
+		this.from = null;
+		this.to = null;
+	}
+	
+	public Vmetric(PerfVis perfvis, Float[] color, Vobject from, Vobject to) {
+		super(perfvis);
+		
+		this.color = color;
+		this.alpha = ALPHA;
+		
+		this.value = 1.0f;
+		try {
+			this.setForm(Vmetric.BAR);
+		} catch (ModeUnknownException e) {			
+			e.printStackTrace();
+		}
+		
+		this.from = from;
+		this.to = to;
 	}
 	
 	public void setValue(float value) throws ValueOutOfBoundsException {
@@ -39,10 +63,10 @@ public class Vsinglestat extends Vobject implements VobjectInterface {
 	}
 	
 	public void setForm(int form) throws ModeUnknownException {
-		if (form == BAR || form == TUBE || form == SPHERE) {
-			this.currentForm = form;
+		if (form != Vmetric.BAR || form != Vmetric.TUBE || form != Vmetric.SPHERE) {
+			throw new ModeUnknownException();			
 		} else {			
-			throw new ModeUnknownException();
+			this.currentForm = form;
 		}
 	}
 	
@@ -53,17 +77,50 @@ public class Vsinglestat extends Vobject implements VobjectInterface {
 		gl.glPushMatrix();
 		gl.glMatrixMode(GL.GL_MODELVIEW);
 		
-		//Move towards the intended location
-		if (glMode == GL.GL_SELECT) gl.glLoadName(glName);
-		gl.glTranslatef(location[0], location[1], location[2]);
-		
-		//Draw the form
-		if (currentForm == BAR) {
-			drawBar(gl);
-		} else if (currentForm == TUBE) {
-			drawTube(gl);
-		} else if (currentForm == SPHERE) {
-			drawSphere(gl);
+		if (from == null & to == null) {
+			//Move towards the intended location
+			if (glMode == GL.GL_SELECT) gl.glLoadName(glName);
+			gl.glTranslatef(location[0], location[1], location[2]);
+			
+			//Draw the form
+			if (currentForm == BAR) {
+				drawBar(gl, scaleY);
+			} else if (currentForm == TUBE) {
+				drawTube(gl, scaleY);
+			} else if (currentForm == SPHERE) {
+				drawSphere(gl);
+			}		
+		} else {
+			//Calculate the angles we need to turn towards the destination
+			float[] origin = from.getLocation();
+			float[] destination = to.getLocation();
+			
+			float xDist = origin[0] - destination[0];
+			float yDist = origin[1] - destination[1];
+			float zDist = origin[2] - destination[2];
+			
+			float zAngle = (float) Math.atan(yDist/xDist);
+			float yAngle = (float) Math.atan(zDist/xDist);
+			
+			//Calculate the length of this element : V( x^2 + y^2 + z^2 ) 
+			float length  = (float) Math.sqrt(	Math.pow(xDist,2)
+											  + Math.pow(yDist,2) 
+											  + Math.pow(zDist,2));
+			
+			length = length - (from.getRadius() + to.getRadius());
+			
+			//Translate to the origin and turn towards the destination
+			gl.glTranslatef(origin[0], origin[1], origin[2]);
+			gl.glRotatef(zAngle, 0.0f, 0.0f, 1.0f);
+			gl.glRotatef(yAngle, 0.0f, 1.0f, 0.0f);
+			
+			//And draw the link
+			if (glMode == GL.GL_SELECT) gl.glLoadName(glName);
+			if (currentForm == BAR) {
+				drawBar(gl, length);
+			} else if (currentForm == TUBE) {
+				drawTube(gl, length);
+			}
 		}
 		
 		//Restore the old matrix mode and transformation matrix		
@@ -71,11 +128,11 @@ public class Vsinglestat extends Vobject implements VobjectInterface {
 		gl.glPopMatrix();
 	}
 	
-	protected void drawBar(GL gl) {		
+	protected void drawBar(GL gl, float length) {		
 		//use nice variables, so that the ogl code is readable
 		float o = 0.0f;			//(o)rigin
 		float x = scaleXZ;		//(x) maximum coordinate
-		float y = scaleY;		//(y) maximum coordinate
+		float y = length;		//(y) maximum coordinate
 		float z = scaleXZ;		//(z) maximum coordinate	
 		float f = value * y; 	//(f)illed area
 		float r = y - f;		//(r)est area (non-filled, up until the maximum) 
@@ -291,7 +348,7 @@ public class Vsinglestat extends Vobject implements VobjectInterface {
 		gl.glEnd();		
 	}
 	
-	protected void drawTube(GL gl) {		
+	protected void drawTube(GL gl, float length) {		
 		float line_color_r = 0.8f;
 		float line_color_g = 0.8f;
 		float line_color_b = 0.8f;
@@ -302,7 +359,7 @@ public class Vsinglestat extends Vobject implements VobjectInterface {
 		
 		float radius = scaleXZ /2;
 		
-		float f = value * scaleY;
+		float f = value * length;
 		
 		//Make a new quadratic object
 		GLUquadric qobj = glu.gluNewQuadric();
@@ -336,11 +393,11 @@ public class Vsinglestat extends Vobject implements VobjectInterface {
 								
 		//Sides
 		gl.glColor4f(quad_color_r, quad_color_g, quad_color_b, alpha);
-		glu.gluCylinder(qobj, radius, radius, scaleY-f, 32, 10);			
+		glu.gluCylinder(qobj, radius, radius, length-f, 32, 10);			
 		
 		//Edge of bottom disk also left out
 					
-		gl.glTranslatef(0.0f, 0.0f, scaleY-f);
+		gl.glTranslatef(0.0f, 0.0f, length-f);
 		
 		//Top disk
 		gl.glColor4f(quad_color_r, quad_color_g, quad_color_b, alpha);
@@ -353,7 +410,7 @@ public class Vsinglestat extends Vobject implements VobjectInterface {
 		
 		//Cleanup
 		glu.gluDeleteQuadric(qobj);
-	}	
+	}
 	
 	protected void drawSphere(GL gl) {
 		float quad_color_r = color[0];

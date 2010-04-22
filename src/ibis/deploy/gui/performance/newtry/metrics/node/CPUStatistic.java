@@ -1,11 +1,12 @@
-package ibis.deploy.gui.performance.newtry.stats;
+package ibis.deploy.gui.performance.newtry.metrics.node;
 
+import ibis.deploy.gui.performance.newtry.metrics.MetricsObjectInterface;
 import ibis.ipl.support.management.AttributeDescription;
 
-public class CPUStatistic extends StatisticsObject implements StatisticsObjectInterface {
+public class CPUStatistic extends NodeMetricsObject implements MetricsObjectInterface {
 	public static final String NAME = "CPU";
 	public static final int DESCRIPTIONS_COUNT_NEEDED = 3;
-	public static final float[] COLOR = {1.0f, 0.0f, 0.0f};
+	public static final Float[] COLOR = {1.0f, 0.0f, 0.0f};
 	
 	private long cpu_prev, upt_prev;
 	

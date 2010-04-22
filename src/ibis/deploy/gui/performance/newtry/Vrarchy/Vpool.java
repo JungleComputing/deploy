@@ -2,7 +2,7 @@ package ibis.deploy.gui.performance.newtry.Vrarchy;
 import ibis.deploy.gui.performance.PerfVis;
 import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
 import ibis.deploy.gui.performance.exceptions.ValueOutOfBoundsException;
-import ibis.deploy.gui.performance.newtry.dataobjects.Node;
+import ibis.deploy.gui.performance.newtry.dataobjects.Pool;
 import ibis.deploy.gui.performance.newtry.dataobjects.Site;
 
 import java.nio.IntBuffer;
@@ -13,38 +13,37 @@ import java.util.Map;
 
 import javax.media.opengl.GL;
 
-public class Vsite extends Vobject implements VobjectInterface {	
+public class Vpool extends Vobject implements VobjectInterface {	
 	public static int CITYSCAPE = 11;
 	public static int CIRCLE = 12;
 	
-	private List<Vnode> vnodes;
-	private Site site;
+	private List<Vsite> vsites;	
+	private Pool pool; 
 		
-	public Vsite(PerfVis perfvis, Site site) {
+	public Vpool(PerfVis perfvis, Pool pool) {
 		super(perfvis);
-		this.site = site;
+		this.pool = pool;
 		
-		//Preparing the vnodes
-		Node[] nodes = (Node[])site.getSubConcepts();
-		vnodes = new ArrayList<Vnode>();
+		Site[] sites = (Site[])pool.getSubConcepts();
+		vsites = new ArrayList<Vsite>();
 				
-		for (Node node : nodes) {
-			vnodes.add(new Vnode(perfvis, node));
-		}
+		for (Site site : sites) {
+			vsites.add(new Vsite(perfvis, site));
+		}	
 		
 		//Preparing the metrics vobjects for the average values
-		HashMap<String, Float[]> colors = site.getMetricsColors();
+		HashMap<String, Float[]> colors = pool.getMetricsColors();
 		
 		for (Map.Entry<String, Float[]> entry : colors.entrySet()) {
 			vmetrics.put(entry.getKey(), new Vmetric(perfvis, entry.getValue()));		
 		}
 	}
 
-	public void setForm(int siteForm) throws ModeUnknownException {
-		if (siteForm != Vsite.CITYSCAPE && siteForm != Vsite.CIRCLE) {
+	public void setForm(int poolForm) throws ModeUnknownException {
+		if (poolForm != Vpool.CITYSCAPE && poolForm != Vpool.CIRCLE) {
 			throw new ModeUnknownException();
 		}
-		this.currentForm = siteForm;
+		this.currentForm = poolForm;
 				
 		//recalculate the outer radius for this form
 		setSize(scaleXZ, scaleY);
@@ -53,14 +52,14 @@ public class Vsite extends Vobject implements VobjectInterface {
 	public void setSize(float width, float height) {
 		this.scaleXZ = width;
 		this.scaleY = height;
-		for (Vnode vnode : vnodes) {
-			vnode.setSize(width, height);
+		for (Vsite vsite : vsites) {
+			vsite.setSize(width, height);
 		}
 		
 		if (currentForm == Vnode.CITYSCAPE) {
-			int horz = (int)(Math.ceil(Math.sqrt(vnodes.size()))*(scaleXZ+0.1f));
+			int horz = (int)(Math.ceil(Math.sqrt(vsites.size()))*(scaleXZ+0.1f));
 			int vert = (int)scaleY;
-			int dept = (int)(Math.ceil(Math.sqrt(vnodes.size()))*(scaleXZ+0.1f));
+			int dept = (int)(Math.ceil(Math.sqrt(vsites.size()))*(scaleXZ+0.1f));
 			
 			//3d across
 			this.radius = (float) Math.sqrt(  Math.pow(horz, 2)
@@ -68,7 +67,7 @@ public class Vsite extends Vobject implements VobjectInterface {
 											+ Math.pow(dept, 2));
 			
 		} else if (currentForm == Vnode.CIRCLE) {
-			double angle  = 2*Math.PI / vnodes.size();
+			double angle  = 2*Math.PI / vsites.size();
 			float innerRadius = (float) ((scaleXZ/2) / Math.tan(angle/2));	
 			innerRadius = Math.max(innerRadius, 0);
 			
@@ -77,10 +76,10 @@ public class Vsite extends Vobject implements VobjectInterface {
 	}
 	
 	public void update() {		
-		for (Vnode vnode : vnodes) {
-			vnode.update();			
+		for (Vsite vsite : vsites) {
+			vsite.update();			
 		}
-		HashMap<String, Float> stats = site.getMonitoredNodeMetrics();
+		HashMap<String, Float> stats = pool.getMonitoredNodeMetrics();
 		for (Map.Entry<String, Float> entry : stats.entrySet()) {
 			try {
 				vmetrics.get(entry.getKey()).setValue(entry.getValue());
@@ -101,9 +100,9 @@ public class Vsite extends Vobject implements VobjectInterface {
 		gl.glTranslatef(location[0], location[1], location[2]);
 		
 		//Draw the desired form
-		if (currentForm == Vsite.CITYSCAPE) {
+		if (currentForm == Vpool.CITYSCAPE) {
 			drawCityscape(gl, glMode);
-		} else if (currentForm == Vsite.CIRCLE) {
+		} else if (currentForm == Vpool.CIRCLE) {
 			drawCircle(gl, glMode);
 		}
 		
@@ -114,16 +113,16 @@ public class Vsite extends Vobject implements VobjectInterface {
 	
 	protected void drawCityscape(GL gl, int glMode) {		
 		//get the breakoff point for rows and columns
-		int rows 		= (int)Math.ceil(Math.sqrt(vnodes.size()));
-		int columns 	= (int)Math.floor(Math.sqrt(vnodes.size()));
+		int rows 		= (int)Math.ceil(Math.sqrt(vsites.size()));
+		int columns 	= (int)Math.floor(Math.sqrt(vsites.size()));
 		
 		//Center the drawing around the location		
 		setRelativeX( ((((scaleXZ+separation)*rows   )-separation)-(0.5f*scaleXZ))*0.5f );
 		//setRelativeY(-(0.5f*scaleY));
 		setRelativeZ(-((((scaleXZ+separation)*columns)-separation)-(0.5f*scaleXZ))*0.5f );
 		
-		int row = 0, column = 0, i =0;
-		for (Vnode vnode : vnodes) {
+		int row = 0, column = 0, i = 0;
+		for (Vsite vsite : vsites) {
 			row = i % rows;
 			//Move to next row (if applicable)
 			if (i != 0 && row == 0) {
@@ -132,33 +131,33 @@ public class Vsite extends Vobject implements VobjectInterface {
 						
 			//Setup the form
 			try {
-				vnode.setLocation(location);				
-				vnode.setRelativeX(-(scaleXZ+separation)*row);
-				vnode.setRelativeZ( (scaleXZ+separation)*column);
+				vsite.setLocation(location);				
+				vsite.setRelativeX(-(scaleXZ+separation)*row);
+				vsite.setRelativeZ( (scaleXZ+separation)*column);
 					
 			} catch (Exception e) {					
 				e.printStackTrace();
 			}
 			
 			//Draw the form
-			vnode.drawThis(gl, glMode);	
+			vsite.drawThis(gl, glMode);	
 			i++;
 		}
 	}
 	
 	protected void drawCircle(GL gl, int glMode) {				
-		double angle  = 2*Math.PI / vnodes.size();
+		double angle  = 2*Math.PI / vsites.size();
 		float degs = (float) Math.toDegrees(angle);
 		float radius = (float) ((scaleXZ/2) / Math.tan(angle/2));	
 		radius = Math.max(radius, 0);
 						
-		for (Vnode vnode : vnodes) {						
+		for (Vsite vsite : vsites) {						
 			//move towards the position			
 			gl.glTranslatef(radius, 0.0f, 0.0f);
 			gl.glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);
 											
 			//Draw the form
-			vnode.drawThis(gl, glMode);
+			vsite.drawThis(gl, glMode);
 			
 			//Move back to the center			
 			gl.glRotatef(90.0f, 0.0f, 0.0f, 1.0f);

@@ -1,17 +1,16 @@
-package ibis.deploy.gui.performance.newtry.stats;
+package ibis.deploy.gui.performance.newtry.metrics;
 
 import ibis.deploy.gui.performance.exceptions.MethodNotOverriddenException;
-import ibis.ipl.IbisIdentifier;
 import ibis.ipl.support.management.AttributeDescription;
 
-public class StatisticsObject {
+public class MetricsObject implements MetricsObjectInterface {
 	public static final String NAME = "GENERIC";
 	public static final int DESCRIPTIONS_COUNT_NEEDED = 0;
-	public static float[] COLOR = {1.0f, 1.0f, 1.0f};
+	public static Float[] COLOR = {1.0f, 1.0f, 1.0f};
+	public static final int METRICSGROUP = 0;
 	
 	protected AttributeDescription[] necessaryAttributes;
-	protected float value;
-	protected IbisIdentifier[] ibises;
+	protected float value;	
 	
 	public void update(Object[] results) throws MethodNotOverriddenException {
 		throw new MethodNotOverriddenException();
@@ -24,10 +23,6 @@ public class StatisticsObject {
 	public float getValue() {
 		return value;
 	}
-		
-	public IbisIdentifier[] getIbises() {
-		return ibises;
-	}
 
 	public int getAttributesCountNeeded() {
 		return DESCRIPTIONS_COUNT_NEEDED;
@@ -37,7 +32,11 @@ public class StatisticsObject {
 		return NAME;
 	}
 	
-	public float[] getColor() {
+	public Float[] getColor() {
 		return COLOR;
+	}
+	
+	public int getGroup() {
+		return METRICSGROUP;
 	}
 }

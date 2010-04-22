@@ -1,45 +1,30 @@
 package ibis.deploy.gui.performance.newtry.dataobjects;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
-import ibis.deploy.gui.performance.PerfVis;
 import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
-import ibis.deploy.gui.performance.newtry.stats.StatisticsObject;
+import ibis.deploy.gui.performance.newtry.metrics.MetricsObject;
 import ibis.ipl.IbisIdentifier;
+import ibis.ipl.server.ManagementServiceInterface;
 
-public class Pool extends DataObject {
+public class Pool extends IbisConcept implements IbisConceptInterface {
 	private String name;
-	private Site[] sites;
-	private Trunk[] trunks;
-	private HashMap<String, Float> averageValues;
-	
-	public Pool(PerfVis perfvis, String name, Site[] sites, Trunk[] trunks) {
-		super(perfvis);
-		this.name = name;
-		this.sites = sites;
-		this.trunks = trunks;
 		
-		averageValues = new HashMap<String, Float>();
+	public Pool(ManagementServiceInterface manInterface, String name, Site[] sites) {
+		super(manInterface);
+		this.name = name;
+		this.subConcepts = sites;		
 	}
 
 	public String getName() {
 		return name;
-	}
-
-	public Site[] getSites() {
-		return sites;
-	}
-
-	public Trunk[] getTrunks() {
-		return trunks;
-	}
+	}	
 	
 	public IbisIdentifier[] getIbises() {
 		List<IbisIdentifier> result = new ArrayList<IbisIdentifier>();
-		for (int i=0; i< sites.length; i++) {
-			IbisIdentifier[] nodes = sites[i].getIbises();
+		for (int i=0; i< subConcepts.length; i++) {
+			IbisIdentifier[] nodes = ((Site)subConcepts[i]).getIbises();
 			for (int j=0; j<nodes.length; j++) {
 				result.add(nodes[j]);
 			}
@@ -47,34 +32,36 @@ public class Pool extends DataObject {
 		return (IbisIdentifier[]) result.toArray();		
 	}	
 	
-	public void updateAverages() throws StatNotRequestedException {		
-		List<StatisticsObject> stats = sites[0].getCurrentlyGatheredStatistics();
-		for (StatisticsObject stat : stats) {
+	public void update() throws StatNotRequestedException {		
+		List<MetricsObject> stats = ((Site)subConcepts[0]).getCurrentlyGatheredStatistics();
+		for (MetricsObject stat : stats) {
 			if (compareStats(stat)) {		
 				String key = stat.getName();
 				List<Float> results = new ArrayList<Float>();
-				for (Site site : sites) {			
-					results.add(site.getAverageValue(key));
+				for (Site site : (Site[])subConcepts) {			
+					results.add(site.getValue(key));
 				}
 				float total = 0, average = 0;
 				for (Float entry : results) {
 					total += entry;
 				}
 				average = total / results.size();
-				averageValues.put(key, average);
+				nodeMetricsValues.put(key, average);
+				nodeMetricsColors.put(key, stat.getColor());
 			}
 		}
-	}
+	}	
 	
-	private boolean compareStats(StatisticsObject stat) {							
-		for (Site site : sites) {
+	private boolean compareStats(MetricsObject stat) {							
+		for (Site site : (Site[])subConcepts) {
 			if (!site.getCurrentlyGatheredStatistics().contains(stat)) return false;
 		}		
 		return true;
 	}
 	
-	
-	public float getAverageValue(String key) {
-		return averageValues.get(key);
+	public void setCurrentlyGatheredStatistics(List<MetricsObject> currentlyGatheredStatistics) {
+		for (Site site : (Site[])subConcepts) {
+			site.setCurrentlyGatheredStatistics(currentlyGatheredStatistics);
+		}
 	}
 }

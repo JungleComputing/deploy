@@ -1,12 +1,13 @@
-package ibis.deploy.gui.performance.newtry.stats;
+package ibis.deploy.gui.performance.newtry.metrics.link;
 
+import ibis.deploy.gui.performance.newtry.metrics.MetricsObjectInterface;
 import ibis.ipl.support.management.AttributeDescription;
 
 
-public class BytesSentStatistic extends StatisticsObject implements StatisticsObjectInterface {
+public class BytesSentStatistic extends LinkMetricsObject implements MetricsObjectInterface {
 	public static final String NAME = "LINKS";
 	public static final int DESCRIPTIONS_COUNT_NEEDED = 1;
-	public static final float[] COLOR = {0.0f, 0.0f, 1.0f};
+	public static final Float[] COLOR = {0.0f, 0.0f, 1.0f};
 	
 	private long sent_prev, sent_max;
 	

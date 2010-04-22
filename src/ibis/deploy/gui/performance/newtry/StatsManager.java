@@ -6,55 +6,69 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ibis.deploy.gui.performance.PerfVis;
 import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
-import ibis.deploy.gui.performance.newtry.stats.*;
+import ibis.deploy.gui.performance.newtry.metrics.*;
+import ibis.deploy.gui.performance.newtry.metrics.node.*;
+import ibis.deploy.gui.performance.newtry.metrics.link.*;
+import ibis.deploy.gui.performance.newtry.metrics.special.*;
 import ibis.deploy.gui.performance.newtry.dataobjects.*;
 import ibis.ipl.IbisIdentifier;
+import ibis.ipl.server.ManagementServiceInterface;
+import ibis.ipl.server.RegistryServiceInterface;
 import ibis.ipl.support.management.AttributeDescription;
 
 public class StatsManager {
-	//Variables needed for the operation of this class
-	private PerfVis perfvis;
+	//Variables needed for the operation of this class		
+	private ManagementServiceInterface manInterface;
+	private RegistryServiceInterface regInterface;
 	private Map<String, Integer> poolSizes;	
 	private HashMap<IbisIdentifier, Node> ibisesToNodes;
-	private List<Pool> pools;	
+	private List<IbisConcept> pools;	
 	
 	//The list that holds the statistics necessary for initializing the visualization 
-	private List<StatisticsObject> initStatistics;
+	private List<MetricsObject> initStatistics;
 	
-	//The list that holds the currently available statistics, add to this when implementing new stats.
-	private List<StatisticsObject> availableStatistics;
+	//The lists that hold the currently available metrics, add to this when implementing new stats.
+	private List<MetricsObject> availableSpecialMetrics;
+	private List<NodeMetricsObject> availableNodeMetrics;
+	private List<LinkMetricsObject> availableLinkMetrics;
 	
-	public StatsManager(PerfVis perfvis) {
-		this.perfvis = perfvis;
+	public StatsManager(ManagementServiceInterface manInterface, RegistryServiceInterface regInterface) {		
+		this.manInterface = manInterface;
+		this.regInterface = regInterface;
 		
 		//The HashMap used to check whether pools have changed
 		poolSizes = new HashMap<String, Integer>();
 		
 		//Maps to store ibises and their groups
-		pools = new ArrayList<Pool>();
+		pools = new ArrayList<IbisConcept>();
 		
 		//Maps used for convenience's sake		
 		ibisesToNodes = new HashMap<IbisIdentifier, Node>();
 		
 		//List that holds the initial statistics necessary to create the data structure (links and coordinates)
-		initStatistics = new ArrayList<StatisticsObject>();
+		initStatistics = new ArrayList<MetricsObject>();
 		initStatistics.add(new XcoordStatistic());
 		initStatistics.add(new YcoordStatistic());
 		initStatistics.add(new ZcoordStatistic());
 		initStatistics.add(new ConnStatistic());
 		
-		//List that holds all available statistics
-		availableStatistics = new ArrayList<StatisticsObject>();
-		availableStatistics.add(new CPUStatistic());
-		availableStatistics.add(new HeapMemStatistic());
-		availableStatistics.add(new NonHeapMemStatistic());
-		availableStatistics.add(new ConnStatistic());
-		availableStatistics.add(new XcoordStatistic());
-		availableStatistics.add(new YcoordStatistic());
-		availableStatistics.add(new ZcoordStatistic());
-		availableStatistics.add(new BytesSentStatistic());	
+		//List that holds all available special statistics
+		availableSpecialMetrics = new ArrayList<MetricsObject>();
+		availableSpecialMetrics.add(new ConnStatistic());
+		
+		//List that holds all available Node-based statistics
+		availableNodeMetrics = new ArrayList<NodeMetricsObject>();
+		availableNodeMetrics.add(new CPUStatistic());
+		availableNodeMetrics.add(new HeapMemStatistic());
+		availableNodeMetrics.add(new NonHeapMemStatistic());		
+		availableNodeMetrics.add(new XcoordStatistic());
+		availableNodeMetrics.add(new YcoordStatistic());
+		availableNodeMetrics.add(new ZcoordStatistic());
+			
+		//List that holds all available Link-based statistics
+		availableLinkMetrics = new ArrayList<LinkMetricsObject>();
+		availableLinkMetrics.add(new BytesSentStatistic());
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -65,27 +79,27 @@ public class StatsManager {
 		}
 		
 		//for all pools
-		for (Pool pool : pools) {
-			for (Site site : pool.getSites()) {
+		for (IbisConcept pool : pools) {
+			for (Site site : (Site[])pool.getSubConcepts()) {
 				//check which statistics we are interested in
-				List<StatisticsObject> currentSiteInterest = site.getCurrentlyGatheredStatistics();						
+				List<MetricsObject> currentSiteInterest = site.getCurrentlyGatheredStatistics();						
 				
 				//Make a map of those statistics' necessary attributes and their indexes
-				HashMap<StatisticsObject, Integer> attributeIndexes = MakeAttributeIndexesMap(currentSiteInterest);
+				HashMap<MetricsObject, Integer> attributeIndexes = MakeAttributeIndexesMap(currentSiteInterest);
 				
 				//all ibises in this site, update
-				for (Node node : site.getNodes()) {		
-					node.update((HashMap<StatisticsObject, Integer>) attributeIndexes.clone());				
+				for (Node node : (Node[])site.getSubConcepts()) {		
+					node.update((HashMap<MetricsObject, Integer>) attributeIndexes.clone());				
 				}
 				
 				try {
-					site.updateAverages();
+					site.update();
 				} catch (StatNotRequestedException e) {
 					e.printStackTrace();
 				}
 			}
 			try {
-				pool.updateAverages();
+				((Pool)pool).update();
 			} catch (StatNotRequestedException e) {
 				e.printStackTrace();
 			}
@@ -96,7 +110,7 @@ public class StatsManager {
 		boolean changed = false;
 		Map<String, Integer> newSizes;
 		try {
-			newSizes = perfvis.getRegInterface().getPoolSizes();		
+			newSizes = regInterface.getPoolSizes();		
 		
 			//Check if anything has changed since the last update
 			for (Map.Entry<String, Integer> entry : newSizes.entrySet()) {
@@ -118,7 +132,7 @@ public class StatsManager {
 		pools.clear();
 		Map<String, Integer> newSizes;		
 		try {		
-			newSizes = perfvis.getRegInterface().getPoolSizes();
+			newSizes = regInterface.getPoolSizes();
 			//reinitialize the pools list
 			for (Map.Entry<String, Integer> entry : newSizes.entrySet()) {				
 	            String poolName = entry.getKey();
@@ -129,6 +143,7 @@ public class StatsManager {
 		            	//Create and populate sites
 		            	List<Site> sites = initSites(poolName);
 		            	
+		            	/*
 		            	//Create trunks
 		            	List<Trunk> trunks = new ArrayList<Trunk>();
 		            			            	
@@ -145,8 +160,8 @@ public class StatsManager {
 		            			}
 		            		}
 		            	}
-		            	
-		            	pools.add(new Pool(perfvis, poolName, (Site[])sites.toArray(), (Trunk[])trunks.toArray()));
+		            	*/
+		            	pools.add(new Pool(manInterface, poolName, (Site[])sites.toArray()));
 		            }
 	            }
 	        }
@@ -161,16 +176,16 @@ public class StatsManager {
 		
 		//A map of all the initial statistics, we use this to initialize the visualization, 
 		//by calling update with it at least once
-		HashMap<StatisticsObject, Integer> initialAttributesMap = MakeAttributeIndexesMap(initStatistics);
+		HashMap<MetricsObject, Integer> initialAttributesMap = MakeAttributeIndexesMap(initStatistics);
 		
 		//Get the members of this pool
-		IbisIdentifier[] ibises = perfvis.getRegInterface().getMembers(poolName);
+		IbisIdentifier[] ibises = regInterface.getMembers(poolName);
 						
 		//Initialize the list of sites
 		List<String> siteNames = new ArrayList<String>();
 		String[] locationsPerIbis = {};
 		try {
-			locationsPerIbis = perfvis.getRegInterface().getLocations(poolName);
+			locationsPerIbis = regInterface.getLocations(poolName);
 			
 			//The site name is after the @ sign, we make this array only contain unique names
 			for (int i=0; i<locationsPerIbis.length; i++) {
@@ -192,7 +207,7 @@ public class StatsManager {
 				
 				//And compare all ibises' locations to that sitename
 				if (ibisLocationName.compareTo(siteName) == 0) {
-					Node node = new Node(perfvis, siteName, ibises[i]);
+					Node node = new Node(manInterface, siteName, ibises[i]);
 					nodes.add(node);
 					ibisesToNodes.put(ibises[i], node);	
 					
@@ -200,9 +215,10 @@ public class StatsManager {
 					node.update(initialAttributesMap);
 				}
 			}
-			sites.add(new Site(perfvis, siteName, (Node[])nodes.toArray()));
+			sites.add(new Site(manInterface, siteName, (Node[])nodes.toArray()));
 		}
 		
+		/*
 		//For each site, check for and (if available) create this site's links
 		for (Site site : sites) {
 			List<Link> links = new ArrayList<Link>();
@@ -215,21 +231,22 @@ public class StatsManager {
 				}
 			}
 			site.setLinks((Link[]) links.toArray());
-		}		
+		}	
+		*/	
 		
 		return sites;
 	}
 		
-	public HashMap<StatisticsObject, Integer> MakeAttributeIndexesMap(List<StatisticsObject> interest) {			
+	public HashMap<MetricsObject, Integer> MakeAttributeIndexesMap(List<MetricsObject> interest) {			
 		//calculate the size of the AttributeDescription array
 		int attributesCount = 0;
-		StatisticsObject[] currentInterest = (StatisticsObject[]) interest.toArray();
+		MetricsObject[] currentInterest = (MetricsObject[]) interest.toArray();
 		for (int i=0; i<currentInterest.length; i++) {
 			attributesCount += currentInterest[i].getAttributesCountNeeded();
 		}
 		
 		AttributeDescription[] descriptions = new AttributeDescription[attributesCount];
-		HashMap<StatisticsObject, Integer> attributeIndexes = new HashMap<StatisticsObject, Integer>();
+		HashMap<MetricsObject, Integer> attributeIndexes = new HashMap<MetricsObject, Integer>();
 		
 		//fill the array with the necessary attributes and remember their starting indexes
 		attributesCount = 0;
@@ -244,14 +261,16 @@ public class StatsManager {
 		return attributeIndexes;
 	}
 
-	public List<Pool> getPools() {
+	public List<IbisConcept> getTopConcepts() {
 		return pools;
 	}
 
-	public List<StatisticsObject> getAvailableStatistics() {
-		return availableStatistics;
+	public List<NodeMetricsObject> getAvailableNodeMetrics() {
+		return availableNodeMetrics;
 	}
 	
+	public List<LinkMetricsObject> getAvailableLinkMetrics() {
+		return availableLinkMetrics;
+	}		
 	
 }
-

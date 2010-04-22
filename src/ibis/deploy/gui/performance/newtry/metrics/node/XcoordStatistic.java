@@ -1,13 +1,15 @@
-package ibis.deploy.gui.performance.newtry.stats;
+package ibis.deploy.gui.performance.newtry.metrics.node;
 
+import ibis.deploy.gui.performance.newtry.metrics.MetricsObjectInterface;
 import ibis.ipl.support.management.AttributeDescription;
 import ibis.ipl.support.vivaldi.Coordinates;
 
-public class ZcoordStatistic extends StatisticsObject implements StatisticsObjectInterface {
+public class XcoordStatistic extends NodeMetricsObject implements MetricsObjectInterface {
 	public static final String NAME = "COORDS";
 	public static final int DESCRIPTIONS_COUNT_NEEDED = 1;
+	public static final int VALUES_COUNT = 3;
 	
-	public ZcoordStatistic() {
+	public XcoordStatistic() {
 		super();
 		
 		necessaryAttributes = new AttributeDescription[DESCRIPTIONS_COUNT_NEEDED];
@@ -17,6 +19,6 @@ public class ZcoordStatistic extends StatisticsObject implements StatisticsObjec
 		Coordinates coord = (Coordinates) results[0];
 		
 		double[] unUsableCoords = coord.getCoordinates();
-		value = (float) unUsableCoords[2];		
+		value = (float) unUsableCoords[0];		
 	}
 }

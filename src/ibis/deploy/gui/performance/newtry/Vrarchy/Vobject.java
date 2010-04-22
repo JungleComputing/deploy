@@ -1,5 +1,7 @@
 package ibis.deploy.gui.performance.newtry.Vrarchy;
 
+import java.util.HashMap;
+
 import ibis.deploy.gui.performance.PerfVis;
 
 import javax.media.opengl.glu.GLU;
@@ -25,6 +27,7 @@ public class Vobject {
 	
 	protected float[] location;
 	protected float radius;
+	protected int currentForm;
 	
 	protected int glName;
 	protected float scaleXZ;
@@ -32,6 +35,8 @@ public class Vobject {
 	
 	GLU glu;
 	protected float separation;
+	
+	protected HashMap<String, Vmetric> vmetrics;
 		
 	public Vobject(PerfVis perfvis) {
 		glu = new GLU();
@@ -49,6 +54,8 @@ public class Vobject {
 		
 		//Register the new object with the Performance visualization object
 		this.glName = perfvis.registerGLObject(this);
+		
+		this.vmetrics 	= new HashMap<String, Vmetric>();
 	}
 	
 	public void setSize(float width, float height) {

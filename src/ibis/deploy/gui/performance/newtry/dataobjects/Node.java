@@ -3,40 +3,42 @@ package ibis.deploy.gui.performance.newtry.dataobjects;
 import java.util.HashMap;
 import java.util.Map;
 
-import ibis.deploy.gui.performance.PerfVis;
-import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
-import ibis.deploy.gui.performance.newtry.stats.ConnStatistic;
-import ibis.deploy.gui.performance.newtry.stats.StatisticsObject;
+import ibis.deploy.gui.performance.newtry.metrics.MetricsObject;
+import ibis.deploy.gui.performance.newtry.metrics.link.LinkMetricsObject;
+import ibis.deploy.gui.performance.newtry.metrics.node.NodeMetricsObject;
+import ibis.deploy.gui.performance.newtry.metrics.special.ConnStatistic;
 import ibis.ipl.IbisIdentifier;
+import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.support.management.AttributeDescription;
 
-public class Node extends DataObject {
+public class Node extends IbisConcept implements IbisConceptInterface {
 	//Variables needed for the operation of this class	
 	private String siteName;
-	private IbisIdentifier name;
+	private IbisIdentifier name;	
 	
-	private HashMap<String, Float> statValues;
 	private IbisIdentifier[] connectedIbises;
 	
-	public Node(PerfVis perfvis, String siteName, IbisIdentifier name) {
-		super(perfvis);
+	public Node(ManagementServiceInterface manInterface, String siteName, IbisIdentifier name) {
+		super(manInterface);
 		this.siteName = siteName;
 		this.name = name;
-		
-		statValues = new HashMap<String, Float>();
+		this.subConcepts = null;
 	}
 	
-	public void update(HashMap<StatisticsObject, Integer> attributeIndexes) {
+	public void update(HashMap<MetricsObject, Integer> attributeIndexes) {
+		//First, clear the Maps with the values, to be refilled with the newly requested entries
+		nodeMetricsValues.clear();
+		linkMetricsValues.clear();
 		try {		
 			//Make an array out of the wanted statistics objects and request their values for this ibis
 			AttributeDescription[] request = (AttributeDescription[]) attributeIndexes.keySet().toArray();
-			Object[] results = perfvis.getManInterface().getAttributes(name, request);
+			Object[] results = manInterface.getAttributes(name, request);
 			
 			//for each wanted statistic, make a partial results array of the needed size,
 			//and pass it on to the appropriate statistics object
-			for (Map.Entry<StatisticsObject, Integer> entry : attributeIndexes.entrySet()) {
+			for (Map.Entry<MetricsObject, Integer> entry : attributeIndexes.entrySet()) {
 				if (entry.getKey().getName().equals(ConnStatistic.NAME)) {
-					connectedIbises = entry.getKey().getIbises();
+					connectedIbises = ((ConnStatistic) entry.getKey()).getIbises();
 				} else {
 					Object[] partialResults = new Object[entry.getKey().getAttributesCountNeeded()];
 					for (int i=0; i<partialResults.length; i++) {
@@ -44,7 +46,15 @@ public class Node extends DataObject {
 					}
 					entry.getKey().update(partialResults);
 					
-					statValues.put(entry.getKey().getName(), entry.getKey().getValue());					
+					//After this step, we have added an entry into the statValues map with the name and the value
+					// of the updated statistic.
+					if (entry.getKey().getGroup() == NodeMetricsObject.METRICSGROUP) {
+						nodeMetricsValues.put(entry.getKey().getName(), entry.getKey().getValue());
+						nodeMetricsColors.put(entry.getKey().getName(), entry.getKey().getColor());
+					} else if (entry.getKey().getGroup() == LinkMetricsObject.METRICSGROUP) {
+						linkMetricsValues.put(entry.getKey().getName(), entry.getKey().getValue());
+						linkMetricsColors.put(entry.getKey().getName(), entry.getKey().getColor());
+					}
 				}
 			}
 			
@@ -55,15 +65,7 @@ public class Node extends DataObject {
 	
 	public IbisIdentifier[] getConnectedIbises() {
 		return connectedIbises;
-	}
-		
-	public float getValue(String key) throws StatNotRequestedException {
-		if (statValues.containsKey(key)) {
-			return statValues.get(key);
-		} else {
-			throw new StatNotRequestedException();
-		}
-	}
+	}	
 
 	public String getSiteName() {
 		return siteName;

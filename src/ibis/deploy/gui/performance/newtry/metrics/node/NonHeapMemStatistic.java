@@ -1,13 +1,14 @@
-package ibis.deploy.gui.performance.newtry.stats;
+package ibis.deploy.gui.performance.newtry.metrics.node;
 
+import ibis.deploy.gui.performance.newtry.metrics.MetricsObjectInterface;
 import ibis.ipl.support.management.AttributeDescription;
 
 import javax.management.openmbean.CompositeData;
 
-public class NonHeapMemStatistic extends StatisticsObject implements StatisticsObjectInterface {
+public class NonHeapMemStatistic extends NodeMetricsObject implements MetricsObjectInterface {
 	public static final String NAME = "MEM";
 	public static final int DESCRIPTIONS_COUNT_NEEDED = 1;
-	public static final float[] COLOR = {0.5f, 1.0f, 0.0f};
+	public static final Float[] COLOR = {0.5f, 1.0f, 0.0f};
 	
 	public NonHeapMemStatistic() {
 		super();
