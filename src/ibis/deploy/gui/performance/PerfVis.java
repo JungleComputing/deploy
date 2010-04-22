@@ -1,22 +1,18 @@
 package ibis.deploy.gui.performance;
 
 import ibis.deploy.gui.GUI;
+import ibis.deploy.gui.performance.newtry.Vrarchy.Vmetric;
 import ibis.deploy.gui.performance.newtry.Vrarchy.Vobject;
-import ibis.deploy.gui.performance.newtry.dataobjects.Pool;
+import ibis.deploy.gui.performance.newtry.Vrarchy.Vpool;
 import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
-import ibis.deploy.gui.performance.hierarchy.Hpool;
 import ibis.deploy.gui.performance.newtry.StatsManager;
 import ibis.deploy.gui.performance.newtry.VisualManager;
-import ibis.deploy.gui.performance.visuals.*;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
 
 import java.awt.Point;
 import java.nio.IntBuffer;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
@@ -29,7 +25,6 @@ import com.sun.opengl.util.GLUT;
 
 public class PerfVis implements GLEventListener {
 	private static final int BUFSIZE = 512;
-	private static final int GLNAMEMULT = 1000000;
 	
 	public static final int SCOPE_GRID 	= 0;
 	public static final int SCOPE_NODES = 1;
@@ -47,9 +42,9 @@ public class PerfVis implements GLEventListener {
 	public static final int STAT_LINKS = 4;	
 	public int currentStat = 0;
 	
-	public int currentCollectionForm = Collection.CITYSCAPE;	
-	public int currentElementForm = Element.BARS;
-	public int currentLinkForm = Link.TUBES;
+	public int currentCollectionForm = Vpool.CITYSCAPE;	
+	public int currentElementForm = Vmetric.BAR;
+	public int currentLinkForm = Vmetric.TUBE;
 	
 	private GLU glu;
 	GUI gui;
@@ -96,7 +91,7 @@ public class PerfVis implements GLEventListener {
 			e.printStackTrace();
 		}	
 		
-		statman = new StatsManager(this);
+		statman = new StatsManager(manInterface, regInterface);
 		visman = new VisualManager(this);
 	}
 	
@@ -131,7 +126,7 @@ public class PerfVis implements GLEventListener {
 	}
 	
 	public void setCollectionForm(int form) throws ModeUnknownException {
-		if (form != Collection.CIRCLE && form != Collection.CITYSCAPE) {
+		if (form != Vpool.CIRCLE && form != Vpool.CITYSCAPE) {
 			throw new ModeUnknownException();
 		}
 		this.currentCollectionForm = form;
@@ -139,7 +134,7 @@ public class PerfVis implements GLEventListener {
 	}
 	
 	public void setElementForm(int form) throws ModeUnknownException {
-		if (form != Element.BARS && form != Element.TUBES && form != Element.SPHERES) {
+		if (form != Vmetric.BAR && form != Vmetric.TUBE && form != Vmetric.SPHERE) {
 			throw new ModeUnknownException();
 		}
 		this.currentElementForm = form;
@@ -150,11 +145,7 @@ public class PerfVis implements GLEventListener {
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 		
 		
-		if (updateInterval > 50) {
-			//for (Entry<String, Hpool> entry : pools.entrySet()) {
-			//	pools.get(entry.getKey()).setZoom(currentZoom, currentStat);
-			//}
-			
+		if (updateInterval > 50) {			
 			updateStats();
 									
 			updateInterval = 0;
@@ -175,7 +166,7 @@ public class PerfVis implements GLEventListener {
 	public void updateStats() {		
 		if (statman.checkPools()) {
 			//We'll need to remake the visualization tree
-			visman.reinitialize(statman.getPools());
+			visman.reinitialize(statman.getTopConcepts());
 		} else {
 			statman.update();	
 		}			
@@ -191,7 +182,7 @@ public class PerfVis implements GLEventListener {
 		gl.glLoadIdentity();
 		
 		doView(gl);
-		visman.drawAll();
+		visman.drawConcepts(gl, mode);
 	}
 	
 	public int getSelection() {
