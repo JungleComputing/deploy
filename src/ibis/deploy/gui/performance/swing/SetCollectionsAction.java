@@ -2,7 +2,7 @@ package ibis.deploy.gui.performance.swing;
 
 import ibis.deploy.gui.performance.PerfVis;
 import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
-import ibis.deploy.gui.performance.visuals.Collection;
+import ibis.deploy.gui.performance.newtry.Vrarchy.Vpool;
 
 import java.awt.event.ActionEvent;
 
@@ -18,8 +18,8 @@ public class SetCollectionsAction extends AbstractAction {
 		super(label);
 		this.perfvis = perfvis;
 		
-		if (label.compareTo("Cityscapes") == 0) 	myCollections = Collection.CITYSCAPE;
-		else if (label.compareTo("Circles") == 0) 	myCollections = Collection.CIRCLE;
+		if (label.compareTo("Cityscapes") == 0) 	myCollections = Vpool.CITYSCAPE;
+		else if (label.compareTo("Circles") == 0) 	myCollections = Vpool.CIRCLE;
 	}
 
 	public void actionPerformed(ActionEvent e) {

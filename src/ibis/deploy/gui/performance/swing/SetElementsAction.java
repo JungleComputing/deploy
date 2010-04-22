@@ -2,7 +2,7 @@ package ibis.deploy.gui.performance.swing;
 
 import ibis.deploy.gui.performance.PerfVis;
 import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
-import ibis.deploy.gui.performance.visuals.Element;
+import ibis.deploy.gui.performance.newtry.Vrarchy.Vmetric;
 
 import java.awt.event.ActionEvent;
 
@@ -18,9 +18,9 @@ public class SetElementsAction extends AbstractAction {
 		super(label);
 		this.perfvis = perfvis;
 		
-		if (label.compareTo("Bars") == 0) myElements = Element.BARS;
-		else if (label.compareTo("Tubes") == 0) myElements = Element.TUBES;
-		else if (label.compareTo("Spheres") == 0) myElements = Element.SPHERES;
+		if (label.compareTo("Bars") == 0) myElements = Vmetric.BAR;
+		else if (label.compareTo("Tubes") == 0) myElements = Vmetric.TUBE;
+		else if (label.compareTo("Spheres") == 0) myElements = Vmetric.SPHERE;
 	}
 
 	public void actionPerformed(ActionEvent e) {
