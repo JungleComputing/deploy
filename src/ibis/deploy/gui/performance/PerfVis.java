@@ -1,12 +1,10 @@
 package ibis.deploy.gui.performance;
 
 import ibis.deploy.gui.GUI;
-import ibis.deploy.gui.performance.newtry.Vrarchy.Vmetric;
-import ibis.deploy.gui.performance.newtry.Vrarchy.Vobject;
-import ibis.deploy.gui.performance.newtry.Vrarchy.Vpool;
+import ibis.deploy.gui.performance.visuals.Vmetric;
+import ibis.deploy.gui.performance.visuals.Vobject;
+import ibis.deploy.gui.performance.visuals.Vpool;
 import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
-import ibis.deploy.gui.performance.newtry.StatsManager;
-import ibis.deploy.gui.performance.newtry.VisualManager;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
 
