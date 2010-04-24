@@ -14,7 +14,7 @@ public class HeapMemStatistic extends NodeMetricsObject implements MetricsObject
 		super();
 
 		necessaryAttributes = new AttributeDescription[DESCRIPTIONS_COUNT_NEEDED];
-		necessaryAttributes[1] = new AttributeDescription("java.lang:type=Memory", "NonHeapMemoryUsage");
+		necessaryAttributes[0] = new AttributeDescription("java.lang:type=Memory", "NonHeapMemoryUsage");
 	}
 	
 	public void update(Object[] results) {
