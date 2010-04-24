@@ -2,7 +2,7 @@ package ibis.deploy.gui.performance.swing;
 
 import ibis.deploy.gui.performance.PerfVis;
 import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
-import ibis.deploy.gui.performance.newtry.Vrarchy.Vpool;
+import ibis.deploy.gui.performance.visuals.Vpool;
 
 import java.awt.event.ActionEvent;
 
