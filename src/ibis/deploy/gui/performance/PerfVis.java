@@ -163,7 +163,9 @@ public class PerfVis implements GLEventListener {
 	
 	public void updateStats() {		
 		if (statman.checkPools()) {
+			statman.update();
 			//We'll need to remake the visualization tree
+			System.out.println("UPDATING!");
 			visman.reinitialize(statman.getTopConcepts());
 		} else {
 			statman.update();	

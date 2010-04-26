@@ -15,7 +15,6 @@ import ibis.deploy.gui.performance.metrics.special.*;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
-import ibis.ipl.support.management.AttributeDescription;
 
 public class StatsManager {
 	//Variables needed for the operation of this class		
@@ -26,7 +25,7 @@ public class StatsManager {
 	private List<IbisConcept> pools;	
 	
 	//The list that holds the statistics necessary for initializing the visualization 
-	private List<MetricsObject> initStatistics;
+	private ArrayList<MetricsObject> initStatistics;
 	
 	//The lists that hold the currently available metrics, add to this when implementing new stats.
 	private List<MetricsObject> availableSpecialMetrics;
@@ -71,6 +70,7 @@ public class StatsManager {
 		availableLinkMetrics.add(new BytesSentStatistic());
 	}
 	
+	
 	@SuppressWarnings("unchecked")
 	public void update() {		
 		//Update the size of all pools and sites
@@ -82,14 +82,11 @@ public class StatsManager {
 		for (IbisConcept pool : pools) {
 			for (Site site : (Site[])pool.getSubConcepts()) {
 				//check which statistics we are interested in
-				List<MetricsObject> currentSiteInterest = site.getCurrentlyGatheredStatistics();						
-				
-				//Make a map of those statistics' necessary attributes and their indexes
-				HashMap<MetricsObject, Integer> attributeIndexes = MakeAttributeIndexesMap(currentSiteInterest);
-				
+				ArrayList<MetricsObject> currentSiteInterest = site.getCurrentlyGatheredStatistics();						
+								
 				//all ibises in this site, update
 				for (Node node : (Node[])site.getSubConcepts()) {		
-					node.update((HashMap<MetricsObject, Integer>) attributeIndexes.clone());				
+					node.update((ArrayList<MetricsObject>) currentSiteInterest.clone());				
 				}
 				
 				try {
@@ -143,25 +140,9 @@ public class StatsManager {
 		            	//Create and populate sites
 		            	List<Site> sites = initSites(poolName);
 		            	
-		            	/*
-		            	//Create trunks
-		            	List<Trunk> trunks = new ArrayList<Trunk>();
-		            			            	
-		            	for (Site site : sites) {
-		            		for (Link link : site.getLinks()) {
-		            			if (link.getTo().getSiteName() != site.getName()) {
-		            				//we've found an external link for this site, create a trunk to the destination site
-		            				for (Site siteTo : sites) {
-		            					String siteNameTo = link.getTo().getSiteName();
-		            					if (siteTo.getName().compareTo(siteNameTo) == 0) {
-		            						trunks.add(new Trunk(perfvis, site, siteTo));		            						
-		            					}
-		            				}		            				
-		            			}
-		            		}
-		            	}
-		            	*/
-		            	pools.add(new Pool(manInterface, poolName, (Site[])sites.toArray()));
+		            	Site[] siteHolder = new Site[sites.size()];
+		    			sites.toArray(siteHolder);
+		            	pools.add(new Pool(manInterface, poolName, siteHolder));
 		            }
 	            }
 	        }
@@ -173,11 +154,7 @@ public class StatsManager {
 	
 	private List<Site> initSites(String poolName) throws IOException {		
 		List<Site> sites = new ArrayList<Site>();
-		
-		//A map of all the initial statistics, we use this to initialize the visualization, 
-		//by calling update with it at least once
-		HashMap<MetricsObject, Integer> initialAttributesMap = MakeAttributeIndexesMap(initStatistics);
-		
+				
 		//Get the members of this pool
 		IbisIdentifier[] ibises = regInterface.getMembers(poolName);
 						
@@ -212,53 +189,15 @@ public class StatsManager {
 					ibisesToNodes.put(ibises[i], node);	
 					
 					//Update this ibis's stats
-					node.update(initialAttributesMap);
+					node.update(initStatistics);
 				}
 			}
-			sites.add(new Site(manInterface, siteName, (Node[])nodes.toArray()));
+			Node [] nodeHolder = new Node[nodes.size()];
+			nodes.toArray(nodeHolder);
+			sites.add(new Site(manInterface, siteName, nodeHolder));
 		}
-		
-		/*
-		//For each site, check for and (if available) create this site's links
-		for (Site site : sites) {
-			List<Link> links = new ArrayList<Link>();
-			for (Node node : site.getNodes()) {					
-				IbisIdentifier[] destinations;
-				destinations = (IbisIdentifier[]) node.getConnectedIbises();
-				
-				for (int j=0; j<destinations.length; j++) {
-					links.add(new Link(perfvis, node, ibisesToNodes.get(destinations[j])));
-				}
-			}
-			site.setLinks((Link[]) links.toArray());
-		}	
-		*/	
 		
 		return sites;
-	}
-		
-	public HashMap<MetricsObject, Integer> MakeAttributeIndexesMap(List<MetricsObject> interest) {			
-		//calculate the size of the AttributeDescription array
-		int attributesCount = 0;
-		MetricsObject[] currentInterest = (MetricsObject[]) interest.toArray();
-		for (int i=0; i<currentInterest.length; i++) {
-			attributesCount += currentInterest[i].getAttributesCountNeeded();
-		}
-		
-		AttributeDescription[] descriptions = new AttributeDescription[attributesCount];
-		HashMap<MetricsObject, Integer> attributeIndexes = new HashMap<MetricsObject, Integer>();
-		
-		//fill the array with the necessary attributes and remember their starting indexes
-		attributesCount = 0;
-		for (int i=0; i<currentInterest.length; i++) {
-			attributeIndexes.put(currentInterest[i], attributesCount);
-			for (int j=0; j<currentInterest[i].getAttributesCountNeeded(); j++) {
-				descriptions[attributesCount+j] = currentInterest[i].getNecessaryAttributes()[j];
-			}
-			
-			attributesCount += currentInterest[i].getAttributesCountNeeded();
-		}
-		return attributeIndexes;
 	}
 
 	public List<IbisConcept> getTopConcepts() {

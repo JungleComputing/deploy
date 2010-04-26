@@ -12,7 +12,7 @@ public class CPUStatistic extends NodeMetricsObject implements MetricsObjectInte
 	
 	public CPUStatistic() {
 		super();
-		
+		attributesCountNeeded = DESCRIPTIONS_COUNT_NEEDED;
 		necessaryAttributes = new AttributeDescription[DESCRIPTIONS_COUNT_NEEDED];
 		necessaryAttributes[0] = new AttributeDescription("java.lang:type=OperatingSystem", "ProcessCpuTime");
 		necessaryAttributes[1] = new AttributeDescription("java.lang:type=Runtime", "Uptime");

@@ -10,9 +10,10 @@ public class YcoordStatistic extends NodeMetricsObject implements MetricsObjectI
 	
 	public YcoordStatistic() {
 		super();
-		
+		attributesCountNeeded = DESCRIPTIONS_COUNT_NEEDED;
 		necessaryAttributes = new AttributeDescription[DESCRIPTIONS_COUNT_NEEDED];
-		necessaryAttributes[0] = new AttributeDescription("ibis", "vivaldi");	}
+		necessaryAttributes[0] = new AttributeDescription("ibis", "vivaldi");	
+	}
 	
 	public void update(Object[] results) {
 		Coordinates coord = (Coordinates) results[0];

@@ -33,7 +33,7 @@ public class Pool extends IbisConcept implements IbisConceptInterface {
 	}	
 	
 	public void update() throws StatNotRequestedException {		
-		List<MetricsObject> stats = ((Site)subConcepts[0]).getCurrentlyGatheredStatistics();
+		ArrayList<MetricsObject> stats = ((Site)subConcepts[0]).getCurrentlyGatheredStatistics();
 		for (MetricsObject stat : stats) {
 			if (compareStats(stat)) {		
 				String key = stat.getName();
@@ -59,7 +59,7 @@ public class Pool extends IbisConcept implements IbisConceptInterface {
 		return true;
 	}
 	
-	public void setCurrentlyGatheredStatistics(List<MetricsObject> currentlyGatheredStatistics) {
+	public void setCurrentlyGatheredStatistics(ArrayList<MetricsObject> currentlyGatheredStatistics) {
 		for (Site site : (Site[])subConcepts) {
 			site.setCurrentlyGatheredStatistics(currentlyGatheredStatistics);
 		}

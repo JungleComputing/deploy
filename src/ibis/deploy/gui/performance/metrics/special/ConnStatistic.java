@@ -13,7 +13,7 @@ public class ConnStatistic extends MetricsObject implements MetricsObjectInterfa
 	
 	public ConnStatistic() {
 		super();
-		
+		attributesCountNeeded = DESCRIPTIONS_COUNT_NEEDED;
 		necessaryAttributes = new AttributeDescription[DESCRIPTIONS_COUNT_NEEDED];
 		necessaryAttributes[0] = new AttributeDescription("ibis", "connections");		
 	}

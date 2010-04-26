@@ -13,7 +13,7 @@ public class BytesSentStatistic extends LinkMetricsObject implements MetricsObje
 	
 	public BytesSentStatistic() {
 		super();
-		
+		attributesCountNeeded = DESCRIPTIONS_COUNT_NEEDED;
 		necessaryAttributes = new AttributeDescription[DESCRIPTIONS_COUNT_NEEDED];
 		necessaryAttributes[0] = new AttributeDescription("ibis", "bytesSent");
 	}

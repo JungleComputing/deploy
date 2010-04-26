@@ -19,7 +19,6 @@ public class VisualManager {
 		this.perfvis = perfvis;
 		topConcepts = new ArrayList<IbisConcept>();
 		vpools = new ArrayList<Vpool>();
-		// TODO Auto-generated constructor stub
 	}
 
 	public void reinitialize(List<IbisConcept> topConcepts) {

@@ -7,13 +7,13 @@ import ibis.ipl.support.vivaldi.Coordinates;
 public class XcoordStatistic extends NodeMetricsObject implements MetricsObjectInterface {
 	public static final String NAME = "COORDS";
 	public static final int DESCRIPTIONS_COUNT_NEEDED = 1;
-	public static final int VALUES_COUNT = 3;
 	
 	public XcoordStatistic() {
 		super();
-		
+		attributesCountNeeded = DESCRIPTIONS_COUNT_NEEDED;
 		necessaryAttributes = new AttributeDescription[DESCRIPTIONS_COUNT_NEEDED];
-		necessaryAttributes[0] = new AttributeDescription("ibis", "vivaldi");	}
+		necessaryAttributes[0] = new AttributeDescription("ibis", "vivaldi");	
+	}
 	
 	public void update(Object[] results) {
 		Coordinates coord = (Coordinates) results[0];

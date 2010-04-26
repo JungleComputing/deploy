@@ -11,7 +11,7 @@ import ibis.ipl.server.ManagementServiceInterface;
 public class Site extends IbisConcept implements IbisConceptInterface {	
 	private String name;	
 	
-	private List<MetricsObject> currentlyGatheredStatistics;
+	private ArrayList<MetricsObject> currentlyGatheredStatistics;
 
 	public Site(ManagementServiceInterface manInterface, String name, Node[] nodes) {	
 		super(manInterface);
@@ -49,11 +49,11 @@ public class Site extends IbisConcept implements IbisConceptInterface {
 		}
 	}
 	
-	public void setCurrentlyGatheredStatistics(List<MetricsObject> currentlyGatheredStatistics) {
+	public void setCurrentlyGatheredStatistics(ArrayList<MetricsObject> currentlyGatheredStatistics) {
 		this.currentlyGatheredStatistics = currentlyGatheredStatistics;
 	}
 
-	public List<MetricsObject> getCurrentlyGatheredStatistics() {
+	public ArrayList<MetricsObject> getCurrentlyGatheredStatistics() {
 		return currentlyGatheredStatistics;
 	}
 }

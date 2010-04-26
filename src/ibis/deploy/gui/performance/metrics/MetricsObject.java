@@ -10,6 +10,7 @@ public class MetricsObject implements MetricsObjectInterface {
 	public static final int METRICSGROUP = 0;
 	
 	protected AttributeDescription[] necessaryAttributes;
+	protected int attributesCountNeeded;
 	protected float value;	
 	
 	public void update(Object[] results) throws MethodNotOverriddenException {
@@ -25,7 +26,7 @@ public class MetricsObject implements MetricsObjectInterface {
 	}
 
 	public int getAttributesCountNeeded() {
-		return DESCRIPTIONS_COUNT_NEEDED;
+		return attributesCountNeeded;
 	}
 	
 	public String getName() {
