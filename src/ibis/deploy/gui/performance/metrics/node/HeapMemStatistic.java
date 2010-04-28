@@ -6,12 +6,14 @@ import ibis.ipl.support.management.AttributeDescription;
 import javax.management.openmbean.CompositeData;
 
 public class HeapMemStatistic extends NodeMetricsObject implements MetricsObjectInterface {
-	public static final String NAME = "MEM";
+	public static final String NAME = "MEM_HEAP";
 	public static final int DESCRIPTIONS_COUNT_NEEDED = 1;
 	public static final Float[] COLOR = {0.0f, 1.0f, 0.0f};
 	
 	public HeapMemStatistic() {
 		super();
+		this.name = NAME;
+		this.color = COLOR;
 		attributesCountNeeded = DESCRIPTIONS_COUNT_NEEDED;
 		necessaryAttributes = new AttributeDescription[DESCRIPTIONS_COUNT_NEEDED];
 		necessaryAttributes[0] = new AttributeDescription("java.lang:type=Memory", "NonHeapMemoryUsage");

@@ -12,7 +12,6 @@ import ibis.deploy.gui.performance.metrics.*;
 import ibis.deploy.gui.performance.metrics.link.*;
 import ibis.deploy.gui.performance.metrics.node.*;
 import ibis.deploy.gui.performance.metrics.special.*;
-import ibis.ipl.IbisIdentifier;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
 
@@ -21,8 +20,7 @@ public class StatsManager {
 	private ManagementServiceInterface manInterface;
 	private RegistryServiceInterface regInterface;
 	private Map<String, Integer> poolSizes;	
-	private HashMap<IbisIdentifier, Node> ibisesToNodes;
-	private List<IbisConcept> pools;	
+	private List<Pool> pools;	
 	
 	//The list that holds the statistics necessary for initializing the visualization 
 	private ArrayList<MetricsObject> initStatistics;
@@ -40,17 +38,15 @@ public class StatsManager {
 		poolSizes = new HashMap<String, Integer>();
 		
 		//Maps to store ibises and their groups
-		pools = new ArrayList<IbisConcept>();
-		
-		//Maps used for convenience's sake		
-		ibisesToNodes = new HashMap<IbisIdentifier, Node>();
+		pools = new ArrayList<Pool>();
 		
 		//List that holds the initial statistics necessary to create the data structure (links and coordinates)
 		initStatistics = new ArrayList<MetricsObject>();
-		initStatistics.add(new XcoordStatistic());
-		initStatistics.add(new YcoordStatistic());
-		initStatistics.add(new ZcoordStatistic());
+		//initStatistics.add(new XcoordStatistic());
+		//initStatistics.add(new YcoordStatistic());
+		//initStatistics.add(new ZcoordStatistic());
 		initStatistics.add(new ConnStatistic());
+		initStatistics.add(new CPUStatistic());
 		
 		//List that holds all available special statistics
 		availableSpecialMetrics = new ArrayList<MetricsObject>();
@@ -70,8 +66,6 @@ public class StatsManager {
 		availableLinkMetrics.add(new BytesSentStatistic());
 	}
 	
-	
-	@SuppressWarnings("unchecked")
 	public void update() {		
 		//Update the size of all pools and sites
 		if (checkPools()) {
@@ -79,25 +73,10 @@ public class StatsManager {
 		}
 		
 		//for all pools
-		for (IbisConcept pool : pools) {
-			for (Site site : (Site[])pool.getSubConcepts()) {
-				//check which statistics we are interested in
-				ArrayList<MetricsObject> currentSiteInterest = site.getCurrentlyGatheredStatistics();						
-								
-				//all ibises in this site, update
-				for (Node node : (Node[])site.getSubConcepts()) {		
-					node.update((ArrayList<MetricsObject>) currentSiteInterest.clone());				
-				}
-				
-				try {
-					site.update();
-				} catch (StatNotRequestedException e) {
-					e.printStackTrace();
-				}
-			}
+		for (Pool pool : pools) {
 			try {
-				((Pool)pool).update();
-			} catch (StatNotRequestedException e) {
+				pool.update();
+			} catch (StatNotRequestedException e) {				
 				e.printStackTrace();
 			}
 		}
@@ -136,13 +115,8 @@ public class StatsManager {
 	            int newSize = entry.getValue();
 
 	            if (newSize > 0) {
-		            if (!poolSizes.containsKey(poolName) || newSize != poolSizes.get(poolName)) {		            	
-		            	//Create and populate sites
-		            	List<Site> sites = initSites(poolName);
-		            	
-		            	Site[] siteHolder = new Site[sites.size()];
-		    			sites.toArray(siteHolder);
-		            	pools.add(new Pool(manInterface, poolName, siteHolder));
+		            if (!poolSizes.containsKey(poolName) || newSize != poolSizes.get(poolName)) {
+		            	pools.add(new Pool(manInterface, regInterface, initStatistics, poolName));
 		            }
 	            }
 	        }
@@ -150,57 +124,9 @@ public class StatsManager {
 		} catch (Exception e) {	
 			e.printStackTrace();
 		}
-	}
-	
-	private List<Site> initSites(String poolName) throws IOException {		
-		List<Site> sites = new ArrayList<Site>();
-				
-		//Get the members of this pool
-		IbisIdentifier[] ibises = regInterface.getMembers(poolName);
-						
-		//Initialize the list of sites
-		List<String> siteNames = new ArrayList<String>();
-		String[] locationsPerIbis = {};
-		try {
-			locationsPerIbis = regInterface.getLocations(poolName);
-			
-			//The site name is after the @ sign, we make this array only contain unique names
-			for (int i=0; i<locationsPerIbis.length; i++) {
-				locationsPerIbis[i] = locationsPerIbis[i].split("@")[1];
-				siteNames.add(locationsPerIbis[i]);
-			}			
-		} catch (IOException e) {					
-			e.printStackTrace();
-		}
-						
-		//For all sites			
-		for (String siteName : siteNames) {
-			String ibisLocationName;
-			List<Node> nodes = new ArrayList<Node>();						
-			
-			//Determine which ibises belong to this site
-			for (int i=0; i<ibises.length; i++) {
-				ibisLocationName = ibises[i].location().toString().split("@")[1];
-				
-				//And compare all ibises' locations to that sitename
-				if (ibisLocationName.compareTo(siteName) == 0) {
-					Node node = new Node(manInterface, siteName, ibises[i]);
-					nodes.add(node);
-					ibisesToNodes.put(ibises[i], node);	
-					
-					//Update this ibis's stats
-					node.update(initStatistics);
-				}
-			}
-			Node [] nodeHolder = new Node[nodes.size()];
-			nodes.toArray(nodeHolder);
-			sites.add(new Site(manInterface, siteName, nodeHolder));
-		}
-		
-		return sites;
-	}
+	}	
 
-	public List<IbisConcept> getTopConcepts() {
+	public List<Pool> getTopConcepts() {
 		return pools;
 	}
 

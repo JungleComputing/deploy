@@ -10,23 +10,23 @@ import ibis.deploy.gui.performance.dataholders.Pool;
 import ibis.deploy.gui.performance.visuals.Vpool;
 
 public class VisualManager {
-	List<IbisConcept> topConcepts;
+	List<Pool> topConcepts;
 	List<Vpool> vpools;
 	
 	private PerfVis perfvis;
 
 	public VisualManager(PerfVis perfvis) {
 		this.perfvis = perfvis;
-		topConcepts = new ArrayList<IbisConcept>();
+		topConcepts = new ArrayList<Pool>();
 		vpools = new ArrayList<Vpool>();
 	}
 
-	public void reinitialize(List<IbisConcept> topConcepts) {
-		this.topConcepts = topConcepts;
+	public void reinitialize(List<Pool> list) {
+		this.topConcepts = list;
 		
 		vpools.clear();
 		
-		for (IbisConcept pool : topConcepts) {
+		for (IbisConcept pool : list) {
 			vpools.add(new Vpool(perfvis, (Pool)pool));			
 		}		
 	}

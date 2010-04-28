@@ -7,8 +7,7 @@ import ibis.ipl.server.ManagementServiceInterface;
 
 public class IbisConcept {
 	protected ManagementServiceInterface manInterface;
-	
-	protected IbisConcept[] subConcepts;
+
 	protected HashMap<String, Float> nodeMetricsValues;
 	protected HashMap<String, Float> linkMetricsValues;
 	protected HashMap<String, Float[]> nodeMetricsColors;
@@ -25,14 +24,11 @@ public class IbisConcept {
 		if (nodeMetricsValues.containsKey(key))	{
 			return nodeMetricsValues.get(key);
 		} else {
+			System.out.println(key +" was not requested.");
 			throw new StatNotRequestedException();
 		}
 	}
-	
-	public IbisConcept[] getSubConcepts() {
-		return subConcepts;
-	}
-	
+		
 	public HashMap<String, Float> getMonitoredNodeMetrics() {
 		return nodeMetricsValues;
 	}

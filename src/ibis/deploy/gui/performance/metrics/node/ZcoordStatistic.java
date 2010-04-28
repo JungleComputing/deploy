@@ -5,11 +5,14 @@ import ibis.ipl.support.management.AttributeDescription;
 import ibis.ipl.support.vivaldi.Coordinates;
 
 public class ZcoordStatistic extends NodeMetricsObject implements MetricsObjectInterface {
-	public static final String NAME = "COORDS";
+	public static final String NAME = "COORDS_Z";
 	public static final int DESCRIPTIONS_COUNT_NEEDED = 1;
+	public static final Float[] COLOR = {0.0f, 0.0f, 0.0f};
 	
 	public ZcoordStatistic() {
 		super();
+		this.name = NAME;
+		this.color = COLOR;
 		attributesCountNeeded = DESCRIPTIONS_COUNT_NEEDED;
 		necessaryAttributes = new AttributeDescription[DESCRIPTIONS_COUNT_NEEDED];
 		necessaryAttributes[0] = new AttributeDescription("ibis", "vivaldi");		

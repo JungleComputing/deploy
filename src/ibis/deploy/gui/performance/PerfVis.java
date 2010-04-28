@@ -166,7 +166,7 @@ public class PerfVis implements GLEventListener {
 			statman.update();
 			//We'll need to remake the visualization tree
 			System.out.println("UPDATING!");
-			visman.reinitialize(statman.getTopConcepts());
+			//visman.reinitialize(statman.getTopConcepts());
 		} else {
 			statman.update();	
 		}			
@@ -182,7 +182,7 @@ public class PerfVis implements GLEventListener {
 		gl.glLoadIdentity();
 		
 		doView(gl);
-		visman.drawConcepts(gl, mode);
+		//visman.drawConcepts(gl, mode);
 	}
 	
 	public int getSelection() {

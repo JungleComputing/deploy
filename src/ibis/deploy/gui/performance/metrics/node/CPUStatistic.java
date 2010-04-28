@@ -12,6 +12,8 @@ public class CPUStatistic extends NodeMetricsObject implements MetricsObjectInte
 	
 	public CPUStatistic() {
 		super();
+		this.name = NAME;
+		this.color = COLOR;
 		attributesCountNeeded = DESCRIPTIONS_COUNT_NEEDED;
 		necessaryAttributes = new AttributeDescription[DESCRIPTIONS_COUNT_NEEDED];
 		necessaryAttributes[0] = new AttributeDescription("java.lang:type=OperatingSystem", "ProcessCpuTime");
@@ -31,5 +33,5 @@ public class CPUStatistic extends NodeMetricsObject implements MetricsObjectInte
 		upt_prev = upt_elapsed;
 		
 		value = (cpuUsage / 100);
-	}	
+	}
 }

@@ -5,7 +5,7 @@ import ibis.ipl.support.management.AttributeDescription;
 
 
 public class BytesSentStatistic extends LinkMetricsObject implements MetricsObjectInterface {
-	public static final String NAME = "LINKS";
+	public static final String NAME = "BYTES_SENT";
 	public static final int DESCRIPTIONS_COUNT_NEEDED = 1;
 	public static final Float[] COLOR = {0.0f, 0.0f, 1.0f};
 	
@@ -13,6 +13,8 @@ public class BytesSentStatistic extends LinkMetricsObject implements MetricsObje
 	
 	public BytesSentStatistic() {
 		super();
+		this.name = NAME;
+		this.color = COLOR;
 		attributesCountNeeded = DESCRIPTIONS_COUNT_NEEDED;
 		necessaryAttributes = new AttributeDescription[DESCRIPTIONS_COUNT_NEEDED];
 		necessaryAttributes[0] = new AttributeDescription("ibis", "bytesSent");
