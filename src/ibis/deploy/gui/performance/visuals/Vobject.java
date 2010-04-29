@@ -3,6 +3,7 @@ package ibis.deploy.gui.performance.visuals;
 import java.util.HashMap;
 
 import ibis.deploy.gui.performance.PerfVis;
+import ibis.deploy.gui.performance.VisualManager;
 
 import javax.media.opengl.glu.GLU;
 
@@ -38,7 +39,7 @@ public class Vobject {
 	
 	protected HashMap<String, Vmetric> vmetrics;
 		
-	public Vobject(PerfVis perfvis) {
+	public Vobject(PerfVis perfvis, VisualManager visman) {
 		glu = new GLU();
 		this.perfvis = perfvis;
 		
@@ -50,10 +51,12 @@ public class Vobject {
 		this.separation = 0.0f;
 		
 		//set the size and radius to default
-		setSize(1.0f, 0.25f);
+		//setSize(1.0f, 0.25f);
+		scaleXZ = 0.25f;
+		scaleY = 1.0f;
 		
 		//Register the new object with the Performance visualization object
-		this.glName = perfvis.registerGLObject(this);
+		this.glName = visman.registerGLObject(this);
 		
 		this.vmetrics 	= new HashMap<String, Vmetric>();
 	}

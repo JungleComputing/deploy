@@ -1,6 +1,7 @@
 package ibis.deploy.gui.performance.visuals;
 
 import ibis.deploy.gui.performance.PerfVis;
+import ibis.deploy.gui.performance.VisualManager;
 import ibis.deploy.gui.performance.dataholders.Node;
 import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
 import ibis.deploy.gui.performance.exceptions.ValueOutOfBoundsException;
@@ -17,15 +18,16 @@ public class Vlink extends Vobject implements VobjectInterface {
 		
 	private Node node;
 	
-	public Vlink(PerfVis perfvis, Node node, Vobject from, Vobject to) {
-		super(perfvis);
+	public Vlink(PerfVis perfvis, VisualManager visman, Node node, Vobject from, Vobject to) {
+		super(perfvis, visman);
 		this.node = node;
+		this.currentForm = CITYSCAPE;
 		
 		//Preparing the metrics vobjects for the average values
 		HashMap<String, Float[]> colors = node.getLinkColors();
 		
 		for (Map.Entry<String, Float[]> entry : colors.entrySet()) {
-			vmetrics.put(entry.getKey(), new Vmetric(perfvis, entry.getValue(), from, to));		
+			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, entry.getValue(), from, to));		
 		}
 	}	
 	

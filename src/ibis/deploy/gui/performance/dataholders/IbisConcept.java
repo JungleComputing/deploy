@@ -17,7 +17,9 @@ public class IbisConcept {
 		this.manInterface = manInterface;
 		
 		nodeMetricsValues = new HashMap<String, Float>();
+		nodeMetricsColors = new HashMap<String, Float[]>();
 		linkMetricsValues = new HashMap<String, Float>();
+		linkMetricsColors = new HashMap<String, Float[]>();
 	}
 	
 	public float getValue(String key) throws StatNotRequestedException {

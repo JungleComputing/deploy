@@ -53,10 +53,7 @@ public class Node extends IbisConcept implements IbisConceptInterface {
 					j++;
 				}
 				metric.update(partialResults);
-				
-				//TODO
-				System.out.println("adding: " + metric.getName() + " to " + metric.getGroup());
-				
+								
 				if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
 					nodeMetricsValues.put(metric.getName(), metric.getValue());
 					nodeMetricsColors.put(metric.getName(), metric.getColor());

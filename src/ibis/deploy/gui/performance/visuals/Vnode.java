@@ -1,5 +1,6 @@
 package ibis.deploy.gui.performance.visuals;
 import ibis.deploy.gui.performance.PerfVis;
+import ibis.deploy.gui.performance.VisualManager;
 import ibis.deploy.gui.performance.dataholders.Node;
 import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
 import ibis.deploy.gui.performance.exceptions.ValueOutOfBoundsException;
@@ -17,14 +18,15 @@ public class Vnode extends Vobject implements VobjectInterface {
 			
 	private Node node;
 	
-	public Vnode(PerfVis perfvis, Node node) {
-		super(perfvis);
+	public Vnode(PerfVis perfvis, VisualManager visman, Node node) {
+		super(perfvis, visman);
 		this.node = node;
+		this.currentForm = CITYSCAPE;
 		
 		HashMap<String, Float[]> colors = node.getMetricsColors();
 				
 		for (Map.Entry<String, Float[]> entry : colors.entrySet()) {
-			vmetrics.put(entry.getKey(), new Vmetric(perfvis, entry.getValue()));		
+			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, entry.getValue()));		
 		}
 		
 		try {

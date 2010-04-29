@@ -2,6 +2,7 @@ package ibis.deploy.gui.performance.visuals;
 import java.nio.IntBuffer;
 
 import ibis.deploy.gui.performance.PerfVis;
+import ibis.deploy.gui.performance.VisualManager;
 import ibis.deploy.gui.performance.exceptions.ValueOutOfBoundsException;
 import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
 
@@ -21,24 +22,20 @@ public class Vmetric extends Vobject implements VobjectInterface {
 	private float value;
 	private Vobject from, to;
 		
-	public Vmetric(PerfVis perfvis, Float[] color) {
-		super(perfvis);
+	public Vmetric(PerfVis perfvis, VisualManager visman, Float[] color) {
+		super(perfvis, visman);
 		this.color = color;
 		this.alpha = ALPHA;
 		
 		this.value = 1.0f;
-		try {
-			this.setForm(Vmetric.BAR);
-		} catch (ModeUnknownException e) {			
-			e.printStackTrace();
-		}
+		this.currentForm = BAR;
 		
 		this.from = null;
 		this.to = null;
 	}
 	
-	public Vmetric(PerfVis perfvis, Float[] color, Vobject from, Vobject to) {
-		super(perfvis);
+	public Vmetric(PerfVis perfvis, VisualManager visman, Float[] color, Vobject from, Vobject to) {
+		super(perfvis, visman);
 		
 		this.color = color;
 		this.alpha = ALPHA;

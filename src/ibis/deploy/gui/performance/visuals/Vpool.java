@@ -1,5 +1,6 @@
 package ibis.deploy.gui.performance.visuals;
 import ibis.deploy.gui.performance.PerfVis;
+import ibis.deploy.gui.performance.VisualManager;
 import ibis.deploy.gui.performance.dataholders.Pool;
 import ibis.deploy.gui.performance.dataholders.Site;
 import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
@@ -20,22 +21,23 @@ public class Vpool extends Vobject implements VobjectInterface {
 	private List<Vsite> vsites;	
 	private Pool pool; 
 		
-	public Vpool(PerfVis perfvis, Pool pool) {
-		super(perfvis);
+	public Vpool(PerfVis perfvis, VisualManager visman, Pool pool) {
+		super(perfvis, visman);
 		this.pool = pool;
-		
-		Site[] sites = (Site[])pool.getSubConcepts();
+		this.currentForm = CITYSCAPE;
+				
+		Site[] sites = pool.getSubConcepts();
 		vsites = new ArrayList<Vsite>();
 				
 		for (Site site : sites) {
-			vsites.add(new Vsite(perfvis, site));
+			vsites.add(new Vsite(perfvis, visman, site));
 		}	
 		
 		//Preparing the metrics vobjects for the average values
 		HashMap<String, Float[]> colors = pool.getMetricsColors();
 		
 		for (Map.Entry<String, Float[]> entry : colors.entrySet()) {
-			vmetrics.put(entry.getKey(), new Vmetric(perfvis, entry.getValue()));		
+			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, entry.getValue()));		
 		}
 	}
 
@@ -91,10 +93,10 @@ public class Vpool extends Vobject implements VobjectInterface {
 	
 	public void drawThis(GL gl, int glMode) {
 		//Save the old matrix mode and transformation matrix
-		IntBuffer oldMode = IntBuffer.allocate(1);		
+		IntBuffer oldMode = IntBuffer.allocate(1);
 		gl.glGetIntegerv(GL.GL_MATRIX_MODE, oldMode);
 		gl.glPushMatrix();
-		gl.glMatrixMode(GL.GL_MODELVIEW);		
+		gl.glMatrixMode(GL.GL_MODELVIEW);
 
 		//Move towards the intended location
 		gl.glTranslatef(location[0], location[1], location[2]);

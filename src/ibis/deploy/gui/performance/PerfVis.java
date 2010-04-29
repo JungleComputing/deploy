@@ -2,7 +2,6 @@ package ibis.deploy.gui.performance;
 
 import ibis.deploy.gui.GUI;
 import ibis.deploy.gui.performance.visuals.Vmetric;
-import ibis.deploy.gui.performance.visuals.Vobject;
 import ibis.deploy.gui.performance.visuals.Vpool;
 import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
 import ibis.ipl.server.ManagementServiceInterface;
@@ -10,7 +9,6 @@ import ibis.ipl.server.RegistryServiceInterface;
 
 import java.awt.Point;
 import java.nio.IntBuffer;
-import java.util.HashMap;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
@@ -67,9 +65,7 @@ public class PerfVis implements GLEventListener {
 	private ManagementServiceInterface manInterface;
 	
 	private int updateInterval;
-	
-	private HashMap<Integer, Vobject> glNameRegistry;
-	
+		
 	private StatsManager statman;
 	private VisualManager visman;
 	
@@ -91,12 +87,6 @@ public class PerfVis implements GLEventListener {
 		
 		statman = new StatsManager(manInterface, regInterface);
 		visman = new VisualManager(this);
-	}
-	
-	public int registerGLObject(Vobject visual) {
-		int name = glNameRegistry.size();
-		glNameRegistry.put(name, visual);
-		return name;
 	}
 	
 	public void setScope(int scope) throws ModeUnknownException {
@@ -165,8 +155,7 @@ public class PerfVis implements GLEventListener {
 		if (statman.checkPools()) {
 			statman.update();
 			//We'll need to remake the visualization tree
-			System.out.println("UPDATING!");
-			//visman.reinitialize(statman.getTopConcepts());
+			visman.reinitialize(statman.getTopConcepts());
 		} else {
 			statman.update();	
 		}			
@@ -182,7 +171,7 @@ public class PerfVis implements GLEventListener {
 		gl.glLoadIdentity();
 		
 		doView(gl);
-		//visman.drawConcepts(gl, mode);
+		visman.drawConcepts(gl, mode);
 	}
 	
 	public int getSelection() {
@@ -398,4 +387,5 @@ public class PerfVis implements GLEventListener {
 		// TODO Auto-generated method stub
 		
 	}
+		
 }

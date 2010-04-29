@@ -84,8 +84,8 @@ public class Site extends IbisConcept implements IbisConceptInterface {
 		return currentlyGatheredStatistics;
 	}
 	
-	public IbisConcept[] getSubConcepts() {
-		IbisConcept[] result = new IbisConcept[nodes.size()];
+	public Node[] getSubConcepts() {
+		Node[] result = new Node[nodes.size()];
 		nodes.toArray(result);
 		return result;
 	}

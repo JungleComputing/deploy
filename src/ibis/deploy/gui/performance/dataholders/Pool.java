@@ -105,8 +105,8 @@ public class Pool extends IbisConcept implements IbisConceptInterface {
 		}
 	}
 	
-	public IbisConcept[] getSubConcepts() {
-		IbisConcept[] result = new IbisConcept[sites.size()];
+	public Site[] getSubConcepts() {
+		Site[] result = new Site[sites.size()];
 		sites.toArray(result);
 		return result;
 	}

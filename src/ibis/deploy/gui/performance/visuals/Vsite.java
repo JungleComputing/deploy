@@ -1,5 +1,6 @@
 package ibis.deploy.gui.performance.visuals;
 import ibis.deploy.gui.performance.PerfVis;
+import ibis.deploy.gui.performance.VisualManager;
 import ibis.deploy.gui.performance.dataholders.Node;
 import ibis.deploy.gui.performance.dataholders.Site;
 import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
@@ -20,23 +21,24 @@ public class Vsite extends Vobject implements VobjectInterface {
 	private List<Vnode> vnodes;
 	private Site site;
 		
-	public Vsite(PerfVis perfvis, Site site) {
-		super(perfvis);
+	public Vsite(PerfVis perfvis, VisualManager visman, Site site) {
+		super(perfvis, visman);
 		this.site = site;
+		this.currentForm = CITYSCAPE;
 		
 		//Preparing the vnodes
-		Node[] nodes = (Node[])site.getSubConcepts();
+		Node[] nodes = site.getSubConcepts();
 		vnodes = new ArrayList<Vnode>();
 				
 		for (Node node : nodes) {
-			vnodes.add(new Vnode(perfvis, node));
+			vnodes.add(new Vnode(perfvis, visman, node));
 		}
 		
 		//Preparing the metrics vobjects for the average values
 		HashMap<String, Float[]> colors = site.getMetricsColors();
 		
 		for (Map.Entry<String, Float[]> entry : colors.entrySet()) {
-			vmetrics.put(entry.getKey(), new Vmetric(perfvis, entry.getValue()));		
+			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, entry.getValue()));		
 		}
 	}
 
