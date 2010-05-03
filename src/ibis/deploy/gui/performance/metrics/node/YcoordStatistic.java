@@ -24,4 +24,15 @@ public class YcoordStatistic extends NodeMetricsObject implements MetricsObjectI
 		double[] unUsableCoords = coord.getCoordinates();
 		value = (float) unUsableCoords[1];		
 	}
+	
+	public YcoordStatistic clone() {
+		YcoordStatistic clone = new YcoordStatistic();
+		clone.setName(name);
+		clone.setGroup(group);
+		clone.setColor(color);
+		clone.setNecessaryAttributes(necessaryAttributes);
+		clone.setAttributesCountNeeded(attributesCountNeeded);
+		clone.setValue(value);	
+		return clone;
+	}
 }

@@ -27,4 +27,15 @@ public class NonHeapMemStatistic extends NodeMetricsObject implements MetricsObj
 		
 		value = (float) mem_nonheap_used / (float) mem_nonheap_max;
 	}
+	
+	public NonHeapMemStatistic clone() {
+		NonHeapMemStatistic clone = new NonHeapMemStatistic();
+		clone.setName(name);
+		clone.setGroup(group);
+		clone.setColor(color);
+		clone.setNecessaryAttributes(necessaryAttributes);
+		clone.setAttributesCountNeeded(attributesCountNeeded);
+		clone.setValue(value);	
+		return clone;
+	}
 }

@@ -17,9 +17,7 @@ public class Site extends IbisConcept implements IbisConceptInterface {
 	
 	public Site(ManagementServiceInterface manInterface, ArrayList<MetricsObject> initialStatistics, IbisIdentifier[] poolIbises, String siteName) {	
 		super(manInterface);
-		this.name = siteName;
-		
-		this.currentlyGatheredStatistics = initialStatistics;
+		this.name = siteName;				
 		this.nodes = new ArrayList<Node>();
 		
 		String ibisLocationName;
@@ -34,6 +32,8 @@ public class Site extends IbisConcept implements IbisConceptInterface {
 				nodes.add(node);
 			}
 		}
+		
+		setCurrentlyGatheredMetrics(initialStatistics);		
 	}
 		
 	public String getName() {
@@ -55,7 +55,7 @@ public class Site extends IbisConcept implements IbisConceptInterface {
 		linkMetricsValues.clear();
 		
 		for (Node node : nodes) {			
-			node.update(currentlyGatheredStatistics);
+			node.update();
 		}
 		
 		for (MetricsObject stat : currentlyGatheredStatistics) {
@@ -76,7 +76,10 @@ public class Site extends IbisConcept implements IbisConceptInterface {
 		}
 	}
 	
-	public void setCurrentlyGatheredStatistics(ArrayList<MetricsObject> currentlyGatheredStatistics) {
+	public void setCurrentlyGatheredMetrics(ArrayList<MetricsObject> currentlyGatheredStatistics) {
+		for (Node node : nodes) {			
+			node.setCurrentlyGatheredMetrics(currentlyGatheredStatistics);
+		}
 		this.currentlyGatheredStatistics = currentlyGatheredStatistics;
 	}
 

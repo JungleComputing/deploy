@@ -32,13 +32,16 @@ public class Vsite extends Vobject implements VobjectInterface {
 				
 		for (Node node : nodes) {
 			vnodes.add(new Vnode(perfvis, visman, node));
+			
+			//TODO REMOVE DEBUG
+			System.out.println("Making Node!");
 		}
 		
 		//Preparing the metrics vobjects for the average values
 		HashMap<String, Float[]> colors = site.getMetricsColors();
 		
 		for (Map.Entry<String, Float[]> entry : colors.entrySet()) {
-			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, entry.getValue()));		
+			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, entry.getValue()));				
 		}
 	}
 
@@ -119,10 +122,12 @@ public class Vsite extends Vobject implements VobjectInterface {
 		int rows 		= (int)Math.ceil(Math.sqrt(vnodes.size()));
 		int columns 	= (int)Math.floor(Math.sqrt(vnodes.size()));
 		
-		//Center the drawing around the location		
-		setRelativeX( ((((scaleXZ+separation)*rows   )-separation)-(0.5f*scaleXZ))*0.5f );
-		//setRelativeY(-(0.5f*scaleY));
-		setRelativeZ(-((((scaleXZ+separation)*columns)-separation)-(0.5f*scaleXZ))*0.5f );
+		//Center the drawing around the location	
+		Float[] shift = new Float[3];
+		shift[0] =  ((((scaleXZ+separation)*rows   )-separation)-(0.5f*scaleXZ))*0.5f;
+		shift[1] = 0.0f;
+		shift[2] = -((((scaleXZ+separation)*columns)-separation)-(0.5f*scaleXZ))*0.5f;
+		setRelativeLocation(shift);
 		
 		int row = 0, column = 0, i =0;
 		for (Vnode vnode : vnodes) {
@@ -134,9 +139,12 @@ public class Vsite extends Vobject implements VobjectInterface {
 						
 			//Setup the form
 			try {
-				vnode.setLocation(location);				
-				vnode.setRelativeX(-(scaleXZ+separation)*row);
-				vnode.setRelativeZ( (scaleXZ+separation)*column);
+				vnode.setLocation(location);
+				
+				shift[0] = -(scaleXZ+separation)*row;
+				shift[1] = 0.0f;
+				shift[2] =  (scaleXZ+separation)*column;
+				vnode.setRelativeLocation(shift);
 					
 			} catch (Exception e) {					
 				e.printStackTrace();

@@ -20,7 +20,7 @@ public class StatsManager {
 	private ManagementServiceInterface manInterface;
 	private RegistryServiceInterface regInterface;
 	private Map<String, Integer> poolSizes;	
-	private List<Pool> pools;	
+	private List<Pool> pools;
 	
 	//The list that holds the statistics necessary for initializing the visualization 
 	private ArrayList<MetricsObject> initStatistics;
@@ -47,6 +47,9 @@ public class StatsManager {
 		//initStatistics.add(new ZcoordStatistic());
 		initStatistics.add(new ConnStatistic());
 		initStatistics.add(new CPUStatistic());
+		
+		initStatistics.add(new HeapMemStatistic());
+		initStatistics.add(new NonHeapMemStatistic());
 		
 		//List that holds all available special statistics
 		availableSpecialMetrics = new ArrayList<MetricsObject>();
@@ -103,7 +106,7 @@ public class StatsManager {
 		}
 		return changed;
 	}
-	
+			
 	private void initPools() {
 		pools.clear();
 		Map<String, Integer> newSizes;		

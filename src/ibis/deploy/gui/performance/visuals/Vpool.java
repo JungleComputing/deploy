@@ -31,6 +31,9 @@ public class Vpool extends Vobject implements VobjectInterface {
 				
 		for (Site site : sites) {
 			vsites.add(new Vsite(perfvis, visman, site));
+			
+			//TODO REMOVE DEBUG
+			System.out.println("Making Site!");
 		}	
 		
 		//Preparing the metrics vobjects for the average values
@@ -118,11 +121,13 @@ public class Vpool extends Vobject implements VobjectInterface {
 		int rows 		= (int)Math.ceil(Math.sqrt(vsites.size()));
 		int columns 	= (int)Math.floor(Math.sqrt(vsites.size()));
 		
-		//Center the drawing around the location		
-		setRelativeX( ((((scaleXZ+separation)*rows   )-separation)-(0.5f*scaleXZ))*0.5f );
-		//setRelativeY(-(0.5f*scaleY));
-		setRelativeZ(-((((scaleXZ+separation)*columns)-separation)-(0.5f*scaleXZ))*0.5f );
-		
+		//Center the drawing around the location	
+		Float[] shift = new Float[3];
+		shift[0] =  ((((scaleXZ+separation)*rows   )-separation)-(0.5f*scaleXZ))*0.5f;
+		shift[1] = 0.0f;
+		shift[2] = -((((scaleXZ+separation)*columns)-separation)-(0.5f*scaleXZ))*0.5f;
+		setRelativeLocation(shift);
+				
 		int row = 0, column = 0, i = 0;
 		for (Vsite vsite : vsites) {
 			row = i % rows;
@@ -133,9 +138,12 @@ public class Vpool extends Vobject implements VobjectInterface {
 						
 			//Setup the form
 			try {
-				vsite.setLocation(location);				
-				vsite.setRelativeX(-(scaleXZ+separation)*row);
-				vsite.setRelativeZ( (scaleXZ+separation)*column);
+				vsite.setLocation(location);
+				
+				shift[0] = -(scaleXZ+separation)*row;
+				shift[1] = 0.0f;
+				shift[2] =  (scaleXZ+separation)*column;
+				vsite.setRelativeLocation(shift);
 					
 			} catch (Exception e) {					
 				e.printStackTrace();

@@ -27,4 +27,15 @@ public class HeapMemStatistic extends NodeMetricsObject implements MetricsObject
 				
 		value = (float) mem_heap_used / (float) mem_heap_max;
 	}
+	
+	public HeapMemStatistic clone() {
+		HeapMemStatistic clone = new HeapMemStatistic();
+		clone.setName(name);
+		clone.setGroup(group);
+		clone.setColor(color);
+		clone.setNecessaryAttributes(necessaryAttributes);
+		clone.setAttributesCountNeeded(attributesCountNeeded);
+		clone.setValue(value);	
+		return clone;
+	}
 }

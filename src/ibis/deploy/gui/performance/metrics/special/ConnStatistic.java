@@ -29,4 +29,15 @@ public class ConnStatistic extends MetricsObject implements MetricsObjectInterfa
 	public IbisIdentifier[] getIbises() {
 		return ibises;
 	}
+	
+	public ConnStatistic clone() {
+		ConnStatistic clone = new ConnStatistic();
+		clone.setName(name);
+		clone.setGroup(group);
+		clone.setColor(color);
+		clone.setNecessaryAttributes(necessaryAttributes);
+		clone.setAttributesCountNeeded(attributesCountNeeded);
+		clone.setValue(value);	
+		return clone;
+	}
 }

@@ -89,8 +89,8 @@ public class Vmetric extends Vobject implements VobjectInterface {
 			}		
 		} else {
 			//Calculate the angles we need to turn towards the destination
-			float[] origin = from.getLocation();
-			float[] destination = to.getLocation();
+			Float[] origin = from.getLocation();
+			Float[] destination = to.getLocation();
 			
 			float xDist = origin[0] - destination[0];
 			float yDist = origin[1] - destination[1];

@@ -24,4 +24,15 @@ public class XcoordStatistic extends NodeMetricsObject implements MetricsObjectI
 		double[] unUsableCoords = coord.getCoordinates();
 		value = (float) unUsableCoords[0];
 	}
+	
+	public XcoordStatistic clone() {
+		XcoordStatistic clone = new XcoordStatistic();
+		clone.setName(name);
+		clone.setGroup(group);
+		clone.setColor(color);
+		clone.setNecessaryAttributes(necessaryAttributes);
+		clone.setAttributesCountNeeded(attributesCountNeeded);
+		clone.setValue(value);	
+		return clone;
+	}
 }

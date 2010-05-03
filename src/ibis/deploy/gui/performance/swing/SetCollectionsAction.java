@@ -23,10 +23,12 @@ public class SetCollectionsAction extends AbstractAction {
 	}
 
 	public void actionPerformed(ActionEvent e) {
+		/*
 		try {
 			perfvis.setCollectionForm(myCollections);
 		} catch (ModeUnknownException e1) {			
 			e1.printStackTrace();
-		}	
+		}
+		*/	
 	}
 }

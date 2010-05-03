@@ -24,10 +24,12 @@ public class SetElementsAction extends AbstractAction {
 	}
 
 	public void actionPerformed(ActionEvent e) {
+		/*
 		try {
 			perfvis.setElementForm(myElements);
 		} catch (ModeUnknownException e1) {			
 			e1.printStackTrace();
 		}
+		*/
 	}
 }

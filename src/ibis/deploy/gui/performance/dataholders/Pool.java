@@ -2,7 +2,9 @@ package ibis.deploy.gui.performance.dataholders;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
 import ibis.deploy.gui.performance.metrics.MetricsObject;
@@ -30,7 +32,7 @@ public class Pool extends IbisConcept implements IbisConceptInterface {
 		}
 						
 		//Initialize the list of sites
-		List<String> siteNames = new ArrayList<String>();
+		Set<String> siteNames = new HashSet<String>();
 		String[] locationsPerIbis = {};
 		try {
 			locationsPerIbis = regInterface.getLocations(poolName);
@@ -46,7 +48,7 @@ public class Pool extends IbisConcept implements IbisConceptInterface {
 						
 		//For all sites			
 		for (String siteName : siteNames) {
-			sites.add(new Site(manInterface, initialStatistics, ibises, siteName));			
+			sites.add(new Site(manInterface, initialStatistics, ibises, siteName));
 		}
 	}
 	
@@ -101,7 +103,7 @@ public class Pool extends IbisConcept implements IbisConceptInterface {
 	
 	public void setCurrentlyGatheredStatistics(ArrayList<MetricsObject> currentlyGatheredStatistics) {
 		for (Site site : sites) {
-			site.setCurrentlyGatheredStatistics(currentlyGatheredStatistics);
+			site.setCurrentlyGatheredMetrics(currentlyGatheredStatistics);
 		}
 	}
 	

@@ -24,4 +24,15 @@ public class ZcoordStatistic extends NodeMetricsObject implements MetricsObjectI
 		double[] unUsableCoords = coord.getCoordinates();
 		value = (float) unUsableCoords[2];		
 	}
+	
+	public ZcoordStatistic clone() {
+		ZcoordStatistic clone = new ZcoordStatistic(); 
+		clone.setName(name);
+		clone.setGroup(group);
+		clone.setColor(color);
+		clone.setNecessaryAttributes(necessaryAttributes);
+		clone.setAttributesCountNeeded(attributesCountNeeded);
+		clone.setValue(value);	
+		return clone;
+	}
 }

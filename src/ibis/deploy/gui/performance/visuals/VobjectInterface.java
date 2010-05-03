@@ -8,12 +8,11 @@ public interface VobjectInterface {
 	
 	//Generic and handled in Vobject
 	public void setSize(float width, float height);	
-	public void setLocation(float[] newLocation);	
-	public void setRelativeX(float x);
-	public void setRelativeY(float y);
-	public void setRelativeZ(float z);	
+	public void setLocation(Float[] newLocation);
+		
+	public void setRelativeLocation(Float[] locationShift);	
 	
-	public float[] getLocation();
+	public Float[] getLocation();
 	public float getRadius();
 	public int getGLName();
 }

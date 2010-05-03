@@ -18,15 +18,19 @@ public class SetScopeAction extends AbstractAction {
 		
 		this.perfvis = perfvis;
 		
+		/*
 		if (label.compareTo("Grid Overview") == 0) 	myScope = PerfVis.SCOPE_GRID;
 		else if (label.compareTo("Nodes") == 0) 	myScope = PerfVis.SCOPE_NODES;
+		*/
 	}
 
 	public void actionPerformed(ActionEvent e) {
+		/*
 		try {
 			perfvis.setScope(myScope);
 		} catch (ModeUnknownException e1) {			
 			e1.printStackTrace();
-		}	
+		}
+		*/	
 	}
 }

@@ -26,7 +26,10 @@ public class Vnode extends Vobject implements VobjectInterface {
 		HashMap<String, Float[]> colors = node.getMetricsColors();
 				
 		for (Map.Entry<String, Float[]> entry : colors.entrySet()) {
-			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, entry.getValue()));		
+			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, entry.getValue()));
+
+			//TODO REMOVE DEBUG
+			System.out.println("Making Metric!");
 		}
 		
 		try {
@@ -77,7 +80,8 @@ public class Vnode extends Vobject implements VobjectInterface {
 		for (Map.Entry<String, Float> entry : stats.entrySet()) {
 			try {
 				vmetrics.get(entry.getKey()).setValue(entry.getValue());
-			} catch (ValueOutOfBoundsException e) {				
+			} catch (ValueOutOfBoundsException e) {	
+				System.out.println("VALUE: "+entry.getValue()+" OUT OF BOUNDS!");
 				e.printStackTrace();
 			}
 		}
@@ -110,10 +114,12 @@ public class Vnode extends Vobject implements VobjectInterface {
 		int rows 		= (int)Math.ceil(Math.sqrt(vmetrics.size()));
 		int columns 	= (int)Math.floor(Math.sqrt(vmetrics.size()));
 		
-		//Center the drawing around the location		
-		setRelativeX( ((((scaleXZ+separation)*rows   )-separation)-(0.5f*scaleXZ))*0.5f );
-		//setRelativeY(-(0.5f*scaleY));
-		setRelativeZ(-((((scaleXZ+separation)*columns)-separation)-(0.5f*scaleXZ))*0.5f );
+		//Center the drawing around the location	
+		Float[] shift = new Float[3];
+		shift[0] =  ((((scaleXZ+separation)*rows   )-separation)-(0.5f*scaleXZ))*0.5f;
+		shift[1] = 0.0f;
+		shift[2] = -((((scaleXZ+separation)*columns)-separation)-(0.5f*scaleXZ))*0.5f;
+		setRelativeLocation(shift);
 		
 		int row = 0, column = 0, i = 0;
 		for (Entry<String, Vmetric> entry : vmetrics.entrySet()) {
@@ -126,8 +132,11 @@ public class Vnode extends Vobject implements VobjectInterface {
 			//Setup the form
 			try {
 				entry.getValue().setLocation(location);
-				entry.getValue().setRelativeX(-(scaleXZ+separation)*row);
-				entry.getValue().setRelativeZ( (scaleXZ+separation)*column);
+				
+				shift[0] = -(scaleXZ+separation)*row;
+				shift[1] = 0.0f;
+				shift[2] =  (scaleXZ+separation)*column;
+				entry.getValue().setRelativeLocation(shift);
 					
 			} catch (Exception e) {					
 				e.printStackTrace();

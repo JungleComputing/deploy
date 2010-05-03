@@ -18,16 +18,20 @@ public class SetZoomAction extends AbstractAction {
 		
 		this.perfvis = perfvis;
 		
+		/*
 		if (label.compareTo("Pools") == 0) 		myZoom = PerfVis.ZOOM_POOLS;
 		else if (label.compareTo("Sites") == 0) myZoom = PerfVis.ZOOM_SITES;
 		else if (label.compareTo("Nodes") == 0) myZoom = PerfVis.ZOOM_NODES;
+		*/
 	}
 
 	public void actionPerformed(ActionEvent e) {
+		/*
 		try {
 			perfvis.setZoom(myZoom);
 		} catch (ModeUnknownException e1) {			
 			e1.printStackTrace();
-		}	
+		}
+		*/	
 	}
 }

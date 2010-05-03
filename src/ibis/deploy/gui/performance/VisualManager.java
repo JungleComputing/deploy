@@ -18,17 +18,20 @@ public class VisualManager {
 	private HashMap<Integer, Vobject> glNameRegistry;
 	
 	private PerfVis perfvis;
-
+	
+	private Float[] origin = {0.0f, 0.0f, 0.0f};
+	
 	public VisualManager(PerfVis perfvis) {
 		this.perfvis = perfvis;
 		topConcepts = new ArrayList<Pool>();
 		vpools = new ArrayList<Vpool>();
-		glNameRegistry = new HashMap<Integer, Vobject>();
+		glNameRegistry = new HashMap<Integer, Vobject>();		
 	}
 
 	public void reinitialize(List<Pool> list) {
 		this.topConcepts = list;
 		
+		glNameRegistry.clear();		
 		vpools.clear();
 		
 		for (IbisConcept pool : list) {
@@ -43,7 +46,8 @@ public class VisualManager {
 	}
 	
 	public void drawConcepts(GL gl, int glMode) {		
-		for (Vpool vpool : vpools) {			
+		for (Vpool vpool : vpools) {	
+			vpool.setLocation(origin);
 			vpool.drawThis(gl, glMode);			
 		}
 	}

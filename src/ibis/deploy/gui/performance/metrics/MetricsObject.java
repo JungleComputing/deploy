@@ -11,6 +11,41 @@ public class MetricsObject implements MetricsObjectInterface {
 	protected int attributesCountNeeded;
 	protected float value;	
 		
+	public MetricsObject clone() {
+		MetricsObject clone = new MetricsObject();
+		clone.setName(name);
+		clone.setGroup(group);
+		clone.setColor(color);
+		clone.setNecessaryAttributes(necessaryAttributes);
+		clone.setAttributesCountNeeded(attributesCountNeeded);
+		clone.setValue(value);	
+		return clone;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setGroup(int group) {
+		this.group = group;
+	}
+
+	public void setColor(Float[] color) {
+		this.color = color;
+	}
+
+	public void setNecessaryAttributes(AttributeDescription[] necessaryAttributes) {
+		this.necessaryAttributes = necessaryAttributes;
+	}
+
+	public void setAttributesCountNeeded(int attributesCountNeeded) {
+		this.attributesCountNeeded = attributesCountNeeded;
+	}
+
+	public void setValue(float value) {
+		this.value = value;
+	}
+
 	public void update(Object[] results) throws MethodNotOverriddenException {
 		throw new MethodNotOverriddenException();
 	}

@@ -34,4 +34,15 @@ public class CPUStatistic extends NodeMetricsObject implements MetricsObjectInte
 		
 		value = (cpuUsage / 100);
 	}
+	
+	public CPUStatistic clone() {
+		CPUStatistic clone = new CPUStatistic();
+		clone.setName(name);
+		clone.setGroup(group);
+		clone.setColor(color);
+		clone.setNecessaryAttributes(necessaryAttributes);
+		clone.setAttributesCountNeeded(attributesCountNeeded);
+		clone.setValue(value);	
+		return clone;
+	}
 }

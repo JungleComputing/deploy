@@ -26,7 +26,7 @@ public class Vobject {
 	
 	PerfVis perfvis;
 	
-	protected float[] location;
+	protected Float[] location;
 	protected float radius;
 	protected int currentForm;
 	
@@ -43,7 +43,7 @@ public class Vobject {
 		glu = new GLU();
 		this.perfvis = perfvis;
 		
-		this.location = new float[3];
+		this.location = new Float[3];
 		this.location[0] = 0.0f;
 		this.location[1] = 0.0f;
 		this.location[2] = 0.0f;
@@ -71,29 +71,25 @@ public class Vobject {
 			 							+ Math.pow(width, 2));
 	}
 	
-	public void setLocation(float[] newLocation) {
+	public Float[] getLocation() {
+		return location;
+	}
+	
+	public void setLocation(Float[] newLocation) {
 		this.location[0] = newLocation[0];
 		this.location[1] = newLocation[1];
 		this.location[2] = newLocation[2];
 	}
-	
-	public void setRelativeX(float x) {
-		location[0] += x;
-	}
-	public void setRelativeY(float y) {
-		location[1] += y;
-	}
-	public void setRelativeZ(float z) {
-		location[2] += z;
+		
+	public void setRelativeLocation(Float[] locationShift) {
+		location[0] += locationShift[0];
+		location[1] += locationShift[1];
+		location[2] += locationShift[2];
 	}
 	
 	public void setSeparation(float newSeparation) {
 		this.separation = newSeparation;
 	}	
-	
-	public float[] getLocation() {
-		return location;
-	}
 
 	public float getRadius() {		
 		return radius;

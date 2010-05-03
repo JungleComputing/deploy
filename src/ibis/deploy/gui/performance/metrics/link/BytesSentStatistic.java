@@ -28,4 +28,15 @@ public class BytesSentStatistic extends LinkMetricsObject implements MetricsObje
 		sent_max = Math.max(sent_max, bytesSent);
 		value = (float)bytesSent/(float)sent_max;
 	}
+	
+	public BytesSentStatistic clone() {
+		BytesSentStatistic clone = new BytesSentStatistic();
+		clone.setName(name);
+		clone.setGroup(group);
+		clone.setColor(color);
+		clone.setNecessaryAttributes(necessaryAttributes);
+		clone.setAttributesCountNeeded(attributesCountNeeded);
+		clone.setValue(value);	
+		return clone;
+	}
 }

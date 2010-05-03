@@ -1,9 +1,6 @@
 package ibis.deploy.gui.performance;
 
 import ibis.deploy.gui.GUI;
-import ibis.deploy.gui.performance.visuals.Vmetric;
-import ibis.deploy.gui.performance.visuals.Vpool;
-import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
 
@@ -21,27 +18,7 @@ import com.sun.opengl.util.GLUT;
 
 public class PerfVis implements GLEventListener {
 	private static final int BUFSIZE = 512;
-	
-	public static final int SCOPE_GRID 	= 0;
-	public static final int SCOPE_NODES = 1;
-	public int currentScope = 0;
-	
-	public static final int ZOOM_POOLS = 0;
-	public static final int ZOOM_SITES = 1;
-	public static final int ZOOM_NODES = 2;
-	public int currentZoom = 0;
-	
-	public static final int STAT_ALL = 0;
-	public static final int STAT_CPU = 1;
-	public static final int STAT_MEM = 2;
-	public static final int STAT_COORDS = 3;
-	public static final int STAT_LINKS = 4;	
-	public int currentStat = 0;
-	
-	public int currentCollectionForm = Vpool.CITYSCAPE;	
-	public int currentElementForm = Vmetric.BAR;
-	public int currentLinkForm = Vmetric.TUBE;
-	
+		
 	private GLU glu;
 	GUI gui;
 	
@@ -88,46 +65,7 @@ public class PerfVis implements GLEventListener {
 		statman = new StatsManager(manInterface, regInterface);
 		visman = new VisualManager(this);
 	}
-	
-	public void setScope(int scope) throws ModeUnknownException {
-		if (scope != PerfVis.SCOPE_GRID && scope != PerfVis.SCOPE_NODES) {
-			throw new ModeUnknownException();
-		}
-		this.currentScope = scope;
-		updateStats();
-	}
-	
-	public void setZoom(int zoom) throws ModeUnknownException {
-		if (zoom != PerfVis.ZOOM_POOLS && zoom != PerfVis.ZOOM_SITES && zoom != PerfVis.ZOOM_NODES) {
-			throw new ModeUnknownException();
-		}	
-		this.currentZoom = zoom;
-		updateStats();
-	}
-	
-	public void setStat(int stat) throws ModeUnknownException {
-		if (stat != PerfVis.STAT_ALL && stat != PerfVis.STAT_CPU && stat != PerfVis.STAT_MEM) {
-			throw new ModeUnknownException();
-		}
-		this.currentStat = stat;
-		updateStats();
-	}
-	
-	public void setCollectionForm(int form) throws ModeUnknownException {
-		if (form != Vpool.CIRCLE && form != Vpool.CITYSCAPE) {
-			throw new ModeUnknownException();
-		}
-		this.currentCollectionForm = form;
-		updateStats();
-	}
-	
-	public void setElementForm(int form) throws ModeUnknownException {
-		if (form != Vmetric.BAR && form != Vmetric.TUBE && form != Vmetric.SPHERE) {
-			throw new ModeUnknownException();
-		}
-		this.currentElementForm = form;
-	}
-		
+				
 	public void display(GLAutoDrawable drawable) {
 		final GL gl = drawable.getGL();
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
@@ -158,7 +96,8 @@ public class PerfVis implements GLEventListener {
 			visman.reinitialize(statman.getTopConcepts());
 		} else {
 			statman.update();	
-		}			
+		}
+		visman.update();
 	}
 	
 	private void doView(GL gl) {
@@ -341,51 +280,5 @@ public class PerfVis implements GLEventListener {
 	
 	public RegistryServiceInterface getRegInterface() {
 		return regInterface;
-	}
-	
-	public int getCurrentCollectionForm() {
-		return currentCollectionForm;
-	}
-
-	public void setCurrentCollectionForm(int currentCollectionForm) {
-		this.currentCollectionForm = currentCollectionForm;
-	}
-
-	public int getCurrentElementForm() {
-		return currentElementForm;
-	}
-
-	public void setCurrentElementForm(int currentElementForm) {
-		this.currentElementForm = currentElementForm;
-	}
-
-	public int getCurrentLinkForm() {
-		return currentLinkForm;
-	}
-
-	public void setCurrentLinkForm(int currentLinkForm) {
-		this.currentLinkForm = currentLinkForm;
-	}
-
-	public int getCurrentZoom() {
-		return currentZoom;
-	}
-
-	public void setCurrentZoom(int currentZoom) {
-		this.currentZoom = currentZoom;
-	}
-
-	public int getCurrentStat() {
-		return currentStat;
-	}
-
-	public void setCurrentStat(int currentStat) {
-		this.currentStat = currentStat;
-	}
-
-	public void setHUDValues(String[] names, Float[] values) {
-		// TODO Auto-generated method stub
-		
-	}
-		
+	}		
 }
