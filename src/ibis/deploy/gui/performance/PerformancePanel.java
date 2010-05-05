@@ -60,7 +60,7 @@ public class PerformancePanel extends JPanel {
 		this.add(bar, BorderLayout.NORTH);
 	    
 		//Add the GLcanvas							
-			canvas.addGLEventListener(perfvis);			
+		canvas.addGLEventListener(perfvis);			
 		this.add(canvas, BorderLayout.CENTER);
 		animator.start();
 	}

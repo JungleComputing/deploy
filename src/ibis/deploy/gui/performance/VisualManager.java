@@ -6,13 +6,12 @@ import java.util.List;
 
 import javax.media.opengl.GL;
 
-import ibis.deploy.gui.performance.dataholders.IbisConcept;
 import ibis.deploy.gui.performance.dataholders.Pool;
 import ibis.deploy.gui.performance.visuals.Vobject;
 import ibis.deploy.gui.performance.visuals.Vpool;
 
 public class VisualManager {
-	List<Pool> topConcepts;
+	List<Pool> pools;
 	List<Vpool> vpools;
 	
 	private HashMap<Integer, Vobject> glNameRegistry;
@@ -23,19 +22,19 @@ public class VisualManager {
 	
 	public VisualManager(PerfVis perfvis) {
 		this.perfvis = perfvis;
-		topConcepts = new ArrayList<Pool>();
+		pools = new ArrayList<Pool>();
 		vpools = new ArrayList<Vpool>();
 		glNameRegistry = new HashMap<Integer, Vobject>();		
 	}
 
 	public void reinitialize(List<Pool> list) {
-		this.topConcepts = list;
+		this.pools = list;
 		
 		glNameRegistry.clear();		
 		vpools.clear();
 		
-		for (IbisConcept pool : list) {
-			vpools.add(new Vpool(perfvis, this, (Pool)pool));			
+		for (Pool pool : list) {
+			vpools.add(new Vpool(perfvis, this, pool));			
 		}		
 	}
 	
@@ -56,5 +55,9 @@ public class VisualManager {
 		int name = glNameRegistry.size();
 		glNameRegistry.put(name, visual);
 		return name;
+	}
+	
+	public Float[] getVisualLocation(int name) {
+		return glNameRegistry.get(name).getLocation();		
 	}
 }

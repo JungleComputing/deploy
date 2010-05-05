@@ -70,7 +70,7 @@ public class Vobject {
 			 							+ Math.pow(height, 2)
 			 							+ Math.pow(width, 2));
 	}
-	
+		
 	public Float[] getLocation() {
 		return location;
 	}

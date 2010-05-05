@@ -14,22 +14,55 @@ public class MouseHandler implements MouseListener, MouseMotionListener, MouseWh
 	private float viewDistOrigin; 
 	private float viewDist = -6; 
 	
-	private float dragXorigin;
-	private float viewXorigin = 0; 
-	private float viewX;
+	private Float[] rotation;
+	private Float[] translation;
 	
-	private float dragYorigin;
-	private float viewYorigin = 0; 
-	private float viewY;
+	private float dragRightXorigin;
+	private float rotationXorigin = 0; 
+	private float rotationX;
+	
+	private float dragRightYorigin;
+	private float rotationYorigin = 0; 
+	private float rotationY;
+	
+	private float dragLeftXorigin;
+	private float translationXorigin = 0; 
+	private float translationX = 0;
+	
+	private float dragLeftYorigin;
+	private float translationYorigin = 0; 
+	private float translationY = 0;
+	
+	private float translationZ = 0;
 	
 	MouseHandler(PerfVis perfvis) {
 		this.perfvis = perfvis;
+		rotation = new Float[3];
+		translation = new Float[3];		
 	}
-
+	
+	public void resetTranslation() {
+		this.translation = new Float[3];
+		this.translationX = 0.0f;
+		this.translationY = 0.0f;
+		this.translationZ = 0.0f;
+		
+		this.translationXorigin = 0.0f;
+		this.translationYorigin = 0.0f;
+	}
+	
 	public void mouseClicked(MouseEvent e) {
-		
-		// TODO Auto-generated method stub
-		
+		if (SwingUtilities.isLeftMouseButton(e)) {
+			if (e.getClickCount() == 1) {	
+				perfvis.pickRequest(e.getPoint());				
+			} else {
+				perfvis.relocateOrigin(e.getPoint());
+			}
+		} else if (SwingUtilities.isLeftMouseButton(e)) {
+			if (e.getClickCount() == 1) {
+				perfvis.menuRequest(e.getPoint());
+			}
+		}
 	}
 
 	public void mouseEntered(MouseEvent e) {
@@ -43,27 +76,39 @@ public class MouseHandler implements MouseListener, MouseMotionListener, MouseWh
 	}
 
 	public void mousePressed(MouseEvent e) {
-		if (SwingUtilities.isLeftMouseButton(e)) {
-			perfvis.pickPoint = e.getPoint();
-			perfvis.doPickNextCycle = true;
+		if (SwingUtilities.isLeftMouseButton(e)) {			
+			dragLeftXorigin = e.getPoint().x;
+			dragLeftYorigin = e.getPoint().y;
 		} else if (SwingUtilities.isRightMouseButton(e)) {
-			dragXorigin = e.getPoint().y;
-			dragYorigin = e.getPoint().x;
+			dragRightXorigin = e.getPoint().y;
+			dragRightYorigin = e.getPoint().x;
 		}
 	}
 
 	public void mouseReleased(MouseEvent e) {
-		viewXorigin = viewX;
-		viewYorigin = viewY;		
+		rotationXorigin = rotationX;
+		rotationYorigin = rotationY;	
+		
+		translationXorigin = translationX;
+		translationYorigin = translationY;
 	}
 
 	public void mouseDragged(MouseEvent e) { 
 		if (SwingUtilities.isRightMouseButton(e)) {
-			viewX = (e.getPoint().y - dragXorigin + viewXorigin) % 360;
-			perfvis.viewX = viewX;
-			viewY = (e.getPoint().x - dragYorigin + viewYorigin) % 360;
-			perfvis.viewY = viewY;
-		}		
+			rotationX = ((e.getPoint().y - dragRightXorigin) + rotationXorigin) % 360;
+			rotationY = ((e.getPoint().x - dragRightYorigin) + rotationYorigin) % 360;
+			rotation[0] = rotationX;				 
+			rotation[1] = rotationY;
+			rotation[2] = 0.0f;
+			perfvis.setRotation(rotation);			
+		} else if (SwingUtilities.isLeftMouseButton(e)) {
+			translationX =  ((e.getPoint().x - dragLeftXorigin) + translationXorigin)/10;
+			translationY = -((e.getPoint().y - dragLeftYorigin) + translationYorigin)/10;
+			translation[0] = translationX;				 
+			translation[1] = translationY;
+			translation[2] = translationZ;
+			perfvis.setTranslation(translation);
+		}
 	}
 
 	public void mouseMoved(MouseEvent e) {
@@ -73,7 +118,7 @@ public class MouseHandler implements MouseListener, MouseMotionListener, MouseWh
 
 	public void mouseWheelMoved(MouseWheelEvent e) {	
 		viewDist += viewDistOrigin + e.getWheelRotation();	
-		perfvis.viewDist = viewDist;
+		perfvis.setViewDist(viewDist);
 	}
 
 }

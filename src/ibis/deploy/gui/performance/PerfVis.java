@@ -31,9 +31,13 @@ public class PerfVis implements GLEventListener {
 	private double fovy, aspect, zNear, zFar;
 	
 	//MouseHandler variables
-	public float viewDist = -6, viewX, viewY;
-	public boolean doPickNextCycle;
-	public Point pickPoint = new Point();
+	private float viewDist = -6;
+	private Float[] rotation = {0.0f,0.0f,0.0f}, translation = {0.0f,0.0f,0.0f}, origin = {0.0f,0.0f,0.0f};
+	private boolean doPickNextCycle = false;
+	private boolean relocateOriginNextCycle = false;
+	private boolean doMenuNextCycle = false;
+	
+	private Point pickPoint = new Point();
 	private int currentSelection;
 	private float currentValue;
 	
@@ -45,6 +49,7 @@ public class PerfVis implements GLEventListener {
 		
 	private StatsManager statman;
 	private VisualManager visman;
+	private MouseHandler mouseHandler;
 	
 	PerfVis() {
 		glu = new GLU();
@@ -54,7 +59,7 @@ public class PerfVis implements GLEventListener {
 		this.gui = gui;
 		glu = new GLU();
 		this.canvas = canvas;
-		
+				
 		try {
 			this.regInterface = gui.getDeploy().getServer().getRegistryService();
 			this.manInterface = gui.getDeploy().getServer().getManagementService();
@@ -64,6 +69,7 @@ public class PerfVis implements GLEventListener {
 		
 		statman = new StatsManager(manInterface, regInterface);
 		visman = new VisualManager(this);
+		mouseHandler = new MouseHandler(this);
 	}
 				
 	public void display(GLAutoDrawable drawable) {
@@ -100,10 +106,29 @@ public class PerfVis implements GLEventListener {
 		visman.update();
 	}
 	
-	private void doView(GL gl) {
+		public void setRotation(Float[] rotation) {
+		this.rotation = rotation;
+	}
+	
+	public void setOrigin(Float[] origin) {
+		this.origin = origin;
+	}
+	
+	public void setTranslation(Float[] translation) {
+		this.translation = translation;
+	}
+	
+	public void setViewDist(float newViewDist) {
+		this.viewDist = newViewDist;
+	}
+	
+	private void doView(GL gl) {	
+		gl.glTranslatef(origin[0], origin[1], origin[2]);
+		gl.glTranslatef(translation[0], translation[1], translation[2]);
 		gl.glTranslatef(0,0,viewDist);
-		gl.glRotatef(viewX, 1,0,0);		
-		gl.glRotatef(viewY, 0,1,0);
+		gl.glRotatef(rotation[0], 1,0,0);		
+		gl.glRotatef(rotation[1], 0,1,0);
+		
 	}
 
 	private void drawUniverse(GL gl, int mode) {		
@@ -164,11 +189,10 @@ public class PerfVis implements GLEventListener {
 		zNear = 0.1f;
 		zFar = 1000.0f;
 		
-		//Mouse events
-		MouseHandler handler = new MouseHandler(this);
-		canvas.addMouseListener(handler);
-		canvas.addMouseMotionListener(handler);
-		canvas.addMouseWheelListener(handler);
+		//Mouse events		
+		canvas.addMouseListener(mouseHandler);
+		canvas.addMouseMotionListener(mouseHandler);
+		canvas.addMouseWheelListener(mouseHandler);
 		
 		canvas.requestFocusInWindow();
 			
@@ -196,6 +220,23 @@ public class PerfVis implements GLEventListener {
 		
 		gl.glMatrixMode(GL.GL_MODELVIEW);
 		gl.glLoadIdentity();
+	}
+	
+	public void pickRequest(Point newPickPoint) {
+		this.pickPoint = newPickPoint;
+		this.doPickNextCycle = true;
+	}
+	
+	public void relocateOrigin(Point newPickPoint) {
+		this.pickPoint = newPickPoint;
+		this.doPickNextCycle = true;
+		this.relocateOriginNextCycle = true;
+	}
+	
+	public void menuRequest(Point newPickPoint) {
+		this.pickPoint = newPickPoint;
+		this.doPickNextCycle = true;
+		this.doMenuNextCycle = true;
 	}
 	
 	private void pick(GL gl) {
@@ -271,6 +312,14 @@ public class PerfVis implements GLEventListener {
 	    
 	    if (hits > 0) {
 	    	currentSelection = buffer[3+4*(hits-1)];
+	    	if (relocateOriginNextCycle) {
+	    		setOrigin(visman.getVisualLocation(currentSelection));
+	    		mouseHandler.resetTranslation();
+	    		relocateOriginNextCycle = false;
+	    	}
+	    	if (doMenuNextCycle) {
+	    		//TODO
+	    	}
 	    }
 	}
 	
