@@ -2,22 +2,30 @@ package ibis.deploy.gui.applications;
 
 import ibis.deploy.Application;
 import ibis.deploy.gui.GUI;
+import ibis.deploy.gui.editor.ChangeableField;
 import ibis.deploy.gui.editor.FileArrayEditor;
+import ibis.deploy.gui.editor.FileEditor;
+import ibis.deploy.gui.editor.NumberEditor;
+import ibis.deploy.gui.editor.Spacer;
 import ibis.deploy.gui.editor.TextArrayEditor;
 import ibis.deploy.gui.editor.TextEditor;
 import ibis.deploy.gui.editor.TextMapArrayEditor;
+import ibis.deploy.gui.misc.Utils;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
+import javax.swing.border.EmptyBorder;
 
 public class ApplicationEditorTabPanel extends JPanel {
 
@@ -26,83 +34,116 @@ public class ApplicationEditorTabPanel extends JPanel {
      */
     private static final long serialVersionUID = 1085273687721913236L;
 
+    private ArrayList<ChangeableField> fields = new ArrayList<ChangeableField>();
+
+    private JButton discardButton = null;
+    private JButton applyButton = null;
+
     public ApplicationEditorTabPanel(final Application source,
             final ApplicationEditorPanel applicationEditorPanel, final GUI gui) {
-        this(source, applicationEditorPanel, gui, false);
-    }
-
-    public ApplicationEditorTabPanel(final Application source,
-            final ApplicationEditorPanel applicationEditorPanel, final GUI gui,
-            final boolean noNameEditor) {
         setLayout(new BorderLayout());
-        Application defaults = (source.getApplicationSet() == null) ? null
-                : source.getApplicationSet().getDefaults();
 
         JPanel container = new JPanel(new BorderLayout());
-
         JPanel formPanel = new JPanel();
         formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.PAGE_AXIS));
-        formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
-        final TextEditor nameEditor = (noNameEditor) ? null : new TextEditor(
-                formPanel, "Name: ", source.getName(), "");
-        formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
-        final TextEditor mainEditor = new TextEditor(formPanel, "Main Class: ",
-                source.getMainClass(), defaults == null ? null : defaults
-                        .getMainClass());
-        formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
-        final TextArrayEditor argumentsEditor = new TextArrayEditor(formPanel,
-                "Arguments: ", source.getArguments(), defaults == null ? null
-                        : defaults.getArguments());
-        formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
+        formPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+
+        formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
+
+        formPanel.add(new Spacer("General settings"));
+        final TextEditor nameEditor = new TextEditor(this, formPanel, "Name: ",
+                source.getName());
+        fields.add(nameEditor);
+
+        formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
+
+        formPanel.add(new Spacer("Runtime"));
+        final TextEditor mainEditor = new TextEditor(this, formPanel,
+                "Main Class: ", source.getMainClass());
+        fields.add(mainEditor);
+
+        formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
+
+        final TextArrayEditor argumentsEditor = new TextArrayEditor(this,
+                formPanel, "Arguments: ", source.getArguments());
+        fields.add(argumentsEditor);
+
+        formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
+        formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
+
+        final FileArrayEditor libsEditor = new FileArrayEditor(this, formPanel,
+                "Libraries: ", source.getLibs());
+        fields.add(libsEditor);
+        
+        formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
+        
+        final NumberEditor memoryEditor = new NumberEditor(this, formPanel,
+                "Memory (MB): ", source.getMemorySize(), true);
+        fields.add(memoryEditor);
+
+        formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
+
+        formPanel.add(new Spacer("JVM"));
+        final TextArrayEditor jvmOptionsEditor = new TextArrayEditor(this,
+                formPanel, "JVM Options: ", source.getJVMOptions());
+        fields.add(jvmOptionsEditor);
+
+        formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
+        formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
+
         final TextMapArrayEditor systemPropertiesEditor = new TextMapArrayEditor(
-                formPanel, "JVM System Properties: ", source
-                        .getSystemProperties(), defaults == null ? null
-                        : defaults.getSystemProperties());
-        formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
-        final TextArrayEditor jvmOptionsEditor = new TextArrayEditor(formPanel,
-                "JVM Options: ", source.getJVMOptions(),
-                defaults == null ? null : defaults.getJVMOptions());
-        formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
-        final FileArrayEditor libsEditor = new FileArrayEditor(formPanel,
-                "Libraries: ", source.getLibs(), defaults == null ? null
-                        : defaults.getLibs());
-        formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
-        final FileArrayEditor inputFilesEditor = new FileArrayEditor(formPanel,
-                "Input Files: ", source.getInputFiles(),
-                defaults == null ? null : defaults.getInputFiles());
-        formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
-        final FileArrayEditor outputFilesEditor = new FileArrayEditor(
-                formPanel, "Output Files: ", source.getOutputFiles(),
-                defaults == null ? null : defaults.getOutputFiles());
-        formPanel.add(new JSeparator(JSeparator.HORIZONTAL));
+                this, formPanel, "JVM System Properties: ", source
+                        .getSystemProperties());
+        fields.add(systemPropertiesEditor);
+
+        formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
+
+        formPanel.add(new Spacer("I/O"));
+        final FileArrayEditor inputFilesEditor = new FileArrayEditor(this,
+                formPanel, "Input Files: ", source.getInputFiles());
+        fields.add(inputFilesEditor);
+
+        formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
+        formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
+
+        final FileArrayEditor outputFilesEditor = new FileArrayEditor(this,
+                formPanel, "Output Files: ", source.getOutputFiles());
+        fields.add(outputFilesEditor);
+
+        formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
+
+        final FileEditor log4jFile = new FileEditor(this, formPanel,
+                "Log4j File: ", source.getLog4jFile());
+        fields.add(log4jFile);
+
+        formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
 
         container.add(formPanel, BorderLayout.NORTH);
 
         JScrollPane scrollPane = new JScrollPane(container,
-                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-        add(new JLabel("check to overwrite the default values"),
-                BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
 
-        JButton applyButton = new JButton("Apply");
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        add(buttonPanel, BorderLayout.SOUTH);
 
-        add(applyButton, BorderLayout.SOUTH);
-
+        applyButton = new JButton("Apply");
+        buttonPanel.add(applyButton);
+        applyButton.setEnabled(false);
         applyButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
-                if (!noNameEditor) {
-                    try {
-                        source.setName(nameEditor.getText());
-                    } catch (Exception e) {
-                        JOptionPane.showMessageDialog(getRootPane(), e
-                                .getMessage(), "Unable to apply changes",
-                                JOptionPane.PLAIN_MESSAGE);
-                        e.printStackTrace(System.err);
-                        return;
-                    }
+                try {
+                    source.setName(nameEditor.getText());
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(getRootPane(),
+                            e.getMessage(), "Unable to apply changes",
+                            JOptionPane.PLAIN_MESSAGE);
+                    e.printStackTrace(System.err);
+                    return;
                 }
                 source.setMainClass(mainEditor.getText());
                 source.setArguments(argumentsEditor.getTextArray());
@@ -111,9 +152,68 @@ public class ApplicationEditorTabPanel extends JPanel {
                 source.setLibs(libsEditor.getFileArray());
                 source.setInputFiles(inputFilesEditor.getFileArray());
                 source.setOutputFiles(outputFilesEditor.getFileArray());
+                source.setLog4jFile(log4jFile.getFile());
+                
+                if(memoryEditor.getValue() > 0)
+                    source.setMemorySize(memoryEditor.getValue());
+                
                 applicationEditorPanel.fireApplicationEdited(source);
-            }
 
+                applyButton.setEnabled(false);
+                discardButton.setEnabled(false);
+            }
         });
+
+        // button that allows to reset the fields to the initial source values
+        discardButton = new JButton("Discard changes");
+        buttonPanel.add(discardButton);
+        discardButton.setEnabled(false);
+        discardButton.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent arg0) {
+                nameEditor.setText(source.getName());
+
+                mainEditor.setText(source.getMainClass());
+
+                argumentsEditor.setTextArray(source.getArguments());
+
+                systemPropertiesEditor.setTextMap(source.getSystemProperties());
+
+                jvmOptionsEditor.setTextArray(source.getJVMOptions());
+
+                libsEditor.setFileArray(source.getLibs());
+
+                inputFilesEditor.setFileArray(source.getInputFiles());
+
+                outputFilesEditor.setFileArray(source.getOutputFiles());
+
+                if (source.getLog4jFile() != null) {
+                    log4jFile.setFile(source.getLog4jFile().toString());
+                } else
+                    log4jFile.setFile("");
+                
+                memoryEditor.setValue(source.getMemorySize());
+
+                applyButton.setEnabled(false);
+                discardButton.setEnabled(false);
+            }
+        });
+    }
+
+    /**
+     * Checks if in any of the fields the value is different from the one in the
+     * source cluster. According to that, the apply and discard buttons are
+     * enabled / disabled
+     */
+    public void checkForChanges() {
+        boolean hasChanged = false;
+        for (ChangeableField field : fields) {
+            hasChanged = hasChanged || field.hasChanged();
+            if (hasChanged)
+                break;
+        }
+
+        applyButton.setEnabled(hasChanged);
+        discardButton.setEnabled(hasChanged);
     }
 }

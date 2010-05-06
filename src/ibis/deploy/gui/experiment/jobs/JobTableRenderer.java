@@ -37,14 +37,16 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
         setOpaque(isSelected);
         setBackground(UIManager.getColor("Table.selectionBackground"));
         setForeground(Color.BLACK);
-        
-        if (column == JobRow.CONTROL_COLUMN) {
+
+        String columnName = table.getColumnName(column);
+
+        if (columnName.equalsIgnoreCase(JobTableModel.CONTROL_COLUMN_NAME)) {
             boolean start = (Boolean) value;
 
             if (start) {
                 final JButton startButton = Utils.createImageButton(
 
-                "/images/media-playback-start.png", null, null);
+                "images/media-playback-start.png", null, null);
 
                 startButton.addActionListener(new ActionListener() {
 
@@ -57,7 +59,7 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
                 return startButton;
             } else {
                 final JButton stopButton = Utils.createImageButton(
-                        "/images/media-playback-stop.png", null, null);
+                        "images/media-playback-stop.png", null, null);
                 stopButton.addActionListener(new ActionListener() {
 
                     public void actionPerformed(ActionEvent arg0) {
@@ -67,11 +69,12 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
                 });
                 return stopButton;
             }
-        } else if (column == JobRow.POOL_COLUMN) {
+        } else if (columnName.equalsIgnoreCase(JobTableModel.POOL_COLUMN_NAME)) {
             setText("" + value);
-        } else if (column == JobRow.NAME_COLUMN) {
+        } else if (columnName.equalsIgnoreCase(JobTableModel.NAME_COLUMN_NAME)) {
             setText("" + value);
-        } else if (column == JobRow.JOB_STATUS_COLUMN) {
+        } else if (columnName
+                .equalsIgnoreCase(JobTableModel.JOB_STATUS_COLUMN_NAME)) {
             State state = (State) value;
 
             if (state != null && state != State.UNKNOWN) {
@@ -86,7 +89,8 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
 
                 setText(state.toString());
             }
-        } else if (column == JobRow.HUB_STATUS_COLUMN) {
+        } else if (columnName
+                .equalsIgnoreCase(JobTableModel.HUB_STATUS_COLUMN_NAME)) {
             State state = (State) value;
 
             if (state != null && state != State.UNKNOWN) {
@@ -101,7 +105,8 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
 
                 setText(state.toString());
             }
-        } else if (column == JobRow.CLUSTER_COLUMN) {
+        } else if (columnName
+                .equalsIgnoreCase(JobTableModel.CLUSTER_COLUMN_NAME)) {
             setOpaque(true);
 
             JobDescription jobDescription = model.getJobDescription(table
@@ -116,19 +121,24 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
             }
 
             setText(jobDescription.getClusterName());
-        } else if (column == JobRow.MIDDLEWARE_COLUMN) {
+        } else if (columnName
+                .equalsIgnoreCase(JobTableModel.MIDDLEWARE_COLUMN_NAME)) {
             String adaptor = (String) value;
             if (adaptor != null && adaptor.equalsIgnoreCase("sshTrilead")) {
                 adaptor = "ssh";
             }
             setText(adaptor);
-        } else if (column == JobRow.APPLICATION_COLUMN) {
+        } else if (columnName
+                .equalsIgnoreCase(JobTableModel.APPLICATION_COLUMN_NAME)) {
             setText("" + value);
-        } else if (column == JobRow.PROCESS_COUNT_COLUMN) {
+        } else if (columnName
+                .equalsIgnoreCase(JobTableModel.PROCESS_COUNT_COLUMN_NAME)) {
             setText("" + value);
-        } else if (column == JobRow.RESOURCE_COUNT_COLUMN) {
+        } else if (columnName
+                .equalsIgnoreCase(JobTableModel.RESOURCE_COUNT_COLUMN_NAME)) {
             setText("" + value);
-        } else if (column == JobRow.OUTPUT_COLUMN) {
+        } else if (columnName
+                .equalsIgnoreCase(JobTableModel.OUTPUT_COLUMN_NAME)) {
             boolean enabled = (Boolean) value;
 
             final Job job = model.getJob(table.convertRowIndexToModel(row));
@@ -153,7 +163,7 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
 
             });
             button.setEnabled(enabled);
-          
+
             return button;
         }
         return this;

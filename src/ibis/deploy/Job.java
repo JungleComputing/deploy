@@ -216,10 +216,10 @@ public class Job implements Runnable {
             return prefix + file.getName() + File.pathSeparator;
         }
         // classpath for dir "lib" with prefix "dir/" is dir/lib/*:dir/lib
-        // both directory itself, and all files in that dir (*)
-        String result = prefix + file.getName() + File.pathSeparator;
+        String result = prefix + file.getName() + File.pathSeparator + prefix
+                + file.getName() + File.separator + "*" + File.pathSeparator;
         for (File child : file.listFiles()) {
-            if (!child.isHidden()) {
+            if (child.isDirectory() && !child.isHidden()) {
                 result = result
                         + classpathFor(child, prefix + file.getName()
                                 + File.separator);
@@ -228,7 +228,7 @@ public class Job implements Runnable {
         return result;
     }
 
-    // classpath made up of all directories, as well as jar
+    // classpath made up of all directories
     private static String createClassPath(File[] libs) {
         // start with cwd
         String result = "." + File.pathSeparator;

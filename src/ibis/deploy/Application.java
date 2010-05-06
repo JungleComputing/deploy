@@ -141,19 +141,60 @@ public class Application {
         this.parent = parent;
         setName(name);
 
+        // load default settings first
+        String defaultPrefix = "default.";
+        libs = properties.getFileListProperty(defaultPrefix + "libs");
+        mainClass = properties.getProperty(defaultPrefix + "main.class");
+        arguments = properties.getStringListProperty(defaultPrefix
+                + "arguments");
+        inputFiles = properties.getFileListProperty(defaultPrefix
+                + "input.files");
+        outputFiles = properties.getFileListProperty(defaultPrefix
+                + "output.files");
+        systemProperties = properties.getStringMapProperty(defaultPrefix
+                + "system.properties");
+        jvmOptions = properties.getStringListProperty(defaultPrefix
+                + "jvm.options");
+        log4jFile = properties.getFileProperty(defaultPrefix + "log4j.file");
+        memorySize = properties
+                .getIntProperty(defaultPrefix + "memory.size", 0);
+
+        // load the properties corresponding to this application, but only if
+        // they are set
+
         // add separator to prefix
         prefix = prefix + ".";
 
-        libs = properties.getFileListProperty(prefix + "libs");
-        mainClass = properties.getProperty(prefix + "main.class");
-        arguments = properties.getStringListProperty(prefix + "arguments");
-        inputFiles = properties.getFileListProperty(prefix + "input.files");
-        outputFiles = properties.getFileListProperty(prefix + "output.files");
-        systemProperties = properties.getStringMapProperty(prefix
-                + "system.properties");
-        jvmOptions = properties.getStringListProperty(prefix + "jvm.options");
-        log4jFile = properties.getFileProperty(prefix + "log4j.file");
-        memorySize = properties.getIntProperty(prefix + "memory.size", 0);
+        if (properties.getFileListProperty(prefix + "libs") != null) {
+            libs = properties.getFileListProperty(prefix + "libs");
+        }
+        if (properties.getProperty(prefix + "main.class") != null) {
+            mainClass = properties.getProperty(prefix + "main.class");
+        }
+        if (properties.getStringListProperty(prefix + "arguments") != null) {
+            arguments = properties.getStringListProperty(prefix + "arguments");
+        }
+        if (properties.getFileListProperty(prefix + "input.files") != null) {
+            inputFiles = properties.getFileListProperty(prefix + "input.files");
+        }
+        if (properties.getFileListProperty(prefix + "output.files") != null) {
+            outputFiles = properties.getFileListProperty(prefix
+                    + "output.files");
+        }
+        if (properties.getStringMapProperty(prefix + "system.properties") != null) {
+            systemProperties = properties.getStringMapProperty(prefix
+                    + "system.properties");
+        }
+        if (properties.getStringListProperty(prefix + "jvm.options") != null) {
+            jvmOptions = properties.getStringListProperty(prefix
+                    + "jvm.options");
+        }
+        if (properties.getFileProperty(prefix + "log4j.file") != null) {
+            log4jFile = properties.getFileProperty(prefix + "log4j.file");
+        }
+        if (properties.getIntProperty(prefix + "memory.size", 0) != 0) {
+            memorySize = properties.getIntProperty(prefix + "memory.size", 0);
+        }
     }
 
     /**
@@ -700,17 +741,24 @@ public class Application {
             out.println("#" + dotPrefix + "java.options =");
         }
 
-        if (empty && printComments) {
-            out
-                    .println("#Dummy property to make sure application is actually defined");
-            out.println(dotPrefix);
-        }
-
         if (log4jFile != null) {
             out.println(dotPrefix + "log4j.file = " + log4jFile);
             empty = false;
         } else if (printComments) {
             out.println("#" + dotPrefix + "log4j.file =");
+        }
+
+        if (memorySize != 0) {
+            out.println(dotPrefix + "memory.size = " + memorySize);
+            empty = false;
+        } else if (printComments) {
+            out.println("#" + dotPrefix + "memory.size =");
+        }
+
+        if (empty && printComments) {
+            out
+                    .println("#Dummy property to make sure application is actually defined");
+            out.println(dotPrefix);
         }
     }
 

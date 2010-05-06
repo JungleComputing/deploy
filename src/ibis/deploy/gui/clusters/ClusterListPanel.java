@@ -29,7 +29,9 @@ public class ClusterListPanel extends JPanel {
     private ClusterEditorPanel clusterEditorPanel;
 
     public ClusterListPanel(final GUI gui, final JPanel editPanel,
-            final ClusterEditorPanel clusterEditorPanel) {
+            final ClusterEditorPanel clusterEditorPanelRef) {
+
+        this.clusterEditorPanel = clusterEditorPanelRef;
 
         setLayout(new BorderLayout());
         final DefaultListModel model = new DefaultListModel();
@@ -75,14 +77,7 @@ public class ClusterListPanel extends JPanel {
 
     private void init(GUI gui, DefaultListModel model,
             Map<Cluster, JPanel> editClusterPanels) {
-
-        try {
-            gui.getGrid().getDefaults().setName(DEFAULTS);
-        } catch (Exception e) {
-            // ignore
-        }
         model.clear();
-        model.addElement(gui.getGrid().getDefaults());
 
         for (Cluster cluster : gui.getGrid().getClusters()) {
             model.addElement(cluster);
@@ -90,12 +85,9 @@ public class ClusterListPanel extends JPanel {
 
         // create a hash map with all the panels
         editClusterPanels.clear();
-        editClusterPanels.put(gui.getGrid().getDefaults(),
-                new ClusterEditorTabPanel(gui.getGrid().getDefaults(),
-                        clusterEditorPanel, gui, true));
         for (Cluster cluster : gui.getGrid().getClusters()) {
             editClusterPanels.put(cluster, new ClusterEditorTabPanel(cluster,
-                    clusterEditorPanel, gui, false));
+                    clusterEditorPanel, gui));
         }
 
     }

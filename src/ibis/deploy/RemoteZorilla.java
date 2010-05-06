@@ -233,8 +233,12 @@ public class RemoteZorilla implements Runnable, Server {
 
         sd.addJavaSystemProperty(IbisProperties.LOCATION, cluster.getName());
 
+//        sd.addJavaSystemProperty(Config.VIZ_INFO, cluster.getName() + "^Zorilla @ "
+//                + cluster.getName() + "^" + cluster.getColorCode());
+        
         sd.addJavaSystemProperty(Config.VIZ_INFO, "Z^Zorilla @ "
                 + cluster.getName() + "^" + cluster.getColorCode());
+
 
         if (cluster.getServerSystemProperties() != null) {
             sd.getJavaSystemProperties().putAll(

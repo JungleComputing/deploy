@@ -15,7 +15,7 @@ Library Features:
 
 CLI Features:
 
-- Automatic running of distributed experiments.
+- Automatic running of distributed experiments
 
 GUI Features:
 
@@ -29,12 +29,12 @@ Cluster: A collection of nodes, with a front-end E.g. the VU DAS-3 Cluster, the
 Desktop-grid at the VU, and the Amazon EC2 cloud.
 
 Grid: A collection of clusters. Grids act as a container format for cluster,
-and can be specified in one grid file. (see the examples directory)
+and can be specified in a grid file. (see the examples directory)
 
 Application: A Java application (which normally uses the IPL).
 
 ApplicationSet: Collection of Applications. the ApplicationSet is a container
-format for applications, and can be specified in one "applications" file. (see
+format for applications, and can be specified in an "applications" file. (see
 the examples directory)
 
 Job: An application running on a number of nodes of a certain cluster. Each job
@@ -44,7 +44,7 @@ the status of a job.
 JobDescription: Specification of a job. Note the difference with Job, which
 represents a _running_ job.
 
-Experiment: A number of jobs running concurrently. Can be represented by a
+Experiment: A number of jobs running concurrently. Can be represented by an
 ".experiment" file.
 
 Workspace: A number of experiments, running a certain ApplicationSet on a
@@ -54,7 +54,7 @@ Ibis-Deploy GUI only supports a single experiment per workspace.
 
 -- Compiling --
 
-Ibis deploy come with an ant build file (build.xml). Compile with "ant" in the
+Ibis-Deploy comes with an ant build file (build.xml). Compile with "ant" in the
 root directory of Ibis-Deploy.
 
 -- Running Ibis-Deploy --
@@ -66,6 +66,6 @@ current working directory is the root of Ibis-Deploy:
 localhost:ibis-deploy-root$ bin/ibis-deploy-gui
 localhost:ibis-deploy-root$ bin/ibis-deploy-cli
 
-Alternatively, the DEPLOY_HOME environment variable can be used to override the location of Ibis-Deploy
+Alternatively, the DEPLOY_HOME environment variable can be used to override the location of Ibis-Deploy.
 
-Please run either application with the "--help" option for command line options
+Please run either application with the "--help" option for command line options.

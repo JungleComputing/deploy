@@ -6,17 +6,17 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.File;
 
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-public class FileEditor {
-
+public class FileEditor extends ChangeableField implements KeyListener {
     /**
      * 
      */
@@ -24,44 +24,43 @@ public class FileEditor {
 
     private final JTextField textField = new JTextField();
 
-    private final JCheckBox useDefaultCheckBox = new JCheckBox();
-
-    private final File defaultValue;
-
     private final JButton openButton = Utils.createImageButton(
-            "/images/document-open.png", "select a file", null);
+            "images/document-open.png", "Select a file", null);
+
+    private String initialFile;
 
     private final JLabel label = new JLabel("", JLabel.TRAILING);
 
-    public FileEditor(JPanel form, final String text, File value,
-            File defaultValue) {
-        this.defaultValue = defaultValue;
+    /**
+     * @param form
+     *            - parent JPanel
+     * @param text
+     *            - text to be displayed in the label
+     * @param value
+     *            - initial text for the textField
+     */
+    public FileEditor(final JPanel tabPanel, JPanel form, final String text,
+            File value) {
 
-        // determine whether this text editor holds a default value
-        final boolean useDefault = value == null;
-
-        // set the check box
-        useDefaultCheckBox
-                .setToolTipText("<html>check this box to overwrite the <code><i>default</i></code> value</html>");
-        // if the value is 'nullified' or 'denullified' enable or disable the
-        // editing components and invoke the edited method
-        useDefaultCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setUseDefault(!useDefaultCheckBox.isSelected());
-            }
-        });
-
-        // initialize the components in enabled or disabled state
-        setUseDefault(useDefault);
-
-        // set the text of the text field to the appropriate value
-        if (value != null && !useDefault) {
+        if (value != null) {
             textField.setText(value.getPath());
+            initialFile = value.getPath();
+        } else {
+            initialFile = "";
         }
+
+        this.tabPanel = tabPanel;
+        textField.addKeyListener(this);
 
         JPanel container = new JPanel(new BorderLayout());
 
-        container.add(label, BorderLayout.WEST);
+        JPanel labelPanel = new JPanel(new BorderLayout());
+        labelPanel.add(label, BorderLayout.EAST);
+        container.add(labelPanel, BorderLayout.WEST);
+        label.setText(text);
+        label.setPreferredSize(new Dimension(Utils.defaultLabelWidth, label
+                .getPreferredSize().height));
+
         final JPanel filePanel = new JPanel(new BorderLayout());
         filePanel.add(textField, BorderLayout.CENTER);
 
@@ -74,45 +73,67 @@ public class FileEditor {
                 int returnVal = fileChooser.showOpenDialog(filePanel);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     textField.setText(fileChooser.getSelectedFile().getPath());
+                    informParent();
                 }
             }
 
         });
-        filePanel.add(openButton, BorderLayout.EAST);
 
-        JPanel labelPanel = new JPanel(new BorderLayout());
-        labelPanel.add(useDefaultCheckBox, BorderLayout.WEST);
-        labelPanel.add(label, BorderLayout.EAST);
-        container.add(labelPanel, BorderLayout.WEST);
-        label.setText(text);
         label.setLabelFor(filePanel);
-        label.setPreferredSize(new Dimension(150,
-                label.getPreferredSize().height));
+        filePanel.add(openButton, BorderLayout.EAST);
         container.add(filePanel, BorderLayout.CENTER);
         form.add(container);
     }
 
+    /**
+     * @return - new File created using the path in the textField
+     */
     public File getFile() {
-        if (!useDefaultCheckBox.isSelected()) {
-            return null;
-        } else {
+        if (textField.getText().trim().length() > 0) {
             return new File(textField.getText());
+        } else {
+            return null;
         }
     }
 
-    private void setUseDefault(boolean useDefault) {
-        useDefaultCheckBox.setSelected(!useDefault);
-
-        if (useDefault) {
-            if (defaultValue != null) {
-                textField.setText(defaultValue.getPath());
-            } else {
-                textField.setText(null);
-            }
-        }
-        label.setEnabled(!useDefault);
-        textField.setEnabled(!useDefault);
-        openButton.setEnabled(!useDefault);
+    /**
+     * Sets the text of the textField to the given value
+     * 
+     * @param fileName
+     *            - new filename to be displayed in the textField
+     */
+    public void setFile(String fileName) {
+        textField.setText(fileName);
     }
 
+    @Override
+    public void refreshInitialValue() {
+        initialFile = textField.getText();
+        if (initialFile == null) {
+            initialFile = "";
+        }
+    }
+
+    @Override
+    public void keyPressed(KeyEvent arg0) {
+    }
+
+    @Override
+    public void keyReleased(KeyEvent arg0) {
+        informParent();
+    }
+
+    @Override
+    public void keyTyped(KeyEvent arg0) {
+
+    }
+
+    /**
+     * @return - true if the text field contains a different value than the
+     *         initial value
+     */
+    @Override
+    public boolean hasChanged() {
+        return !textField.getText().equals(initialFile);
+    }
 }

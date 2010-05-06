@@ -35,7 +35,7 @@ public class Deploy {
      * Files needed by ibis-deploy. Searched for in ibis deploy home dir
      */
     public static final String[] REQUIRED_FILES = { "lib-server",
-            "log4j.properties", "lib-zorilla" };
+            "log4j.properties" };
 
     private static final Logger logger = LoggerFactory.getLogger(Deploy.class);
 
@@ -238,6 +238,7 @@ public class Deploy {
         zorilla.setJobURI(new URI("zorilla:" + localServer.getAddress()));
         zorilla.setJobAdaptor("zorilla");
         zorilla.addFileAdaptor("local");
+        zorilla.setColor("#FF0000");
 
         hubs.put("zorilla", localServer);
 

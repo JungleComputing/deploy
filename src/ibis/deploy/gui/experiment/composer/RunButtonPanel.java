@@ -27,10 +27,10 @@ public class RunButtonPanel extends JPanel {
 
         setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
 
-        JButton createButton = Utils.createImageButton("/images/list-add.png",
+        JButton createButton = Utils.createImageButton("images/list-add.png",
                 "create this job, but don't start it", "Create");
         JButton createAndRunButton = Utils.createImageButton(
-                "/images/go-next.png", "create and start this job",
+                "images/go-next.png", "create and start this job",
                 "Create & Start");
         
         

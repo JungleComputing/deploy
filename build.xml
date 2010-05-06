@@ -44,7 +44,7 @@
         </copy>
 
         <copy todir="lib-zorilla">
-            <fileset dir="${javagat}" />
+            <fileset dir="${javagat}" includes="*.jar, adaptors/SshTrileadAdaptor/*, adaptors/GlobusAdaptor/*, adaptors/LocalAdaptor, adaptors/SgeAdaptor/*, adaptors/shared/*" />
             <fileset dir="${zorilla}" />
         </copy>
 

@@ -27,7 +27,7 @@ public class InitializationFrame extends JFrame implements StateListener,
         this.setTitle("Initializing");
 
         this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        this.setIconImage(Utils.createImageIcon("/images/favicon.ico", null)
+        this.setIconImage(Utils.createImageIcon("images/favicon.ico", null)
                 .getImage());
         //center on screen
         this.setLocationRelativeTo(null);
@@ -51,7 +51,7 @@ public class InitializationFrame extends JFrame implements StateListener,
             panel.setOpaque(true);
             panel.setLayout(new BorderLayout());
 
-            JLabel logo = Utils.createImageLabel("/images/ibis-logo.png",
+            JLabel logo = Utils.createImageLabel("images/ibis-logo.png",
                     "Ibis Logo");
             panel.add(logo, BorderLayout.NORTH);
 

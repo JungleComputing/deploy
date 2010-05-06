@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -129,11 +130,11 @@ public class GUI {
         UIManager.put("swing.boldMetal", Boolean.FALSE);
         frame = new JFrame("Ibis Deploy - " + workspaceLocation.getName());
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        frame.setIconImage(Utils.createImageIcon("/images/favicon.ico", null)
-                .getImage());
 
-        // center on screen
-        frame.setLocationRelativeTo(null);
+        ImageIcon icon = Utils.createImageIcon("images/favicon.ico", null);
+        if (icon != null) {
+            frame.setIconImage(icon.getImage());
+        }
 
         this.menuBar = new JMenuBar();
         JMenu menu = new JMenu("File");
@@ -201,6 +202,10 @@ public class GUI {
 
         // Display the window.
         frame.pack();
+
+        // center on screen
+        frame.setLocationRelativeTo(null);
+
         frame.setVisible(true);
     }
 
@@ -208,8 +213,10 @@ public class GUI {
         System.err
                 .println("Usage: ibis-deploy-gui [OPTIONS] [GRID_FILE] [APP_FILE] [EXPERIMENT_FILE] [WORKSPACE_FILE]");
         System.err.println("Options:");
+        System.err.println("-s CLUSTER\tRun server on specified cluster");
         System.err.println("-v\t\tVerbose mode");
-        System.err.println("-p PORT\t\tLocal port number (defaults to random free port)");
+        System.err
+                .println("-p PORT\t\tLocal port number (defaults to random free port)");
         System.err.println("-h | --help\tThis message");
     }
 
@@ -346,23 +353,24 @@ public class GUI {
         try {
             if (zorilla) {
                 Grid grid = workspace.getGrid();
-                
+
                 if (grid == null) {
-                    System.err.println("ERROR: Cannot initialize zorilla " +
-                    		"mode, no grid file specified");
+                    System.err.println("ERROR: Cannot initialize zorilla "
+                            + "mode, no grid file specified");
                     System.exit(1);
                 }
-                
+
                 deploy = new Deploy(null, verbose, keepSandboxes, port, grid);
             } else if (serverCluster == null) {
                 logger.info("Initializing Ibis Deploy, using build-in server");
 
                 // init with build-in server
 
-                deploy = new Deploy(null, verbose, keepSandboxes, port, null, null,
-                        true);
+                deploy = new Deploy(null, verbose, keepSandboxes, port, null,
+                        null, true);
             } else {
-                logger.info("Initializing Command Line Ibis Deploy"
+                logger
+                        .info("Initializing Ibis Deploy"
                                 + ", using server on cluster \""
                                 + serverCluster + "\"");
 
@@ -379,10 +387,10 @@ public class GUI {
                             + " not found in grid");
                     System.exit(1);
                 }
-                
+
                 InitializationFrame initWindow = new InitializationFrame();
-                deploy = new Deploy(null, verbose, keepSandboxes, port, cluster,
-                        initWindow, true);
+                deploy = new Deploy(null, verbose, keepSandboxes, port,
+                        cluster, initWindow, true);
                 // will call dispose in the Swing thread
                 initWindow.remove();
 

@@ -71,7 +71,7 @@ public class ClusterSelectionPanel extends JPanel {
         });
         JPanel titlePanel = new JPanel(new BorderLayout());
         titlePanel.add(new JLabel("Select Cluster"), BorderLayout.WEST);
-        titlePanel.add(Utils.createImageLabel("/images/network-server.png",
+        titlePanel.add(Utils.createImageLabel("images/network-server.png",
                 "resource count"), BorderLayout.EAST);
 
         add(titlePanel, BorderLayout.NORTH);

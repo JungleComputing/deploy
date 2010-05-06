@@ -1,96 +1,119 @@
 package ibis.deploy.gui.editor;
 
 import ibis.deploy.gui.misc.Utils;
-
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-public class TextComboBoxEditor {
+public class TextComboBoxEditor extends ChangeableField implements
+        ActionListener {
 
     private final JComboBox comboBox = new JComboBox();
 
-    private final JCheckBox useDefaultCheckBox = new JCheckBox();
-
-    private final String defaultValue;
-
-    private final JButton openButton = Utils.createImageButton(
-            "/images/document-open.png", "select a file", null);
-
     private final JLabel label = new JLabel("", JLabel.TRAILING);
 
-    public TextComboBoxEditor(JPanel form, final String text, String value,
-            String defaultValue, String[] possibleValues) {
-        this.defaultValue = defaultValue;
+    private JPanel parentPanel;
 
-        // determine whether this text editor holds a default value
-        final boolean useDefault = value == null;
+    private final String[] possibleValues;
 
-        // set the check box
-        useDefaultCheckBox
-                .setToolTipText("<html>check this box to overwrite the <code><i>default</i></code> value(s)</html>");
-        // if the value is 'nullified' or 'denullified' enable or disable the
-        // editing components and invoke the edited method
-        useDefaultCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setUseDefault(!useDefaultCheckBox.isSelected());
-            }
-        });
+    private String initialValue;
 
-        // initialize the components in enabled or disabled state
-        setUseDefault(useDefault);
+    private final String noSelectionText = "-";
 
+    /**
+     * @param form
+     *            - parent panel
+     * @param text
+     *            - label text
+     * @param value
+     *            - selected value
+     * @param possibleValues
+     *            - list of possible values for the combobox
+     */
+    public TextComboBoxEditor(final JPanel tabPanel, JPanel form,
+            final String text, String value, String[] possibleValues) {
+
+        this.parentPanel = form;
+        this.possibleValues = possibleValues;
+        this.tabPanel = tabPanel;
+
+        if (value != null) {
+            initialValue = value;
+        } else {
+            initialValue = noSelectionText;
+        }
+
+        // initialize combobox
+        comboBox.addItem(noSelectionText);
         for (String possibleValue : possibleValues) {
             comboBox.addItem(possibleValue);
-            if (useDefault) {
-                if (possibleValue.equalsIgnoreCase(defaultValue)) {
-                    comboBox.setSelectedItem(possibleValue);
-                }
-            } else {
-                if (possibleValue.equalsIgnoreCase(value)) {
-                    comboBox.setSelectedItem(possibleValue);
-                }
+            if (possibleValue.equalsIgnoreCase(value)) {
+                comboBox.setSelectedItem(possibleValue);
             }
 
         }
+        comboBox.addActionListener(this);
 
         JPanel container = new JPanel(new BorderLayout());
+
         JPanel labelPanel = new JPanel(new BorderLayout());
-        labelPanel.add(useDefaultCheckBox, BorderLayout.WEST);
         labelPanel.add(label, BorderLayout.EAST);
         container.add(labelPanel, BorderLayout.WEST);
         label.setText(text);
         label.setLabelFor(comboBox);
-        label.setPreferredSize(new Dimension(150,
-                label.getPreferredSize().height));
+        label.setPreferredSize(new Dimension(Utils.defaultLabelWidth, label
+                .getPreferredSize().height));
+
         container.add(comboBox, BorderLayout.CENTER);
         form.add(container);
     }
 
+    /**
+     * @return - selected value in the combobox
+     */
     public String getText() {
-        if (!useDefaultCheckBox.isSelected()) {
-            return null;
-        } else {
+        if (comboBox.getSelectedIndex() > 0) {
             return comboBox.getSelectedItem().toString();
         }
+        return null;
     }
 
-    private void setUseDefault(boolean useDefault) {
-        useDefaultCheckBox.setSelected(!useDefault);
-
-        if (useDefault) {
-            comboBox.setSelectedItem(defaultValue);
+    /**
+     * Sets the selected item in the combobox to a new value
+     * 
+     * @param value
+     *            - new selected value
+     */
+    public void setText(String value) {
+        for (String possibleValue : possibleValues) {
+            if (possibleValue.equalsIgnoreCase(value)) {
+                comboBox.setSelectedItem(possibleValue);
+            }
         }
-        label.setEnabled(!useDefault);
-        comboBox.setEnabled(!useDefault);
-        openButton.setEnabled(!useDefault);
+        parentPanel.getRootPane().repaint();
+    }
+
+    @Override
+    public void refreshInitialValue() {
+        initialValue = getText() != null ? getText() : noSelectionText;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent arg0) {
+        informParent();
+    }
+
+    /**
+     * @return - true if the selected item in the combobox is different from the
+     *         initial value.
+     */
+    public boolean hasChanged() {
+        return !comboBox.getSelectedItem().toString().equalsIgnoreCase(
+                initialValue);
     }
 
 }
