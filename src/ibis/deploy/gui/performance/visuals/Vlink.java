@@ -22,14 +22,19 @@ public class Vlink extends Vobject implements VobjectInterface {
 		super(perfvis, visman);
 		this.node = node;
 		this.currentForm = CITYSCAPE;
+				
+		initializeMetrics();
+	}	
+	
+	private void initializeMetrics() {
+		vmetrics.clear();
 		
-		//Preparing the metrics vobjects for the average values
-		HashMap<String, Float[]> colors = node.getLinkColors();
+		HashMap<String, Float[]> colors = node.getMetricsColors();
 		
 		for (Map.Entry<String, Float[]> entry : colors.entrySet()) {
-			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, entry.getValue(), from, to));		
-		}
-	}	
+			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, entry.getValue()));
+		}		
+	}
 	
 	public void setForm(int nodeForm) throws ModeUnknownException {
 		if (nodeForm != Vnode.CITYSCAPE) {
@@ -61,7 +66,10 @@ public class Vlink extends Vobject implements VobjectInterface {
 		}
 	}
 	
-	public void update(){
+	public void update() {
+		//TODO cleanup
+		initializeMetrics();
+		
 		HashMap<String, Float> stats = node.getMonitoredLinkMetrics();
 		for (Map.Entry<String, Float> entry : stats.entrySet()) {
 			try {

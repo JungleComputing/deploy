@@ -1,6 +1,5 @@
 package ibis.deploy.gui.performance;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,8 +18,10 @@ public class StatsManager {
 	//Variables needed for the operation of this class		
 	private ManagementServiceInterface manInterface;
 	private RegistryServiceInterface regInterface;
+	private VisualManager visman;
+	
 	private Map<String, Integer> poolSizes;	
-	private List<Pool> pools;
+	private ArrayList<Pool> pools;
 	
 	//The list that holds the statistics necessary for initializing the visualization 
 	private ArrayList<MetricsObject> initStatistics;
@@ -30,9 +31,10 @@ public class StatsManager {
 	private List<NodeMetricsObject> availableNodeMetrics;
 	private List<LinkMetricsObject> availableLinkMetrics;
 	
-	public StatsManager(ManagementServiceInterface manInterface, RegistryServiceInterface regInterface) {		
+	public StatsManager(VisualManager visman, ManagementServiceInterface manInterface, RegistryServiceInterface regInterface) {		
 		this.manInterface = manInterface;
 		this.regInterface = regInterface;
+		this.visman = visman;
 		
 		//The HashMap used to check whether pools have changed
 		poolSizes = new HashMap<String, Integer>();
@@ -71,12 +73,10 @@ public class StatsManager {
 	
 	public void update() {		
 		//Update the size of all pools and sites
-		if (checkPools()) {
-			initPools();
-		}
-		
+		ArrayList<Pool> newPools = initPools();
+				
 		//for all pools
-		for (Pool pool : pools) {
+		for (Pool pool : newPools) {
 			try {
 				pool.update();
 			} catch (StatNotRequestedException e) {				
@@ -84,49 +84,48 @@ public class StatsManager {
 			}
 		}
 	}
-	
-	public boolean checkPools() {
-		boolean changed = false;
-		Map<String, Integer> newSizes;
-		try {
-			newSizes = regInterface.getPoolSizes();		
-		
-			//Check if anything has changed since the last update
-			for (Map.Entry<String, Integer> entry : newSizes.entrySet()) {
-				String poolName = entry.getKey();
-	            int newSize = entry.getValue();
-				if (newSize > 0) {
-		            if (!poolSizes.containsKey(poolName) || newSize != poolSizes.get(poolName)) {		            	
-		            	changed = true;
-		            }
-				}
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return changed;
-	}
 			
-	private void initPools() {
-		pools.clear();
-		Map<String, Integer> newSizes;		
+	private ArrayList<Pool> initPools() {
+		boolean needReinitializationOfVisuals = false;
+		
+		Map<String, Integer> newSizes = new HashMap<String, Integer>();
+		
 		try {		
 			newSizes = regInterface.getPoolSizes();
-			//reinitialize the pools list
-			for (Map.Entry<String, Integer> entry : newSizes.entrySet()) {				
-	            String poolName = entry.getKey();
-	            int newSize = entry.getValue();
-
-	            if (newSize > 0) {
-		            if (!poolSizes.containsKey(poolName) || newSize != poolSizes.get(poolName)) {
-		            	pools.add(new Pool(manInterface, regInterface, initStatistics, poolName));
-		            }
-	            }
-	        }
-			poolSizes = newSizes;
 		} catch (Exception e) {	
 			e.printStackTrace();
 		}
+	
+		//clear the pools list, if warranted
+		for (Map.Entry<String, Integer> entry : newSizes.entrySet()) {				
+			String poolName = entry.getKey();
+	        int newSize = entry.getValue();
+
+	        if (!poolSizes.containsKey(poolName) || newSize != poolSizes.get(poolName)) {
+	         	pools.clear();
+	         	needReinitializationOfVisuals = true;
+	        }	        			
+		}	            
+				
+		//reinitialize the pools list
+		for (Map.Entry<String, Integer> entry : newSizes.entrySet()) {				
+			String poolName = entry.getKey();
+	        int newSize = entry.getValue();
+
+	        if (!poolSizes.containsKey(poolName) || newSize != poolSizes.get(poolName)) {
+	        	if (newSize > 0) {		            
+		          	pools.add(new Pool(manInterface, regInterface, initStatistics, poolName));		            	
+		        }		        	            
+	        }
+		}
+		
+		if (needReinitializationOfVisuals) {
+			visman.reinitialize(pools);
+		}
+		
+		poolSizes = newSizes;
+		
+		return pools;
 	}	
 
 	public List<Pool> getTopConcepts() {

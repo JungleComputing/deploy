@@ -67,9 +67,9 @@ public class PerfVis implements GLEventListener {
 			e.printStackTrace();
 		}	
 		
-		statman = new StatsManager(manInterface, regInterface);
-		visman = new VisualManager(this);
 		mouseHandler = new MouseHandler(this);
+		visman = new VisualManager(this);
+		statman = new StatsManager(visman, manInterface, regInterface);		
 	}
 				
 	public void display(GLAutoDrawable drawable) {
@@ -96,13 +96,7 @@ public class PerfVis implements GLEventListener {
 	}	
 	
 	public void updateStats() {		
-		if (statman.checkPools()) {
-			statman.update();
-			//We'll need to remake the visualization tree
-			visman.reinitialize(statman.getTopConcepts());
-		} else {
-			statman.update();	
-		}
+		statman.update();			
 		visman.update();
 	}
 	

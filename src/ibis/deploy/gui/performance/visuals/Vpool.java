@@ -33,12 +33,17 @@ public class Vpool extends Vobject implements VobjectInterface {
 			vsites.add(new Vsite(perfvis, visman, site));
 		}	
 		
-		//Preparing the metrics vobjects for the average values
+		initializeMetrics();
+	}
+	
+	private void initializeMetrics() {
+		vmetrics.clear();
+		
 		HashMap<String, Float[]> colors = pool.getMetricsColors();
 		
 		for (Map.Entry<String, Float[]> entry : colors.entrySet()) {
-			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, entry.getValue()));		
-		}
+			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, entry.getValue()));
+		}		
 	}
 
 	public void setForm(int poolForm) throws ModeUnknownException {
@@ -77,7 +82,10 @@ public class Vpool extends Vobject implements VobjectInterface {
 		}
 	}
 	
-	public void update() {		
+	public void update() {
+		//TODO cleanup
+		initializeMetrics();
+		
 		for (Vsite vsite : vsites) {
 			vsite.update();			
 		}

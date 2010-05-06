@@ -25,6 +25,7 @@ public class Vobject {
 	public static Float[] _F08	= {1.0f, 0.0f, 0.5f};
 	
 	PerfVis perfvis;
+	VisualManager visman;
 	
 	protected Float[] location;
 	protected float radius;
@@ -42,6 +43,7 @@ public class Vobject {
 	public Vobject(PerfVis perfvis, VisualManager visman) {
 		glu = new GLU();
 		this.perfvis = perfvis;
+		this.visman = visman;
 		
 		this.location = new Float[3];
 		this.location[0] = 0.0f;

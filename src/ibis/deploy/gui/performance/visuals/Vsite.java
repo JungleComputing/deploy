@@ -51,14 +51,17 @@ public class Vsite extends Vobject implements VobjectInterface {
 			}						
 		}
 		
-		//Preparing the metrics vobjects for the average values
+		initializeMetrics();		
+	}
+	
+	private void initializeMetrics() {
+		vmetrics.clear();
+		
 		HashMap<String, Float[]> colors = site.getMetricsColors();
 		
 		for (Map.Entry<String, Float[]> entry : colors.entrySet()) {
-			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, entry.getValue()));				
-		}
-		
-		
+			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, entry.getValue()));
+		}		
 	}
 
 	public void setForm(int siteForm) throws ModeUnknownException {
@@ -97,7 +100,11 @@ public class Vsite extends Vobject implements VobjectInterface {
 		}
 	}
 	
-	public void update() {		
+	public void update() {	
+		//TODO cleanup
+		initializeMetrics();
+		
+		
 		for (Vnode vnode : vnodes) {
 			vnode.update();			
 		}

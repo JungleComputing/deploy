@@ -101,8 +101,7 @@ public class Node extends IbisConcept implements IbisConceptInterface {
 	public float getValue(String key) throws StatNotRequestedException {
 		if (nodeMetricsValues.containsKey(key))	{
 			return nodeMetricsValues.get(key);
-		} else {
-			System.out.println(key +" was not requested.");
+		} else {			
 			throw new StatNotRequestedException();
 		}
 	}

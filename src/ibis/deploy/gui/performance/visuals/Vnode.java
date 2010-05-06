@@ -23,19 +23,13 @@ public class Vnode extends Vobject implements VobjectInterface {
 		this.node = node;
 		this.currentForm = CITYSCAPE;
 		
-		HashMap<String, Float[]> colors = node.getMetricsColors();
-				
-		for (Map.Entry<String, Float[]> entry : colors.entrySet()) {
-			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, entry.getValue()));
-		}
+		initializeMetrics();
 		
 		try {
 			setForm(Vnode.CITYSCAPE);			
 		} catch (ModeUnknownException e) {			
 			e.printStackTrace();
-		}
-		
-		
+		}		
 	}
 
 	public void setForm(int nodeForm) throws ModeUnknownException {
@@ -74,7 +68,21 @@ public class Vnode extends Vobject implements VobjectInterface {
 		}
 	}
 	
+	private void initializeMetrics() {
+		vmetrics.clear();
+		
+		HashMap<String, Float[]> colors = node.getMetricsColors();
+		
+		for (Map.Entry<String, Float[]> entry : colors.entrySet()) {
+			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, entry.getValue()));
+		}		
+	}
+	
 	public void update() {
+		
+		//TODO cleanup
+		initializeMetrics();
+		
 		HashMap<String, Float> stats = node.getMonitoredNodeMetrics();
 		for (Map.Entry<String, Float> entry : stats.entrySet()) {
 			try {				
