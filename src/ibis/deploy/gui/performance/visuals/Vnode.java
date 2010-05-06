@@ -27,9 +27,6 @@ public class Vnode extends Vobject implements VobjectInterface {
 				
 		for (Map.Entry<String, Float[]> entry : colors.entrySet()) {
 			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, entry.getValue()));
-
-			//TODO REMOVE DEBUG
-			System.out.println("Making Metric!");
 		}
 		
 		try {
@@ -37,6 +34,8 @@ public class Vnode extends Vobject implements VobjectInterface {
 		} catch (ModeUnknownException e) {			
 			e.printStackTrace();
 		}
+		
+		
 	}
 
 	public void setForm(int nodeForm) throws ModeUnknownException {
@@ -75,13 +74,16 @@ public class Vnode extends Vobject implements VobjectInterface {
 		}
 	}
 	
-	public void update(){
+	public void update() {
 		HashMap<String, Float> stats = node.getMonitoredNodeMetrics();
 		for (Map.Entry<String, Float> entry : stats.entrySet()) {
-			try {
+			try {				
 				vmetrics.get(entry.getKey()).setValue(entry.getValue());
 			} catch (ValueOutOfBoundsException e) {	
 				System.out.println("VALUE: "+entry.getValue()+" OUT OF BOUNDS!");
+				e.printStackTrace();
+			} catch (NullPointerException e) {
+				System.out.println("Nullpointer: "+entry.getKey());
 				e.printStackTrace();
 			}
 		}

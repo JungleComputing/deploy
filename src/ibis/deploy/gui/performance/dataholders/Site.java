@@ -1,6 +1,7 @@
 package ibis.deploy.gui.performance.dataholders;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
@@ -12,6 +13,7 @@ import ibis.ipl.server.ManagementServiceInterface;
 public class Site extends IbisConcept implements IbisConceptInterface {	
 	private String name;	
 	private ArrayList<Node> nodes;
+	private HashMap<IbisIdentifier, Node> ibisesToNodes;
 	
 	private ArrayList<MetricsObject> currentlyGatheredStatistics;
 	
@@ -19,6 +21,7 @@ public class Site extends IbisConcept implements IbisConceptInterface {
 		super(manInterface);
 		this.name = siteName;				
 		this.nodes = new ArrayList<Node>();
+		this.ibisesToNodes = new HashMap<IbisIdentifier, Node>();
 		
 		String ibisLocationName;
 		
@@ -30,6 +33,7 @@ public class Site extends IbisConcept implements IbisConceptInterface {
 			if (ibisLocationName.compareTo(siteName) == 0) {
 				Node node = new Node(manInterface, siteName, poolIbises[i]);
 				nodes.add(node);
+				ibisesToNodes.put(poolIbises[i], node);
 			}
 		}
 		
@@ -38,6 +42,10 @@ public class Site extends IbisConcept implements IbisConceptInterface {
 		
 	public String getName() {
 		return name;
+	}
+	
+	public Node getNode(IbisIdentifier ibis) {
+		return ibisesToNodes.get(ibis);		
 	}
 
 	public IbisIdentifier[] getIbises() {

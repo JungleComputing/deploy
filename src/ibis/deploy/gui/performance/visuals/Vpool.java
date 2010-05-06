@@ -31,9 +31,6 @@ public class Vpool extends Vobject implements VobjectInterface {
 				
 		for (Site site : sites) {
 			vsites.add(new Vsite(perfvis, visman, site));
-			
-			//TODO REMOVE DEBUG
-			System.out.println("Making Site!");
 		}	
 		
 		//Preparing the metrics vobjects for the average values
@@ -139,6 +136,7 @@ public class Vpool extends Vobject implements VobjectInterface {
 			//Setup the form
 			try {
 				vsite.setLocation(location);
+				vsite.setSeparation(0.1f);
 				
 				shift[0] = -(scaleXZ+separation)*row;
 				shift[1] = 0.0f;

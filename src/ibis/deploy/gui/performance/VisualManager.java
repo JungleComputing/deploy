@@ -44,7 +44,8 @@ public class VisualManager {
 		}
 	}
 	
-	public void drawConcepts(GL gl, int glMode) {		
+	public void drawConcepts(GL gl, int glMode) {
+		
 		for (Vpool vpool : vpools) {	
 			vpool.setLocation(origin);
 			vpool.drawThis(gl, glMode);			

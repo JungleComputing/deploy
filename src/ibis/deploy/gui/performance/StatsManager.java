@@ -47,6 +47,7 @@ public class StatsManager {
 		//initStatistics.add(new ZcoordStatistic());
 		initStatistics.add(new ConnStatistic());
 		initStatistics.add(new CPUStatistic());
+		initStatistics.add(new BytesSentStatistic());
 		
 		initStatistics.add(new HeapMemStatistic());
 		initStatistics.add(new NonHeapMemStatistic());

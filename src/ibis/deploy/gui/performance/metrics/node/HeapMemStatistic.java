@@ -16,7 +16,7 @@ public class HeapMemStatistic extends NodeMetricsObject implements MetricsObject
 		this.color = COLOR;
 		attributesCountNeeded = DESCRIPTIONS_COUNT_NEEDED;
 		necessaryAttributes = new AttributeDescription[DESCRIPTIONS_COUNT_NEEDED];
-		necessaryAttributes[0] = new AttributeDescription("java.lang:type=Memory", "NonHeapMemoryUsage");
+		necessaryAttributes[0] = new AttributeDescription("java.lang:type=Memory", "HeapMemoryUsage");
 	}
 	
 	public void update(Object[] results) {

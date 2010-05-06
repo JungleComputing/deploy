@@ -6,6 +6,7 @@ import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
 import ibis.deploy.gui.performance.metrics.MetricsObject;
 import ibis.deploy.gui.performance.metrics.link.LinkMetricsObject;
 import ibis.deploy.gui.performance.metrics.node.NodeMetricsObject;
+import ibis.deploy.gui.performance.metrics.special.ConnStatistic;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.support.management.AttributeDescription;
@@ -22,6 +23,7 @@ public class Node extends IbisConcept implements IbisConceptInterface {
 		super(manInterface);
 		this.siteName = siteName;
 		this.name = name;
+		connectedIbises = new IbisIdentifier[0];
 		
 		metrics = new ArrayList<MetricsObject>();
 	}
@@ -70,6 +72,8 @@ public class Node extends IbisConcept implements IbisConceptInterface {
 				} else if (metric.getGroup() == LinkMetricsObject.METRICSGROUP) {
 					linkMetricsValues.put(metric.getName(), metric.getValue());
 					linkMetricsColors.put(metric.getName(), metric.getColor());
+				} else if (metric.getName().equals(ConnStatistic.NAME)) {
+					connectedIbises = ((ConnStatistic)metric).getIbises();
 				}
 			}
 		} catch (Exception e) {					

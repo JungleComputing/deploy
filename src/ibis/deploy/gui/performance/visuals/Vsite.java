@@ -5,6 +5,7 @@ import ibis.deploy.gui.performance.dataholders.Node;
 import ibis.deploy.gui.performance.dataholders.Site;
 import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
 import ibis.deploy.gui.performance.exceptions.ValueOutOfBoundsException;
+import ibis.ipl.IbisIdentifier;
 
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -19,6 +20,8 @@ public class Vsite extends Vobject implements VobjectInterface {
 	public static int CIRCLE = 12;
 	
 	private List<Vnode> vnodes;
+	private HashMap<Node, Vnode> nodesToVisuals;
+	private List<Vlink> vlinks;
 	private Site site;
 		
 	public Vsite(PerfVis perfvis, VisualManager visman, Site site) {
@@ -29,12 +32,23 @@ public class Vsite extends Vobject implements VobjectInterface {
 		//Preparing the vnodes
 		Node[] nodes = site.getSubConcepts();
 		vnodes = new ArrayList<Vnode>();
+		vlinks = new ArrayList<Vlink>();
+		nodesToVisuals = new HashMap<Node, Vnode>();
 				
 		for (Node node : nodes) {
-			vnodes.add(new Vnode(perfvis, visman, node));
+			Vnode newVnode = new Vnode(perfvis, visman, node);
+			vnodes.add(newVnode);
+			nodesToVisuals.put(node, newVnode);
+		}
+		
+		for (Node node : nodes) {
+			Vnode from = nodesToVisuals.get(node);
 			
-			//TODO REMOVE DEBUG
-			System.out.println("Making Node!");
+			IbisIdentifier[] connectedIbises = node.getConnectedIbises();
+			for (IbisIdentifier ibis : connectedIbises) {
+				Vnode to = nodesToVisuals.get(site.getNode(ibis));
+				vlinks.add(new Vlink(perfvis, visman, node, from, to));				
+			}						
 		}
 		
 		//Preparing the metrics vobjects for the average values
@@ -43,6 +57,8 @@ public class Vsite extends Vobject implements VobjectInterface {
 		for (Map.Entry<String, Float[]> entry : colors.entrySet()) {
 			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, entry.getValue()));				
 		}
+		
+		
 	}
 
 	public void setForm(int siteForm) throws ModeUnknownException {
@@ -85,6 +101,9 @@ public class Vsite extends Vobject implements VobjectInterface {
 		for (Vnode vnode : vnodes) {
 			vnode.update();			
 		}
+		for (Vlink vlink : vlinks) {
+			vlink.update();			
+		}
 		HashMap<String, Float> stats = site.getMonitoredNodeMetrics();
 		for (Map.Entry<String, Float> entry : stats.entrySet()) {
 			try {
@@ -112,9 +131,17 @@ public class Vsite extends Vobject implements VobjectInterface {
 			drawCircle(gl, glMode);
 		}
 		
+		drawLinks(gl, glMode);
+		
 		//Restore the old matrix mode and transformation matrix		
 		gl.glMatrixMode(oldMode.get());
 		gl.glPopMatrix();
+	}
+	
+	protected void drawLinks(GL gl, int glMode) {
+		for (Vlink vlink : vlinks) {
+			vlink.drawThis(gl, glMode);
+		}		
 	}
 	
 	protected void drawCityscape(GL gl, int glMode) {		
