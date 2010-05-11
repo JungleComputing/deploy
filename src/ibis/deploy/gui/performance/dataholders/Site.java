@@ -4,20 +4,22 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import ibis.deploy.gui.performance.MetricsList;
 import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
-import ibis.deploy.gui.performance.metrics.MetricsObject;
+import ibis.deploy.gui.performance.metrics.Metric;
 import ibis.deploy.gui.performance.metrics.special.ConnStatistic;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.server.ManagementServiceInterface;
+import ibis.smartsockets.virtual.NoSuitableModuleException;
 
 public class Site extends IbisConcept implements IbisConceptInterface {	
 	private String name;	
 	private ArrayList<Node> nodes;
 	private HashMap<IbisIdentifier, Node> ibisesToNodes;
 	
-	private ArrayList<MetricsObject> currentlyGatheredStatistics;
+	private MetricsList currentlyGatheredMetrics;
 	
-	public Site(ManagementServiceInterface manInterface, ArrayList<MetricsObject> initialStatistics, IbisIdentifier[] poolIbises, String siteName) {	
+	public Site(ManagementServiceInterface manInterface, MetricsList initialStatistics, IbisIdentifier[] poolIbises, String siteName) {	
 		super(manInterface);
 		this.name = siteName;				
 		this.nodes = new ArrayList<Node>();
@@ -58,7 +60,7 @@ public class Site extends IbisConcept implements IbisConceptInterface {
 		return result;
 	}	
 	
-	public void update() throws StatNotRequestedException {	
+	public void update() throws StatNotRequestedException, NoSuitableModuleException {	
 		nodeMetricsValues.clear();
 		linkMetricsValues.clear();
 		
@@ -66,7 +68,7 @@ public class Site extends IbisConcept implements IbisConceptInterface {
 			node.update();
 		}
 		
-		for (MetricsObject stat : currentlyGatheredStatistics) {
+		for (Metric stat : currentlyGatheredMetrics) {
 			if (!stat.getName().equals(ConnStatistic.NAME)) {
 				String key = stat.getName();
 				List<Float> results = new ArrayList<Float>();
@@ -84,15 +86,15 @@ public class Site extends IbisConcept implements IbisConceptInterface {
 		}
 	}
 	
-	public void setCurrentlyGatheredMetrics(ArrayList<MetricsObject> currentlyGatheredStatistics) {
+	public void setCurrentlyGatheredMetrics(MetricsList newMetrics) {
 		for (Node node : nodes) {			
-			node.setCurrentlyGatheredMetrics(currentlyGatheredStatistics);
+			node.setCurrentlyGatheredMetrics(newMetrics);
 		}
-		this.currentlyGatheredStatistics = currentlyGatheredStatistics;
+		this.currentlyGatheredMetrics = newMetrics;
 	}
 
-	public ArrayList<MetricsObject> getCurrentlyGatheredStatistics() {
-		return currentlyGatheredStatistics;
+	public MetricsList getCurrentlyGatheredMetrics() {
+		return currentlyGatheredMetrics;
 	}
 	
 	public Node[] getSubConcepts() {
@@ -104,8 +106,9 @@ public class Site extends IbisConcept implements IbisConceptInterface {
 	public float getValue(String key) throws StatNotRequestedException {
 		if (nodeMetricsValues.containsKey(key))	{
 			return nodeMetricsValues.get(key);
-		} else {
-			System.out.println(key +" was not requested.");
+		} else if (linkMetricsValues.containsKey(key))	{
+			return linkMetricsValues.get(key);
+		} else {			
 			throw new StatNotRequestedException();
 		}
 	}

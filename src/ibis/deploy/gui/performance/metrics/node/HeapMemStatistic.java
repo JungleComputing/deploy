@@ -1,11 +1,11 @@
 package ibis.deploy.gui.performance.metrics.node;
 
-import ibis.deploy.gui.performance.metrics.MetricsObjectInterface;
+import ibis.deploy.gui.performance.metrics.MetricInterface;
 import ibis.ipl.support.management.AttributeDescription;
 
 import javax.management.openmbean.CompositeData;
 
-public class HeapMemStatistic extends NodeMetricsObject implements MetricsObjectInterface {
+public class HeapMemStatistic extends NodeMetricsObject implements MetricInterface {
 	public static final String NAME = "MEM_HEAP";
 	public static final int DESCRIPTIONS_COUNT_NEEDED = 1;
 	public static final Float[] COLOR = {0.0f, 1.0f, 0.0f};

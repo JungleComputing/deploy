@@ -1,15 +1,16 @@
 package ibis.deploy.gui.performance.dataholders;
 
-import java.util.ArrayList;
-
+import ibis.deploy.gui.performance.MetricsList;
+import ibis.deploy.gui.performance.exceptions.MethodNotOverriddenException;
 import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
-import ibis.deploy.gui.performance.metrics.MetricsObject;
+import ibis.deploy.gui.performance.metrics.Metric;
 import ibis.deploy.gui.performance.metrics.link.LinkMetricsObject;
 import ibis.deploy.gui.performance.metrics.node.NodeMetricsObject;
 import ibis.deploy.gui.performance.metrics.special.ConnStatistic;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.support.management.AttributeDescription;
+import ibis.smartsockets.virtual.NoSuitableModuleException;
 
 public class Node extends IbisConcept implements IbisConceptInterface {
 	//Variables needed for the operation of this class	
@@ -17,7 +18,7 @@ public class Node extends IbisConcept implements IbisConceptInterface {
 	private IbisIdentifier name;	
 	
 	private IbisIdentifier[] connectedIbises;
-	private ArrayList<MetricsObject> metrics;
+	private MetricsList metrics;
 	
 	public Node(ManagementServiceInterface manInterface, String siteName, IbisIdentifier name) {
 		super(manInterface);
@@ -25,29 +26,29 @@ public class Node extends IbisConcept implements IbisConceptInterface {
 		this.name = name;
 		connectedIbises = new IbisIdentifier[0];
 		
-		metrics = new ArrayList<MetricsObject>();
+		metrics = new MetricsList();
 	}
 	
-	public void setCurrentlyGatheredMetrics(ArrayList<MetricsObject> newMetrics) {
+	public void setCurrentlyGatheredMetrics(MetricsList newMetrics) {
 		metrics.clear();
-		for (MetricsObject metric : newMetrics) {
+		for (Metric metric : newMetrics) {
 			metrics.add(metric.clone());
 		}
 	}
 	
-	public void update() {
+	public void update() throws NoSuitableModuleException {
 		//First, clear the Maps with the values, to be refilled with the newly requested entries
 		nodeMetricsValues.clear();
 		linkMetricsValues.clear();
 		try {
 			int size = 0;
-			for (MetricsObject metric : metrics) {
+			for (Metric metric : metrics) {
 				size += metric.getAttributesCountNeeded();
 			}
 			
 			AttributeDescription[] requestArray = new AttributeDescription[size]; 
 			int j=0;
-			for (MetricsObject metric : metrics) {
+			for (Metric metric : metrics) {
 				AttributeDescription[] tempArray = metric.getNecessaryAttributes();
 				for (int i=0; i < tempArray.length; i++) {
 					requestArray[j] = tempArray[i];
@@ -58,7 +59,7 @@ public class Node extends IbisConcept implements IbisConceptInterface {
 			Object[] results = manInterface.getAttributes(name, requestArray);
 			
 			j=0;
-			for (MetricsObject metric : metrics) {
+			for (Metric metric : metrics) {
 				Object[] partialResults = new Object[metric.getAttributesCountNeeded()];
 				for (int i=0; i < partialResults.length ; i++) {
 					partialResults[i] = results[j];	
@@ -76,9 +77,13 @@ public class Node extends IbisConcept implements IbisConceptInterface {
 					connectedIbises = ((ConnStatistic)metric).getIbises();
 				}
 			}
-		} catch (Exception e) {					
+		} catch (NoSuitableModuleException e) {					
+			throw e;
+		} catch (MethodNotOverriddenException e) {
 			e.printStackTrace();
-		}
+		} catch (Exception e) {			
+			e.printStackTrace();
+		} 
 		
 	}
 	
@@ -101,6 +106,8 @@ public class Node extends IbisConcept implements IbisConceptInterface {
 	public float getValue(String key) throws StatNotRequestedException {
 		if (nodeMetricsValues.containsKey(key))	{
 			return nodeMetricsValues.get(key);
+		} else if (linkMetricsValues.containsKey(key))	{
+			return linkMetricsValues.get(key);
 		} else {			
 			throw new StatNotRequestedException();
 		}

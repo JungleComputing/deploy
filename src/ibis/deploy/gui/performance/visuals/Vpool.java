@@ -30,8 +30,10 @@ public class Vpool extends Vobject implements VobjectInterface {
 		vsites = new ArrayList<Vsite>();
 				
 		for (Site site : sites) {
-			vsites.add(new Vsite(perfvis, visman, site));
-		}	
+			vsites.add(new Vsite(perfvis, visman, site));			
+		}
+		
+		setRadius(vsites.size());		
 		
 		initializeMetrics();
 	}
@@ -144,7 +146,7 @@ public class Vpool extends Vobject implements VobjectInterface {
 			//Setup the form
 			try {
 				vsite.setLocation(location);
-				vsite.setSeparation(0.1f);
+				vsite.setSeparation(vsite.getRadius());
 				
 				shift[0] = -(scaleXZ+separation)*row;
 				shift[1] = 0.0f;

@@ -1,9 +1,9 @@
 package ibis.deploy.gui.performance.metrics.node;
 
-import ibis.deploy.gui.performance.metrics.MetricsObjectInterface;
+import ibis.deploy.gui.performance.metrics.MetricInterface;
 import ibis.ipl.support.management.AttributeDescription;
 
-public class CPUStatistic extends NodeMetricsObject implements MetricsObjectInterface {
+public class CPUStatistic extends NodeMetricsObject implements MetricInterface {
 	public static final String NAME = "CPU";
 	public static final int DESCRIPTIONS_COUNT_NEEDED = 3;
 	public static final Float[] COLOR = {1.0f, 0.0f, 0.0f};

@@ -29,7 +29,7 @@ public class Vlink extends Vobject implements VobjectInterface {
 	private void initializeMetrics() {
 		vmetrics.clear();
 		
-		HashMap<String, Float[]> colors = node.getMetricsColors();
+		HashMap<String, Float[]> colors = node.getLinkColors();
 		
 		for (Map.Entry<String, Float[]> entry : colors.entrySet()) {
 			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, entry.getValue()));

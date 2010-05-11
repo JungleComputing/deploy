@@ -7,7 +7,6 @@ import java.util.Map;
 
 import ibis.deploy.gui.performance.dataholders.*;
 import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
-import ibis.deploy.gui.performance.metrics.*;
 import ibis.deploy.gui.performance.metrics.link.*;
 import ibis.deploy.gui.performance.metrics.node.*;
 import ibis.deploy.gui.performance.metrics.special.*;
@@ -24,12 +23,12 @@ public class StatsManager {
 	private ArrayList<Pool> pools;
 	
 	//The list that holds the statistics necessary for initializing the visualization 
-	private ArrayList<MetricsObject> initStatistics;
+	private MetricsList initStatistics;
 	
 	//The lists that hold the currently available metrics, add to this when implementing new stats.
-	private List<MetricsObject> availableSpecialMetrics;
-	private List<NodeMetricsObject> availableNodeMetrics;
-	private List<LinkMetricsObject> availableLinkMetrics;
+	private MetricsList availableSpecialMetrics;
+	private MetricsList availableNodeMetrics;
+	private MetricsList availableLinkMetrics;
 	
 	public StatsManager(VisualManager visman, ManagementServiceInterface manInterface, RegistryServiceInterface regInterface) {		
 		this.manInterface = manInterface;
@@ -43,22 +42,22 @@ public class StatsManager {
 		pools = new ArrayList<Pool>();
 		
 		//List that holds the initial statistics necessary to create the data structure (links and coordinates)
-		initStatistics = new ArrayList<MetricsObject>();
+		initStatistics = new MetricsList();
 		//initStatistics.add(new XcoordStatistic());
 		//initStatistics.add(new YcoordStatistic());
 		//initStatistics.add(new ZcoordStatistic());
 		initStatistics.add(new ConnStatistic());
 		initStatistics.add(new CPUStatistic());
-		//initStatistics.add(new BytesSentStatistic());		
+		initStatistics.add(new BytesSentStatistic());
 		initStatistics.add(new HeapMemStatistic());
 		initStatistics.add(new NonHeapMemStatistic());
 		
 		//List that holds all available special statistics
-		availableSpecialMetrics = new ArrayList<MetricsObject>();
+		availableSpecialMetrics = new MetricsList();
 		availableSpecialMetrics.add(new ConnStatistic());
 		
 		//List that holds all available Node-based statistics
-		availableNodeMetrics = new ArrayList<NodeMetricsObject>();
+		availableNodeMetrics = new MetricsList();
 		availableNodeMetrics.add(new CPUStatistic());
 		availableNodeMetrics.add(new HeapMemStatistic());
 		availableNodeMetrics.add(new NonHeapMemStatistic());		
@@ -67,7 +66,7 @@ public class StatsManager {
 		availableNodeMetrics.add(new ZcoordStatistic());
 			
 		//List that holds all available Link-based statistics
-		availableLinkMetrics = new ArrayList<LinkMetricsObject>();
+		availableLinkMetrics = new MetricsList();
 		availableLinkMetrics.add(new BytesSentStatistic());
 	}
 	
@@ -79,8 +78,11 @@ public class StatsManager {
 		for (Pool pool : newPools) {
 			try {
 				pool.update();
-			} catch (StatNotRequestedException e) {				
+			} catch (Exception e) {
 				e.printStackTrace();
+				pools.clear();
+				poolSizes.clear();
+				initPools();
 			}
 		}
 	}
@@ -114,7 +116,7 @@ public class StatsManager {
 
 	        if (!poolSizes.containsKey(poolName) || newSize != poolSizes.get(poolName)) {
 	        	if (newSize > 0) {		            
-		          	pools.add(new Pool(manInterface, regInterface, initStatistics, poolName));		            	
+		          	pools.add(new Pool(manInterface, regInterface, initStatistics.clone(), poolName));		            	
 		        }		        	            
 	        }
 		}
@@ -132,11 +134,11 @@ public class StatsManager {
 		return pools;
 	}
 
-	public List<NodeMetricsObject> getAvailableNodeMetrics() {
+	public MetricsList getAvailableNodeMetrics() {
 		return availableNodeMetrics;
 	}
 	
-	public List<LinkMetricsObject> getAvailableLinkMetrics() {
+	public MetricsList getAvailableLinkMetrics() {
 		return availableLinkMetrics;
 	}		
 	

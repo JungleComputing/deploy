@@ -1,11 +1,11 @@
 package ibis.deploy.gui.performance.metrics.special;
 
-import ibis.deploy.gui.performance.metrics.MetricsObject;
-import ibis.deploy.gui.performance.metrics.MetricsObjectInterface;
+import ibis.deploy.gui.performance.metrics.Metric;
+import ibis.deploy.gui.performance.metrics.MetricInterface;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.support.management.AttributeDescription;
 
-public class ConnStatistic extends MetricsObject implements MetricsObjectInterface {
+public class ConnStatistic extends Metric implements MetricInterface {
 	public static final String NAME = "CONN";
 	public static final int DESCRIPTIONS_COUNT_NEEDED = 1;
 	public static final Float[] COLOR = {0.0f, 0.0f, 0.0f};

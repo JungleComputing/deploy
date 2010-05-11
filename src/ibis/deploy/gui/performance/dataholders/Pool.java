@@ -6,18 +6,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import ibis.deploy.gui.performance.MetricsList;
 import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
-import ibis.deploy.gui.performance.metrics.MetricsObject;
+import ibis.deploy.gui.performance.metrics.Metric;
 import ibis.deploy.gui.performance.metrics.special.ConnStatistic;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
+import ibis.smartsockets.virtual.NoSuitableModuleException;
 
 public class Pool extends IbisConcept implements IbisConceptInterface {
 	private String name;
 	private List<Site> sites;
 
-	public Pool(ManagementServiceInterface manInterface, RegistryServiceInterface regInterface, ArrayList<MetricsObject> initialStatistics, String poolName) {
+	public Pool(ManagementServiceInterface manInterface, RegistryServiceInterface regInterface, MetricsList initialStatistics, String poolName) {
 		super(manInterface);
 		this.name = poolName;
 		
@@ -48,7 +50,7 @@ public class Pool extends IbisConcept implements IbisConceptInterface {
 						
 		//For all sites			
 		for (String siteName : siteNames) {
-			sites.add(new Site(manInterface, initialStatistics, ibises, siteName));
+			sites.add(new Site(manInterface, initialStatistics.clone(), ibises, siteName));
 		}
 	}
 	
@@ -68,13 +70,13 @@ public class Pool extends IbisConcept implements IbisConceptInterface {
 		return (IbisIdentifier[]) result.toArray();		
 	}	
 	
-	public void update() throws StatNotRequestedException {	
+	public void update() throws StatNotRequestedException, NoSuitableModuleException {	
 		for (Site site : sites) {			
 			site.update();
 		}
 		
-		ArrayList<MetricsObject> stats = sites.get(0).getCurrentlyGatheredStatistics();
-		for (MetricsObject stat : stats) {
+		MetricsList stats = sites.get(0).getCurrentlyGatheredMetrics();
+		for (Metric stat : stats) {
 			if (compareStats(stat)) {
 				if (!stat.getName().equals(ConnStatistic.NAME)) {
 					String key = stat.getName();
@@ -94,16 +96,16 @@ public class Pool extends IbisConcept implements IbisConceptInterface {
 		}
 	}	
 	
-	private boolean compareStats(MetricsObject stat) {							
+	private boolean compareStats(Metric stat) {							
 		for (Site site : sites) {
-			if (!site.getCurrentlyGatheredStatistics().contains(stat)) return false;
+			if (!site.getCurrentlyGatheredMetrics().contains(stat)) return false;
 		}		
 		return true;
 	}
 	
-	public void setCurrentlyGatheredStatistics(ArrayList<MetricsObject> currentlyGatheredStatistics) {
+	public void setCurrentlyGatheredMetrics(MetricsList newMetrics) {
 		for (Site site : sites) {
-			site.setCurrentlyGatheredMetrics(currentlyGatheredStatistics);
+			site.setCurrentlyGatheredMetrics(newMetrics);
 		}
 	}
 	

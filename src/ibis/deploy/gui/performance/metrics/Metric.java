@@ -3,7 +3,7 @@ package ibis.deploy.gui.performance.metrics;
 import ibis.deploy.gui.performance.exceptions.MethodNotOverriddenException;
 import ibis.ipl.support.management.AttributeDescription;
 
-public class MetricsObject implements MetricsObjectInterface {	
+public class Metric implements MetricInterface {	
 	protected String name;
 	protected int group;
 	protected Float[] color; // = {1.0f,1.0f,1.0f};
@@ -11,8 +11,8 @@ public class MetricsObject implements MetricsObjectInterface {
 	protected int attributesCountNeeded;
 	protected float value;	
 		
-	public MetricsObject clone() {
-		MetricsObject clone = new MetricsObject();
+	public Metric clone() {
+		Metric clone = new Metric();
 		clone.setName(name);
 		clone.setGroup(group);
 		clone.setColor(color);

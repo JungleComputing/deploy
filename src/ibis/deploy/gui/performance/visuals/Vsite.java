@@ -21,7 +21,9 @@ public class Vsite extends Vobject implements VobjectInterface {
 	
 	private List<Vnode> vnodes;
 	private HashMap<Node, Vnode> nodesToVisuals;
+	private HashMap<Node, Integer> linkMap;
 	private List<Vlink> vlinks;
+	
 	private Site site;
 		
 	public Vsite(PerfVis perfvis, VisualManager visman, Site site) {
@@ -34,22 +36,13 @@ public class Vsite extends Vobject implements VobjectInterface {
 		vnodes = new ArrayList<Vnode>();
 		vlinks = new ArrayList<Vlink>();
 		nodesToVisuals = new HashMap<Node, Vnode>();
+		linkMap = new HashMap<Node, Integer>();
 				
 		for (Node node : nodes) {
 			Vnode newVnode = new Vnode(perfvis, visman, node);
 			vnodes.add(newVnode);
 			nodesToVisuals.put(node, newVnode);
-		}
-		
-		for (Node node : nodes) {
-			Vnode from = nodesToVisuals.get(node);
-			
-			IbisIdentifier[] connectedIbises = node.getConnectedIbises();
-			for (IbisIdentifier ibis : connectedIbises) {
-				Vnode to = nodesToVisuals.get(site.getNode(ibis));
-				vlinks.add(new Vlink(perfvis, visman, node, from, to));				
-			}						
-		}
+		}		
 		
 		initializeMetrics();		
 	}
@@ -62,6 +55,54 @@ public class Vsite extends Vobject implements VobjectInterface {
 		for (Map.Entry<String, Float[]> entry : colors.entrySet()) {
 			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, entry.getValue()));
 		}		
+	}
+	
+	private HashMap<Node, Integer> getLinkMap() {
+		HashMap<Node, Integer> newLinkMap = new HashMap<Node, Integer>();
+		for (Map.Entry<Node, Vnode> entry : nodesToVisuals.entrySet()) {
+			newLinkMap.put(entry.getKey(), entry.getKey().getConnectedIbises().length);
+		}
+		return newLinkMap;
+	}
+	
+	private boolean checkLinks() {
+		boolean out = false;
+		HashMap<Node, Integer> newLinkMap = getLinkMap();
+		
+		for (Map.Entry<Node, Integer> entry : newLinkMap.entrySet()) {				
+			Node node = entry.getKey();
+	        int newSize = entry.getValue();
+	        
+	        if (!linkMap.containsKey(node) || newSize != linkMap.get(node)) {
+	        	out = true;	        	
+	        }
+		}
+		
+		linkMap = newLinkMap;
+		
+		return out;
+	}
+		
+		
+	private void createLinks() {	
+		if (checkLinks()) {
+			vlinks.clear();
+			
+			for (Map.Entry<Node, Vnode> entry : nodesToVisuals.entrySet()) {
+				Node node = entry.getKey();
+				Vnode from = entry.getValue();
+				
+				IbisIdentifier[] connectedIbises = node.getConnectedIbises();
+				for (IbisIdentifier ibis : connectedIbises) {
+					//TODO cleanup
+					System.err.println("CONNECTIONS: add one");
+					Vnode to = nodesToVisuals.get(site.getNode(ibis));
+					vlinks.add(new Vlink(perfvis, visman, node, from, to));				
+				}						
+			}
+			
+			setRadius(vnodes.size());	
+		}				
 	}
 
 	public void setForm(int siteForm) throws ModeUnknownException {
@@ -108,9 +149,13 @@ public class Vsite extends Vobject implements VobjectInterface {
 		for (Vnode vnode : vnodes) {
 			vnode.update();			
 		}
+		
+		createLinks();
+		
 		for (Vlink vlink : vlinks) {
 			vlink.update();			
 		}
+		
 		HashMap<String, Float> stats = site.getMonitoredNodeMetrics();
 		for (Map.Entry<String, Float> entry : stats.entrySet()) {
 			try {
@@ -174,6 +219,7 @@ public class Vsite extends Vobject implements VobjectInterface {
 			//Setup the form
 			try {
 				vnode.setLocation(location);
+				vnode.setSeparation(0.0f);
 				
 				shift[0] = -(scaleXZ+separation)*row;
 				shift[1] = 0.0f;

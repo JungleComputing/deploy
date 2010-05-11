@@ -29,7 +29,9 @@ public class Vnode extends Vobject implements VobjectInterface {
 			setForm(Vnode.CITYSCAPE);			
 		} catch (ModeUnknownException e) {			
 			e.printStackTrace();
-		}		
+		}	
+		
+		setRadius(vmetrics.size());	
 	}
 
 	public void setForm(int nodeForm) throws ModeUnknownException {

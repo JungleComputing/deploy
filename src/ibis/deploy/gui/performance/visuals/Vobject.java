@@ -90,8 +90,12 @@ public class Vobject {
 	}
 	
 	public void setSeparation(float newSeparation) {
-		this.separation = newSeparation;
-	}	
+		this.separation = newSeparation;		
+	}
+	
+	public void setRadius(int elements) {
+		this.radius = Math.max(elements*(scaleXZ+separation), scaleY);
+	}
 
 	public float getRadius() {		
 		return radius;
