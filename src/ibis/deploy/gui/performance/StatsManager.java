@@ -7,6 +7,7 @@ import java.util.Map;
 
 import ibis.deploy.gui.performance.dataholders.*;
 import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
+import ibis.deploy.gui.performance.metrics.Metric;
 import ibis.deploy.gui.performance.metrics.link.*;
 import ibis.deploy.gui.performance.metrics.node.*;
 import ibis.deploy.gui.performance.metrics.special.*;
@@ -26,9 +27,9 @@ public class StatsManager {
 	private MetricsList initStatistics;
 	
 	//The lists that hold the currently available metrics, add to this when implementing new stats.
-	private MetricsList availableSpecialMetrics;
-	private MetricsList availableNodeMetrics;
-	private MetricsList availableLinkMetrics;
+	//private MetricsList availableSpecialMetrics;
+	//private ArrayList<String> availableNodeMetrics;
+	//private ArrayList<String> availableLinkMetrics;
 	
 	public StatsManager(VisualManager visman, ManagementServiceInterface manInterface, RegistryServiceInterface regInterface) {		
 		this.manInterface = manInterface;
@@ -53,21 +54,24 @@ public class StatsManager {
 		initStatistics.add(new NonHeapMemStatistic());
 		
 		//List that holds all available special statistics
-		availableSpecialMetrics = new MetricsList();
-		availableSpecialMetrics.add(new ConnStatistic());
+		//availableSpecialMetrics = new MetricsList();
+		//availableSpecialMetrics.add(new ConnStatistic());
 		
-		//List that holds all available Node-based statistics
-		availableNodeMetrics = new MetricsList();
-		availableNodeMetrics.add(new CPUStatistic());
-		availableNodeMetrics.add(new HeapMemStatistic());
-		availableNodeMetrics.add(new NonHeapMemStatistic());		
-		availableNodeMetrics.add(new XcoordStatistic());
-		availableNodeMetrics.add(new YcoordStatistic());
-		availableNodeMetrics.add(new ZcoordStatistic());
+		//List that holds all available Node-based statistics		
+		//availableNodeMetrics = new ArrayList<String>();
+		//for (Metric metric : initStatistics) {
+		//	if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
+		//		availableNodeMetrics.add(metric.getName());
+		//	}
+		//}
 			
 		//List that holds all available Link-based statistics
-		availableLinkMetrics = new MetricsList();
-		availableLinkMetrics.add(new BytesSentStatistic());
+		//availableLinkMetrics = new ArrayList<String>();
+		//for (Metric metric : initStatistics) {
+		//	if (metric.getGroup() == LinkMetricsObject.METRICSGROUP) {
+		//		availableLinkMetrics.add(metric.getName());
+		//	}
+		//}
 	}
 	
 	public void update() {		
@@ -134,12 +138,12 @@ public class StatsManager {
 		return pools;
 	}
 
-	public MetricsList getAvailableNodeMetrics() {
-		return availableNodeMetrics;
-	}
+	//public ArrayList<String> getAvailableNodeMetrics() {
+	//	return availableNodeMetrics;
+	//}
 	
-	public MetricsList getAvailableLinkMetrics() {
-		return availableLinkMetrics;
-	}		
+	//public ArrayList<String> getAvailableLinkMetrics() {
+	//	return availableLinkMetrics;
+	//}		
 	
 }

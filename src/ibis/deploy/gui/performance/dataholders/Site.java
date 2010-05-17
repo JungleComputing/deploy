@@ -7,6 +7,8 @@ import java.util.List;
 import ibis.deploy.gui.performance.MetricsList;
 import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
 import ibis.deploy.gui.performance.metrics.Metric;
+import ibis.deploy.gui.performance.metrics.link.LinkMetricsObject;
+import ibis.deploy.gui.performance.metrics.node.NodeMetricsObject;
 import ibis.deploy.gui.performance.metrics.special.ConnStatistic;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.server.ManagementServiceInterface;
@@ -24,6 +26,7 @@ public class Site extends IbisConcept implements IbisConceptInterface {
 		this.name = siteName;				
 		this.nodes = new ArrayList<Node>();
 		this.ibisesToNodes = new HashMap<IbisIdentifier, Node>();
+		currentlyGatheredMetrics = new MetricsList();
 		
 		String ibisLocationName;
 		
@@ -37,9 +40,7 @@ public class Site extends IbisConcept implements IbisConceptInterface {
 				nodes.add(node);
 				ibisesToNodes.put(poolIbises[i], node);
 			}
-		}
-		
-		setCurrentlyGatheredMetrics(initialStatistics);		
+		}				
 	}
 		
 	public String getName() {
@@ -60,7 +61,7 @@ public class Site extends IbisConcept implements IbisConceptInterface {
 		return result;
 	}	
 	
-	public void update() throws StatNotRequestedException, NoSuitableModuleException {	
+	public void update() throws StatNotRequestedException, NoSuitableModuleException {			
 		nodeMetricsValues.clear();
 		linkMetricsValues.clear();
 		
@@ -68,9 +69,9 @@ public class Site extends IbisConcept implements IbisConceptInterface {
 			node.update();
 		}
 		
-		for (Metric stat : currentlyGatheredMetrics) {
-			if (!stat.getName().equals(ConnStatistic.NAME)) {
-				String key = stat.getName();
+		for (Metric metric : currentlyGatheredMetrics) {
+			if (!metric.getName().equals(ConnStatistic.NAME)) {
+				String key = metric.getName();
 				List<Float> results = new ArrayList<Float>();
 				for (Node node : nodes) {			
 					results.add((Float)node.getValue(key));
@@ -80,17 +81,33 @@ public class Site extends IbisConcept implements IbisConceptInterface {
 					total += entry;
 				}
 				average = total / results.size();
-				nodeMetricsValues.put(key, average);
-				nodeMetricsColors.put(key, stat.getColor());
+				
+				if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
+					nodeMetricsValues.put(metric.getName(), average);					
+				} else if (metric.getGroup() == LinkMetricsObject.METRICSGROUP) {
+					linkMetricsValues.put(metric.getName(), average);					
+				}
 			}
 		}
 	}
 	
 	public void setCurrentlyGatheredMetrics(MetricsList newMetrics) {
+		nodeMetricsValues.clear();
+		linkMetricsValues.clear();
+		currentlyGatheredMetrics.clear();
+		
+		for (Metric metric : newMetrics) {
+			currentlyGatheredMetrics.add(metric.clone());
+			if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
+				nodeMetricsColors.put(metric.getName(), metric.getColor());
+			} else if (metric.getGroup() == LinkMetricsObject.METRICSGROUP) {
+				linkMetricsColors.put(metric.getName(), metric.getColor());
+			}
+		}
+		
 		for (Node node : nodes) {			
 			node.setCurrentlyGatheredMetrics(newMetrics);
-		}
-		this.currentlyGatheredMetrics = newMetrics;
+		}		
 	}
 
 	public MetricsList getCurrentlyGatheredMetrics() {

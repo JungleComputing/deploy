@@ -9,6 +9,8 @@ import java.util.Set;
 import ibis.deploy.gui.performance.MetricsList;
 import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
 import ibis.deploy.gui.performance.metrics.Metric;
+import ibis.deploy.gui.performance.metrics.link.LinkMetricsObject;
+import ibis.deploy.gui.performance.metrics.node.NodeMetricsObject;
 import ibis.deploy.gui.performance.metrics.special.ConnStatistic;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.server.ManagementServiceInterface;
@@ -52,6 +54,8 @@ public class Pool extends IbisConcept implements IbisConceptInterface {
 		for (String siteName : siteNames) {
 			sites.add(new Site(manInterface, initialStatistics.clone(), ibises, siteName));
 		}
+		
+		setCurrentlyGatheredMetrics(initialStatistics);
 	}
 	
 	public String getName() {
@@ -76,10 +80,10 @@ public class Pool extends IbisConcept implements IbisConceptInterface {
 		}
 		
 		MetricsList stats = sites.get(0).getCurrentlyGatheredMetrics();
-		for (Metric stat : stats) {
-			if (compareStats(stat)) {
-				if (!stat.getName().equals(ConnStatistic.NAME)) {
-					String key = stat.getName();
+		for (Metric metric : stats) {
+			if (compareStats(metric)) {
+				if (!metric.getName().equals(ConnStatistic.NAME)) {
+					String key = metric.getName();
 					List<Float> results = new ArrayList<Float>();
 					for (Site site : sites) {			
 						results.add(site.getValue(key));
@@ -89,8 +93,12 @@ public class Pool extends IbisConcept implements IbisConceptInterface {
 						total += entry;
 					}
 					average = total / results.size();
-					nodeMetricsValues.put(key, average);
-					nodeMetricsColors.put(key, stat.getColor());
+					
+					if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
+						nodeMetricsValues.put(metric.getName(), average);						
+					} else if (metric.getGroup() == LinkMetricsObject.METRICSGROUP) {
+						linkMetricsValues.put(metric.getName(), average);
+					}
 				}
 			}
 		}
@@ -104,9 +112,20 @@ public class Pool extends IbisConcept implements IbisConceptInterface {
 	}
 	
 	public void setCurrentlyGatheredMetrics(MetricsList newMetrics) {
+		nodeMetricsValues.clear();
+		linkMetricsValues.clear();		
+		
+		for (Metric metric : newMetrics) {			
+			if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
+				nodeMetricsColors.put(metric.getName(), metric.getColor());
+			} else if (metric.getGroup() == LinkMetricsObject.METRICSGROUP) {
+				linkMetricsColors.put(metric.getName(), metric.getColor());
+			}
+		}
+		
 		for (Site site : sites) {
 			site.setCurrentlyGatheredMetrics(newMetrics);
-		}
+		}		
 	}
 	
 	public Site[] getSubConcepts() {

@@ -67,15 +67,17 @@ public class Vlink extends Vobject implements VobjectInterface {
 	}
 	
 	public void update() {
-		//TODO cleanup
-		initializeMetrics();
-		
 		HashMap<String, Float> stats = node.getMonitoredLinkMetrics();
 		for (Map.Entry<String, Float> entry : stats.entrySet()) {
 			try {
-				vmetrics.get(entry.getKey()).setValue(entry.getValue());
+				String metricName = entry.getKey();
+				Float metricValue = entry.getValue();
+				Vmetric visual = vmetrics.get(metricName);
+								
+				visual.setValue(metricValue);
+				
 			} catch (ValueOutOfBoundsException e) {				
-				e.printStackTrace();
+				System.out.println("VALUE: "+entry.getValue()+" OUT OF BOUNDS!");
 			}
 		}
 	}

@@ -90,11 +90,11 @@ public class Vobject {
 	}
 	
 	public void setSeparation(float newSeparation) {
-		this.separation = newSeparation;		
+		separation = newSeparation;		
 	}
 	
-	public void setRadius(int elements) {
-		this.radius = Math.max(elements*(scaleXZ+separation), scaleY);
+	public void setRadius() {
+		radius = Math.max(vmetrics.size()*(scaleXZ), scaleY);
 	}
 
 	public float getRadius() {		

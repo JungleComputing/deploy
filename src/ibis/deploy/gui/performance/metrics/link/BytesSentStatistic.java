@@ -30,6 +30,10 @@ public class BytesSentStatistic extends LinkMetricsObject implements MetricInter
 		
 		sent_max = Math.max(sent_max, bytesSent_elapsed);
 		value = (float)bytesSent_elapsed/(float)sent_max;
+		
+		if (Float.isNaN(value) || value < 0.0f || value > 1.0f) {
+			value = 0.0f;
+		}
 	}
 	
 	public BytesSentStatistic clone() {

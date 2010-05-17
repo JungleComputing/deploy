@@ -32,9 +32,7 @@ public class Vpool extends Vobject implements VobjectInterface {
 		for (Site site : sites) {
 			vsites.add(new Vsite(perfvis, visman, site));			
 		}
-		
-		setRadius(vsites.size());		
-		
+				
 		initializeMetrics();
 	}
 	
@@ -84,19 +82,21 @@ public class Vpool extends Vobject implements VobjectInterface {
 		}
 	}
 	
-	public void update() {
-		//TODO cleanup
-		initializeMetrics();
-		
+	public void update() {		
 		for (Vsite vsite : vsites) {
 			vsite.update();			
 		}
 		HashMap<String, Float> stats = pool.getMonitoredNodeMetrics();
 		for (Map.Entry<String, Float> entry : stats.entrySet()) {
 			try {
-				vmetrics.get(entry.getKey()).setValue(entry.getValue());
+				String metricName = entry.getKey();
+				Float metricValue = entry.getValue();
+				Vmetric visual = vmetrics.get(metricName);
+								
+				visual.setValue(metricValue);
+				
 			} catch (ValueOutOfBoundsException e) {				
-				e.printStackTrace();
+				System.err.println("Value of: "+ entry.getKey() +" out of bounds with "+entry.getValue()+".");				
 			}
 		}
 	}
@@ -146,7 +146,7 @@ public class Vpool extends Vobject implements VobjectInterface {
 			//Setup the form
 			try {
 				vsite.setLocation(location);
-				vsite.setSeparation(vsite.getRadius());
+				vsite.setSeparation(vsite.getRadius()+separation);
 				
 				shift[0] = -(scaleXZ+separation)*row;
 				shift[1] = 0.0f;

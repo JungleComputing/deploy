@@ -33,6 +33,12 @@ public class Node extends IbisConcept implements IbisConceptInterface {
 		metrics.clear();
 		for (Metric metric : newMetrics) {
 			metrics.add(metric.clone());
+			
+			if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {			
+				nodeMetricsColors.put(metric.getName(), metric.getColor());
+			} else if (metric.getGroup() == LinkMetricsObject.METRICSGROUP) {				
+				linkMetricsColors.put(metric.getName(), metric.getColor());
+			}			
 		}
 	}
 	
@@ -77,8 +83,6 @@ public class Node extends IbisConcept implements IbisConceptInterface {
 					connectedIbises = ((ConnStatistic)metric).getIbises();
 				}
 			}
-		} catch (NoSuitableModuleException e) {					
-			throw e;
 		} catch (MethodNotOverriddenException e) {
 			e.printStackTrace();
 		} catch (Exception e) {			

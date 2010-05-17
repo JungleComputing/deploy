@@ -24,14 +24,6 @@ public class Vnode extends Vobject implements VobjectInterface {
 		this.currentForm = CITYSCAPE;
 		
 		initializeMetrics();
-		
-		try {
-			setForm(Vnode.CITYSCAPE);			
-		} catch (ModeUnknownException e) {			
-			e.printStackTrace();
-		}	
-		
-		setRadius(vmetrics.size());	
 	}
 
 	public void setForm(int nodeForm) throws ModeUnknownException {
@@ -81,22 +73,19 @@ public class Vnode extends Vobject implements VobjectInterface {
 	}
 	
 	public void update() {
-		
-		//TODO cleanup
-		initializeMetrics();
-		
 		HashMap<String, Float> stats = node.getMonitoredNodeMetrics();
 		for (Map.Entry<String, Float> entry : stats.entrySet()) {
-			try {				
-				vmetrics.get(entry.getKey()).setValue(entry.getValue());
+			try {
+				String metricName = entry.getKey();
+				Float metricValue = entry.getValue();
+				Vmetric visual = vmetrics.get(metricName);
+								
+				visual.setValue(metricValue);
+				
 			} catch (ValueOutOfBoundsException e) {	
 				System.out.println("VALUE: "+entry.getValue()+" OUT OF BOUNDS!");
-				e.printStackTrace();
-			} catch (NullPointerException e) {
-				System.out.println("Nullpointer: "+entry.getKey());
-				e.printStackTrace();
 			}
-		}
+		}		
 	}
 	
 	public void drawThis(GL gl, int glMode) {

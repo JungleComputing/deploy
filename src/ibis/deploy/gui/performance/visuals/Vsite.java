@@ -81,8 +81,7 @@ public class Vsite extends Vobject implements VobjectInterface {
 		linkMap = newLinkMap;
 		
 		return out;
-	}
-		
+	}		
 		
 	private void createLinks() {	
 		if (checkLinks()) {
@@ -99,9 +98,7 @@ public class Vsite extends Vobject implements VobjectInterface {
 					Vnode to = nodesToVisuals.get(site.getNode(ibis));
 					vlinks.add(new Vlink(perfvis, visman, node, from, to));				
 				}						
-			}
-			
-			setRadius(vnodes.size());	
+			}				
 		}				
 	}
 
@@ -141,11 +138,7 @@ public class Vsite extends Vobject implements VobjectInterface {
 		}
 	}
 	
-	public void update() {	
-		//TODO cleanup
-		initializeMetrics();
-		
-		
+	public void update() {
 		for (Vnode vnode : vnodes) {
 			vnode.update();			
 		}
@@ -153,15 +146,20 @@ public class Vsite extends Vobject implements VobjectInterface {
 		createLinks();
 		
 		for (Vlink vlink : vlinks) {
-			vlink.update();			
+			vlink.update();
 		}
 		
 		HashMap<String, Float> stats = site.getMonitoredNodeMetrics();
 		for (Map.Entry<String, Float> entry : stats.entrySet()) {
 			try {
-				vmetrics.get(entry.getKey()).setValue(entry.getValue());
-			} catch (ValueOutOfBoundsException e) {				
-				e.printStackTrace();
+				String metricName = entry.getKey();
+				Float metricValue = entry.getValue();
+				Vmetric visual = vmetrics.get(metricName);
+				
+				visual.setValue(metricValue);
+				
+			} catch (ValueOutOfBoundsException e) {
+				System.err.println("Value of: "+ entry.getKey() +" out of bounds with "+entry.getValue()+".");
 			}
 		}
 	}
@@ -192,6 +190,9 @@ public class Vsite extends Vobject implements VobjectInterface {
 	
 	protected void drawLinks(GL gl, int glMode) {
 		for (Vlink vlink : vlinks) {
+			vlink.setLocation(location);
+			vlink.setSeparation(0.0f);
+			
 			vlink.drawThis(gl, glMode);
 		}		
 	}
@@ -219,7 +220,7 @@ public class Vsite extends Vobject implements VobjectInterface {
 			//Setup the form
 			try {
 				vnode.setLocation(location);
-				vnode.setSeparation(0.0f);
+				vnode.setSeparation(0.0f);		
 				
 				shift[0] = -(scaleXZ+separation)*row;
 				shift[1] = 0.0f;
