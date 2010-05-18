@@ -1,11 +1,22 @@
 package ibis.deploy.gui.performance.visuals;
 
+import java.awt.Menu;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
 import java.util.HashMap;
 
 import ibis.deploy.gui.performance.PerfVis;
 import ibis.deploy.gui.performance.VisualManager;
+import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
+import ibis.deploy.gui.performance.swing.SetCollectionFormAction;
+import ibis.deploy.gui.performance.swing.SetMetricFormAction;
 
 import javax.media.opengl.glu.GLU;
+import javax.swing.AbstractAction;
+import javax.swing.ButtonGroup;
+import javax.swing.JMenu;
+import javax.swing.JPopupMenu;
+import javax.swing.JRadioButtonMenuItem;
 
 public class Vobject {		
 	public static Float[] CPU_HIGH_COLOR	= {1.0f, 0.0f, 0.0f};
@@ -24,12 +35,20 @@ public class Vobject {
 	public static Float[] _F0F	= {1.0f, 0.0f, 1.0f};
 	public static Float[] _F08	= {1.0f, 0.0f, 0.5f};
 	
+	public static final int METRICS_BAR = 123;
+	public static final int METRICS_TUBE = 124;
+	public static final int METRICS_SPHERE = 125;
+	
+	public static final int COLLECTION_CITYSCAPE = 345;
+	public static final int COLLECTION_CIRCLE = 346;
+	
 	PerfVis perfvis;
 	VisualManager visman;
 	
 	protected Float[] location;
 	protected float radius;
-	protected int currentForm;
+	protected int currentMetricForm;
+	protected int currentCollectionForm;
 	
 	protected int glName;
 	protected float scaleXZ;
@@ -103,5 +122,49 @@ public class Vobject {
 	
 	public int getGLName() {
 		return glName;
+	}
+	
+
+	
+	public void setForm(int newForm) throws ModeUnknownException {
+		if (newForm == Vobject.METRICS_BAR || newForm == Vobject.METRICS_TUBE || newForm == Vobject.METRICS_SPHERE) {
+			currentMetricForm = newForm;
+		} else if (newForm == Vobject.COLLECTION_CITYSCAPE || newForm == Vobject.COLLECTION_CIRCLE) {
+			currentCollectionForm = newForm;
+		} else {
+			throw new ModeUnknownException();
+		}
+	}	
+	
+	public PopupMenu getMenu() {
+		String[] elementsgroup = {"Bars", "Tubes", "Spheres"};
+		String[] collectionsgroup = {"Cityscape", "Circle"};
+		
+		PopupMenu newMenu = new PopupMenu();
+		//newMenu.setLightWeightPopupEnabled(false);
+		//PopupMenu.setDefaultLightWeightPopupEnabled(false);		
+		
+		Menu metricsForms 		= makeRadioGroup("Metrics", elementsgroup);
+		Menu collectionForms 	= makeRadioGroup("Collection", collectionsgroup);
+		newMenu.add(metricsForms);
+		newMenu.add(collectionForms);
+		
+		return newMenu;		
+	}	
+	
+	protected Menu makeRadioGroup(String menuName, String[] itemNames) {
+		Menu result = new Menu(menuName);
+				
+		for (String item : itemNames) {
+			MenuItem newMenuItem = new MenuItem(item);
+			if (menuName.equals("Metrics")) {
+				newMenuItem.addActionListener(new SetMetricFormAction(this, item));
+			} else if (menuName.equals("Collection")) {
+				newMenuItem.addActionListener(new SetCollectionFormAction(this, item));
+			}  
+			result.add(newMenuItem);			
+		}
+				
+		return result;
 	}
 }

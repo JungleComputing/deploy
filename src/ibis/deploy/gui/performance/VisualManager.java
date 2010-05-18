@@ -1,10 +1,12 @@
 package ibis.deploy.gui.performance;
 
+import java.awt.PopupMenu;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import javax.media.opengl.GL;
+import javax.swing.JPopupMenu;
 
 import ibis.deploy.gui.performance.dataholders.Pool;
 import ibis.deploy.gui.performance.visuals.Vobject;
@@ -61,4 +63,9 @@ public class VisualManager {
 	public Float[] getVisualLocation(int name) {
 		return glNameRegistry.get(name).getLocation();		
 	}
+	
+	public PopupMenu getContextSensitiveMenu(int currentSelection) {
+		return glNameRegistry.get(currentSelection).getMenu();
+		
+	}	
 }

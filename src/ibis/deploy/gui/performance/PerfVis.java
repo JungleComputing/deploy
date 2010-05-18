@@ -5,6 +5,7 @@ import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
 
 import java.awt.Point;
+import java.awt.PopupMenu;
 import java.nio.IntBuffer;
 
 import javax.media.opengl.GL;
@@ -12,6 +13,8 @@ import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLCanvas;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.glu.GLU;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 
 import com.sun.opengl.util.BufferUtil;
 import com.sun.opengl.util.GLUT;
@@ -21,6 +24,7 @@ public class PerfVis implements GLEventListener {
 		
 	private GLU glu;
 	GUI gui;
+	JPanel panel;
 	
 	//Window variables
 	private double width;
@@ -35,7 +39,6 @@ public class PerfVis implements GLEventListener {
 	private Float[] rotation = {0.0f,0.0f,0.0f}, translation = {0.0f,0.0f,0.0f}, origin = {0.0f,0.0f,0.0f};
 	private boolean doPickNextCycle = false;
 	private boolean relocateOriginNextCycle = false;
-	private boolean doMenuNextCycle = false;
 	
 	private Point pickPoint = new Point();
 	private int currentSelection;
@@ -55,8 +58,9 @@ public class PerfVis implements GLEventListener {
 		glu = new GLU();
 	}
 	
-	PerfVis (GUI gui, GLCanvas canvas) {
+	PerfVis (GUI gui, GLCanvas canvas, JPanel panel) {
 		this.gui = gui;
+		this.panel = panel;
 		glu = new GLU();
 		this.canvas = canvas;
 				
@@ -67,7 +71,7 @@ public class PerfVis implements GLEventListener {
 			e.printStackTrace();
 		}	
 		
-		mouseHandler = new MouseHandler(this);
+		mouseHandler = new MouseHandler(this, canvas);
 		visman = new VisualManager(this);
 		statman = new StatsManager(visman, manInterface, regInterface);		
 	}
@@ -226,12 +230,11 @@ public class PerfVis implements GLEventListener {
 		this.doPickNextCycle = true;
 		this.relocateOriginNextCycle = true;
 	}
-	
-	public void menuRequest(Point newPickPoint) {
-		this.pickPoint = newPickPoint;
-		this.doPickNextCycle = true;
-		this.doMenuNextCycle = true;
-	}
+		
+	public PopupMenu menuRequest() {
+		PopupMenu popup = visman.getContextSensitiveMenu(currentSelection);
+		return popup;		
+	}	
 	
 	private void pick(GL gl) {
 		int[] selectBuf = new int[BUFSIZE];
@@ -278,42 +281,14 @@ public class PerfVis implements GLEventListener {
 	    processHits(hits, selectBuf);
 	}
 	
-	private void processHits(int hits, int buffer[]) {
-		/*
-	    int names, ptr = 0;
-
-	    System.out.println("hits = " + hits);	    
-	    
-	    for (int i = 0; i < hits; i++) {
-	      names = buffer[ptr];
-	      System.out.println(" number of names for hit = " + names);
-	      ptr++;
-	      System.out.println("  z1 is " + buffer[ptr]);
-	      ptr++;
-	      System.out.println(" z2 is " + buffer[ptr]);
-	      ptr++;
-	      System.out.print("\n   the name is ");
-	      
-	      for (int j = 0; j < names; j++) {	    	  
-	    	  // for each name
-	    	  System.out.println("" + buffer[ptr]);
-	    	  ptr++;
-	      }
-	      
-	      System.out.println();
-	    }
-	    */
-	    
+	private void processHits(int hits, int buffer[]) {	    
 	    if (hits > 0) {
 	    	currentSelection = buffer[3+4*(hits-1)];
 	    	if (relocateOriginNextCycle) {
 	    		setOrigin(visman.getVisualLocation(currentSelection));
 	    		mouseHandler.resetTranslation();
 	    		relocateOriginNextCycle = false;
-	    	}
-	    	if (doMenuNextCycle) {
-	    		//TODO
-	    	}
+	    	}	    	
 	    }
 	}
 	

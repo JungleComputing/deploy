@@ -1,19 +1,15 @@
 package ibis.deploy.gui.performance.visuals;
+
 import java.nio.IntBuffer;
 
 import ibis.deploy.gui.performance.PerfVis;
 import ibis.deploy.gui.performance.VisualManager;
 import ibis.deploy.gui.performance.exceptions.ValueOutOfBoundsException;
-import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.glu.GLUquadric;
 
 public class Vmetric extends Vobject implements VobjectInterface {	
-	public static final int TUBE = 4001;
-	public static final int BAR = 4002;
-	public static final int SPHERE = 4003;	
-	
 	private static final float ALPHA = 0.2f;
 	
 	private Float[] color;	
@@ -28,7 +24,7 @@ public class Vmetric extends Vobject implements VobjectInterface {
 		this.alpha = ALPHA;
 		
 		this.value = 1.0f;
-		this.currentForm = BAR;
+		this.currentMetricForm = Vobject.METRICS_BAR;
 		
 		this.from = null;
 		this.to = null;
@@ -41,11 +37,7 @@ public class Vmetric extends Vobject implements VobjectInterface {
 		this.alpha = ALPHA;
 		
 		this.value = 1.0f;
-		try {
-			this.setForm(Vmetric.BAR);
-		} catch (ModeUnknownException e) {			
-			e.printStackTrace();
-		}
+		this.currentMetricForm = Vobject.METRICS_TUBE;
 		
 		this.from = from;
 		this.to = to;
@@ -59,13 +51,15 @@ public class Vmetric extends Vobject implements VobjectInterface {
 		}
 	}
 	
+	/*
 	public void setForm(int form) throws ModeUnknownException {
-		if (form != Vmetric.BAR || form != Vmetric.TUBE || form != Vmetric.SPHERE) {
+		if (form != Vobject.METRICS_BAR || form != Vobject.METRICS_TUBE || form != Vobject.METRICS_SPHERE) {
 			throw new ModeUnknownException();			
 		} else {			
-			this.currentForm = form;
+			this.currentMetricForm = form;
 		}
 	}
+	*/
 	
 	public void drawThis(GL gl, int glMode) {
 		//Save the old matrix mode and transformation matrix
@@ -74,17 +68,17 @@ public class Vmetric extends Vobject implements VobjectInterface {
 		gl.glPushMatrix();
 		gl.glMatrixMode(GL.GL_MODELVIEW);
 		
-		if (from == null & to == null) {
+		if (from == null && to == null) {
 			//Move towards the intended location
 			if (glMode == GL.GL_SELECT) gl.glLoadName(glName);
 			gl.glTranslatef(location[0], location[1], location[2]);
 			
 			//Draw the form
-			if (currentForm == BAR) {
+			if (currentMetricForm == Vobject.METRICS_BAR) {
 				drawBar(gl, scaleY);
-			} else if (currentForm == TUBE) {
+			} else if (currentMetricForm == Vobject.METRICS_TUBE) {
 				drawTube(gl, scaleY);
-			} else if (currentForm == SPHERE) {
+			} else if (currentMetricForm == Vobject.METRICS_SPHERE) {
 				drawSphere(gl);
 			}		
 		} else {
@@ -113,9 +107,9 @@ public class Vmetric extends Vobject implements VobjectInterface {
 			
 			//And draw the link
 			if (glMode == GL.GL_SELECT) gl.glLoadName(glName);
-			if (currentForm == BAR) {
+			if (currentMetricForm == Vobject.METRICS_BAR) {
 				drawBar(gl, length);
-			} else if (currentForm == TUBE) {
+			} else if (currentMetricForm == Vobject.METRICS_TUBE) {
 				drawTube(gl, length);
 			}
 		}
@@ -434,5 +428,5 @@ public class Vmetric extends Vobject implements VobjectInterface {
 		
 		//Cleanup
 		glu.gluDeleteQuadric(qobj);
-	}	
+	}
 }

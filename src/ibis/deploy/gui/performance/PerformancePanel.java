@@ -29,10 +29,12 @@ public class PerformancePanel extends JPanel {
 		canvas = new GLCanvas(glCapabilities);
 		animator = new Animator(canvas);
 		
-		PerfVis perfvis = new PerfVis(gui, canvas);
+		PerfVis perfvis = new PerfVis(gui, canvas, this);
+				
 		
 		setLayout(new BorderLayout());
 		
+		/*
 		//Add the Menu bar
 		JMenuBar bar = new JMenuBar();
 			String[] scopegroup = {"Grid Overview","Nodes"};
@@ -58,13 +60,15 @@ public class PerformancePanel extends JPanel {
 		bar.add(elements);
 			
 		this.add(bar, BorderLayout.NORTH);
-	    
+	    */
+		
 		//Add the GLcanvas							
 		canvas.addGLEventListener(perfvis);			
 		this.add(canvas, BorderLayout.CENTER);
 		animator.start();
 	}
 	
+	/*
 	private JMenu makeRadioGroup(PerfVis perfvis, String menuName, String[] itemNames) {
 		JMenu result = new JMenu(menuName);
 		ButtonGroup group = new ButtonGroup();
@@ -92,4 +96,5 @@ public class PerformancePanel extends JPanel {
 		
 		return result;
 	}
+	*/
 }

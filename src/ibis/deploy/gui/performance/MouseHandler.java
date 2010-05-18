@@ -1,15 +1,18 @@
 package ibis.deploy.gui.performance;
 
+import java.awt.PopupMenu;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 
+import javax.media.opengl.GLCanvas;
 import javax.swing.SwingUtilities;
 
 public class MouseHandler implements MouseListener, MouseMotionListener, MouseWheelListener{
 	PerfVis perfvis;
+	GLCanvas canvas;
 	
 	private float viewDistOrigin; 
 	private float viewDist = -6; 
@@ -35,8 +38,10 @@ public class MouseHandler implements MouseListener, MouseMotionListener, MouseWh
 	
 	private float translationZ = 0;
 	
-	MouseHandler(PerfVis perfvis) {
+	MouseHandler(PerfVis perfvis, GLCanvas canvas) {
 		this.perfvis = perfvis;
+		this.canvas = canvas;
+		
 		rotation = new Float[3];
 		translation = new Float[3];		
 	}
@@ -58,11 +63,15 @@ public class MouseHandler implements MouseListener, MouseMotionListener, MouseWh
 			} else {
 				perfvis.relocateOrigin(e.getPoint());
 			}
-		} else if (SwingUtilities.isLeftMouseButton(e)) {
+		} else if (SwingUtilities.isMiddleMouseButton(e)) {
+			
+		} else if (SwingUtilities.isRightMouseButton(e)) {		
 			if (e.getClickCount() == 1) {
-				perfvis.menuRequest(e.getPoint());
+				PopupMenu popup = perfvis.menuRequest();
+				canvas.add(popup);
+				popup.show(perfvis.canvas, e.getX(), e.getY());
 			}
-		}
+		}		
 	}
 
 	public void mouseEntered(MouseEvent e) {
@@ -79,7 +88,7 @@ public class MouseHandler implements MouseListener, MouseMotionListener, MouseWh
 		if (SwingUtilities.isLeftMouseButton(e)) {			
 			dragLeftXorigin = e.getPoint().x;
 			dragLeftYorigin = e.getPoint().y;
-		} else if (SwingUtilities.isRightMouseButton(e)) {
+		} else if (SwingUtilities.isMiddleMouseButton(e)) {
 			dragRightXorigin = e.getPoint().y;
 			dragRightYorigin = e.getPoint().x;
 		}
@@ -94,7 +103,7 @@ public class MouseHandler implements MouseListener, MouseMotionListener, MouseWh
 	}
 
 	public void mouseDragged(MouseEvent e) { 
-		if (SwingUtilities.isRightMouseButton(e)) {
+		if (SwingUtilities.isMiddleMouseButton(e)) {
 			rotationX = ((e.getPoint().y - dragRightXorigin) + rotationXorigin) % 360;
 			rotationY = ((e.getPoint().x - dragRightYorigin) + rotationYorigin) % 360;
 			rotation[0] = rotationX;				 

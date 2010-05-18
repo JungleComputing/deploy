@@ -3,7 +3,6 @@ import ibis.deploy.gui.performance.PerfVis;
 import ibis.deploy.gui.performance.VisualManager;
 import ibis.deploy.gui.performance.dataholders.Pool;
 import ibis.deploy.gui.performance.dataholders.Site;
-import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
 import ibis.deploy.gui.performance.exceptions.ValueOutOfBoundsException;
 
 import java.nio.IntBuffer;
@@ -15,16 +14,13 @@ import java.util.Map;
 import javax.media.opengl.GL;
 
 public class Vpool extends Vobject implements VobjectInterface {	
-	public static int CITYSCAPE = 11;
-	public static int CIRCLE = 12;
-	
 	private List<Vsite> vsites;	
 	private Pool pool; 
 		
 	public Vpool(PerfVis perfvis, VisualManager visman, Pool pool) {
 		super(perfvis, visman);
 		this.pool = pool;
-		this.currentForm = CITYSCAPE;
+		this.currentCollectionForm = Vobject.COLLECTION_CITYSCAPE;
 				
 		Site[] sites = pool.getSubConcepts();
 		vsites = new ArrayList<Vsite>();
@@ -46,16 +42,17 @@ public class Vpool extends Vobject implements VobjectInterface {
 		}		
 	}
 
+	/*
 	public void setForm(int poolForm) throws ModeUnknownException {
-		if (poolForm != Vpool.CITYSCAPE && poolForm != Vpool.CIRCLE) {
+		if (poolForm != Vobject.COLLECTION_CITYSCAPE && poolForm != Vobject.COLLECTION_CIRCLE) {
 			throw new ModeUnknownException();
 		}
-		this.currentForm = poolForm;
+		this.currentCollectionForm = poolForm;
 				
 		//recalculate the outer radius for this form
 		setSize(scaleXZ, scaleY);
 	}
-	
+		
 	public void setSize(float width, float height) {
 		this.scaleXZ = width;
 		this.scaleY = height;
@@ -63,7 +60,7 @@ public class Vpool extends Vobject implements VobjectInterface {
 			vsite.setSize(width, height);
 		}
 		
-		if (currentForm == Vnode.CITYSCAPE) {
+		if (currentCollectionForm == Vobject.COLLECTION_CITYSCAPE) {
 			int horz = (int)(Math.ceil(Math.sqrt(vsites.size()))*(scaleXZ+0.1f));
 			int vert = (int)scaleY;
 			int dept = (int)(Math.ceil(Math.sqrt(vsites.size()))*(scaleXZ+0.1f));
@@ -73,7 +70,7 @@ public class Vpool extends Vobject implements VobjectInterface {
 											+ Math.pow(vert, 2)
 											+ Math.pow(dept, 2));
 			
-		} else if (currentForm == Vnode.CIRCLE) {
+		} else if (currentCollectionForm == Vobject.COLLECTION_CIRCLE) {
 			double angle  = 2*Math.PI / vsites.size();
 			float innerRadius = (float) ((scaleXZ/2) / Math.tan(angle/2));	
 			innerRadius = Math.max(innerRadius, 0);
@@ -81,6 +78,7 @@ public class Vpool extends Vobject implements VobjectInterface {
 			radius = (int)innerRadius+(int)scaleY;
 		}
 	}
+	*/
 	
 	public void update() {		
 		for (Vsite vsite : vsites) {
@@ -112,9 +110,9 @@ public class Vpool extends Vobject implements VobjectInterface {
 		gl.glTranslatef(location[0], location[1], location[2]);
 		
 		//Draw the desired form
-		if (currentForm == Vpool.CITYSCAPE) {
+		if (currentCollectionForm == Vobject.COLLECTION_CITYSCAPE) {
 			drawCityscape(gl, glMode);
-		} else if (currentForm == Vpool.CIRCLE) {
+		} else if (currentCollectionForm == Vobject.COLLECTION_CIRCLE) {
 			drawCircle(gl, glMode);
 		}
 		

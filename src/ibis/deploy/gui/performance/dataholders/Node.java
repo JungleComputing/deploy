@@ -80,15 +80,18 @@ public class Node extends IbisConcept implements IbisConceptInterface {
 					linkMetricsValues.put(metric.getName(), metric.getValue());
 					linkMetricsColors.put(metric.getName(), metric.getColor());
 				} else if (metric.getName().equals(ConnStatistic.NAME)) {
-					connectedIbises = ((ConnStatistic)metric).getIbises();
+					IbisIdentifier[] connections = ((ConnStatistic)metric).getIbises(); 
+					connectedIbises = connections;
+					
+					//TODO cleanup
+					//System.err.println("Node: "+name+" Connected to "+ connections.length +" ibises.");
 				}
 			}
 		} catch (MethodNotOverriddenException e) {
 			e.printStackTrace();
 		} catch (Exception e) {			
 			e.printStackTrace();
-		} 
-		
+		} 		
 	}
 	
 	public IbisIdentifier[] getConnectedIbises() {
