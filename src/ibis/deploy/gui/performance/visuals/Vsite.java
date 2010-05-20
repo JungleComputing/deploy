@@ -3,9 +3,15 @@ import ibis.deploy.gui.performance.PerfVis;
 import ibis.deploy.gui.performance.VisualManager;
 import ibis.deploy.gui.performance.dataholders.Node;
 import ibis.deploy.gui.performance.dataholders.Site;
+import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
 import ibis.deploy.gui.performance.exceptions.ValueOutOfBoundsException;
+import ibis.deploy.gui.performance.swing.SetCollectionFormAction;
+import ibis.deploy.gui.performance.swing.SetMetricFormAction;
 import ibis.ipl.IbisIdentifier;
 
+import java.awt.Menu;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,10 +28,15 @@ public class Vsite extends Vobject implements VobjectInterface {
 	
 	private Site site;
 		
-	public Vsite(PerfVis perfvis, VisualManager visman, Site site) {
+	public Vsite(PerfVis perfvis, VisualManager visman, Vobject parent, Site site) {
 		super(perfvis, visman);
+		this.parent = parent;
+		
 		this.site = site;
 		this.currentCollectionForm = Vobject.COLLECTION_CITYSCAPE;
+		
+		//Register the new object with the Performance visualization object
+		this.glName = visman.registerSite(this);
 		
 		//Preparing the vnodes
 		Node[] nodes = site.getSubConcepts();
@@ -35,7 +46,7 @@ public class Vsite extends Vobject implements VobjectInterface {
 		linkMap = new HashMap<Node, Integer>();
 				
 		for (Node node : nodes) {
-			Vnode newVnode = new Vnode(perfvis, visman, node);
+			Vnode newVnode = new Vnode(perfvis, visman, this, node);
 			vnodes.add(newVnode);
 			nodesToVisuals.put(node, newVnode);
 		}		
@@ -49,7 +60,7 @@ public class Vsite extends Vobject implements VobjectInterface {
 		HashMap<String, Float[]> colors = site.getMetricsColors();
 		
 		for (Map.Entry<String, Float[]> entry : colors.entrySet()) {
-			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, entry.getValue()));
+			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, this, entry.getValue()));
 		}		
 	}
 	
@@ -92,7 +103,7 @@ public class Vsite extends Vobject implements VobjectInterface {
 					//TODO cleanup
 					System.err.println("CONNECTIONS: add one");
 					Vnode to = nodesToVisuals.get(site.getNode(ibis));
-					vlinks.add(new Vlink(perfvis, visman, node, from, to));				
+					vlinks.add(new Vlink(perfvis, visman, this, node, from, to));				
 				}						
 			}				
 		}				
@@ -256,5 +267,57 @@ public class Vsite extends Vobject implements VobjectInterface {
 			//Turn for the next iteration		
 			gl.glRotatef(degs, 0.0f, 0.0f, 1.0f);
 		}
+	}
+	
+	public void setForm(int newForm) throws ModeUnknownException {
+		if (newForm == Vobject.METRICS_BAR || newForm == Vobject.METRICS_TUBE || newForm == Vobject.METRICS_SPHERE) {
+			currentMetricForm = newForm;			
+		} else if (newForm == Vobject.COLLECTION_CITYSCAPE || newForm == Vobject.COLLECTION_CIRCLE) {
+			currentCollectionForm = newForm;
+		} else {
+			throw new ModeUnknownException();
+		}
+		for (Vnode vnode : vnodes) {
+			vnode.setForm(newForm);
+		}
+	}
+	
+	public PopupMenu getMenu() {		
+		String[] elementsgroup = {"Bars", "Tubes", "Spheres"};
+		String[] collectionsgroup = {"Cityscape", "Circle"};
+		
+		PopupMenu newMenu = new PopupMenu();	
+		
+		Menu metricsForms 	= makeRadioGroup("Metric Form", elementsgroup);
+		Menu nodeForms 		= makeRadioGroup("Group Form", collectionsgroup);
+		Menu poolForms 		= makeRadioGroup("Pool Group Form", collectionsgroup);
+		Menu poolMetricForms= makeRadioGroup("Pool Metric Form", elementsgroup);
+		
+		newMenu.add(metricsForms);
+		newMenu.add(nodeForms);
+		newMenu.add(poolForms);
+		newMenu.add(poolMetricForms);
+		
+		return newMenu;		
+	}	
+	
+	protected Menu makeRadioGroup(String menuName, String[] itemNames) {
+		Menu result = new Menu(menuName);
+		
+		for (String item : itemNames) {
+			MenuItem newMenuItem = new MenuItem(item);
+			if (menuName.equals("Metric Form")) {
+				newMenuItem.addActionListener(new SetMetricFormAction(this, item));
+			} else if (menuName.equals("Group Form")) {
+				newMenuItem.addActionListener(new SetCollectionFormAction(this, item));
+			} else if (menuName.equals("Pool Group Form")) {
+				newMenuItem.addActionListener(new SetCollectionFormAction(this.getParent(), item));
+			} else if (menuName.equals("Pool Metric Form")) {
+				newMenuItem.addActionListener(new SetMetricFormAction(this.getParent(), item));
+			}
+			result.add(newMenuItem);			
+		}
+				
+		return result;
 	}
 }

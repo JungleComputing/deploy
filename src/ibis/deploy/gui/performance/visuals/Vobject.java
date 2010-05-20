@@ -58,6 +58,7 @@ public class Vobject {
 	protected float separation;
 	
 	protected HashMap<String, Vmetric> vmetrics;
+	protected Vobject parent;
 		
 	public Vobject(PerfVis perfvis, VisualManager visman) {
 		glu = new GLU();
@@ -75,10 +76,7 @@ public class Vobject {
 		//setSize(1.0f, 0.25f);
 		scaleXZ = 0.25f;
 		scaleY = 1.0f;
-		
-		//Register the new object with the Performance visualization object
-		this.glName = visman.registerGLObject(this);
-		
+				
 		this.vmetrics 	= new HashMap<String, Vmetric>();
 	}
 	
@@ -137,6 +135,7 @@ public class Vobject {
 	}	
 	
 	public PopupMenu getMenu() {
+		
 		String[] elementsgroup = {"Bars", "Tubes", "Spheres"};
 		String[] collectionsgroup = {"Cityscape", "Circle"};
 		
@@ -154,17 +153,21 @@ public class Vobject {
 	
 	protected Menu makeRadioGroup(String menuName, String[] itemNames) {
 		Menu result = new Menu(menuName);
-				
+		
 		for (String item : itemNames) {
 			MenuItem newMenuItem = new MenuItem(item);
 			if (menuName.equals("Metrics")) {
 				newMenuItem.addActionListener(new SetMetricFormAction(this, item));
 			} else if (menuName.equals("Collection")) {
-				newMenuItem.addActionListener(new SetCollectionFormAction(this, item));
-			}  
+				newMenuItem.addActionListener(new SetCollectionFormAction(this.getParent(), item));
+			}
 			result.add(newMenuItem);			
 		}
 				
 		return result;
+	}
+	
+	public Vobject getParent() {		
+		return parent;
 	}
 }

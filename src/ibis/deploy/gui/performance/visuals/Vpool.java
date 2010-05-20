@@ -3,8 +3,14 @@ import ibis.deploy.gui.performance.PerfVis;
 import ibis.deploy.gui.performance.VisualManager;
 import ibis.deploy.gui.performance.dataholders.Pool;
 import ibis.deploy.gui.performance.dataholders.Site;
+import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
 import ibis.deploy.gui.performance.exceptions.ValueOutOfBoundsException;
+import ibis.deploy.gui.performance.swing.SetCollectionFormAction;
+import ibis.deploy.gui.performance.swing.SetMetricFormAction;
 
+import java.awt.Menu;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,16 +23,19 @@ public class Vpool extends Vobject implements VobjectInterface {
 	private List<Vsite> vsites;	
 	private Pool pool; 
 		
-	public Vpool(PerfVis perfvis, VisualManager visman, Pool pool) {
+	public Vpool(PerfVis perfvis, VisualManager visman, Vobject parent, Pool pool) {
 		super(perfvis, visman);
 		this.pool = pool;
 		this.currentCollectionForm = Vobject.COLLECTION_CITYSCAPE;
+		
+		//Register the new object with the Performance visualization object
+		this.glName = visman.registerPool(this);
 				
 		Site[] sites = pool.getSubConcepts();
 		vsites = new ArrayList<Vsite>();
 				
 		for (Site site : sites) {
-			vsites.add(new Vsite(perfvis, visman, site));			
+			vsites.add(new Vsite(perfvis, visman, this, site));			
 		}
 				
 		initializeMetrics();
@@ -38,7 +47,7 @@ public class Vpool extends Vobject implements VobjectInterface {
 		HashMap<String, Float[]> colors = pool.getMetricsColors();
 		
 		for (Map.Entry<String, Float[]> entry : colors.entrySet()) {
-			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, entry.getValue()));
+			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, this, entry.getValue()));
 		}		
 	}
 
@@ -182,5 +191,49 @@ public class Vpool extends Vobject implements VobjectInterface {
 			//Turn for the next iteration		
 			gl.glRotatef(degs, 0.0f, 0.0f, 1.0f);
 		}
+	}
+	
+	public void setForm(int newForm) throws ModeUnknownException {
+		if (newForm == Vobject.METRICS_BAR || newForm == Vobject.METRICS_TUBE || newForm == Vobject.METRICS_SPHERE) {
+			currentMetricForm = newForm;			
+		} else if (newForm == Vobject.COLLECTION_CITYSCAPE || newForm == Vobject.COLLECTION_CIRCLE) {
+			currentCollectionForm = newForm;
+		} else {
+			throw new ModeUnknownException();
+		}
+		for (Vsite vsite : vsites) {
+			vsite.setForm(newForm);
+		}
+	}
+	
+	public PopupMenu getMenu() {		
+		String[] elementsgroup = {"Bars", "Tubes", "Spheres"};
+		String[] collectionsgroup = {"Cityscape", "Circle"};
+		
+		PopupMenu newMenu = new PopupMenu();	
+		
+		Menu metricsForms 	= makeRadioGroup("Metric Form", elementsgroup);
+		Menu nodeForms 		= makeRadioGroup("Group Form", collectionsgroup);
+		
+		newMenu.add(metricsForms);
+		newMenu.add(nodeForms);
+		
+		return newMenu;		
+	}	
+	
+	protected Menu makeRadioGroup(String menuName, String[] itemNames) {
+		Menu result = new Menu(menuName);
+		
+		for (String item : itemNames) {
+			MenuItem newMenuItem = new MenuItem(item);
+			if (menuName.equals("Metric Form")) {
+				newMenuItem.addActionListener(new SetMetricFormAction(this, item));
+			} else if (menuName.equals("Group Form")) {
+				newMenuItem.addActionListener(new SetCollectionFormAction(this, item));
+			}
+			result.add(newMenuItem);			
+		}
+				
+		return result;
 	}
 }

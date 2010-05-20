@@ -1,10 +1,17 @@
 package ibis.deploy.gui.performance.visuals;
 
+import java.awt.Menu;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
 import java.nio.IntBuffer;
+import java.util.Map;
 
 import ibis.deploy.gui.performance.PerfVis;
 import ibis.deploy.gui.performance.VisualManager;
+import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
 import ibis.deploy.gui.performance.exceptions.ValueOutOfBoundsException;
+import ibis.deploy.gui.performance.swing.SetCollectionFormAction;
+import ibis.deploy.gui.performance.swing.SetMetricFormAction;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.glu.GLUquadric;
@@ -18,8 +25,10 @@ public class Vmetric extends Vobject implements VobjectInterface {
 	private float value;
 	private Vobject from, to;
 		
-	public Vmetric(PerfVis perfvis, VisualManager visman, Float[] color) {
+	public Vmetric(PerfVis perfvis, VisualManager visman, Vobject parent, Float[] color) {
 		super(perfvis, visman);
+		this.parent = parent;
+		
 		this.color = color;
 		this.alpha = ALPHA;
 		
@@ -28,10 +37,14 @@ public class Vmetric extends Vobject implements VobjectInterface {
 		
 		this.from = null;
 		this.to = null;
+		
+		//Register the new object with the Performance visualization object
+		this.glName = visman.registerMetric(this);		
 	}
 	
-	public Vmetric(PerfVis perfvis, VisualManager visman, Float[] color, Vobject from, Vobject to) {
+	public Vmetric(PerfVis perfvis, VisualManager visman, Vobject parent, Float[] color, Vobject from, Vobject to) {
 		super(perfvis, visman);
+		this.parent = parent;
 		
 		this.color = color;
 		this.alpha = ALPHA;
@@ -41,6 +54,9 @@ public class Vmetric extends Vobject implements VobjectInterface {
 		
 		this.from = from;
 		this.to = to;
+		
+		//Register the new object with the Performance visualization object
+		this.glName = visman.registerMetric(this);	
 	}
 	
 	public void setValue(float value) throws ValueOutOfBoundsException {
@@ -428,5 +444,56 @@ public class Vmetric extends Vobject implements VobjectInterface {
 		
 		//Cleanup
 		glu.gluDeleteQuadric(qobj);
+	}
+	
+	public PopupMenu getMenu() {		
+		String[] elementsgroup = {"Bars", "Tubes", "Spheres"};
+		String[] collectionsgroup = {"Cityscape", "Circle"};
+		
+		PopupMenu newMenu = new PopupMenu();	
+		
+		Menu metricsForms 	= makeRadioGroup("Metric Form", elementsgroup);
+		Menu nodeForms 		= makeRadioGroup("Node Group Form", collectionsgroup);
+		Menu nodeMetricForms= makeRadioGroup("Node Metric Form", elementsgroup);
+		Menu siteForms 		= makeRadioGroup("Site Group Form", collectionsgroup);
+		Menu siteMetricForms= makeRadioGroup("Site Metric Form", elementsgroup);
+		Menu poolForms 		= makeRadioGroup("Pool Group Form", collectionsgroup);
+		Menu poolMetricForms= makeRadioGroup("Pool Metric Form", elementsgroup);
+		
+		newMenu.add(metricsForms);
+		newMenu.add(nodeForms);
+		newMenu.add(nodeMetricForms);
+		newMenu.add(siteForms);
+		newMenu.add(siteMetricForms);
+		newMenu.add(poolForms);
+		newMenu.add(poolMetricForms);
+		
+		return newMenu;		
+	}	
+	
+	protected Menu makeRadioGroup(String menuName, String[] itemNames) {
+		Menu result = new Menu(menuName);
+		
+		for (String item : itemNames) {
+			MenuItem newMenuItem = new MenuItem(item);
+			if (menuName.equals("Metric Form")) {
+				newMenuItem.addActionListener(new SetMetricFormAction(this, item));
+			} else if (menuName.equals("Node Group Form")) {
+				newMenuItem.addActionListener(new SetCollectionFormAction(this.getParent(), item));
+			} else if (menuName.equals("Node Metric Form")) {
+				newMenuItem.addActionListener(new SetMetricFormAction(this.getParent(), item));
+			} else if (menuName.equals("Site Group Form")) {
+				newMenuItem.addActionListener(new SetCollectionFormAction(this.getParent().getParent(), item));
+			} else if (menuName.equals("Site Metric Form")) {
+				newMenuItem.addActionListener(new SetMetricFormAction(this.getParent().getParent(), item));
+			} else if (menuName.equals("Pool Group Form")) {
+				newMenuItem.addActionListener(new SetCollectionFormAction(this.getParent().getParent().getParent(), item));
+			} else if (menuName.equals("Pool Metric Form")) {
+				newMenuItem.addActionListener(new SetMetricFormAction(this.getParent().getParent().getParent(), item));
+			}
+			result.add(newMenuItem);			
+		}
+				
+		return result;
 	}
 }
