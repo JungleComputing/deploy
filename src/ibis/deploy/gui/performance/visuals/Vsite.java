@@ -52,7 +52,11 @@ public class Vsite extends Vobject implements VobjectInterface {
 			nodesToVisuals.put(node, newVnode);
 		}		
 		
-		initializeMetrics();		
+		initializeMetrics();	
+		
+		for (Map.Entry<String, Vmetric> entry : vmetrics.entrySet()) {
+			shownMetrics.add(entry.getKey());
+		}
 	}
 	
 	private void initializeMetrics() {
@@ -184,11 +188,19 @@ public class Vsite extends Vobject implements VobjectInterface {
 		//Move towards the intended location
 		gl.glTranslatef(location[0], location[1], location[2]);
 		
-		//Draw the desired form
-		if (currentCollectionForm == Vobject.COLLECTION_CITYSCAPE) {
-			drawCityscape(gl, glMode);
-		} else if (currentCollectionForm == Vobject.COLLECTION_CIRCLE) {
-			drawCircle(gl, glMode);
+		if (!showAverages) {
+			//Draw the desired form
+			if (currentCollectionForm == Vobject.COLLECTION_CITYSCAPE) {
+				drawCityscape(gl, glMode);
+			} else if (currentCollectionForm == Vobject.COLLECTION_CIRCLE) {
+				drawCircle(gl, glMode);
+			}
+		} else {
+			if (currentCollectionForm == Vobject.COLLECTION_CITYSCAPE) {
+				drawAveragesCityscape(gl, glMode);
+			} else if (currentCollectionForm == Vobject.COLLECTION_CIRCLE) {
+				drawAveragesCircle(gl, glMode);
+			}
 		}
 		
 		drawLinks(gl, glMode);
@@ -299,6 +311,9 @@ public class Vsite extends Vobject implements VobjectInterface {
 		newMenu.add(poolForms);
 		newMenu.add(poolMetricForms);
 		newMenu.add(getMetricsMenu("Metrics Toggle"));
+		newMenu.add(getAveragesMenu("Compound Site"));
+		newMenu.add(parent.getAveragesMenu("Compound Pool"));
+		
 		
 		return newMenu;		
 	}	

@@ -47,7 +47,7 @@ public class StatsManager {
 		initStatistics.add(new BytesSentStatistic());
 		initStatistics.add(new HeapMemStatistic());
 		initStatistics.add(new NonHeapMemStatistic());
-		//initStatistics.add(new ThreadsStatistic());
+		initStatistics.add(new ThreadsStatistic());
 	}
 	
 	public void update() {		

@@ -14,8 +14,10 @@ import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
 import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
 import ibis.deploy.gui.performance.swing.SetCollectionFormAction;
 import ibis.deploy.gui.performance.swing.SetMetricFormAction;
+import ibis.deploy.gui.performance.swing.ToggleAveragesAction;
 import ibis.deploy.gui.performance.swing.ToggleMetricAction;
 
+import javax.media.opengl.GL;
 import javax.media.opengl.glu.GLU;
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
@@ -140,6 +142,77 @@ public class Vobject {
 			throw new ModeUnknownException();
 		}
 	}	
+		
+	protected void drawAveragesCityscape(GL gl, int glMode) {		
+		//get the breakoff point for rows and columns
+		int rows 		= (int)Math.ceil(Math.sqrt(shownMetrics.size()));
+		int columns 	= (int)Math.floor(Math.sqrt(shownMetrics.size()));
+		
+		float tempSeparation = separation;
+		separation = 0.25f;
+				
+		//Center the drawing around the location	
+		Float[] shift = new Float[3];
+		shift[0] =  ((((scaleXZ+separation)*rows   )-separation)-(0.5f*scaleXZ))*0.5f;
+		shift[1] = 0.0f;
+		shift[2] = -((((scaleXZ+separation)*columns)-separation)-(0.5f*scaleXZ))*0.5f;
+		setRelativeLocation(shift);
+		
+		int row = 0, column = 0, i = 0;
+		for (Entry<String, Vmetric> entry : vmetrics.entrySet()) {
+			if (shownMetrics.contains(entry.getKey())) {
+				row = i % rows;
+				//Move to next row (if applicable)
+				if (i != 0 && row == 0) {
+					column++;						
+				}
+							
+				//Setup the form
+				try {
+					entry.getValue().setLocation(location);
+					
+					shift[0] = -(scaleXZ+separation)*row;
+					shift[1] = 0.0f;
+					shift[2] =  (scaleXZ+separation)*column;
+					entry.getValue().setRelativeLocation(shift);
+						
+				} catch (Exception e) {					
+					e.printStackTrace();
+				}
+				
+				//Draw the form
+				entry.getValue().drawThis(gl, glMode);
+				i++;
+			}
+		}
+		
+		separation = tempSeparation;
+	}
+	
+	protected void drawAveragesCircle(GL gl, int glMode) {				
+		double angle  = 2*Math.PI / shownMetrics.size();
+		float degs = (float) Math.toDegrees(angle);
+		float radius = (float) ((scaleXZ/2) / Math.tan(angle/2));	
+		radius = Math.max(radius, 0);
+				
+		for (Entry<String, Vmetric> entry : vmetrics.entrySet()) {	
+			if (shownMetrics.contains(entry.getKey())) {
+				//move towards the position			
+				gl.glTranslatef(radius, 0.0f, 0.0f);
+				gl.glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);
+									
+				//Draw the form
+				entry.getValue().drawThis(gl, glMode);
+				
+				//Move back to the center			
+				gl.glRotatef(90.0f, 0.0f, 0.0f, 1.0f);
+				gl.glTranslatef(-radius, 0.0f, 0.0f);
+				
+				//Turn for the next iteration		
+				gl.glRotatef(degs, 0.0f, 0.0f, 1.0f);
+			}
+		}
+	}
 	
 	public PopupMenu getMenu() {
 		
@@ -186,6 +259,22 @@ public class Vobject {
 		return result;
 	}
 	
+	protected Menu getAveragesMenu(String label) {
+		Menu result = new Menu(label);
+		MenuItem newMenuItem;
+		
+		if (!showAverages) {
+			newMenuItem = new MenuItem("Show Averages");
+		} else {
+			newMenuItem = new MenuItem("Show Sublevel");
+		}
+		
+		newMenuItem.addActionListener(new ToggleAveragesAction(this, newMenuItem.getLabel()));
+		result.add(newMenuItem);
+		
+		return result; 
+	}
+	
 	public Vobject getParent() {		
 		return parent;
 	}
@@ -200,5 +289,9 @@ public class Vobject {
 		} else {
 			throw new StatNotRequestedException();
 		}
+	}
+	
+	public void toggleAverages() {
+		this.showAverages = !showAverages;
 	}
 }

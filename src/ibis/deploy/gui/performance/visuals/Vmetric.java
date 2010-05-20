@@ -446,7 +446,9 @@ public class Vmetric extends Vobject implements VobjectInterface {
 		glu.gluDeleteQuadric(qobj);
 	}
 	
-	public PopupMenu getMenu() {		
+	public PopupMenu getMenu() {	
+		return parent.getMenu();
+		/*
 		String[] elementsgroup = {"Bars", "Tubes", "Spheres"};
 		String[] collectionsgroup = {"Cityscape", "Circle"};
 		
@@ -473,8 +475,13 @@ public class Vmetric extends Vobject implements VobjectInterface {
 		metricsOptions.add(parent.getParent().getMetricsMenu("Site"));
 		metricsOptions.add(parent.getParent().getParent().getMetricsMenu("Pool"));
 		newMenu.add(metricsOptions);
+
+		newMenu.add(parent.getAveragesMenu("Compound Node"));
+		newMenu.add(parent.getParent().getAveragesMenu("Compound Site"));
+		newMenu.add(parent.getParent().getParent().getAveragesMenu("Compound Pool"));
 		
-		return newMenu;		
+		return newMenu;
+		*/		
 	}	
 	
 	protected Menu makeRadioGroup(String menuName, String[] itemNames) {

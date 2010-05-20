@@ -223,6 +223,9 @@ public class Vnode extends Vobject implements VobjectInterface {
 		newMenu.add(poolForms);
 		newMenu.add(poolMetricForms);
 		newMenu.add(getMetricsMenu("Metrics Toggle"));
+		newMenu.add(getAveragesMenu("Compound Node"));
+		newMenu.add(parent.getAveragesMenu("Compound Site"));
+		newMenu.add(parent.getParent().getAveragesMenu("Compound Pool"));
 		
 		return newMenu;		
 	}	
