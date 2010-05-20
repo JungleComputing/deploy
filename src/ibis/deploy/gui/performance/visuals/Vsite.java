@@ -4,6 +4,7 @@ import ibis.deploy.gui.performance.VisualManager;
 import ibis.deploy.gui.performance.dataholders.Node;
 import ibis.deploy.gui.performance.dataholders.Site;
 import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
+import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
 import ibis.deploy.gui.performance.exceptions.ValueOutOfBoundsException;
 import ibis.deploy.gui.performance.swing.SetCollectionFormAction;
 import ibis.deploy.gui.performance.swing.SetMetricFormAction;
@@ -55,12 +56,12 @@ public class Vsite extends Vobject implements VobjectInterface {
 	}
 	
 	private void initializeMetrics() {
-		vmetrics.clear();
+		vmetrics.clear();		
 		
 		HashMap<String, Float[]> colors = site.getMetricsColors();
 		
 		for (Map.Entry<String, Float[]> entry : colors.entrySet()) {
-			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, this, entry.getValue()));
+			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, this, entry.getValue()));			
 		}		
 	}
 	
@@ -297,6 +298,7 @@ public class Vsite extends Vobject implements VobjectInterface {
 		newMenu.add(nodeForms);
 		newMenu.add(poolForms);
 		newMenu.add(poolMetricForms);
+		newMenu.add(getMetricsMenu("Metrics Toggle"));
 		
 		return newMenu;		
 	}	
@@ -319,5 +321,25 @@ public class Vsite extends Vobject implements VobjectInterface {
 		}
 				
 		return result;
+	}
+	
+	public void toggleMetricShown(String key) throws StatNotRequestedException {
+		if (vmetrics.containsKey(key)) {
+			if (!shownMetrics.contains(key)) {			
+				shownMetrics.add(key);
+			} else {			
+				shownMetrics.remove(key);
+			}
+		} else {
+			throw new StatNotRequestedException();
+		}
+		
+		for (Vnode vnode : vnodes) {
+			vnode.toggleMetricShown(key);
+		}
+		
+		for (Vlink vlink : vlinks) {
+			vlink.toggleMetricShown(key);
+		}
 	}
 }

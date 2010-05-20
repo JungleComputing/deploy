@@ -468,6 +468,12 @@ public class Vmetric extends Vobject implements VobjectInterface {
 		newMenu.add(poolForms);
 		newMenu.add(poolMetricForms);
 		
+		Menu metricsOptions = new Menu("Metrics Toggle");
+		metricsOptions.add(parent.getMetricsMenu("Node"));
+		metricsOptions.add(parent.getParent().getMetricsMenu("Site"));
+		metricsOptions.add(parent.getParent().getParent().getMetricsMenu("Pool"));
+		newMenu.add(metricsOptions);
+		
 		return newMenu;		
 	}	
 	

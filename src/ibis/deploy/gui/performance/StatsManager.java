@@ -26,11 +26,6 @@ public class StatsManager {
 	//The list that holds the statistics necessary for initializing the visualization 
 	private MetricsList initStatistics;
 	
-	//The lists that hold the currently available metrics, add to this when implementing new stats.
-	//private MetricsList availableSpecialMetrics;
-	//private ArrayList<String> availableNodeMetrics;
-	//private ArrayList<String> availableLinkMetrics;
-	
 	public StatsManager(VisualManager visman, ManagementServiceInterface manInterface, RegistryServiceInterface regInterface) {		
 		this.manInterface = manInterface;
 		this.regInterface = regInterface;
@@ -52,26 +47,7 @@ public class StatsManager {
 		initStatistics.add(new BytesSentStatistic());
 		initStatistics.add(new HeapMemStatistic());
 		initStatistics.add(new NonHeapMemStatistic());
-		
-		//List that holds all available special statistics
-		//availableSpecialMetrics = new MetricsList();
-		//availableSpecialMetrics.add(new ConnStatistic());
-		
-		//List that holds all available Node-based statistics		
-		//availableNodeMetrics = new ArrayList<String>();
-		//for (Metric metric : initStatistics) {
-		//	if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
-		//		availableNodeMetrics.add(metric.getName());
-		//	}
-		//}
-			
-		//List that holds all available Link-based statistics
-		//availableLinkMetrics = new ArrayList<String>();
-		//for (Metric metric : initStatistics) {
-		//	if (metric.getGroup() == LinkMetricsObject.METRICSGROUP) {
-		//		availableLinkMetrics.add(metric.getName());
-		//	}
-		//}
+		//initStatistics.add(new ThreadsStatistic());
 	}
 	
 	public void update() {		

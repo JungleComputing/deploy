@@ -31,6 +31,10 @@ public class Vnode extends Vobject implements VobjectInterface {
 		this.glName = visman.registerNode(this);
 		
 		initializeMetrics();
+		
+		for (Map.Entry<String, Vmetric> entry : vmetrics.entrySet()) {
+			shownMetrics.add(entry.getKey());
+		}
 	}
 	
 	/*
@@ -122,8 +126,8 @@ public class Vnode extends Vobject implements VobjectInterface {
 	
 	protected void drawCityscape(GL gl, int glMode) {		
 		//get the breakoff point for rows and columns
-		int rows 		= (int)Math.ceil(Math.sqrt(vmetrics.size()));
-		int columns 	= (int)Math.floor(Math.sqrt(vmetrics.size()));
+		int rows 		= (int)Math.ceil(Math.sqrt(shownMetrics.size()));
+		int columns 	= (int)Math.floor(Math.sqrt(shownMetrics.size()));
 		
 		//Center the drawing around the location	
 		Float[] shift = new Float[3];
@@ -134,51 +138,55 @@ public class Vnode extends Vobject implements VobjectInterface {
 		
 		int row = 0, column = 0, i = 0;
 		for (Entry<String, Vmetric> entry : vmetrics.entrySet()) {
-			row = i % rows;
-			//Move to next row (if applicable)
-			if (i != 0 && row == 0) {
-				column++;						
-			}
-						
-			//Setup the form
-			try {
-				entry.getValue().setLocation(location);
-				
-				shift[0] = -(scaleXZ+separation)*row;
-				shift[1] = 0.0f;
-				shift[2] =  (scaleXZ+separation)*column;
-				entry.getValue().setRelativeLocation(shift);
+			if (shownMetrics.contains(entry.getKey())) {
+				row = i % rows;
+				//Move to next row (if applicable)
+				if (i != 0 && row == 0) {
+					column++;						
+				}
+							
+				//Setup the form
+				try {
+					entry.getValue().setLocation(location);
 					
-			} catch (Exception e) {					
-				e.printStackTrace();
+					shift[0] = -(scaleXZ+separation)*row;
+					shift[1] = 0.0f;
+					shift[2] =  (scaleXZ+separation)*column;
+					entry.getValue().setRelativeLocation(shift);
+						
+				} catch (Exception e) {					
+					e.printStackTrace();
+				}
+				
+				//Draw the form
+				entry.getValue().drawThis(gl, glMode);
+				i++;
 			}
-			
-			//Draw the form
-			entry.getValue().drawThis(gl, glMode);
-			i++;
 		}
 	}
 	
 	protected void drawCircle(GL gl, int glMode) {				
-		double angle  = 2*Math.PI / vmetrics.size();
+		double angle  = 2*Math.PI / shownMetrics.size();
 		float degs = (float) Math.toDegrees(angle);
 		float radius = (float) ((scaleXZ/2) / Math.tan(angle/2));	
 		radius = Math.max(radius, 0);
 				
-		for (Entry<String, Vmetric> entry : vmetrics.entrySet()) {					
-			//move towards the position			
-			gl.glTranslatef(radius, 0.0f, 0.0f);
-			gl.glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);
-								
-			//Draw the form
-			entry.getValue().drawThis(gl, glMode);
-			
-			//Move back to the center			
-			gl.glRotatef(90.0f, 0.0f, 0.0f, 1.0f);
-			gl.glTranslatef(-radius, 0.0f, 0.0f);
-			
-			//Turn for the next iteration		
-			gl.glRotatef(degs, 0.0f, 0.0f, 1.0f);
+		for (Entry<String, Vmetric> entry : vmetrics.entrySet()) {	
+			if (shownMetrics.contains(entry.getKey())) {
+				//move towards the position			
+				gl.glTranslatef(radius, 0.0f, 0.0f);
+				gl.glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);
+									
+				//Draw the form
+				entry.getValue().drawThis(gl, glMode);
+				
+				//Move back to the center			
+				gl.glRotatef(90.0f, 0.0f, 0.0f, 1.0f);
+				gl.glTranslatef(-radius, 0.0f, 0.0f);
+				
+				//Turn for the next iteration		
+				gl.glRotatef(degs, 0.0f, 0.0f, 1.0f);
+			}
 		}
 	}
 	
@@ -214,6 +222,7 @@ public class Vnode extends Vobject implements VobjectInterface {
 		newMenu.add(siteMetricForms);
 		newMenu.add(poolForms);
 		newMenu.add(poolMetricForms);
+		newMenu.add(getMetricsMenu("Metrics Toggle"));
 		
 		return newMenu;		
 	}	

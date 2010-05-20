@@ -4,6 +4,7 @@ import ibis.deploy.gui.performance.VisualManager;
 import ibis.deploy.gui.performance.dataholders.Pool;
 import ibis.deploy.gui.performance.dataholders.Site;
 import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
+import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
 import ibis.deploy.gui.performance.exceptions.ValueOutOfBoundsException;
 import ibis.deploy.gui.performance.swing.SetCollectionFormAction;
 import ibis.deploy.gui.performance.swing.SetMetricFormAction;
@@ -42,14 +43,14 @@ public class Vpool extends Vobject implements VobjectInterface {
 	}
 	
 	private void initializeMetrics() {
-		vmetrics.clear();
+		vmetrics.clear();		
 		
 		HashMap<String, Float[]> colors = pool.getMetricsColors();
 		
 		for (Map.Entry<String, Float[]> entry : colors.entrySet()) {
-			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, this, entry.getValue()));
+			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, this, entry.getValue()));			
 		}		
-	}
+	}	
 
 	/*
 	public void setForm(int poolForm) throws ModeUnknownException {
@@ -142,6 +143,7 @@ public class Vpool extends Vobject implements VobjectInterface {
 		shift[2] = -((((scaleXZ+separation)*columns)-separation)-(0.5f*scaleXZ))*0.5f;
 		setRelativeLocation(shift);
 				
+		radius = 0;
 		int row = 0, column = 0, i = 0;
 		for (Vsite vsite : vsites) {
 			row = i % rows;
@@ -153,7 +155,9 @@ public class Vpool extends Vobject implements VobjectInterface {
 			//Setup the form
 			try {
 				vsite.setLocation(location);
-				vsite.setSeparation(vsite.getRadius()+separation);
+				float siteRadius = vsite.getRadius()+separation;
+				radius += siteRadius;
+				vsite.setSeparation(siteRadius);
 				
 				shift[0] = -(scaleXZ+separation)*row;
 				shift[1] = 0.0f;
@@ -217,6 +221,7 @@ public class Vpool extends Vobject implements VobjectInterface {
 		
 		newMenu.add(metricsForms);
 		newMenu.add(nodeForms);
+		newMenu.add(getMetricsMenu("Metrics Toggle"));
 		
 		return newMenu;		
 	}	
@@ -235,5 +240,21 @@ public class Vpool extends Vobject implements VobjectInterface {
 		}
 				
 		return result;
+	}
+	
+	public void toggleMetricShown(String key) throws StatNotRequestedException {
+		if (vmetrics.containsKey(key)) {
+			if (!shownMetrics.contains(key)) {			
+				shownMetrics.add(key);
+			} else {			
+				shownMetrics.remove(key);
+			}
+		} else {
+			throw new StatNotRequestedException();
+		}
+		
+		for (Vsite vsite : vsites) {
+			vsite.toggleMetricShown(key);
+		}
 	}
 }

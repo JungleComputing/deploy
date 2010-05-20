@@ -4,12 +4,17 @@ import java.awt.Menu;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Map.Entry;
 
 import ibis.deploy.gui.performance.PerfVis;
 import ibis.deploy.gui.performance.VisualManager;
 import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
+import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
 import ibis.deploy.gui.performance.swing.SetCollectionFormAction;
 import ibis.deploy.gui.performance.swing.SetMetricFormAction;
+import ibis.deploy.gui.performance.swing.ToggleMetricAction;
 
 import javax.media.opengl.glu.GLU;
 import javax.swing.AbstractAction;
@@ -49,6 +54,7 @@ public class Vobject {
 	protected float radius;
 	protected int currentMetricForm;
 	protected int currentCollectionForm;
+	protected boolean showAverages;
 	
 	protected int glName;
 	protected float scaleXZ;
@@ -58,12 +64,15 @@ public class Vobject {
 	protected float separation;
 	
 	protected HashMap<String, Vmetric> vmetrics;
+	protected Set<String> shownMetrics;
 	protected Vobject parent;
 		
 	public Vobject(PerfVis perfvis, VisualManager visman) {
 		glu = new GLU();
 		this.perfvis = perfvis;
 		this.visman = visman;
+		this.showAverages = false;
+		shownMetrics = new HashSet<String>();
 		
 		this.location = new Float[3];
 		this.location[0] = 0.0f;
@@ -122,8 +131,6 @@ public class Vobject {
 		return glName;
 	}
 	
-
-	
 	public void setForm(int newForm) throws ModeUnknownException {
 		if (newForm == Vobject.METRICS_BAR || newForm == Vobject.METRICS_TUBE || newForm == Vobject.METRICS_SPHERE) {
 			currentMetricForm = newForm;
@@ -161,13 +168,37 @@ public class Vobject {
 			} else if (menuName.equals("Collection")) {
 				newMenuItem.addActionListener(new SetCollectionFormAction(this.getParent(), item));
 			}
-			result.add(newMenuItem);			
+			result.add(newMenuItem);
 		}
 				
 		return result;
 	}
 	
+	protected Menu getMetricsMenu(String label) {
+		Menu result = new Menu(label);
+		
+		for (Entry<String, Vmetric> entry : vmetrics.entrySet()) {
+			MenuItem newMenuItem = new MenuItem(entry.getKey());
+			newMenuItem.addActionListener(new ToggleMetricAction(this, entry.getKey()));
+			result.add(newMenuItem);
+		}
+		
+		return result;
+	}
+	
 	public Vobject getParent() {		
 		return parent;
+	}
+	
+	public void toggleMetricShown(String key) throws StatNotRequestedException {
+		if (vmetrics.containsKey(key)) {
+			if (!shownMetrics.contains(key)) {			
+				shownMetrics.add(key);
+			} else {			
+				shownMetrics.remove(key);
+			}
+		} else {
+			throw new StatNotRequestedException();
+		}
 	}
 }
