@@ -4,11 +4,9 @@ import java.awt.Menu;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
 import java.nio.IntBuffer;
-import java.util.Map;
 
 import ibis.deploy.gui.performance.PerfVis;
 import ibis.deploy.gui.performance.VisualManager;
-import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
 import ibis.deploy.gui.performance.exceptions.ValueOutOfBoundsException;
 import ibis.deploy.gui.performance.swing.SetCollectionFormAction;
 import ibis.deploy.gui.performance.swing.SetMetricFormAction;

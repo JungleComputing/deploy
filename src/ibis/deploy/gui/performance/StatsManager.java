@@ -6,15 +6,13 @@ import java.util.List;
 import java.util.Map;
 
 import ibis.deploy.gui.performance.dataholders.*;
-import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
-import ibis.deploy.gui.performance.metrics.Metric;
 import ibis.deploy.gui.performance.metrics.link.*;
 import ibis.deploy.gui.performance.metrics.node.*;
 import ibis.deploy.gui.performance.metrics.special.*;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
 
-public class StatsManager {
+public class StatsManager implements Runnable {
 	//Variables needed for the operation of this class		
 	private ManagementServiceInterface manInterface;
 	private RegistryServiceInterface regInterface;
@@ -112,6 +110,17 @@ public class StatsManager {
 
 	public List<Pool> getTopConcepts() {
 		return pools;
+	}
+	
+	public void run() {
+		while (true) {
+			update();
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {				
+				break;
+			}
+		}
 	}
 
 	//public ArrayList<String> getAvailableNodeMetrics() {

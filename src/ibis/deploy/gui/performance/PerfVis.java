@@ -14,7 +14,6 @@ import javax.media.opengl.GLCanvas;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.glu.GLU;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 
 import com.sun.opengl.util.BufferUtil;
 import com.sun.opengl.util.GLUT;
@@ -72,8 +71,7 @@ public class PerfVis implements GLEventListener {
 		}	
 		
 		mouseHandler = new MouseHandler(this, canvas);
-		visman = new VisualManager(this);
-		statman = new StatsManager(visman, manInterface, regInterface);		
+		visman = new VisualManager(this);				
 	}
 				
 	public void display(GLAutoDrawable drawable) {
@@ -100,7 +98,7 @@ public class PerfVis implements GLEventListener {
 	}	
 	
 	public void updateStats() {		
-		statman.update();			
+		//statman.update();			
 		visman.update();
 	}
 	
@@ -193,8 +191,9 @@ public class PerfVis implements GLEventListener {
 		canvas.addMouseWheelListener(mouseHandler);
 		
 		canvas.requestFocusInWindow();
-			
-		updateStats();			
+		
+		statman = new StatsManager(visman, manInterface, regInterface);
+		new Thread(statman).start();
 	}
 	
 	public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
