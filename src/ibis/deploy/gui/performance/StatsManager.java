@@ -116,7 +116,7 @@ public class StatsManager implements Runnable {
 		while (true) {
 			update();
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(100);
 			} catch (InterruptedException e) {				
 				break;
 			}

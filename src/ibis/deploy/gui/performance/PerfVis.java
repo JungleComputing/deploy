@@ -46,8 +46,6 @@ public class PerfVis implements GLEventListener {
 	//JMX variables
 	private RegistryServiceInterface regInterface;
 	private ManagementServiceInterface manInterface;
-	
-	private int updateInterval;
 		
 	private StatsManager statman;
 	private VisualManager visman;
@@ -78,14 +76,7 @@ public class PerfVis implements GLEventListener {
 		final GL gl = drawable.getGL();
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 		
-		
-		if (updateInterval > 50) {			
-			updateStats();
-									
-			updateInterval = 0;
-		} else {
-			updateInterval++;
-		}		
+		visman.update();
 		
 		if (doPickNextCycle) {
 			pick(gl);
@@ -97,12 +88,7 @@ public class PerfVis implements GLEventListener {
 		gl.glFlush();
 	}	
 	
-	public void updateStats() {		
-		//statman.update();			
-		visman.update();
-	}
-	
-		public void setRotation(Float[] rotation) {
+	public void setRotation(Float[] rotation) {
 		this.rotation = rotation;
 	}
 	

@@ -38,6 +38,7 @@ public class Site extends IbisConcept implements IbisConceptInterface {
 			if (ibisLocationName.compareTo(siteName) == 0) {
 				Node node = new Node(manInterface, siteName, poolIbises[i]);
 				nodes.add(node);
+				//new Thread(node).start();
 				ibisesToNodes.put(poolIbises[i], node);
 			}
 		}				

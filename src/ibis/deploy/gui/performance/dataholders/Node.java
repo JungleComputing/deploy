@@ -12,7 +12,7 @@ import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.support.management.AttributeDescription;
 import ibis.smartsockets.virtual.NoSuitableModuleException;
 
-public class Node extends IbisConcept implements IbisConceptInterface {
+public class Node extends IbisConcept implements IbisConceptInterface, Runnable {
 	//Variables needed for the operation of this class	
 	private String siteName;
 	private IbisIdentifier name;	
@@ -82,9 +82,6 @@ public class Node extends IbisConcept implements IbisConceptInterface {
 				} else if (metric.getName().equals(ConnStatistic.NAME)) {
 					IbisIdentifier[] connections = ((ConnStatistic)metric).getIbises(); 
 					connectedIbises = connections;
-					
-					//TODO cleanup
-					//System.err.println("Node: "+name+" Connected to "+ connections.length +" ibises.");
 				}
 			}
 		} catch (MethodNotOverriddenException e) {
@@ -118,5 +115,18 @@ public class Node extends IbisConcept implements IbisConceptInterface {
 		} else {			
 			throw new StatNotRequestedException();
 		}
+	}
+
+	public void run() {
+		while (true) {			
+			try {
+				update();
+				Thread.sleep(1000);
+			} catch (NoSuitableModuleException e) {
+				//TODO add node death
+			} catch (InterruptedException e) {
+				break;
+			}			
+		}		
 	}
 }
