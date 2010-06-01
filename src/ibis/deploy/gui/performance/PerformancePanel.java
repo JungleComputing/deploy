@@ -34,13 +34,13 @@ public class PerformancePanel extends JPanel {
 		
 		setLayout(new BorderLayout());
 		
-		/*
+		
 		//Add the Menu bar
 		JMenuBar bar = new JMenuBar();
-			String[] scopegroup = {"Grid Overview","Nodes"};
-			JMenu scope = makeRadioGroup(perfvis, "Scope", scopegroup);
-		bar.add(scope);
-		
+			String[] refreshgroup = {"5000", "2000", "1000", "500", "200", "100"};
+			JMenu refresh = makeRadioGroup(perfvis, "Refreshrate (in ms)", refreshgroup);
+		bar.add(refresh);
+		/*
 			String[] zoomgroup = {"Pools","Sites", "Nodes"};
 			JMenu zoom = makeRadioGroup(perfvis, "Zoom", zoomgroup);
 		bar.add(zoom);
@@ -58,9 +58,8 @@ public class PerformancePanel extends JPanel {
 			String[] elementsgroup = {"Bars", "Tubes", "Spheres"};
 			JMenu elements = makeRadioGroup(perfvis, "Elements", elementsgroup);
 		bar.add(elements);
-			
-		this.add(bar, BorderLayout.NORTH);
-	    */
+		*/
+		this.add(bar, BorderLayout.NORTH);	    
 		
 		//Add the GLcanvas							
 		canvas.addGLEventListener(perfvis);			
@@ -68,7 +67,7 @@ public class PerformancePanel extends JPanel {
 		animator.start();
 	}
 	
-	/*
+	
 	private JMenu makeRadioGroup(PerfVis perfvis, String menuName, String[] itemNames) {
 		JMenu result = new JMenu(menuName);
 		ButtonGroup group = new ButtonGroup();
@@ -77,16 +76,8 @@ public class PerformancePanel extends JPanel {
 		for (int i=0; i<itemNames.length; i++) {
 			JRadioButtonMenuItem action = new JRadioButtonMenuItem(itemNames[i]);
 			if (i == 0) firstButton = action;
-				if (menuName.compareTo("Scope") == 0) {
-					action.setAction(new SetScopeAction(perfvis, itemNames[i]));
-				} else if (menuName.compareTo("Zoom") == 0) {
-					action.setAction(new SetZoomAction(perfvis, itemNames[i]));
-				} else if (menuName.compareTo("Statistics") == 0) {
-					action.setAction(new SetStatAction(perfvis, itemNames[i]));
-				} else if (menuName.compareTo("Collections") == 0) {
-					action.setAction(new SetCollectionsAction(perfvis, itemNames[i]));
-				} else if (menuName.compareTo("Elements") == 0) {
-					action.setAction(new SetElementsAction(perfvis, itemNames[i]));
+				if (menuName.compareTo("Refreshrate (in ms)") == 0) {
+					action.setAction(new SetRefreshrateAction(perfvis, itemNames[i]));
 				}
 			group.add(action);
 			result.add(action);			
@@ -95,6 +86,5 @@ public class PerformancePanel extends JPanel {
 		group.setSelected(firstButton.getModel(), true);
 		
 		return result;
-	}
-	*/
+	}	
 }

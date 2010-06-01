@@ -40,7 +40,7 @@ public class PerfVis implements GLEventListener {
 	private boolean relocateOriginNextCycle = false;
 	
 	private Point pickPoint = new Point();
-	private int currentSelection;
+	private int currentSelection, refreshrate;
 	private float currentValue;
 	
 	//JMX variables
@@ -283,5 +283,10 @@ public class PerfVis implements GLEventListener {
 	
 	public RegistryServiceInterface getRegInterface() {
 		return regInterface;
-	}		
+	}	
+	
+	public void setRefreshrate(int newRate) {
+		this.refreshrate = newRate;
+		statman.setRefreshrate(newRate);
+	}
 }

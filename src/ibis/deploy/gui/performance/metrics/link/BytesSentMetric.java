@@ -4,14 +4,14 @@ import ibis.deploy.gui.performance.metrics.MetricInterface;
 import ibis.ipl.support.management.AttributeDescription;
 
 
-public class BytesSentStatistic extends LinkMetricsObject implements MetricInterface {
+public class BytesSentMetric extends LinkMetricsObject implements MetricInterface {
 	public static final String NAME = "BYTES_SENT";
 	public static final int DESCRIPTIONS_COUNT_NEEDED = 1;
 	public static final Float[] COLOR = {0.0f, 0.0f, 1.0f};
 	
 	private long sent_prev, sent_max;
 	
-	public BytesSentStatistic() {
+	public BytesSentMetric() {
 		super();
 		this.name = NAME;
 		this.color = COLOR;
@@ -36,8 +36,8 @@ public class BytesSentStatistic extends LinkMetricsObject implements MetricInter
 		}
 	}
 	
-	public BytesSentStatistic clone() {
-		BytesSentStatistic clone = new BytesSentStatistic();
+	public BytesSentMetric clone() {
+		BytesSentMetric clone = new BytesSentMetric();
 		clone.setName(name);
 		clone.setGroup(group);
 		clone.setColor(color);

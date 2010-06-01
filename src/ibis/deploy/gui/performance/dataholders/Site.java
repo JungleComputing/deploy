@@ -85,8 +85,8 @@ public class Site extends IbisConcept implements IbisConceptInterface {
 				
 				if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
 					nodeMetricsValues.put(metric.getName(), average);					
-				} else if (metric.getGroup() == LinkMetricsObject.METRICSGROUP) {
-					linkMetricsValues.put(metric.getName(), average);					
+				//} else if (metric.getGroup() == LinkMetricsObject.METRICSGROUP) {
+				//	linkMetricsValues.put(metric.getName(), average);					
 				}
 			}
 		}
@@ -124,8 +124,8 @@ public class Site extends IbisConcept implements IbisConceptInterface {
 	public float getValue(String key) throws StatNotRequestedException {
 		if (nodeMetricsValues.containsKey(key))	{
 			return nodeMetricsValues.get(key);
-		} else if (linkMetricsValues.containsKey(key))	{
-			return linkMetricsValues.get(key);
+		//} else if (linkMetricsValues.containsKey(key))	{
+		//	return linkMetricsValues.get(key);
 		} else {			
 			throw new StatNotRequestedException();
 		}

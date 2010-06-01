@@ -21,6 +21,8 @@ public class StatsManager implements Runnable {
 	private Map<String, Integer> poolSizes;	
 	private ArrayList<Pool> pools;
 	
+	private int refreshrate;
+	
 	//The list that holds the statistics necessary for initializing the visualization 
 	private MetricsList initStatistics;
 	
@@ -28,6 +30,7 @@ public class StatsManager implements Runnable {
 		this.manInterface = manInterface;
 		this.regInterface = regInterface;
 		this.visman = visman;
+		this.refreshrate = 5000;
 		
 		//The HashMap used to check whether pools have changed
 		poolSizes = new HashMap<String, Integer>();
@@ -42,10 +45,12 @@ public class StatsManager implements Runnable {
 		//initStatistics.add(new ZcoordStatistic());
 		initStatistics.add(new ConnStatistic());
 		initStatistics.add(new CPUStatistic());
-		initStatistics.add(new BytesSentStatistic());
+		initStatistics.add(new BytesSentMetric());
 		initStatistics.add(new HeapMemStatistic());
 		initStatistics.add(new NonHeapMemStatistic());
 		initStatistics.add(new ThreadsStatistic());
+		initStatistics.add(new BytesSentPerIbisMetric());
+		initStatistics.add(new BytesReceivedPerIbisMetric());
 	}
 	
 	public void update() {		
@@ -116,11 +121,15 @@ public class StatsManager implements Runnable {
 		while (true) {
 			update();
 			try {
-				Thread.sleep(100);
+				Thread.sleep(refreshrate);
 			} catch (InterruptedException e) {				
 				break;
 			}
 		}
+	}
+	
+	public void setRefreshrate(int newRate) {
+		this.refreshrate = newRate;
 	}
 
 	//public ArrayList<String> getAvailableNodeMetrics() {

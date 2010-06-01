@@ -8,13 +8,12 @@ import ibis.ipl.IbisIdentifier;
 import ibis.ipl.support.management.AttributeDescription;
 
 
-public class BytesSentPerIbisMetric extends LinkMetricsObject implements MetricInterface {
+public class BytesSentPerIbisMetric extends LinkMetricsMap implements MetricInterface {
 	public static final String NAME = "BYTES_SENT_PER_IBIS";
 	public static final int DESCRIPTIONS_COUNT_NEEDED = 1;
 	public static final Float[] COLOR = {0.0f, 0.0f, 1.0f};
 	
-	private Map<IbisIdentifier, Long> sent_prev, sent_max;
-	private Map<IbisIdentifier, Float> values;
+	private Map<IbisIdentifier, Long> sent_prev, sent_max;	
 	
 	public BytesSentPerIbisMetric() {
 		super();

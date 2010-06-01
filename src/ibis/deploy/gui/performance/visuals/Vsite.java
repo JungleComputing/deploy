@@ -24,7 +24,6 @@ import javax.media.opengl.GL;
 public class Vsite extends Vobject implements VobjectInterface {
 	private List<Vnode> vnodes;
 	private HashMap<Node, Vnode> nodesToVisuals;
-	private HashMap<Node, Integer> linkMap;
 	private List<Vlink> vlinks;
 	
 	private Site site;
@@ -44,7 +43,6 @@ public class Vsite extends Vobject implements VobjectInterface {
 		vnodes = new ArrayList<Vnode>();
 		vlinks = new ArrayList<Vlink>();
 		nodesToVisuals = new HashMap<Node, Vnode>();
-		linkMap = new HashMap<Node, Integer>();
 				
 		for (Node node : nodes) {
 			Vnode newVnode = new Vnode(perfvis, visman, this, node);
@@ -68,89 +66,18 @@ public class Vsite extends Vobject implements VobjectInterface {
 			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, this, entry.getValue()));			
 		}		
 	}
-	
-	private HashMap<Node, Integer> getLinkMap() {
-		HashMap<Node, Integer> newLinkMap = new HashMap<Node, Integer>();
+		
+	private void createLinks() {
 		for (Map.Entry<Node, Vnode> entry : nodesToVisuals.entrySet()) {
-			newLinkMap.put(entry.getKey(), entry.getKey().getConnectedIbises().length);
-		}
-		return newLinkMap;
-	}
-	
-	private boolean checkLinks() {
-		boolean out = false;
-		HashMap<Node, Integer> newLinkMap = getLinkMap();
-		
-		for (Map.Entry<Node, Integer> entry : newLinkMap.entrySet()) {				
 			Node node = entry.getKey();
-	        int newSize = entry.getValue();
-	        
-	        if (!linkMap.containsKey(node) || newSize != linkMap.get(node)) {
-	        	out = true;	        	
-	        }
-		}
-		
-		linkMap = newLinkMap;
-		
-		return out;
-	}		
-		
-	private void createLinks() {	
-		if (checkLinks()) {
-			vlinks.clear();
+			Vnode from = entry.getValue();
 			
-			for (Map.Entry<Node, Vnode> entry : nodesToVisuals.entrySet()) {
-				Node node = entry.getKey();
-				Vnode from = entry.getValue();
-				
-				IbisIdentifier[] connectedIbises = node.getConnectedIbises();
-				for (IbisIdentifier ibis : connectedIbises) {
-					//TODO cleanup
-					System.err.println("CONNECTIONS: add one");
-					Vnode to = nodesToVisuals.get(site.getNode(ibis));
-					vlinks.add(new Vlink(perfvis, visman, this, node, from, to));				
-				}						
-			}				
-		}				
-	}
-
-	/*
-	public void setForm(int siteForm) throws ModeUnknownException {
-		if (siteForm != Vobject.COLLECTION_CITYSCAPE && siteForm != Vobject.COLLECTION_CIRCLE) {
-			throw new ModeUnknownException();
-		}
-		this.currentCollectionForm = siteForm;
-				
-		//recalculate the outer radius for this form
-		setSize(scaleXZ, scaleY);
-	}
-		
-	public void setSize(float width, float height) {
-		this.scaleXZ = width;
-		this.scaleY = height;
-		for (Vnode vnode : vnodes) {
-			vnode.setSize(width, height);
-		}
-		
-		if (currentCollectionForm == Vobject.COLLECTION_CITYSCAPE) {
-			int horz = (int)(Math.ceil(Math.sqrt(vnodes.size()))*(scaleXZ+0.1f));
-			int vert = (int)scaleY;
-			int dept = (int)(Math.ceil(Math.sqrt(vnodes.size()))*(scaleXZ+0.1f));
-			
-			//3d across
-			this.radius = (float) Math.sqrt(  Math.pow(horz, 2)
-											+ Math.pow(vert, 2)
-											+ Math.pow(dept, 2));
-			
-		} else if (currentCollectionForm == Vobject.COLLECTION_CIRCLE) {
-			double angle  = 2*Math.PI / vnodes.size();
-			float innerRadius = (float) ((scaleXZ/2) / Math.tan(angle/2));	
-			innerRadius = Math.max(innerRadius, 0);
-			
-			radius = (int)innerRadius+(int)scaleY;
+			for (IbisIdentifier ibis : node.getConnections()) {				
+				Vnode to = nodesToVisuals.get(site.getNode(ibis));
+				vlinks.add(new Vlink(perfvis, visman, this, node, from, to));						
+			}
 		}
 	}
-	*/
 	
 	public void update() {
 		for (Vnode vnode : vnodes) {

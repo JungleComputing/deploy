@@ -7,6 +7,7 @@ import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
 import ibis.deploy.gui.performance.exceptions.ValueOutOfBoundsException;
 import ibis.deploy.gui.performance.swing.SetCollectionFormAction;
 import ibis.deploy.gui.performance.swing.SetMetricFormAction;
+import ibis.ipl.IbisIdentifier;
 
 import java.awt.Menu;
 import java.awt.MenuItem;
@@ -41,6 +42,7 @@ public class Vlink extends Vobject implements VobjectInterface {
 	private void initializeMetrics() {
 		vmetrics.clear();
 		
+		//TODO not correct, need a new vmetric per ibis AND per stat.
 		HashMap<String, Float[]> colors = node.getLinkColors();
 		
 		for (Map.Entry<String, Float[]> entry : colors.entrySet()) {
@@ -48,42 +50,9 @@ public class Vlink extends Vobject implements VobjectInterface {
 		}		
 	}
 	
-	/*
-	public void setForm(int nodeForm) throws ModeUnknownException {
-		if (nodeForm != Vobject.COLLECTION_CITYSCAPE) {
-			throw new ModeUnknownException();
-		}
-		this.currentCollectionForm = nodeForm;
-				
-		//recalculate the outer radius for this form
-		setSize(scaleXZ, scaleY);
-	}
-	
-	
-	public void setSize(float width, float height) {
-		this.scaleXZ = width;
-		this.scaleY = height;
-		for (Map.Entry<String, Vmetric> entry : vmetrics.entrySet()) {
-			entry.getValue().setSize(width, height);
-		}
-		
-		if (currentCollectionForm == Vobject.COLLECTION_CITYSCAPE) {
-			int horz = (int)(Math.ceil(Math.sqrt(vmetrics.size()))*(scaleXZ+0.1f));
-			int vert = (int)scaleY;
-			int dept = (int)(Math.ceil(Math.sqrt(vmetrics.size()))*(scaleXZ+0.1f));
-			
-			//3d across
-			this.radius = (float) Math.sqrt(  Math.pow(horz, 2)
-										 	+ Math.pow(vert, 2)
-										 	+ Math.pow(dept, 2));
-			
-		}
-	}
-	*/
-	
 	public void update() {
-		HashMap<String, Float> stats = node.getMonitoredLinkMetrics();
-		for (Map.Entry<String, Float> entry : stats.entrySet()) {
+		HashMap<IbisIdentifier, Map<String, Float>> stats = node.getLinkValues();
+		for (Entry<IbisIdentifier, Map<String, Float>> entry : stats.entrySet()) {
 			try {
 				String metricName = entry.getKey();
 				Float metricValue = entry.getValue();

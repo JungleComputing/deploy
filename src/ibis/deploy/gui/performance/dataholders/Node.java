@@ -1,10 +1,13 @@
 package ibis.deploy.gui.performance.dataholders;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import ibis.deploy.gui.performance.MetricsList;
 import ibis.deploy.gui.performance.exceptions.MethodNotOverriddenException;
 import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
 import ibis.deploy.gui.performance.metrics.Metric;
-import ibis.deploy.gui.performance.metrics.link.LinkMetricsObject;
+import ibis.deploy.gui.performance.metrics.link.LinkMetricsMap;
 import ibis.deploy.gui.performance.metrics.node.NodeMetricsObject;
 import ibis.deploy.gui.performance.metrics.special.ConnStatistic;
 import ibis.ipl.IbisIdentifier;
@@ -12,7 +15,7 @@ import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.support.management.AttributeDescription;
 import ibis.smartsockets.virtual.NoSuitableModuleException;
 
-public class Node extends IbisConcept implements IbisConceptInterface, Runnable {
+public class Node extends IbisConcept implements IbisConceptInterface {
 	//Variables needed for the operation of this class	
 	private String siteName;
 	private IbisIdentifier name;	
@@ -36,9 +39,11 @@ public class Node extends IbisConcept implements IbisConceptInterface, Runnable 
 			
 			if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {			
 				nodeMetricsColors.put(metric.getName(), metric.getColor());
-			} else if (metric.getGroup() == LinkMetricsObject.METRICSGROUP) {				
-				linkMetricsColors.put(metric.getName(), metric.getColor());
-			}			
+			//} else if (metric.getGroup() == LinkMetricsObject.METRICSGROUP) {				
+			//	linkMetricsColors.put(metric.getName(), metric.getColor());
+			} else if (metric.getGroup() == LinkMetricsMap.METRICSGROUP) {
+				linkMetricsColors.put(metric.getName(), metric.getColor());					
+			}
 		}
 	}
 	
@@ -64,7 +69,7 @@ public class Node extends IbisConcept implements IbisConceptInterface, Runnable 
 			
 			Object[] results = manInterface.getAttributes(name, requestArray);
 			
-			j=0;
+			j=0;			
 			for (Metric metric : metrics) {
 				Object[] partialResults = new Object[metric.getAttributesCountNeeded()];
 				for (int i=0; i < partialResults.length ; i++) {
@@ -75,10 +80,18 @@ public class Node extends IbisConcept implements IbisConceptInterface, Runnable 
 								
 				if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
 					nodeMetricsValues.put(metric.getName(), metric.getValue());
-					nodeMetricsColors.put(metric.getName(), metric.getColor());
-				} else if (metric.getGroup() == LinkMetricsObject.METRICSGROUP) {
-					linkMetricsValues.put(metric.getName(), metric.getValue());
-					linkMetricsColors.put(metric.getName(), metric.getColor());
+				//} else if (metric.getGroup() == LinkMetricsObject.METRICSGROUP) {
+				//	linkMetricsValues.put(metric.getName(), metric.getValue());
+				} else if (metric.getGroup() == LinkMetricsMap.METRICSGROUP) {
+					Map<IbisIdentifier, Float> values = ((LinkMetricsMap) metric).getValues();
+										
+					for (IbisIdentifier ibis : values.keySet()) {
+						if (!linkMetricsValues.containsKey(ibis)) {
+							linkMetricsValues.put(ibis, new HashMap<String, Float>());				
+						}
+						linkMetricsValues.get(ibis).put(metric.getName(), values.get(ibis));
+						connections.add(ibis);
+					}
 				} else if (metric.getName().equals(ConnStatistic.NAME)) {
 					IbisIdentifier[] connections = ((ConnStatistic)metric).getIbises(); 
 					connectedIbises = connections;
@@ -110,23 +123,14 @@ public class Node extends IbisConcept implements IbisConceptInterface, Runnable 
 	public float getValue(String key) throws StatNotRequestedException {
 		if (nodeMetricsValues.containsKey(key))	{
 			return nodeMetricsValues.get(key);
-		} else if (linkMetricsValues.containsKey(key))	{
-			return linkMetricsValues.get(key);
+		//} else if (linkMetricsValues.containsKey(key))	{
+		//	return linkMetricsValues.get(key);
 		} else {			
 			throw new StatNotRequestedException();
 		}
 	}
-
-	public void run() {
-		while (true) {			
-			try {
-				update();
-				Thread.sleep(1000);
-			} catch (NoSuitableModuleException e) {
-				//TODO add node death
-			} catch (InterruptedException e) {
-				break;
-			}			
-		}		
+	
+	public Map<String, Float> getLinkValueMap(IbisIdentifier ibis) {
+		return linkMetricsValues.get(ibis);
 	}
 }

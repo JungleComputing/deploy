@@ -96,8 +96,8 @@ public class Pool extends IbisConcept implements IbisConceptInterface {
 					
 					if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
 						nodeMetricsValues.put(metric.getName(), average);						
-					} else if (metric.getGroup() == LinkMetricsObject.METRICSGROUP) {
-						linkMetricsValues.put(metric.getName(), average);
+					//} else if (metric.getGroup() == LinkMetricsObject.METRICSGROUP) {
+					//	linkMetricsValues.put(metric.getName(), average);
 					}
 				}
 			}
@@ -118,8 +118,8 @@ public class Pool extends IbisConcept implements IbisConceptInterface {
 		for (Metric metric : newMetrics) {			
 			if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
 				nodeMetricsColors.put(metric.getName(), metric.getColor());
-			} else if (metric.getGroup() == LinkMetricsObject.METRICSGROUP) {
-				linkMetricsColors.put(metric.getName(), metric.getColor());
+			//} else if (metric.getGroup() == LinkMetricsObject.METRICSGROUP) {
+			//	linkMetricsColors.put(metric.getName(), metric.getColor());
 			}
 		}
 		
