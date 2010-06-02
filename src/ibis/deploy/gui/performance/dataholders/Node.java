@@ -1,7 +1,9 @@
 package ibis.deploy.gui.performance.dataholders;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import ibis.deploy.gui.performance.MetricsList;
 import ibis.deploy.gui.performance.exceptions.MethodNotOverriddenException;
@@ -21,6 +23,7 @@ public class Node extends IbisConcept implements IbisConceptInterface {
 	private IbisIdentifier name;	
 	
 	private IbisIdentifier[] connectedIbises;
+	protected HashSet<IbisIdentifier> connections;
 	private MetricsList metrics;
 	
 	public Node(ManagementServiceInterface manInterface, String siteName, IbisIdentifier name) {
@@ -28,6 +31,7 @@ public class Node extends IbisConcept implements IbisConceptInterface {
 		this.siteName = siteName;
 		this.name = name;
 		connectedIbises = new IbisIdentifier[0];
+		connections = new HashSet<IbisIdentifier>();
 		
 		metrics = new MetricsList();
 	}
@@ -51,6 +55,7 @@ public class Node extends IbisConcept implements IbisConceptInterface {
 		//First, clear the Maps with the values, to be refilled with the newly requested entries
 		nodeMetricsValues.clear();
 		linkMetricsValues.clear();
+		connections.clear();
 		try {
 			int size = 0;
 			for (Metric metric : metrics) {
@@ -71,7 +76,7 @@ public class Node extends IbisConcept implements IbisConceptInterface {
 			
 			j=0;			
 			for (Metric metric : metrics) {
-				Object[] partialResults = new Object[metric.getAttributesCountNeeded()];
+				Object[] partialResults = new Object[metric.getAttributesCountNeeded()];				
 				for (int i=0; i < partialResults.length ; i++) {
 					partialResults[i] = results[j];	
 					j++;
@@ -106,7 +111,11 @@ public class Node extends IbisConcept implements IbisConceptInterface {
 	
 	public IbisIdentifier[] getConnectedIbises() {
 		return connectedIbises;
-	}	
+	}
+	
+	public Set<IbisIdentifier> getConnections() {
+		return connections;
+	}
 
 	public String getSiteName() {
 		return siteName;

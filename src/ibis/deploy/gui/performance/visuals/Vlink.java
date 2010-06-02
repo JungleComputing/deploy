@@ -7,7 +7,6 @@ import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
 import ibis.deploy.gui.performance.exceptions.ValueOutOfBoundsException;
 import ibis.deploy.gui.performance.swing.SetCollectionFormAction;
 import ibis.deploy.gui.performance.swing.SetMetricFormAction;
-import ibis.ipl.IbisIdentifier;
 
 import java.awt.Menu;
 import java.awt.MenuItem;
@@ -21,10 +20,14 @@ import javax.media.opengl.GL;
 
 public class Vlink extends Vobject implements VobjectInterface {		
 	private Node node;
+	private Vobject from;
+	private Vobject to;	
 	
 	public Vlink(PerfVis perfvis, VisualManager visman, Vobject parent, Node node, Vobject from, Vobject to) {
 		super(perfvis, visman);
 		this.parent = parent;
+		this.from = from;
+		this.to = to;
 		
 		this.node = node;
 		this.currentCollectionForm = Vobject.COLLECTION_CITYSCAPE;
@@ -42,26 +45,27 @@ public class Vlink extends Vobject implements VobjectInterface {
 	private void initializeMetrics() {
 		vmetrics.clear();
 		
-		//TODO not correct, need a new vmetric per ibis AND per stat.
 		HashMap<String, Float[]> colors = node.getLinkColors();
 		
 		for (Map.Entry<String, Float[]> entry : colors.entrySet()) {
-			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, this, entry.getValue()));
+			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, this, entry.getValue(), from, to));
 		}		
 	}
 	
 	public void update() {
-		HashMap<IbisIdentifier, Map<String, Float>> stats = node.getLinkValues();
-		for (Entry<IbisIdentifier, Map<String, Float>> entry : stats.entrySet()) {
-			try {
-				String metricName = entry.getKey();
-				Float metricValue = entry.getValue();
-				Vmetric visual = vmetrics.get(metricName);
+		Map<String, Float> stats = node.getLinkValueMap(node.getName());
+		if (stats != null) {
+			for (Entry<String, Float> entry : stats.entrySet()) {
+				try {
+					String metricName = entry.getKey();
+					Float metricValue = entry.getValue();
+					Vmetric visual = vmetrics.get(metricName);
 								
-				visual.setValue(metricValue);
+					visual.setValue(metricValue);
 				
-			} catch (ValueOutOfBoundsException e) {				
-				System.out.println("VALUE: "+entry.getValue()+" OUT OF BOUNDS!");
+				} catch (ValueOutOfBoundsException e) {				
+					System.out.println("VALUE: "+entry.getValue()+" OUT OF BOUNDS!");
+				}
 			}
 		}
 	}

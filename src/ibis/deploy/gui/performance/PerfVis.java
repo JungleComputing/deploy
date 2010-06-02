@@ -1,12 +1,14 @@
 package ibis.deploy.gui.performance;
 
 import ibis.deploy.gui.GUI;
+import ibis.deploy.gui.performance.dataholders.Pool;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
 
 import java.awt.Point;
 import java.awt.PopupMenu;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
@@ -40,7 +42,7 @@ public class PerfVis implements GLEventListener {
 	private boolean relocateOriginNextCycle = false;
 	
 	private Point pickPoint = new Point();
-	private int currentSelection, refreshrate;
+	private int currentSelection;
 	private float currentValue;
 	
 	//JMX variables
@@ -50,6 +52,8 @@ public class PerfVis implements GLEventListener {
 	private StatsManager statman;
 	private VisualManager visman;
 	private MouseHandler mouseHandler;
+
+	
 	
 	PerfVis() {
 		glu = new GLU();
@@ -76,6 +80,10 @@ public class PerfVis implements GLEventListener {
 		final GL gl = drawable.getGL();
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 		
+		if (statman.isReinitializeNeeded()) {
+			visman.reinitialize(statman.getTopConcepts());			
+		}
+		
 		visman.update();
 		
 		if (doPickNextCycle) {
@@ -86,7 +94,7 @@ public class PerfVis implements GLEventListener {
 		drawHud(gl);		
 		drawUniverse(gl, GL.GL_RENDER);
 		gl.glFlush();
-	}	
+	}
 	
 	public void setRotation(Float[] rotation) {
 		this.rotation = rotation;
@@ -178,7 +186,7 @@ public class PerfVis implements GLEventListener {
 		
 		canvas.requestFocusInWindow();
 		
-		statman = new StatsManager(visman, manInterface, regInterface);
+		statman = new StatsManager(this, manInterface, regInterface);
 		new Thread(statman).start();
 	}
 	
@@ -286,7 +294,6 @@ public class PerfVis implements GLEventListener {
 	}	
 	
 	public void setRefreshrate(int newRate) {
-		this.refreshrate = newRate;
 		statman.setRefreshrate(newRate);
 	}
 }

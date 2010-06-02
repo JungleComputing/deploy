@@ -6,6 +6,7 @@ import ibis.deploy.gui.performance.dataholders.Site;
 import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
 import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
 import ibis.deploy.gui.performance.exceptions.ValueOutOfBoundsException;
+import ibis.deploy.gui.performance.metrics.link.LinkMetricsMap;
 import ibis.deploy.gui.performance.swing.SetCollectionFormAction;
 import ibis.deploy.gui.performance.swing.SetMetricFormAction;
 import ibis.ipl.IbisIdentifier;
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.media.opengl.GL;
 
@@ -68,12 +70,13 @@ public class Vsite extends Vobject implements VobjectInterface {
 	}
 		
 	private void createLinks() {
+		vlinks.clear();
 		for (Map.Entry<Node, Vnode> entry : nodesToVisuals.entrySet()) {
 			Node node = entry.getKey();
-			Vnode from = entry.getValue();
-			
-			for (IbisIdentifier ibis : node.getConnections()) {				
-				Vnode to = nodesToVisuals.get(site.getNode(ibis));
+			Vnode from = entry.getValue();			
+							
+			for (IbisIdentifier ibis : node.getConnections()) {
+				Vnode to = nodesToVisuals.get(site.getNode(ibis));				
 				vlinks.add(new Vlink(perfvis, visman, this, node, from, to));						
 			}
 		}

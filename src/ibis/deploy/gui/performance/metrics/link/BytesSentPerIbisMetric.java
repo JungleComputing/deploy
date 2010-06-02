@@ -30,12 +30,20 @@ public class BytesSentPerIbisMetric extends LinkMetricsMap implements MetricInte
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void update(Object[] results) {
+	public void update(Object[] results) {		
 		Map<IbisIdentifier, Long> sent = (Map<IbisIdentifier, Long>) results[0];
 		
 		for (Map.Entry<IbisIdentifier, Long> entry : sent.entrySet()) {
-			IbisIdentifier ibis = entry.getKey();			
-			Long elapsed = entry.getValue() - sent_prev.get(ibis);
+			IbisIdentifier ibis = entry.getKey();
+			Long elapsed = 0L;
+			
+			if (!sent_prev.containsKey(ibis)) {
+				elapsed = entry.getValue();
+				sent_max.put(ibis, 0L);
+			} else {
+				elapsed = entry.getValue() - sent_prev.get(ibis);	
+			}
+			
 			sent_prev.put(ibis, elapsed);
 			sent_max.put(ibis, Math.max(elapsed, sent_max.get(ibis)));
 			

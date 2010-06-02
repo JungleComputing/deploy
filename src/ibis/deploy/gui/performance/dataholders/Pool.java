@@ -82,7 +82,8 @@ public class Pool extends IbisConcept implements IbisConceptInterface {
 		MetricsList stats = sites.get(0).getCurrentlyGatheredMetrics();
 		for (Metric metric : stats) {
 			if (compareStats(metric)) {
-				if (!metric.getName().equals(ConnStatistic.NAME)) {
+				if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
+				//if (!metric.getName().equals(ConnStatistic.NAME)) {
 					String key = metric.getName();
 					List<Float> results = new ArrayList<Float>();
 					for (Site site : sites) {			

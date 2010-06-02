@@ -35,7 +35,14 @@ public class BytesReceivedPerIbisMetric extends LinkMetricsMap implements Metric
 		
 		for (Map.Entry<IbisIdentifier, Long> entry : received.entrySet()) {
 			IbisIdentifier ibis = entry.getKey();			
-			Long elapsed = entry.getValue() - received_prev.get(ibis);
+			Long elapsed = 0L;
+			if (!received_prev.containsKey(ibis)) {
+				elapsed = entry.getValue();
+				received_max.put(ibis, 0L);
+			} else {
+				elapsed = entry.getValue() - received_prev.get(ibis);
+			}
+			
 			received_prev.put(ibis, elapsed);
 			received_max.put(ibis, Math.max(elapsed, received_max.get(ibis)));
 			

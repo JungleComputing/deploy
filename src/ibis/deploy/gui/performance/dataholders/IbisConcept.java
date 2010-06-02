@@ -16,8 +16,8 @@ public class IbisConcept {
 	protected HashMap<String, Float> nodeMetricsValues;
 	protected HashMap<IbisIdentifier, Map<String, Float>> linkMetricsValues;
 	protected HashMap<String, Float[]> nodeMetricsColors;
-	protected HashMap<String, Float[]> linkMetricsColors;	
-	protected HashSet<IbisIdentifier> connections;
+	protected HashMap<String, Float[]> linkMetricsColors;
+	
 	
 	public IbisConcept(ManagementServiceInterface manInterface) {
 		this.manInterface = manInterface;
@@ -50,11 +50,7 @@ public class IbisConcept {
 		}
 		return newSet;
 	}
-	
-	public Set<IbisIdentifier> getConnections() {
-		return connections;
-	}
-		
+			
 	public HashMap<IbisIdentifier, Map<String, Float>> getLinkValues() {		
 		return linkMetricsValues;
 	}

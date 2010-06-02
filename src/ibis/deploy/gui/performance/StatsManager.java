@@ -16,20 +16,22 @@ public class StatsManager implements Runnable {
 	//Variables needed for the operation of this class		
 	private ManagementServiceInterface manInterface;
 	private RegistryServiceInterface regInterface;
-	private VisualManager visman;
 	
 	private Map<String, Integer> poolSizes;	
 	private ArrayList<Pool> pools;
 	
+	private PerfVis perfvis;
+	
 	private int refreshrate;
+	private boolean reinitializeNeeded = false;
 	
 	//The list that holds the statistics necessary for initializing the visualization 
 	private MetricsList initStatistics;
 	
-	public StatsManager(VisualManager visman, ManagementServiceInterface manInterface, RegistryServiceInterface regInterface) {		
+	public StatsManager(PerfVis perfvis, ManagementServiceInterface manInterface, RegistryServiceInterface regInterface) {
+		this.perfvis = perfvis;
 		this.manInterface = manInterface;
 		this.regInterface = regInterface;
-		this.visman = visman;
 		this.refreshrate = 5000;
 		
 		//The HashMap used to check whether pools have changed
@@ -45,7 +47,7 @@ public class StatsManager implements Runnable {
 		//initStatistics.add(new ZcoordStatistic());
 		initStatistics.add(new ConnStatistic());
 		initStatistics.add(new CPUStatistic());
-		initStatistics.add(new BytesSentMetric());
+		//initStatistics.add(new BytesSentMetric());
 		initStatistics.add(new HeapMemStatistic());
 		initStatistics.add(new NonHeapMemStatistic());
 		initStatistics.add(new ThreadsStatistic());
@@ -71,8 +73,7 @@ public class StatsManager implements Runnable {
 	}
 			
 	private ArrayList<Pool> initPools() {
-		boolean needReinitializationOfVisuals = false;
-		
+		boolean reinitializeSetter = false;
 		Map<String, Integer> newSizes = new HashMap<String, Integer>();
 		
 		try {		
@@ -88,7 +89,7 @@ public class StatsManager implements Runnable {
 
 	        if (!poolSizes.containsKey(poolName) || newSize != poolSizes.get(poolName)) {
 	         	pools.clear();
-	         	needReinitializationOfVisuals = true;
+	         	reinitializeSetter = true;	         	
 	        }	        			
 		}	            
 				
@@ -104,8 +105,8 @@ public class StatsManager implements Runnable {
 	        }
 		}
 		
-		if (needReinitializationOfVisuals) {
-			visman.reinitialize(pools);
+		if (reinitializeSetter) {
+			reinitializeNeeded = true;
 		}
 		
 		poolSizes = newSizes;
@@ -114,7 +115,12 @@ public class StatsManager implements Runnable {
 	}	
 
 	public List<Pool> getTopConcepts() {
-		return pools;
+		reinitializeNeeded = false;
+		return pools;		
+	}
+	
+	public boolean isReinitializeNeeded() {
+		return reinitializeNeeded;
 	}
 	
 	public void run() {

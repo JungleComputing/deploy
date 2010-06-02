@@ -38,7 +38,7 @@ public class PerformancePanel extends JPanel {
 		//Add the Menu bar
 		JMenuBar bar = new JMenuBar();
 			String[] refreshgroup = {"5000", "2000", "1000", "500", "200", "100"};
-			JMenu refresh = makeRadioGroup(perfvis, "Refreshrate (in ms)", refreshgroup);
+			JMenu refresh = makeRadioGroup(perfvis, "Refresh delay (in ms)", refreshgroup);
 		bar.add(refresh);
 		/*
 			String[] zoomgroup = {"Pools","Sites", "Nodes"};
@@ -76,7 +76,7 @@ public class PerformancePanel extends JPanel {
 		for (int i=0; i<itemNames.length; i++) {
 			JRadioButtonMenuItem action = new JRadioButtonMenuItem(itemNames[i]);
 			if (i == 0) firstButton = action;
-				if (menuName.compareTo("Refreshrate (in ms)") == 0) {
+				if (menuName.compareTo("Refresh delay (in ms)") == 0) {
 					action.setAction(new SetRefreshrateAction(perfvis, itemNames[i]));
 				}
 			group.add(action);

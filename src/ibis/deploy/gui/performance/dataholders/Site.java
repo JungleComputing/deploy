@@ -71,7 +71,8 @@ public class Site extends IbisConcept implements IbisConceptInterface {
 		}
 		
 		for (Metric metric : currentlyGatheredMetrics) {
-			if (!metric.getName().equals(ConnStatistic.NAME)) {
+			if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
+			//if (!metric.getName().equals(ConnStatistic.NAME)) {
 				String key = metric.getName();
 				List<Float> results = new ArrayList<Float>();
 				for (Node node : nodes) {			
