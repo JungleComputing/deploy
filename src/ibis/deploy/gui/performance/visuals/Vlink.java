@@ -7,6 +7,7 @@ import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
 import ibis.deploy.gui.performance.exceptions.ValueOutOfBoundsException;
 import ibis.deploy.gui.performance.swing.SetCollectionFormAction;
 import ibis.deploy.gui.performance.swing.SetMetricFormAction;
+import ibis.ipl.IbisIdentifier;
 
 import java.awt.Menu;
 import java.awt.MenuItem;
@@ -20,13 +21,15 @@ import javax.media.opengl.GL;
 
 public class Vlink extends Vobject implements VobjectInterface {		
 	private Node node;
-	private Vobject from;
-	private Vobject to;	
+	private Vobject from, to;	
+	private IbisIdentifier source, destination;
 	
-	public Vlink(PerfVis perfvis, VisualManager visman, Vobject parent, Node node, Vobject from, Vobject to) {
+	public Vlink(PerfVis perfvis, VisualManager visman, Vobject parent, Node node, IbisIdentifier source, Vobject from, IbisIdentifier destination, Vobject to) {
 		super(perfvis, visman);
 		this.parent = parent;
+		this.source = source;		
 		this.from = from;
+		this.destination = destination;
 		this.to = to;
 		
 		this.node = node;
@@ -53,7 +56,7 @@ public class Vlink extends Vobject implements VobjectInterface {
 	}
 	
 	public void update() {
-		Map<String, Float> stats = node.getLinkValueMap(node.getName());
+		Map<String, Float> stats = node.getLinkValueMap(destination);
 		if (stats != null) {
 			for (Entry<String, Float> entry : stats.entrySet()) {
 				try {
@@ -103,7 +106,7 @@ public class Vlink extends Vobject implements VobjectInterface {
 		setRelativeLocation(shift);
 		
 		int row = 0, column = 0, i = 0;
-		for (Entry<String, Vmetric> entry : vmetrics.entrySet()) {
+		for (Entry<String, Vmetric> entry : vmetrics.entrySet()) {			
 			if (shownMetrics.contains(entry.getKey())) {
 				row = i % rows;
 				//Move to next row (if applicable)

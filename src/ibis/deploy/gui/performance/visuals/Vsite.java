@@ -17,8 +17,10 @@ import java.awt.PopupMenu;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import javax.media.opengl.GL;
@@ -26,7 +28,8 @@ import javax.media.opengl.GL;
 public class Vsite extends Vobject implements VobjectInterface {
 	private List<Vnode> vnodes;
 	private HashMap<Node, Vnode> nodesToVisuals;
-	private List<Vlink> vlinks;
+	private HashMap<IbisIdentifier, HashMap<IbisIdentifier, Vlink>> vlinkMap;
+	private Set<Vlink> vlinks;
 	
 	private Site site;
 		
@@ -43,7 +46,8 @@ public class Vsite extends Vobject implements VobjectInterface {
 		//Preparing the vnodes
 		Node[] nodes = site.getSubConcepts();
 		vnodes = new ArrayList<Vnode>();
-		vlinks = new ArrayList<Vlink>();
+		vlinkMap = new HashMap<IbisIdentifier, HashMap<IbisIdentifier, Vlink>>();
+		vlinks = new HashSet<Vlink>();
 		nodesToVisuals = new HashMap<Node, Vnode>();
 				
 		for (Node node : nodes) {
@@ -69,17 +73,32 @@ public class Vsite extends Vobject implements VobjectInterface {
 		}		
 	}
 		
-	private void createLinks() {
-		vlinks.clear();
+	private void createLinks() {		
 		for (Map.Entry<Node, Vnode> entry : nodesToVisuals.entrySet()) {
 			Node node = entry.getKey();
-			Vnode from = entry.getValue();			
-							
-			for (IbisIdentifier ibis : node.getConnections()) {
-				Vnode to = nodesToVisuals.get(site.getNode(ibis));				
-				vlinks.add(new Vlink(perfvis, visman, this, node, from, to));						
+			Vnode from = entry.getValue();
+			
+			IbisIdentifier source = node.getName();
+						
+			for (IbisIdentifier destination : node.getConnections()) {
+				Vnode to = nodesToVisuals.get(site.getNode(destination));
+								
+				if (vlinkMap.containsKey(source) && vlinkMap.get(source).containsKey(destination)) {
+					//all good
+				} else {
+					//otherwise make a new vlink
+					HashMap<IbisIdentifier, Vlink> newMap = new HashMap<IbisIdentifier, Vlink>();
+					newMap.put(destination, new Vlink(perfvis, visman, this, node, source, from, destination, to));
+					vlinkMap.put(source, newMap);
+				}				
 			}
 		}
+		
+		for (Entry<IbisIdentifier, HashMap<IbisIdentifier, Vlink>> entry : vlinkMap.entrySet()) {
+			for (Entry<IbisIdentifier, Vlink> entry2 : entry.getValue().entrySet()) {
+				vlinks.add(entry2.getValue());
+			}
+		}		
 	}
 	
 	public void update() {

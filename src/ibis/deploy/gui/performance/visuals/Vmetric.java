@@ -10,6 +10,7 @@ import ibis.deploy.gui.performance.VisualManager;
 import ibis.deploy.gui.performance.exceptions.ValueOutOfBoundsException;
 import ibis.deploy.gui.performance.swing.SetCollectionFormAction;
 import ibis.deploy.gui.performance.swing.SetMetricFormAction;
+import ibis.ipl.IbisIdentifier;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.glu.GLUquadric;
@@ -86,11 +87,12 @@ public class Vmetric extends Vobject implements VobjectInterface {
 			//Move towards the intended location
 			if (glMode == GL.GL_SELECT) gl.glLoadName(glName);
 			gl.glTranslatef(location[0], location[1], location[2]);
-			
+						
 			//Draw the form
 			if (currentMetricForm == Vobject.METRICS_BAR) {
 				drawBar(gl, scaleY);
 			} else if (currentMetricForm == Vobject.METRICS_TUBE) {
+				gl.glRotatef(-90f, 1.0f, 0.0f, 0.0f);
 				drawTube(gl, scaleY);
 			} else if (currentMetricForm == Vobject.METRICS_SPHERE) {
 				drawSphere(gl);
@@ -369,7 +371,7 @@ public class Vmetric extends Vobject implements VobjectInterface {
 		//Make a new quadratic object
 		GLUquadric qobj = glu.gluNewQuadric();
 		
-		gl.glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+		//gl.glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
 		
 		//The Solid Element
 			//Bottom disk

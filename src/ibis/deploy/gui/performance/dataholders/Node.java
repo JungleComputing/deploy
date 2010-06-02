@@ -22,7 +22,6 @@ public class Node extends IbisConcept implements IbisConceptInterface {
 	private String siteName;
 	private IbisIdentifier name;	
 	
-	private IbisIdentifier[] connectedIbises;
 	protected HashSet<IbisIdentifier> connections;
 	private MetricsList metrics;
 	
@@ -30,7 +29,6 @@ public class Node extends IbisConcept implements IbisConceptInterface {
 		super(manInterface);
 		this.siteName = siteName;
 		this.name = name;
-		connectedIbises = new IbisIdentifier[0];
 		connections = new HashSet<IbisIdentifier>();
 		
 		metrics = new MetricsList();
@@ -38,6 +36,8 @@ public class Node extends IbisConcept implements IbisConceptInterface {
 	
 	public void setCurrentlyGatheredMetrics(MetricsList newMetrics) {
 		metrics.clear();
+		nodeMetricsColors.clear();
+		linkMetricsColors.clear();
 		for (Metric metric : newMetrics) {
 			metrics.add(metric.clone());
 			
@@ -56,6 +56,7 @@ public class Node extends IbisConcept implements IbisConceptInterface {
 		nodeMetricsValues.clear();
 		linkMetricsValues.clear();
 		connections.clear();
+		
 		try {
 			int size = 0;
 			for (Metric metric : metrics) {
@@ -85,6 +86,7 @@ public class Node extends IbisConcept implements IbisConceptInterface {
 								
 				if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
 					nodeMetricsValues.put(metric.getName(), metric.getValue());
+					
 				//} else if (metric.getGroup() == LinkMetricsObject.METRICSGROUP) {
 				//	linkMetricsValues.put(metric.getName(), metric.getValue());
 				} else if (metric.getGroup() == LinkMetricsMap.METRICSGROUP) {
@@ -97,9 +99,6 @@ public class Node extends IbisConcept implements IbisConceptInterface {
 						linkMetricsValues.get(ibis).put(metric.getName(), values.get(ibis));
 						connections.add(ibis);
 					}
-				} else if (metric.getName().equals(ConnStatistic.NAME)) {
-					IbisIdentifier[] connections = ((ConnStatistic)metric).getIbises(); 
-					connectedIbises = connections;
 				}
 			}
 		} catch (MethodNotOverriddenException e) {
@@ -107,10 +106,6 @@ public class Node extends IbisConcept implements IbisConceptInterface {
 		} catch (Exception e) {			
 			e.printStackTrace();
 		} 		
-	}
-	
-	public IbisIdentifier[] getConnectedIbises() {
-		return connectedIbises;
 	}
 	
 	public Set<IbisIdentifier> getConnections() {

@@ -11,7 +11,7 @@ import ibis.ipl.support.management.AttributeDescription;
 public class BytesReceivedPerIbisMetric extends LinkMetricsMap implements MetricInterface {
 	public static final String NAME = "BYTES_RECEIVED_PER_IBIS";
 	public static final int DESCRIPTIONS_COUNT_NEEDED = 1;
-	public static final Float[] COLOR = {0.0f, 0.0f, 1.0f};
+	public static final Float[] COLOR = {0.2f, 0.0f, 1.0f};
 	
 	private Map<IbisIdentifier, Long> received_prev, received_max;	
 	

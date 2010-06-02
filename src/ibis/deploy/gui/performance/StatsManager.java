@@ -20,16 +20,13 @@ public class StatsManager implements Runnable {
 	private Map<String, Integer> poolSizes;	
 	private ArrayList<Pool> pools;
 	
-	private PerfVis perfvis;
-	
 	private int refreshrate;
 	private boolean reinitializeNeeded = false;
 	
 	//The list that holds the statistics necessary for initializing the visualization 
 	private MetricsList initStatistics;
 	
-	public StatsManager(PerfVis perfvis, ManagementServiceInterface manInterface, RegistryServiceInterface regInterface) {
-		this.perfvis = perfvis;
+	public StatsManager(ManagementServiceInterface manInterface, RegistryServiceInterface regInterface) {
 		this.manInterface = manInterface;
 		this.regInterface = regInterface;
 		this.refreshrate = 5000;

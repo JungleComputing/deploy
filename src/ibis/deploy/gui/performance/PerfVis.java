@@ -186,7 +186,7 @@ public class PerfVis implements GLEventListener {
 		
 		canvas.requestFocusInWindow();
 		
-		statman = new StatsManager(this, manInterface, regInterface);
+		statman = new StatsManager(manInterface, regInterface);
 		new Thread(statman).start();
 	}
 	
