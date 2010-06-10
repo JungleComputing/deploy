@@ -10,7 +10,6 @@ import ibis.deploy.gui.performance.VisualManager;
 import ibis.deploy.gui.performance.exceptions.ValueOutOfBoundsException;
 import ibis.deploy.gui.performance.swing.SetCollectionFormAction;
 import ibis.deploy.gui.performance.swing.SetMetricFormAction;
-import ibis.ipl.IbisIdentifier;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.glu.GLUquadric;

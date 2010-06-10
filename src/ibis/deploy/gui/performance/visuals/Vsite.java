@@ -6,7 +6,6 @@ import ibis.deploy.gui.performance.dataholders.Site;
 import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
 import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
 import ibis.deploy.gui.performance.exceptions.ValueOutOfBoundsException;
-import ibis.deploy.gui.performance.metrics.link.LinkMetricsMap;
 import ibis.deploy.gui.performance.swing.SetCollectionFormAction;
 import ibis.deploy.gui.performance.swing.SetMetricFormAction;
 import ibis.ipl.IbisIdentifier;
@@ -70,7 +69,7 @@ public class Vsite extends Vobject implements VobjectInterface {
 		
 		for (Map.Entry<String, Float[]> entry : colors.entrySet()) {
 			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, this, entry.getValue()));			
-		}		
+		}
 	}
 		
 	private void createLinks() {		
@@ -161,8 +160,8 @@ public class Vsite extends Vobject implements VobjectInterface {
 	
 	protected void drawLinks(GL gl, int glMode) {
 		for (Vlink vlink : vlinks) {
-			vlink.setLocation(location);
-			vlink.setSeparation(0.0f);
+			//vlink.setLocation(location);
+			//vlink.setSeparation(0.5f);
 			
 			vlink.drawThis(gl, glMode);
 		}		

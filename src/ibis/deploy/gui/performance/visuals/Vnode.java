@@ -86,7 +86,7 @@ public class Vnode extends Vobject implements VobjectInterface {
 		}		
 	}
 	
-	public void update() {
+	public void update() {		
 		HashMap<String, Float> stats = node.getMonitoredNodeMetrics();
 		for (Map.Entry<String, Float> entry : stats.entrySet()) {
 			try {
@@ -102,7 +102,7 @@ public class Vnode extends Vobject implements VobjectInterface {
 		}		
 	}
 	
-	public void drawThis(GL gl, int glMode) {
+	public void drawThis(GL gl, int glMode) {		
 		//Save the old matrix mode and transformation matrix
 		IntBuffer oldMode = IntBuffer.allocate(1);		
 		gl.glGetIntegerv(GL.GL_MATRIX_MODE, oldMode);
@@ -121,7 +121,7 @@ public class Vnode extends Vobject implements VobjectInterface {
 		
 		//Restore the old matrix mode and transformation matrix		
 		gl.glMatrixMode(oldMode.get());
-		gl.glPopMatrix();
+		gl.glPopMatrix();		
 	}
 	
 	protected void drawCityscape(GL gl, int glMode) {		

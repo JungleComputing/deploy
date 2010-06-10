@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import javax.media.opengl.GL;
-import javax.swing.JPopupMenu;
 
 import ibis.deploy.gui.performance.dataholders.Pool;
 import ibis.deploy.gui.performance.visuals.Vobject;

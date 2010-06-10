@@ -2,31 +2,43 @@ package ibis.deploy.gui.performance.dataholders;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
 
 import ibis.deploy.gui.performance.MetricsList;
 import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
 import ibis.deploy.gui.performance.metrics.Metric;
 import ibis.deploy.gui.performance.metrics.link.LinkMetricsObject;
 import ibis.deploy.gui.performance.metrics.node.NodeMetricsObject;
-import ibis.deploy.gui.performance.metrics.special.ConnStatistic;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.smartsockets.virtual.NoSuitableModuleException;
 
-public class Site extends IbisConcept implements IbisConceptInterface {	
+public class Site implements IbisConceptInterface {
+	private HashMap<String, Float> nodeMetricsValues;
+	private HashMap<IbisIdentifier, Map<String, Float>> linkMetricsValues;
+	private HashMap<String, Float[]> nodeMetricsColors;
+	private HashMap<String, Float[]> linkMetricsColors;
+	
 	private String name;	
 	private ArrayList<Node> nodes;
 	private HashMap<IbisIdentifier, Node> ibisesToNodes;
 	
 	private MetricsList currentlyGatheredMetrics;
 	
-	public Site(ManagementServiceInterface manInterface, MetricsList initialStatistics, IbisIdentifier[] poolIbises, String siteName) {	
-		super(manInterface);
+	public Site(ManagementServiceInterface manInterface, MetricsList initialStatistics, IbisIdentifier[] poolIbises, String siteName) {		
 		this.name = siteName;				
 		this.nodes = new ArrayList<Node>();
 		this.ibisesToNodes = new HashMap<IbisIdentifier, Node>();
+		
 		currentlyGatheredMetrics = new MetricsList();
+		nodeMetricsValues = new HashMap<String, Float>();
+		nodeMetricsColors = new HashMap<String, Float[]>();
+		linkMetricsValues = new HashMap<IbisIdentifier, Map<String, Float>>();
+		linkMetricsColors = new HashMap<String, Float[]>();
 		
 		String ibisLocationName;
 		
@@ -53,41 +65,45 @@ public class Site extends IbisConcept implements IbisConceptInterface {
 	}
 
 	public IbisIdentifier[] getIbises() {
-		IbisIdentifier[] result = new IbisIdentifier[nodes.size()];
-		int i=0;
-		for (Node node : nodes) {
-			result[i] = node.getName();
-			i++;
+		synchronized(this) {
+			IbisIdentifier[] result = new IbisIdentifier[nodes.size()];
+			int i=0;
+			for (Node node : nodes) {
+				result[i] = node.getName();
+				i++;
+			}
+			return result;
 		}
-		return result;
 	}	
 	
-	public void update() throws StatNotRequestedException, NoSuitableModuleException {			
-		nodeMetricsValues.clear();
-		linkMetricsValues.clear();
-		
-		for (Node node : nodes) {			
-			node.update();
-		}
-		
-		for (Metric metric : currentlyGatheredMetrics) {
-			if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
-			//if (!metric.getName().equals(ConnStatistic.NAME)) {
-				String key = metric.getName();
-				List<Float> results = new ArrayList<Float>();
-				for (Node node : nodes) {			
-					results.add((Float)node.getValue(key));
-				}
-				float total = 0, average = 0;
-				for (Float entry : results) {
-					total += entry;
-				}
-				average = total / results.size();
-				
+	public void update() throws NoSuitableModuleException, StatNotRequestedException {	
+		synchronized(this) {
+			nodeMetricsValues.clear();
+			linkMetricsValues.clear();
+			
+			for (Node node : nodes) {			
+				node.update();
+			}
+			
+			for (Metric metric : currentlyGatheredMetrics) {
 				if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
-					nodeMetricsValues.put(metric.getName(), average);					
-				//} else if (metric.getGroup() == LinkMetricsObject.METRICSGROUP) {
-				//	linkMetricsValues.put(metric.getName(), average);					
+				//if (!metric.getName().equals(ConnStatistic.NAME)) {
+					String key = metric.getName();
+					List<Float> results = new ArrayList<Float>();
+					for (Node node : nodes) {			
+						results.add((Float)node.getValue(key));
+					}
+					float total = 0, average = 0;
+					for (Float entry : results) {
+						total += entry;
+					}
+					average = total / results.size();
+					
+					if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
+						nodeMetricsValues.put(metric.getName(), average);					
+					//} else if (metric.getGroup() == LinkMetricsObject.METRICSGROUP) {
+					//	linkMetricsValues.put(metric.getName(), average);					
+					}
 				}
 			}
 		}
@@ -113,22 +129,62 @@ public class Site extends IbisConcept implements IbisConceptInterface {
 	}
 
 	public MetricsList getCurrentlyGatheredMetrics() {
-		return currentlyGatheredMetrics;
+		synchronized(this) {
+			return currentlyGatheredMetrics;
+		}
 	}
 	
 	public Node[] getSubConcepts() {
-		Node[] result = new Node[nodes.size()];
-		nodes.toArray(result);
-		return result;
+		synchronized(this) {
+			Node[] result = new Node[nodes.size()];
+			nodes.toArray(result);
+			return result;
+		}
 	}
 	
 	public float getValue(String key) throws StatNotRequestedException {
-		if (nodeMetricsValues.containsKey(key))	{
-			return nodeMetricsValues.get(key);
-		//} else if (linkMetricsValues.containsKey(key))	{
-		//	return linkMetricsValues.get(key);
-		} else {			
-			throw new StatNotRequestedException();
+		synchronized(this) {
+			if (nodeMetricsValues.containsKey(key))	{
+				return nodeMetricsValues.get(key);
+			} else {			
+				throw new StatNotRequestedException();
+			}
+		}
+	}
+		
+	public HashMap<String, Float> getMonitoredNodeMetrics() {
+		synchronized(this) {	
+			return nodeMetricsValues;
+		}
+	}
+	
+	public Set<String> getMonitoredLinkMetrics() {
+		synchronized(this) {
+			HashSet<String> newSet = new HashSet<String>(); 
+			for (Entry<IbisIdentifier, Map<String, Float>> entry : linkMetricsValues.entrySet()) {
+				for (Entry<String, Float> entry2 : entry.getValue().entrySet()) {
+					newSet.add(entry2.getKey());
+				}
+			}
+			return newSet;
+		}
+	}
+			
+	public HashMap<IbisIdentifier, Map<String, Float>> getLinkValues() {	
+		synchronized(this) {
+			return linkMetricsValues;
+		}
+	}
+	
+	public HashMap<String, Float[]> getMetricsColors() {
+		synchronized(this) {
+			return nodeMetricsColors;
+		}
+	}
+	
+	public HashMap<String, Float[]> getLinkColors() {
+		synchronized(this) {
+			return linkMetricsColors;
 		}
 	}
 }

@@ -31,8 +31,10 @@ public class Vlink extends Vobject implements VobjectInterface {
 		this.from = from;
 		this.destination = destination;
 		this.to = to;
-		
 		this.node = node;
+		
+		this.location = from.getLocation();
+		this.separation = 0.25f;
 		this.currentCollectionForm = Vobject.COLLECTION_CITYSCAPE;
 
 		//Register the new object with the Performance visualization object
@@ -56,8 +58,8 @@ public class Vlink extends Vobject implements VobjectInterface {
 	}
 	
 	public void update() {
-		Map<String, Float> stats = node.getLinkValueMap(destination);
-		if (stats != null) {
+		Map<String, Float> stats = node.getLinkValueMap(destination);		
+		if (stats != null) {			
 			for (Entry<String, Float> entry : stats.entrySet()) {
 				try {
 					String metricName = entry.getKey();
