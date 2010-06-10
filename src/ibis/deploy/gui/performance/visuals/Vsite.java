@@ -128,13 +128,13 @@ public class Vsite extends Vobject implements VobjectInterface {
 	
 	public void drawThis(GL gl, int glMode) {
 		//Save the old matrix mode and transformation matrix
-		IntBuffer oldMode = IntBuffer.allocate(1);		
-		gl.glGetIntegerv(GL.GL_MATRIX_MODE, oldMode);
-		gl.glPushMatrix();
-		gl.glMatrixMode(GL.GL_MODELVIEW);		
+		//IntBuffer oldMode = IntBuffer.allocate(1);		
+		//gl.glGetIntegerv(GL.GL_MATRIX_MODE, oldMode);
+		//gl.glPushMatrix();
+		//gl.glMatrixMode(GL.GL_MODELVIEW);		
 
 		//Move towards the intended location
-		gl.glTranslatef(location[0], location[1], location[2]);
+		//gl.glTranslatef(location[0], location[1], location[2]);
 		
 		if (!showAverages) {
 			//Draw the desired form
@@ -154,8 +154,8 @@ public class Vsite extends Vobject implements VobjectInterface {
 		drawLinks(gl, glMode);
 		
 		//Restore the old matrix mode and transformation matrix		
-		gl.glMatrixMode(oldMode.get());
-		gl.glPopMatrix();
+		//gl.glMatrixMode(oldMode.get());
+		//gl.glPopMatrix();
 	}
 	
 	protected void drawLinks(GL gl, int glMode) {

@@ -56,44 +56,6 @@ public class Vpool extends Vobject implements VobjectInterface {
 			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, this, entry.getValue()));			
 		}		
 	}	
-
-	/*
-	public void setForm(int poolForm) throws ModeUnknownException {
-		if (poolForm != Vobject.COLLECTION_CITYSCAPE && poolForm != Vobject.COLLECTION_CIRCLE) {
-			throw new ModeUnknownException();
-		}
-		this.currentCollectionForm = poolForm;
-				
-		//recalculate the outer radius for this form
-		setSize(scaleXZ, scaleY);
-	}
-		
-	public void setSize(float width, float height) {
-		this.scaleXZ = width;
-		this.scaleY = height;
-		for (Vsite vsite : vsites) {
-			vsite.setSize(width, height);
-		}
-		
-		if (currentCollectionForm == Vobject.COLLECTION_CITYSCAPE) {
-			int horz = (int)(Math.ceil(Math.sqrt(vsites.size()))*(scaleXZ+0.1f));
-			int vert = (int)scaleY;
-			int dept = (int)(Math.ceil(Math.sqrt(vsites.size()))*(scaleXZ+0.1f));
-			
-			//3d across
-			this.radius = (float) Math.sqrt(  Math.pow(horz, 2)
-											+ Math.pow(vert, 2)
-											+ Math.pow(dept, 2));
-			
-		} else if (currentCollectionForm == Vobject.COLLECTION_CIRCLE) {
-			double angle  = 2*Math.PI / vsites.size();
-			float innerRadius = (float) ((scaleXZ/2) / Math.tan(angle/2));	
-			innerRadius = Math.max(innerRadius, 0);
-			
-			radius = (int)innerRadius+(int)scaleY;
-		}
-	}
-	*/
 	
 	public void update() {		
 		for (Vsite vsite : vsites) {
@@ -116,13 +78,13 @@ public class Vpool extends Vobject implements VobjectInterface {
 	
 	public void drawThis(GL gl, int glMode) {
 		//Save the old matrix mode and transformation matrix
-		IntBuffer oldMode = IntBuffer.allocate(1);
-		gl.glGetIntegerv(GL.GL_MATRIX_MODE, oldMode);
-		gl.glPushMatrix();
-		gl.glMatrixMode(GL.GL_MODELVIEW);
+		//IntBuffer oldMode = IntBuffer.allocate(1);
+		//gl.glGetIntegerv(GL.GL_MATRIX_MODE, oldMode);
+		//gl.glPushMatrix();
+		//gl.glMatrixMode(GL.GL_MODELVIEW);
 
 		//Move towards the intended location
-		gl.glTranslatef(location[0], location[1], location[2]);
+		//gl.glTranslatef(location[0], location[1], location[2]);
 		
 		if (!showAverages) {
 			//Draw the desired form
@@ -140,8 +102,8 @@ public class Vpool extends Vobject implements VobjectInterface {
 		}
 		
 		//Restore the old matrix mode and transformation matrix		
-		gl.glMatrixMode(oldMode.get());
-		gl.glPopMatrix();
+		//gl.glMatrixMode(oldMode.get());
+		//gl.glPopMatrix();
 	}
 	
 	protected void drawCityscape(GL gl, int glMode) {		
