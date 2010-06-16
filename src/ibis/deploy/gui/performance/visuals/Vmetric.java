@@ -4,34 +4,81 @@ import java.awt.Menu;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
 import java.nio.IntBuffer;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Map.Entry;
 
 import ibis.deploy.gui.performance.PerfVis;
 import ibis.deploy.gui.performance.VisualManager;
+import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
+import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
 import ibis.deploy.gui.performance.exceptions.ValueOutOfBoundsException;
 import ibis.deploy.gui.performance.swing.SetCollectionFormAction;
 import ibis.deploy.gui.performance.swing.SetMetricFormAction;
+import ibis.deploy.gui.performance.swing.ToggleAveragesAction;
+import ibis.deploy.gui.performance.swing.ToggleMetricAction;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.glu.GLU;
 import javax.media.opengl.glu.GLUquadric;
 
-public class Vmetric extends Vobject implements VobjectInterface {	
+public class Vmetric implements VisualElementInterface {	
+	PerfVis perfvis;
+	VisualManager visman;
+	
+	protected Float[] location;
+	protected float radius;
+	protected int currentMetricForm;
+	protected int currentCollectionForm;
+	protected boolean showAverages;
+	
+	protected int glName;
+	protected float scaleXZ;
+	protected float scaleY;	
+	
+	GLU glu;
+	protected float separation;
+	
+	protected HashMap<String, Vmetric> vmetrics;
+	protected Set<String> shownMetrics;
+	protected VisualElementInterface parent;
+	
 	private static final float ALPHA = 0.2f;
 	
 	private Float[] color;	
 	private float alpha;
 	
 	private float value;
-	private Vobject from, to;
+	private VisualElementInterface from, to;
 		
-	public Vmetric(PerfVis perfvis, VisualManager visman, Vobject parent, Float[] color) {
-		super(perfvis, visman);
+	public Vmetric(PerfVis perfvis, VisualManager visman, VisualElementInterface parent, Float[] color) {
+		this.perfvis = perfvis;
+		this.visman = visman;
+		
+		glu = new GLU();
+		this.showAverages = false;
+		shownMetrics = new HashSet<String>();
+		
+		this.location = new Float[3];
+		this.location[0] = 0.0f;
+		this.location[1] = 0.0f;
+		this.location[2] = 0.0f;
+		
+		this.separation = 0.0f;
+		
+		scaleXZ = 0.25f;
+		scaleY = 1.0f;
+				
+		this.vmetrics 	= new HashMap<String, Vmetric>();
+		
 		this.parent = parent;
 		
 		this.color = color;
 		this.alpha = ALPHA;
 		
 		this.value = 1.0f;
-		this.currentMetricForm = Vobject.METRICS_BAR;
+		this.currentMetricForm = VisualElementInterface.METRICS_BAR;
 		
 		this.from = null;
 		this.to = null;
@@ -40,15 +87,33 @@ public class Vmetric extends Vobject implements VobjectInterface {
 		this.glName = visman.registerMetric(this);		
 	}
 	
-	public Vmetric(PerfVis perfvis, VisualManager visman, Vobject parent, Float[] color, Vobject from, Vobject to) {
-		super(perfvis, visman);
+	public Vmetric(PerfVis perfvis, VisualManager visman, VisualElementInterface parent, Float[] color, VisualElementInterface from, VisualElementInterface to) {
+		this.perfvis = perfvis;
+		this.visman = visman;
+		
+		glu = new GLU();
+		this.showAverages = false;
+		shownMetrics = new HashSet<String>();
+		
+		this.location = new Float[3];
+		this.location[0] = 0.0f;
+		this.location[1] = 0.0f;
+		this.location[2] = 0.0f;
+		
+		this.separation = 0.0f;
+		
+		scaleXZ = 0.25f;
+		scaleY = 1.0f;
+				
+		this.vmetrics 	= new HashMap<String, Vmetric>();
+		
 		this.parent = parent;
 		
 		this.color = color;
 		this.alpha = ALPHA;
 		
 		this.value = 1.0f;
-		this.currentMetricForm = Vobject.METRICS_TUBE;
+		this.currentMetricForm = VisualElementInterface.METRICS_TUBE;
 		
 		this.from = from;
 		this.to = to;
@@ -65,16 +130,6 @@ public class Vmetric extends Vobject implements VobjectInterface {
 		}
 	}
 	
-	/*
-	public void setForm(int form) throws ModeUnknownException {
-		if (form != Vobject.METRICS_BAR || form != Vobject.METRICS_TUBE || form != Vobject.METRICS_SPHERE) {
-			throw new ModeUnknownException();			
-		} else {			
-			this.currentMetricForm = form;
-		}
-	}
-	*/
-	
 	public void drawThis(GL gl, int glMode) {
 		//Save the old matrix mode and transformation matrix
 		IntBuffer oldMode = IntBuffer.allocate(1);		
@@ -88,12 +143,12 @@ public class Vmetric extends Vobject implements VobjectInterface {
 			gl.glTranslatef(location[0], location[1], location[2]);
 						
 			//Draw the form
-			if (currentMetricForm == Vobject.METRICS_BAR) {
+			if (currentMetricForm == VisualElementInterface.METRICS_BAR) {
 				drawBar(gl, scaleY);
-			} else if (currentMetricForm == Vobject.METRICS_TUBE) {
+			} else if (currentMetricForm == VisualElementInterface.METRICS_TUBE) {
 				gl.glRotatef(-90f, 1.0f, 0.0f, 0.0f);
 				drawTube(gl, scaleY);
-			} else if (currentMetricForm == Vobject.METRICS_SPHERE) {
+			} else if (currentMetricForm == VisualElementInterface.METRICS_SPHERE) {
 				drawSphere(gl);
 			}		
 		} else {
@@ -122,9 +177,9 @@ public class Vmetric extends Vobject implements VobjectInterface {
 			
 			//And draw the link
 			if (glMode == GL.GL_SELECT) gl.glLoadName(glName);
-			if (currentMetricForm == Vobject.METRICS_BAR) {
+			if (currentMetricForm == VisualElementInterface.METRICS_BAR) {
 				drawBar(gl, length);
-			} else if (currentMetricForm == Vobject.METRICS_TUBE) {
+			} else if (currentMetricForm == VisualElementInterface.METRICS_TUBE) {
 				drawTube(gl, length);
 			}
 		}
@@ -447,40 +502,6 @@ public class Vmetric extends Vobject implements VobjectInterface {
 	
 	public PopupMenu getMenu() {	
 		return parent.getMenu();
-		/*
-		String[] elementsgroup = {"Bars", "Tubes", "Spheres"};
-		String[] collectionsgroup = {"Cityscape", "Circle"};
-		
-		PopupMenu newMenu = new PopupMenu();	
-		
-		Menu metricsForms 	= makeRadioGroup("Metric Form", elementsgroup);
-		Menu nodeForms 		= makeRadioGroup("Node Group Form", collectionsgroup);
-		Menu nodeMetricForms= makeRadioGroup("Node Metric Form", elementsgroup);
-		Menu siteForms 		= makeRadioGroup("Site Group Form", collectionsgroup);
-		Menu siteMetricForms= makeRadioGroup("Site Metric Form", elementsgroup);
-		Menu poolForms 		= makeRadioGroup("Pool Group Form", collectionsgroup);
-		Menu poolMetricForms= makeRadioGroup("Pool Metric Form", elementsgroup);
-		
-		newMenu.add(metricsForms);
-		newMenu.add(nodeForms);
-		newMenu.add(nodeMetricForms);
-		newMenu.add(siteForms);
-		newMenu.add(siteMetricForms);
-		newMenu.add(poolForms);
-		newMenu.add(poolMetricForms);
-		
-		Menu metricsOptions = new Menu("Metrics Toggle");
-		metricsOptions.add(parent.getMetricsMenu("Node"));
-		metricsOptions.add(parent.getParent().getMetricsMenu("Site"));
-		metricsOptions.add(parent.getParent().getParent().getMetricsMenu("Pool"));
-		newMenu.add(metricsOptions);
-
-		newMenu.add(parent.getAveragesMenu("Compound Node"));
-		newMenu.add(parent.getParent().getAveragesMenu("Compound Site"));
-		newMenu.add(parent.getParent().getParent().getAveragesMenu("Compound Pool"));
-		
-		return newMenu;
-		*/		
 	}	
 	
 	protected Menu makeRadioGroup(String menuName, String[] itemNames) {
@@ -491,21 +512,118 @@ public class Vmetric extends Vobject implements VobjectInterface {
 			if (menuName.equals("Metric Form")) {
 				newMenuItem.addActionListener(new SetMetricFormAction(this, item));
 			} else if (menuName.equals("Node Group Form")) {
-				newMenuItem.addActionListener(new SetCollectionFormAction(this.getParent(), item));
+				newMenuItem.addActionListener(new SetCollectionFormAction(parent, item));
 			} else if (menuName.equals("Node Metric Form")) {
-				newMenuItem.addActionListener(new SetMetricFormAction(this.getParent(), item));
+				newMenuItem.addActionListener(new SetMetricFormAction(parent, item));
 			} else if (menuName.equals("Site Group Form")) {
-				newMenuItem.addActionListener(new SetCollectionFormAction(this.getParent().getParent(), item));
+				newMenuItem.addActionListener(new SetCollectionFormAction(parent.getParent(), item));
 			} else if (menuName.equals("Site Metric Form")) {
-				newMenuItem.addActionListener(new SetMetricFormAction(this.getParent().getParent(), item));
+				newMenuItem.addActionListener(new SetMetricFormAction(parent.getParent(), item));
 			} else if (menuName.equals("Pool Group Form")) {
-				newMenuItem.addActionListener(new SetCollectionFormAction(this.getParent().getParent().getParent(), item));
+				newMenuItem.addActionListener(new SetCollectionFormAction(parent.getParent().getParent(), item));
 			} else if (menuName.equals("Pool Metric Form")) {
-				newMenuItem.addActionListener(new SetMetricFormAction(this.getParent().getParent().getParent(), item));
+				newMenuItem.addActionListener(new SetMetricFormAction(parent.getParent().getParent(), item));
 			}
 			result.add(newMenuItem);			
 		}
 				
 		return result;
+	}
+	
+	public void setSize(float width, float height) {
+		this.scaleXZ = width;
+		this.scaleY = height;		
+	}
+	
+	public void setLocation(Float[] newLocation) {
+		this.location[0] = newLocation[0];
+		this.location[1] = newLocation[1];
+		this.location[2] = newLocation[2];
+	}
+	
+	public void setRelativeLocation(Float[] locationShift) {
+		location[0] += locationShift[0];
+		location[1] += locationShift[1];
+		location[2] += locationShift[2];
+	}
+	
+	public void setSeparation(float newSeparation) {
+		separation = newSeparation;		
+	}
+	
+	public void setRadius() {
+		radius = Math.max(vmetrics.size()*(scaleXZ), scaleY);
+	}
+	
+	public void setForm(int newForm) throws ModeUnknownException {
+		if (newForm == VisualElementInterface.METRICS_BAR || newForm == VisualElementInterface.METRICS_TUBE || newForm == VisualElementInterface.METRICS_SPHERE) {
+			currentMetricForm = newForm;
+		} else if (newForm == VisualElementInterface.COLLECTION_CITYSCAPE || newForm == VisualElementInterface.COLLECTION_CIRCLE) {
+			currentCollectionForm = newForm;
+		} else {
+			throw new ModeUnknownException();
+		}
+	}	
+		
+	public Float[] getLocation() {
+		return location;
+	}	
+
+	public float getRadius() {		
+		return radius;
+	}
+	
+	public int getGLName() {
+		return glName;
+	}
+	
+	public VisualElementInterface getParent() {		
+		return parent;
+	}
+	
+	public Menu getMetricsMenu(String label) {
+		Menu result = new Menu(label);
+		
+		for (Entry<String, Vmetric> entry : vmetrics.entrySet()) {
+			MenuItem newMenuItem = new MenuItem(entry.getKey());
+			newMenuItem.addActionListener(new ToggleMetricAction(this, entry.getKey()));
+			result.add(newMenuItem);
+		}
+		
+		return result;
+	}
+	
+	public Menu getAveragesMenu(String label) {
+		Menu result = new Menu(label);
+		MenuItem newMenuItem;
+		
+		if (!showAverages) {
+			newMenuItem = new MenuItem("Show Averages");
+		} else {
+			newMenuItem = new MenuItem("Show Sublevel");
+		}
+		
+		newMenuItem.addActionListener(new ToggleAveragesAction(this, newMenuItem.getLabel()));
+		result.add(newMenuItem);
+		
+		return result; 
+	}
+	
+	
+	
+	public void toggleMetricShown(String key) throws StatNotRequestedException {
+		if (vmetrics.containsKey(key)) {
+			if (!shownMetrics.contains(key)) {			
+				shownMetrics.add(key);
+			} else {			
+				shownMetrics.remove(key);
+			}
+		} else {
+			throw new StatNotRequestedException();
+		}
+	}
+	
+	public void toggleAverages() {
+		this.showAverages = !showAverages;
 	}
 }

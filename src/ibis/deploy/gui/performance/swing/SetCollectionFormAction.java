@@ -1,7 +1,7 @@
 package ibis.deploy.gui.performance.swing;
 
 import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
-import ibis.deploy.gui.performance.visuals.Vobject;
+import ibis.deploy.gui.performance.visuals.VisualElementInterface;
 
 import java.awt.event.ActionEvent;
 
@@ -10,15 +10,15 @@ import javax.swing.AbstractAction;
 public class SetCollectionFormAction extends AbstractAction {	
 	private static final long serialVersionUID = 7380908030018875303L;
 	
-	Vobject caller;
+	VisualElementInterface caller;
 	int myCollections;
 	
-	public SetCollectionFormAction(Vobject caller, String label) {
+	public SetCollectionFormAction(VisualElementInterface caller, String label) {
 		super(label);
 		this.caller = caller;
 		
-		if (label.compareTo("Cityscape") == 0) 	myCollections = Vobject.COLLECTION_CITYSCAPE;
-		else if (label.compareTo("Circle") == 0) 	myCollections = Vobject.COLLECTION_CIRCLE;
+		if (label.compareTo("Cityscape") == 0) 	myCollections = VisualElementInterface.COLLECTION_CITYSCAPE;
+		else if (label.compareTo("Circle") == 0) 	myCollections = VisualElementInterface.COLLECTION_CIRCLE;
 	}
 
 	public void actionPerformed(ActionEvent e) {	

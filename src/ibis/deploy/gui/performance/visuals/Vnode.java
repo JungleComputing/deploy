@@ -3,29 +3,72 @@ import ibis.deploy.gui.performance.PerfVis;
 import ibis.deploy.gui.performance.VisualManager;
 import ibis.deploy.gui.performance.dataholders.Node;
 import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
+import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
 import ibis.deploy.gui.performance.exceptions.ValueOutOfBoundsException;
 import ibis.deploy.gui.performance.swing.SetCollectionFormAction;
 import ibis.deploy.gui.performance.swing.SetMetricFormAction;
+import ibis.deploy.gui.performance.swing.ToggleAveragesAction;
+import ibis.deploy.gui.performance.swing.ToggleMetricAction;
 
 import java.awt.Menu;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
-import java.nio.IntBuffer;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.glu.GLU;
 
-public class Vnode extends Vobject implements VobjectInterface {
+public class Vnode implements VisualElementInterface {
+	PerfVis perfvis;
+	VisualManager visman;
+	
+	protected Float[] location;
+	protected float radius;
+	protected int currentMetricForm;
+	protected int currentCollectionForm;
+	protected boolean showAverages;
+	
+	protected int glName;
+	protected float scaleXZ;
+	protected float scaleY;	
+	
+	GLU glu;
+	protected float separation;
+	
+	protected HashMap<String, Vmetric> vmetrics;
+	protected Set<String> shownMetrics;
+	protected VisualElementInterface parent;
+	
 	private Node node;
 	
-	public Vnode(PerfVis perfvis, VisualManager visman, Vobject parent, Node node) {
-		super(perfvis, visman);
+	public Vnode(PerfVis perfvis, VisualManager visman, VisualElementInterface parent, Node node) {
+		this.perfvis = perfvis;
+		this.visman = visman;
+		
+		glu = new GLU();
+		this.showAverages = false;
+		shownMetrics = new HashSet<String>();
+		
+		this.location = new Float[3];
+		this.location[0] = 0.0f;
+		this.location[1] = 0.0f;
+		this.location[2] = 0.0f;
+		
+		this.separation = 0.0f;
+		
+		scaleXZ = 0.25f;
+		scaleY = 1.0f;
+				
+		this.vmetrics 	= new HashMap<String, Vmetric>();
+		
 		this.parent = parent;
 		
 		this.node = node;
-		this.currentCollectionForm = Vobject.COLLECTION_CITYSCAPE;
+		this.currentCollectionForm = VisualElementInterface.COLLECTION_CITYSCAPE;
 
 		//Register the new object with the Performance visualization object
 		this.glName = visman.registerNode(this);
@@ -74,9 +117,9 @@ public class Vnode extends Vobject implements VobjectInterface {
 		//gl.glTranslatef(location[0], location[1], location[2]);
 		
 		//Draw the desired form
-		if (currentCollectionForm == Vobject.COLLECTION_CITYSCAPE) {
+		if (currentCollectionForm == VisualElementInterface.COLLECTION_CITYSCAPE) {
 			drawCityscape(gl, glMode);
-		} else if (currentCollectionForm == Vobject.COLLECTION_CIRCLE) {
+		} else if (currentCollectionForm == VisualElementInterface.COLLECTION_CIRCLE) {
 			drawCircle(gl, glMode);
 		}
 		
@@ -152,9 +195,9 @@ public class Vnode extends Vobject implements VobjectInterface {
 	}
 	
 	public void setForm(int newForm) throws ModeUnknownException {
-		if (newForm == Vobject.METRICS_BAR || newForm == Vobject.METRICS_TUBE || newForm == Vobject.METRICS_SPHERE) {
+		if (newForm == VisualElementInterface.METRICS_BAR || newForm == VisualElementInterface.METRICS_TUBE || newForm == VisualElementInterface.METRICS_SPHERE) {
 			currentMetricForm = newForm;			
-		} else if (newForm == Vobject.COLLECTION_CITYSCAPE || newForm == Vobject.COLLECTION_CIRCLE) {
+		} else if (newForm == VisualElementInterface.COLLECTION_CITYSCAPE || newForm == VisualElementInterface.COLLECTION_CIRCLE) {
 			currentCollectionForm = newForm;
 		} else {
 			throw new ModeUnknownException();
@@ -213,5 +256,92 @@ public class Vnode extends Vobject implements VobjectInterface {
 		}
 				
 		return result;
+	}
+	
+	public void setSize(float width, float height) {
+		this.scaleXZ = width;
+		this.scaleY = height;		
+	}
+	
+	public void setLocation(Float[] newLocation) {
+		this.location[0] = newLocation[0];
+		this.location[1] = newLocation[1];
+		this.location[2] = newLocation[2];
+	}
+	
+	public void setRelativeLocation(Float[] locationShift) {
+		location[0] += locationShift[0];
+		location[1] += locationShift[1];
+		location[2] += locationShift[2];
+	}
+	
+	public void setSeparation(float newSeparation) {
+		separation = newSeparation;		
+	}
+	
+	public void setRadius() {
+		radius = Math.max(vmetrics.size()*(scaleXZ), scaleY);
+	}
+		
+	public Float[] getLocation() {
+		return location;
+	}	
+
+	public float getRadius() {		
+		return radius;
+	}
+	
+	public int getGLName() {
+		return glName;
+	}
+	
+	public VisualElementInterface getParent() {		
+		return parent;
+	}
+	
+	public Menu getMetricsMenu(String label) {
+		Menu result = new Menu(label);
+		
+		for (Entry<String, Vmetric> entry : vmetrics.entrySet()) {
+			MenuItem newMenuItem = new MenuItem(entry.getKey());
+			newMenuItem.addActionListener(new ToggleMetricAction(this, entry.getKey()));
+			result.add(newMenuItem);
+		}
+		
+		return result;
+	}
+	
+	public Menu getAveragesMenu(String label) {
+		Menu result = new Menu(label);
+		MenuItem newMenuItem;
+		
+		if (!showAverages) {
+			newMenuItem = new MenuItem("Show Averages");
+		} else {
+			newMenuItem = new MenuItem("Show Sublevel");
+		}
+		
+		newMenuItem.addActionListener(new ToggleAveragesAction(this, newMenuItem.getLabel()));
+		result.add(newMenuItem);
+		
+		return result; 
+	}
+	
+	
+	
+	public void toggleMetricShown(String key) throws StatNotRequestedException {
+		if (vmetrics.containsKey(key)) {
+			if (!shownMetrics.contains(key)) {			
+				shownMetrics.add(key);
+			} else {			
+				shownMetrics.remove(key);
+			}
+		} else {
+			throw new StatNotRequestedException();
+		}
+	}
+	
+	public void toggleAverages() {
+		this.showAverages = !showAverages;
 	}
 }

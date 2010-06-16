@@ -8,19 +8,19 @@ import java.util.List;
 import javax.media.opengl.GL;
 
 import ibis.deploy.gui.performance.dataholders.Pool;
-import ibis.deploy.gui.performance.visuals.Vobject;
+import ibis.deploy.gui.performance.visuals.VisualElementInterface;
 import ibis.deploy.gui.performance.visuals.Vpool;
 
 public class VisualManager {
 	List<Pool> pools;
 	List<Vpool> vpools;
 	
-	private HashMap<Integer, Vobject> glNameRegistry;
-	private HashMap<Integer, Vobject> poolRegistry;
-	private HashMap<Integer, Vobject> siteRegistry;
-	private HashMap<Integer, Vobject> nodeRegistry;
-	private HashMap<Integer, Vobject> linkRegistry;
-	private HashMap<Integer, Vobject> metricRegistry;
+	private HashMap<Integer, VisualElementInterface> glNameRegistry;
+	private HashMap<Integer, VisualElementInterface> poolRegistry;
+	private HashMap<Integer, VisualElementInterface> siteRegistry;
+	private HashMap<Integer, VisualElementInterface> nodeRegistry;
+	private HashMap<Integer, VisualElementInterface> linkRegistry;
+	private HashMap<Integer, VisualElementInterface> metricRegistry;
 	
 	private PerfVis perfvis;
 	
@@ -30,12 +30,12 @@ public class VisualManager {
 		this.perfvis = perfvis;
 		pools = new ArrayList<Pool>();
 		vpools = new ArrayList<Vpool>();
-		glNameRegistry = new HashMap<Integer, Vobject>();
-		poolRegistry = new HashMap<Integer, Vobject>();
-		siteRegistry = new HashMap<Integer, Vobject>();
-		nodeRegistry = new HashMap<Integer, Vobject>();
-		linkRegistry = new HashMap<Integer, Vobject>();
-		metricRegistry = new HashMap<Integer, Vobject>();
+		glNameRegistry = new HashMap<Integer, VisualElementInterface>();
+		poolRegistry = new HashMap<Integer, VisualElementInterface>();
+		siteRegistry = new HashMap<Integer, VisualElementInterface>();
+		nodeRegistry = new HashMap<Integer, VisualElementInterface>();
+		linkRegistry = new HashMap<Integer, VisualElementInterface>();
+		metricRegistry = new HashMap<Integer, VisualElementInterface>();
 	}
 
 	public void reinitialize(List<Pool> list) {
@@ -65,35 +65,35 @@ public class VisualManager {
 		}
 	}
 	
-	public int registerPool(Vobject visual) {
+	public int registerPool(VisualElementInterface visual) {
 		int name = glNameRegistry.size();
 		glNameRegistry.put(name, visual);
 		poolRegistry.put(name, visual);
 		return name;
 	}
 	
-	public int registerSite(Vobject visual) {
+	public int registerSite(VisualElementInterface visual) {
 		int name = glNameRegistry.size();
 		glNameRegistry.put(name, visual);
 		siteRegistry.put(name, visual);
 		return name;
 	}
 	
-	public int registerNode(Vobject visual) {
+	public int registerNode(VisualElementInterface visual) {
 		int name = glNameRegistry.size();
 		glNameRegistry.put(name, visual);
 		nodeRegistry.put(name, visual);
 		return name;
 	}
 	
-	public int registerLink(Vobject visual) {
+	public int registerLink(VisualElementInterface visual) {
 		int name = glNameRegistry.size();
 		glNameRegistry.put(name, visual);
 		linkRegistry.put(name, visual);
 		return name;
 	}
 	
-	public int registerMetric(Vobject visual) {
+	public int registerMetric(VisualElementInterface visual) {
 		int name = glNameRegistry.size();
 		glNameRegistry.put(name, visual);
 		metricRegistry.put(name, visual);
