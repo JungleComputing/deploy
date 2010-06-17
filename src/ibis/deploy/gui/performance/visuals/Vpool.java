@@ -119,15 +119,6 @@ public class Vpool implements VisualElementInterface {
 	}
 	
 	public void drawThis(GL gl, int glMode) {
-		//Save the old matrix mode and transformation matrix
-		//IntBuffer oldMode = IntBuffer.allocate(1);
-		//gl.glGetIntegerv(GL.GL_MATRIX_MODE, oldMode);
-		//gl.glPushMatrix();
-		//gl.glMatrixMode(GL.GL_MODELVIEW);
-
-		//Move towards the intended location
-		//gl.glTranslatef(location[0], location[1], location[2]);
-		
 		if (!showAverages) {
 			//Draw the desired form
 			if (currentCollectionForm == VisualElementInterface.COLLECTION_CITYSCAPE) {
@@ -142,10 +133,6 @@ public class Vpool implements VisualElementInterface {
 				drawAveragesCircle(gl, glMode);
 			}
 		}
-		
-		//Restore the old matrix mode and transformation matrix		
-		//gl.glMatrixMode(oldMode.get());
-		//gl.glPopMatrix();
 	}
 	
 	protected void drawCityscape(GL gl, int glMode) {		
@@ -296,16 +283,16 @@ public class Vpool implements VisualElementInterface {
 	public void setSeparation(float newSeparation) {
 		separation = newSeparation;		
 	}
-	
-	public void setRadius() {
-		radius = Math.max(vmetrics.size()*(scaleXZ), scaleY);
-	}
 		
 	public Float[] getLocation() {
 		return location;
 	}	
 
-	public float getRadius() {		
+	public float getRadius() {
+		float radius = 0.0f;
+		if (currentCollectionForm == VisualElementInterface.COLLECTION_CITYSCAPE) {
+			radius = (float) Math.max((Math.ceil(Math.sqrt(vmetrics.size()))*(scaleXZ)), scaleY);
+		}
 		return radius;
 	}
 	

@@ -151,12 +151,6 @@ public class Site implements IbisConceptInterface {
 			}
 		}
 	}
-		
-	public HashMap<String, Float> getMonitoredNodeMetrics() {
-		synchronized(this) {	
-			return nodeMetricsValues;
-		}
-	}
 	
 	public Set<String> getMonitoredLinkMetrics() {
 		synchronized(this) {
@@ -170,21 +164,38 @@ public class Site implements IbisConceptInterface {
 		}
 	}
 			
-	public HashMap<IbisIdentifier, Map<String, Float>> getLinkValues() {	
+	public Map<String, Float> getLinkValueMap(IbisIdentifier ibis) {
 		synchronized(this) {
-			return linkMetricsValues;
+			Map<String, Float> copy = new HashMap<String, Float>(linkMetricsValues.get(ibis));
+			return copy;
+		}
+	}
+		
+	public HashMap<String, Float> getMonitoredNodeMetrics() {
+		synchronized(this) {
+			HashMap<String, Float> copy = new HashMap<String, Float>(nodeMetricsValues);
+			return copy;
+		}
+	}
+			
+	public HashMap<IbisIdentifier, Map<String, Float>> getLinkValues() {
+		synchronized(this) {
+			HashMap<IbisIdentifier, Map<String, Float>> copy = new HashMap<IbisIdentifier, Map<String, Float>>(linkMetricsValues);
+			return copy;
 		}
 	}
 	
 	public HashMap<String, Float[]> getMetricsColors() {
 		synchronized(this) {
-			return nodeMetricsColors;
+			HashMap<String, Float[]> copy = new HashMap<String, Float[]>(nodeMetricsColors);
+			return copy;
 		}
 	}
 	
 	public HashMap<String, Float[]> getLinkColors() {
 		synchronized(this) {
-			return linkMetricsColors;
+			HashMap<String, Float[]> copy = new HashMap<String, Float[]>(linkMetricsColors);
+			return copy;
 		}
 	}
 }

@@ -278,16 +278,16 @@ public class Vnode implements VisualElementInterface {
 	public void setSeparation(float newSeparation) {
 		separation = newSeparation;		
 	}
-	
-	public void setRadius() {
-		radius = Math.max(vmetrics.size()*(scaleXZ), scaleY);
-	}
-		
+			
 	public Float[] getLocation() {
 		return location;
 	}	
 
-	public float getRadius() {		
+	public float getRadius() {
+		float radius = 0.0f;
+		if (currentCollectionForm == VisualElementInterface.COLLECTION_CITYSCAPE) {
+			radius = (float) Math.max((Math.ceil(Math.sqrt(vmetrics.size()))*(scaleXZ)), scaleY);
+		}
 		return radius;
 	}
 	

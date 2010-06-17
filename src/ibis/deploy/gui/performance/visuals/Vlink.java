@@ -89,40 +89,12 @@ public class Vlink implements VisualElementInterface {
 			shownMetrics.add(entry.getKey());
 		}
 	}	
-	
-	private void calculateVisuals() {
-		Float[] origin = from.getLocation();
-		Float[] desto  = to.getLocation();
-					
-		float xDist = origin[0] - desto[0];
-		float yDist = origin[1] - desto[1];
-		float zDist = origin[2] - desto[2];
 		
-		double length = Math.sqrt(
-				Math.pow(xDist, 2.0) + 
-				Math.pow(yDist, 2.0) + 
-				Math.pow(zDist, 2.0)
-				);
-		
-		length = length-(from.getRadius()+to.getRadius());
-		
-		float xAngle = (float) Math.toDegrees(Math.atan(yDist/zDist));
-		float yAngle = (float) Math.toDegrees(Math.atan(zDist/xDist));
-		float zAngle = (float) Math.toDegrees(Math.atan(yDist/xDist));		
-		
-		System.err.println(source+" length: "+length);
-		System.err.println(source+" zAngle: "+zAngle);
-		System.err.println(source+" yAngle: "+yAngle);
-		System.err.println(source+" xAngle: "+xAngle);
-		
-		
-	}
-	
 	private void initializeMetrics() {
 		vmetrics.clear();
 		
 		HashMap<String, Float[]> colors = node.getLinkColors();
-		
+						
 		for (Map.Entry<String, Float[]> entry : colors.entrySet()) {
 			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, this, entry.getValue(), from, to));
 		}		
@@ -146,40 +118,19 @@ public class Vlink implements VisualElementInterface {
 		}
 	}
 	
-	public void drawThis(GL gl, int glMode) {
-		//Save the old matrix mode and transformation matrix
-		//IntBuffer oldMode = IntBuffer.allocate(1);		
-		//gl.glGetIntegerv(GL.GL_MATRIX_MODE, oldMode);
-		//gl.glPushMatrix();
-		//gl.glMatrixMode(GL.GL_MODELVIEW);		
-
-		//Move towards the intended location
-		//gl.glTranslatef(location[0], location[1], location[2]);
-		
-		//TODO remove or replace
-		calculateVisuals();
-		
+	public void drawThis(GL gl, int glMode) {	
 		//Draw the desired form
 		if (currentCollectionForm == VisualElementInterface.COLLECTION_CITYSCAPE) {
 			drawCityscape(gl, glMode);
 		}
-		
-		//Restore the old matrix mode and transformation matrix		
-		//gl.glMatrixMode(oldMode.get());
-		//gl.glPopMatrix();
 	}
 	
 	protected void drawCityscape(GL gl, int glMode) {		
 		//get the breakoff point for rows and columns
 		int rows 		= (int)Math.ceil(Math.sqrt(shownMetrics.size()));
 		int columns 	= (int)Math.floor(Math.sqrt(shownMetrics.size()));
-		
-		//Center the drawing around the location		
+				
 		Float[] shift = new Float[3];
-		shift[0] =  ((((scaleXZ+separation)*rows   )-separation)-(0.5f*scaleXZ))*0.5f;
-		shift[1] = 0.0f;
-		shift[2] = -((((scaleXZ+separation)*columns)-separation)-(0.5f*scaleXZ))*0.5f;
-		setRelativeLocation(shift);
 		
 		int row = 0, column = 0, i = 0;
 		for (Entry<String, Vmetric> entry : vmetrics.entrySet()) {			
@@ -191,14 +142,12 @@ public class Vlink implements VisualElementInterface {
 				}
 							
 				//Setup the form
-				try {
-					entry.getValue().setLocation(location);
-					
+				try {					
 					shift[0] = -(scaleXZ+separation)*row;
 					shift[1] = 0.0f;
 					shift[2] =  (scaleXZ+separation)*column;
 					entry.getValue().setRelativeLocation(shift);
-						
+					
 				} catch (Exception e) {					
 					e.printStackTrace();
 				}
@@ -294,16 +243,16 @@ public class Vlink implements VisualElementInterface {
 	public void setSeparation(float newSeparation) {
 		separation = newSeparation;		
 	}
-	
-	public void setRadius() {
-		radius = Math.max(vmetrics.size()*(scaleXZ), scaleY);
-	}
 		
 	public Float[] getLocation() {
 		return location;
 	}	
 
-	public float getRadius() {		
+	public float getRadius() {
+		float radius = 0.0f;
+		if (currentCollectionForm == VisualElementInterface.COLLECTION_CITYSCAPE) {
+			radius = (float) Math.max((Math.ceil(Math.sqrt(vmetrics.size()))*(scaleXZ)), scaleY);
+		}
 		return radius;
 	}
 	

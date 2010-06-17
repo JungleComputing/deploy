@@ -19,6 +19,7 @@ public class SetCollectionFormAction extends AbstractAction {
 		
 		if (label.compareTo("Cityscape") == 0) 	myCollections = VisualElementInterface.COLLECTION_CITYSCAPE;
 		else if (label.compareTo("Circle") == 0) 	myCollections = VisualElementInterface.COLLECTION_CIRCLE;
+		else if (label.compareTo("Sphere") == 0) 	myCollections = VisualElementInterface.COLLECTION_SPHERE;
 	}
 
 	public void actionPerformed(ActionEvent e) {	

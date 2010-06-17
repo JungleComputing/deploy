@@ -56,8 +56,6 @@ public class Node implements IbisConceptInterface {
 			
 			if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {			
 				nodeMetricsColors.put(metric.getName(), metric.getColor());
-			//} else if (metric.getGroup() == LinkMetricsObject.METRICSGROUP) {				
-			//	linkMetricsColors.put(metric.getName(), metric.getColor());
 			} else if (metric.getGroup() == LinkMetricsMap.METRICSGROUP) {
 				linkMetricsColors.put(metric.getName(), metric.getColor());					
 			}
@@ -121,13 +119,7 @@ public class Node implements IbisConceptInterface {
 				e.printStackTrace();
 			} 
 		}
-	}
-	
-	public Set<IbisIdentifier> getConnections() {
-		synchronized(this) {
-			return connections;
-		}
-	}
+	}	
 
 	public String getSiteName() {
 		return siteName;
@@ -149,19 +141,7 @@ public class Node implements IbisConceptInterface {
 				throw new StatNotRequestedException();
 			}
 		}
-	}
-	
-	public Map<String, Float> getLinkValueMap(IbisIdentifier ibis) {
-		synchronized(this) {
-			return linkMetricsValues.get(ibis);
-		}
-	}
-		
-	public HashMap<String, Float> getMonitoredNodeMetrics() {
-		synchronized(this) {
-			return nodeMetricsValues;
-		}
-	}
+	}	
 	
 	public Set<String> getMonitoredLinkMetrics() {
 		synchronized(this) {
@@ -174,22 +154,47 @@ public class Node implements IbisConceptInterface {
 			return newSet;
 		}
 	}
+	
+	public Map<String, Float> getLinkValueMap(IbisIdentifier ibis) {
+		synchronized(this) {
+			Map<String, Float> copy = new HashMap<String, Float>(linkMetricsValues.get(ibis));
+			return copy;
+		}
+	}
+		
+	public HashMap<String, Float> getMonitoredNodeMetrics() {
+		synchronized(this) {
+			HashMap<String, Float> copy = new HashMap<String, Float>(nodeMetricsValues);
+			return copy;
+		}
+	}
 			
 	public HashMap<IbisIdentifier, Map<String, Float>> getLinkValues() {
 		synchronized(this) {
-			return linkMetricsValues;
+			HashMap<IbisIdentifier, Map<String, Float>> copy = new HashMap<IbisIdentifier, Map<String, Float>>(linkMetricsValues);
+			return copy;
 		}
 	}
 	
 	public HashMap<String, Float[]> getMetricsColors() {
 		synchronized(this) {
-			return nodeMetricsColors;
+			HashMap<String, Float[]> copy = new HashMap<String, Float[]>(nodeMetricsColors);
+			return copy;
 		}
 	}
 	
 	public HashMap<String, Float[]> getLinkColors() {
 		synchronized(this) {
-			return linkMetricsColors;
+			HashMap<String, Float[]> copy = new HashMap<String, Float[]>(linkMetricsColors);
+			return copy;
 		}
 	}
+	
+	public Set<IbisIdentifier> getConnections() {
+		synchronized(this) {
+			Set<IbisIdentifier> copy = new HashSet<IbisIdentifier>(connections);
+			return copy;
+		}
+	}
+	
 }

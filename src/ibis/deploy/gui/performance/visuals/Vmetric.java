@@ -7,6 +7,7 @@ import java.nio.IntBuffer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Vector;
 import java.util.Map.Entry;
 
 import ibis.deploy.gui.performance.PerfVis;
@@ -137,7 +138,7 @@ public class Vmetric implements VisualElementInterface {
 		gl.glPushMatrix();
 		gl.glMatrixMode(GL.GL_MODELVIEW);
 		
-		if (from == null && to == null) {
+		if (from == null || to == null) {
 			//Move towards the intended location
 			if (glMode == GL.GL_SELECT) gl.glLoadName(glName);
 			gl.glTranslatef(location[0], location[1], location[2]);
@@ -145,8 +146,7 @@ public class Vmetric implements VisualElementInterface {
 			//Draw the form
 			if (currentMetricForm == VisualElementInterface.METRICS_BAR) {
 				drawBar(gl, scaleY);
-			} else if (currentMetricForm == VisualElementInterface.METRICS_TUBE) {
-				gl.glRotatef(-90f, 1.0f, 0.0f, 0.0f);
+			} else if (currentMetricForm == VisualElementInterface.METRICS_TUBE) {				
 				drawTube(gl, scaleY);
 			} else if (currentMetricForm == VisualElementInterface.METRICS_SPHERE) {
 				drawSphere(gl);
@@ -160,8 +160,9 @@ public class Vmetric implements VisualElementInterface {
 			float yDist = origin[1] - destination[1];
 			float zDist = origin[2] - destination[2];
 			
-			float zAngle = (float) Math.atan(yDist/xDist);
-			float yAngle = (float) Math.atan(zDist/xDist);
+			float xAngle = (float) Math.toDegrees(Math.atan(yDist/zDist));
+			float yAngle = (float) Math.toDegrees(Math.atan(xDist/zDist));
+			//float zAngle = (float) Math.toDegrees(Math.atan(yDist/xDist));
 			
 			//Calculate the length of this element : V( x^2 + y^2 + z^2 ) 
 			float length  = (float) Math.sqrt(	Math.pow(xDist,2)
@@ -172,9 +173,15 @@ public class Vmetric implements VisualElementInterface {
 			
 			//Translate to the origin and turn towards the destination
 			gl.glTranslatef(origin[0], origin[1], origin[2]);
-			gl.glRotatef(zAngle, 0.0f, 0.0f, 1.0f);
-			gl.glRotatef(yAngle, 0.0f, 1.0f, 0.0f);
 			
+			gl.glRotatef(yAngle, 0.0f, 1.0f, 0.0f);
+			gl.glRotatef(xAngle, 1.0f, 0.0f, 0.0f);
+			
+			//gl.glRotatef(zAngle, 0.0f, 0.0f, 1.0f);
+			
+			//Translate to the starting point in the y direction
+			gl.glTranslatef(0.0f, from.getRadius(), 0.0f);
+						
 			//And draw the link
 			if (glMode == GL.GL_SELECT) gl.glLoadName(glName);
 			if (currentMetricForm == VisualElementInterface.METRICS_BAR) {
@@ -422,11 +429,12 @@ public class Vmetric implements VisualElementInterface {
 		
 		float f = value * length;
 		
+		//Rotate to align with the y axis instead of the default z axis
+		gl.glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+		
 		//Make a new quadratic object
 		GLUquadric qobj = glu.gluNewQuadric();
-		
-		//gl.glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
-		
+				
 		//The Solid Element
 			//Bottom disk
 			gl.glColor3f(quad_color_r, quad_color_g, quad_color_b);

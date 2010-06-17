@@ -25,12 +25,14 @@ public interface VisualElementInterface {
 	public static Float[] _F0F	= {1.0f, 0.0f, 1.0f};
 	public static Float[] _F08	= {1.0f, 0.0f, 0.5f};
 	
+	
 	public static final int METRICS_BAR = 123;
 	public static final int METRICS_TUBE = 124;
 	public static final int METRICS_SPHERE = 125;
 	
 	public static final int COLLECTION_CITYSCAPE = 345;
 	public static final int COLLECTION_CIRCLE = 346;
+	public static final int COLLECTION_SPHERE = 347;
 		
 	public void setSize(float width, float height);
 		
@@ -42,8 +44,6 @@ public interface VisualElementInterface {
 	
 	public void setSeparation(float newSeparation);
 	
-	public void setRadius();
-
 	public float getRadius();
 	
 	public int getGLName();

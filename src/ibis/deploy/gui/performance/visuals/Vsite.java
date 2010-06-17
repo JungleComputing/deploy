@@ -77,7 +77,7 @@ public class Vsite implements VisualElementInterface {
 		this.parent = parent;
 		
 		this.site = site;
-		this.currentCollectionForm = VisualElementInterface.COLLECTION_CITYSCAPE;
+		this.currentCollectionForm = VisualElementInterface.COLLECTION_SPHERE;
 		
 		//Register the new object with the Performance visualization object
 		this.glName = visman.registerSite(this);
@@ -123,16 +123,19 @@ public class Vsite implements VisualElementInterface {
 						
 			for (IbisIdentifier destination : node.getConnections()) {
 				Vnode to = nodesToVisuals.get(site.getNode(destination));
-					
-				if (vlinkMap.containsKey(source)) {
-					if (!vlinkMap.get(source).containsKey(destination)) {
-						vlinkMap.get(source).put(destination, new Vlink(perfvis, visman, this, node, source, from, destination, to));
-					}
-				} else {
-					HashMap<IbisIdentifier, Vlink> newMap = new HashMap<IbisIdentifier, Vlink>();
-					newMap.put(destination, new Vlink(perfvis, visman, this, node, source, from, destination, to));
-					vlinkMap.put(source, newMap);
-				}				
+				
+				//only show links within this site
+				//if (nodesToVisuals.containsKey(destination)) {
+					if (vlinkMap.containsKey(source)) {
+						if (!vlinkMap.get(source).containsKey(destination)) {
+							vlinkMap.get(source).put(destination, new Vlink(perfvis, visman, this, node, source, from, destination, to));
+						}
+					} else {
+						HashMap<IbisIdentifier, Vlink> newMap = new HashMap<IbisIdentifier, Vlink>();
+						newMap.put(destination, new Vlink(perfvis, visman, this, node, source, from, destination, to));
+						vlinkMap.put(source, newMap);
+					}	
+				//}
 			}
 		}
 		
@@ -185,6 +188,8 @@ public class Vsite implements VisualElementInterface {
 				drawCityscape(gl, glMode);
 			} else if (currentCollectionForm == VisualElementInterface.COLLECTION_CIRCLE) {
 				drawCircle(gl, glMode);
+			} else if (currentCollectionForm == VisualElementInterface.COLLECTION_SPHERE) {
+				drawSphere(gl, glMode);
 			}
 		} else {
 			if (currentCollectionForm == VisualElementInterface.COLLECTION_CITYSCAPE) {
@@ -273,6 +278,37 @@ public class Vsite implements VisualElementInterface {
 		}
 	}
 	
+	protected void drawSphere(GL gl, int glMode) {	
+		//http://www.cgafaq.info/wiki/Evenly_distributed_points_on_sphere
+		
+		double dlong = Math.PI*(3-Math.sqrt(5));
+		double olong = 0.0;
+		double dz    = 2.0/vnodes.size();
+		double z     = 1 - (dz/2);
+		Float[][] pt = new Float[vnodes.size()][3]; 
+		double r = 0;
+		
+		for (int k=0;k<vnodes.size();k++) {
+			r = Math.sqrt(1-(z*z));
+			pt[k][0] = location[0] + 2*((float) (Math.cos(olong)*r));
+			pt[k][1] = location[1] + 2*((float) (Math.sin(olong)*r));
+			pt[k][2] = location[2] + 2*((float) z);
+			z = z -dz;
+			olong = olong +dlong;			
+		}	
+		
+		int k=0;				
+		for (Vnode vnode : vnodes) {						
+			//set the location						
+			vnode.setLocation(pt[k]);
+														
+			//Draw the form at that location
+			vnode.drawThis(gl, glMode);
+						
+			k++;
+		}
+	}
+	
 	public void setForm(int newForm) throws ModeUnknownException {
 		if (newForm == VisualElementInterface.METRICS_BAR || newForm == VisualElementInterface.METRICS_TUBE || newForm == VisualElementInterface.METRICS_SPHERE) {
 			currentMetricForm = newForm;			
@@ -288,7 +324,7 @@ public class Vsite implements VisualElementInterface {
 	
 	public PopupMenu getMenu() {		
 		String[] elementsgroup = {"Bars", "Tubes", "Spheres"};
-		String[] collectionsgroup = {"Cityscape", "Circle"};
+		String[] collectionsgroup = {"Cityscape", "Circle", "Sphere"};
 		
 		PopupMenu newMenu = new PopupMenu();	
 		
@@ -369,16 +405,16 @@ public class Vsite implements VisualElementInterface {
 	public void setSeparation(float newSeparation) {
 		separation = newSeparation;		
 	}
-	
-	public void setRadius() {
-		radius = Math.max(vmetrics.size()*(scaleXZ), scaleY);
-	}	
 		
 	public Float[] getLocation() {
 		return location;
 	}	
 
-	public float getRadius() {		
+	public float getRadius() {
+		float radius = 0.0f;
+		if (currentCollectionForm == VisualElementInterface.COLLECTION_CITYSCAPE) {
+			radius = (float) Math.max((Math.ceil(Math.sqrt(vmetrics.size()))*(scaleXZ)), scaleY);
+		}
 		return radius;
 	}
 	
