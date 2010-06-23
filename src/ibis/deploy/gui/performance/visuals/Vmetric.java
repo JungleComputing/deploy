@@ -151,68 +151,16 @@ public class Vmetric implements VisualElementInterface {
 			} else if (currentMetricForm == VisualElementInterface.METRICS_SPHERE) {
 				drawSphere(gl);
 			}		
-		} else {
-			//Calculate the angles we need to turn towards the destination
-			Float[] origin = from.getLocation();
-			Float[] destination = to.getLocation();
-			int xSign = 1, ySign = 1, zSign = 1;
-			
-			float xDist = destination[0] - origin[0];
-			if (xDist<0) xSign = -1;
-			xDist = Math.abs(xDist);
-			
-			float yDist = destination[1] - origin[1];
-			if (yDist<0) ySign = -1;
-			yDist = Math.abs(yDist);
-			
-			float zDist = destination[2] - origin[2];
-			if (zDist<0) zSign = -1;
-			zDist = Math.abs(zDist);
-			
-			//Calculate the length of this element : V( x^2 + y^2 + z^2 ) 
-			float length  = (float) Math.sqrt(	Math.pow(xDist,2)
-											  + Math.pow(yDist,2) 
-											  + Math.pow(zDist,2));
-			
-			float xzDist =  (float) Math.sqrt(	Math.pow(xDist,2)
-					  						  + Math.pow(zDist,2));
-						
-			float yAngle = 0.0f;
-			if (xSign < 0) {
-				yAngle = 180.0f + (zSign * (float) Math.toDegrees(Math.atan(zDist/xDist)));
-			} else {
-				yAngle = (-zSign * (float) Math.toDegrees(Math.atan(zDist/xDist)));
-			}
-			
-			float zAngle = ySign * (float) Math.toDegrees(Math.atan(yDist/xzDist));
-						
-			//Translate to the origin coordinates
-			gl.glTranslatef(origin[0], origin[1], origin[2]);						
-						
-			//Rotate towards the destination
-			gl.glRotatef(yAngle, 0.0f, 1.0f, 0.0f);
-			gl.glRotatef(zAngle, 0.0f, 0.0f, 1.0f);				
-						
-			//Align the drawing with the z axis
-			gl.glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-						
-			//Translate the origin's radius over the z axis, in which direction we 
-			//draw the link
-			gl.glTranslatef(0.0f, 0.0f, from.getRadius());
-			
-			//reduce the length by the radii of the origin and destination objects
-			length = length - (from.getRadius() + to.getRadius());
-			
+		} else {			
 			//And draw the link
 			if (glMode == GL.GL_SELECT) gl.glLoadName(glName);
-			
+			gl.glTranslatef(location[0], location[1], location[2]);
 			
 			if (currentMetricForm == VisualElementInterface.METRICS_BAR) {
-				drawBar(gl, length);
+				drawBar(gl, scaleY);
 			} else if (currentMetricForm == VisualElementInterface.METRICS_TUBE) {
-				drawTube(gl, length);
+				drawTube(gl, scaleY);
 			}			
-			
 		}
 		
 		//Restore the old matrix mode and transformation matrix		
@@ -454,7 +402,7 @@ public class Vmetric implements VisualElementInterface {
 		float f = value * length;
 		
 		//Rotate to align with the y axis instead of the default z axis
-		//gl.glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+		gl.glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
 		
 		//Make a new quadratic object
 		GLUquadric qobj = glu.gluNewQuadric();

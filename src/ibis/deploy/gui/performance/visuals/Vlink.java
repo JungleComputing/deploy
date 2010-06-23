@@ -15,6 +15,7 @@ import ibis.ipl.IbisIdentifier;
 import java.awt.Menu;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
+import java.nio.IntBuffer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -62,7 +63,7 @@ public class Vlink implements VisualElementInterface {
 		this.location[1] = 0.0f;
 		this.location[2] = 0.0f;
 		
-		this.separation = 0.25f;
+		this.separation = 0.0f;
 		
 		scaleXZ = 0.25f;
 		scaleY = 1.0f;
@@ -76,8 +77,6 @@ public class Vlink implements VisualElementInterface {
 		this.to = to;
 		this.node = node;
 		
-		this.location = from.getLocation();
-		this.separation = 0.25f;
 		this.currentCollectionForm = VisualElementInterface.COLLECTION_CITYSCAPE;		
 
 		//Register the new object with the Performance visualization object
@@ -112,20 +111,80 @@ public class Vlink implements VisualElementInterface {
 					visual.setValue(metricValue);
 				
 				} catch (ValueOutOfBoundsException e) {				
-					System.out.println("VALUE: "+entry.getValue()+" OUT OF BOUNDS!");
+					System.out.println(source +" to "+destination+" VALUE of "+entry.getKey()+": "+entry.getValue()+" OUT OF BOUNDS!");
 				}
 			}
 		}
 	}
 	
 	public void drawThis(GL gl, int glMode) {	
+		//Save the old matrix mode and transformation matrix
+		IntBuffer oldMode = IntBuffer.allocate(1);		
+		gl.glGetIntegerv(GL.GL_MATRIX_MODE, oldMode);
+		gl.glPushMatrix();
+		gl.glMatrixMode(GL.GL_MODELVIEW);	
+		
+		//Calculate the angles we need to turn towards the destination
+		Float[] origin = from.getLocation();
+		Float[] destination = to.getLocation();
+		int xSign = 1, ySign = 1, zSign = 1;
+		
+		float xDist = destination[0] - origin[0];
+		if (xDist<0) xSign = -1;
+		xDist = Math.abs(xDist);
+		
+		float yDist = destination[1] - origin[1];
+		if (yDist<0) ySign = -1;
+		yDist = Math.abs(yDist);
+		
+		float zDist = destination[2] - origin[2];
+		if (zDist<0) zSign = -1;
+		zDist = Math.abs(zDist);
+		
+		//Calculate the length of this element : V( x^2 + y^2 + z^2 ) 
+		float length  = (float) Math.sqrt(	Math.pow(xDist,2)
+										  + Math.pow(yDist,2) 
+										  + Math.pow(zDist,2));
+		
+		float xzDist =  (float) Math.sqrt(	Math.pow(xDist,2)
+				  						  + Math.pow(zDist,2));
+					
+		float yAngle = 0.0f;
+		if (xSign < 0) {
+			yAngle = 180.0f + (zSign * (float) Math.toDegrees(Math.atan(zDist/xDist)));
+		} else {
+			yAngle = (-zSign * (float) Math.toDegrees(Math.atan(zDist/xDist)));
+		}
+		
+		float zAngle = ySign * (float) Math.toDegrees(Math.atan(yDist/xzDist));
+					
+		//Translate to the origin coordinates
+		gl.glTranslatef(origin[0], origin[1], origin[2]);						
+					
+		//Rotate towards the destination, the x axis is now pointed towards the target
+		gl.glRotatef(yAngle, 0.0f, 1.0f, 0.0f);
+		gl.glRotatef(zAngle, 0.0f, 0.0f, 1.0f);				
+					
+		//point with the y axis instead of the x axis
+		gl.glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);		
+					
+		//Translate the origin's radius over the y axis
+		gl.glTranslatef(0.0f, from.getRadius(), 0.0f);
+		
+		//reduce the length by the radii of the origin and destination objects
+		length = length - (from.getRadius() + to.getRadius());
+		
 		//Draw the desired form
 		if (currentCollectionForm == VisualElementInterface.COLLECTION_CITYSCAPE) {
-			drawCityscape(gl, glMode);
+			drawCityscape(gl, glMode, length);
 		}
+		
+		//Restore the old matrix mode and transformation matrix		
+		gl.glMatrixMode(oldMode.get());
+		gl.glPopMatrix();
 	}
 	
-	protected void drawCityscape(GL gl, int glMode) {		
+	protected void drawCityscape(GL gl, int glMode, float length) {		
 		//get the breakoff point for rows and columns
 		int rows 		= (int)Math.ceil(Math.sqrt(shownMetrics.size()));
 		int columns 	= (int)Math.floor(Math.sqrt(shownMetrics.size()));
@@ -146,8 +205,9 @@ public class Vlink implements VisualElementInterface {
 					shift[0] = -(scaleXZ+separation)*row;
 					shift[1] = 0.0f;
 					shift[2] =  (scaleXZ+separation)*column;
-					entry.getValue().setRelativeLocation(shift);
+					entry.getValue().setLocation(shift);
 					
+					entry.getValue().setSize(0.25f, length);
 				} catch (Exception e) {					
 					e.printStackTrace();
 				}

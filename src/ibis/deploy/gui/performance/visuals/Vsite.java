@@ -124,6 +124,7 @@ public class Vsite implements VisualElementInterface {
 			for (IbisIdentifier destination : node.getConnections()) {
 				Vnode to = nodesToVisuals.get(site.getNode(destination));
 				
+				if (to != null) {
 				//only show links within this site
 				//if (nodesToVisuals.containsKey(destination)) {
 					if (vlinkMap.containsKey(source)) {
@@ -136,6 +137,7 @@ public class Vsite implements VisualElementInterface {
 						vlinkMap.put(source, newMap);
 					}	
 				//}
+				}
 			}
 		}
 		

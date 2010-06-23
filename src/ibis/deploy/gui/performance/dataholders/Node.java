@@ -98,14 +98,12 @@ public class Node implements IbisConceptInterface {
 									
 					if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
 						nodeMetricsValues.put(metric.getName(), metric.getValue());
-						
-					//} else if (metric.getGroup() == LinkMetricsObject.METRICSGROUP) {
-					//	linkMetricsValues.put(metric.getName(), metric.getValue());
+					
 					} else if (metric.getGroup() == LinkMetricsMap.METRICSGROUP) {
 						Map<IbisIdentifier, Float> values = ((LinkMetricsMap) metric).getValues();
 											
 						for (IbisIdentifier ibis : values.keySet()) {
-							if (!linkMetricsValues.containsKey(ibis)) {
+							if (!linkMetricsValues.containsKey(ibis)) {								
 								linkMetricsValues.put(ibis, new HashMap<String, Float>());				
 							}
 							linkMetricsValues.get(ibis).put(metric.getName(), values.get(ibis));

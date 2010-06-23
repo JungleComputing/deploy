@@ -1,5 +1,6 @@
 package ibis.deploy.gui.performance.metrics.link;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import ibis.deploy.gui.performance.metrics.Metric;
@@ -16,6 +17,7 @@ public class LinkMetricsMap extends Metric {
 	}
 		
 	public Map<IbisIdentifier, Float> getValues() {
-		return values;
+		Map<IbisIdentifier, Float> result = new HashMap<IbisIdentifier, Float>(values);
+		return result;
 	}
 }
