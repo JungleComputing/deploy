@@ -191,8 +191,8 @@ public class Vmetric implements VisualElementInterface {
 						
 			//Rotate towards the destination
 			gl.glRotatef(yAngle, 0.0f, 1.0f, 0.0f);
-			gl.glRotatef(zAngle, 0.0f, 0.0f, 1.0f);	
-			
+			gl.glRotatef(zAngle, 0.0f, 0.0f, 1.0f);				
+						
 			//Align the drawing with the z axis
 			gl.glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
 						
@@ -462,31 +462,31 @@ public class Vmetric implements VisualElementInterface {
 		//The Solid Element
 			//Bottom disk
 			gl.glColor3f(quad_color_r, quad_color_g, quad_color_b);
-			glu.gluDisk(qobj, 0.0, radius, 32, 1);
+			glu.gluDisk(qobj, 0.0, radius, 8, 1);
 						
 			//Sides
-			glu.gluCylinder(qobj, radius, radius, f, 32, 10);			
+			glu.gluCylinder(qobj, radius, radius, f, 8, 1);			
 			
 			//Edge of bottom disk
 			gl.glColor3f(line_color_r, line_color_g, line_color_b);
-			glu.gluCylinder(qobj, radius, radius, 0.01f, 32, 10);
+			glu.gluCylinder(qobj, radius, radius, 0.01f, 8, 1);
 			
 			gl.glTranslatef(0.0f, 0.0f, f);
 			
 			//Top disk
 			gl.glColor3f(quad_color_r, quad_color_g, quad_color_b);
-			glu.gluDisk(qobj, 0.0, radius, 32, 1);
+			glu.gluDisk(qobj, 0.0, radius, 8, 1);
 			
 			//Edge of top disk
 			gl.glColor3f(line_color_r, line_color_g, line_color_b);
-			glu.gluCylinder(qobj, radius, radius, 0.01f, 32, 10);
+			glu.gluCylinder(qobj, radius, radius, 0.01f, 8, 1);
 		
 		//The shadow Element				
 		//Bottom disk left out, since it's the top disk of the solid
 								
 		//Sides
 		gl.glColor4f(quad_color_r, quad_color_g, quad_color_b, alpha);
-		glu.gluCylinder(qobj, radius, radius, length-f, 32, 10);			
+		glu.gluCylinder(qobj, radius, radius, length-f, 8, 1);			
 		
 		//Edge of bottom disk also left out
 					
@@ -494,11 +494,11 @@ public class Vmetric implements VisualElementInterface {
 		
 		//Top disk
 		gl.glColor4f(quad_color_r, quad_color_g, quad_color_b, alpha);
-		glu.gluDisk(qobj, 0.0, radius, 32, 1);
+		glu.gluDisk(qobj, 0.0, radius, 8, 1);
 		
 		//Edge of top disk
 		gl.glColor4f(line_color_r, line_color_g, line_color_b, alpha);
-		glu.gluCylinder(qobj, radius, radius, 0.01f, 32, 10);	
+		glu.gluCylinder(qobj, radius, radius, 0.01f, 8, 1);	
 		
 		
 		//Cleanup

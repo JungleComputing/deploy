@@ -290,9 +290,9 @@ public class Vsite implements VisualElementInterface {
 		
 		for (int k=0;k<vnodes.size();k++) {
 			r = Math.sqrt(1-(z*z));
-			pt[k][0] = location[0] + 2*((float) (Math.cos(olong)*r));
-			pt[k][1] = location[1] + 2*((float) (Math.sin(olong)*r));
-			pt[k][2] = location[2] + 2*((float) z);
+			pt[k][0] = location[0] + 4*((float) (Math.cos(olong)*r));
+			pt[k][1] = location[1] + 4*((float) (Math.sin(olong)*r));
+			pt[k][2] = location[2] + 4*((float) z);
 			z = z -dz;
 			olong = olong +dlong;			
 		}	
