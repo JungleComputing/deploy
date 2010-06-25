@@ -2,12 +2,11 @@ package ibis.deploy.gui.performance;
 
 import ibis.deploy.gui.GUI;
 import ibis.deploy.gui.performance.swing.*;
-
 import java.awt.BorderLayout;
 
 import javax.media.opengl.GLCanvas;
 import javax.media.opengl.GLCapabilities;
-import javax.swing.Box;
+import javax.swing.Action;
 import javax.swing.ButtonGroup;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -21,7 +20,38 @@ public class PerformancePanel extends JPanel {
 	
 	protected GLCanvas canvas;
 	protected Animator animator;
+	PerfVis perfvis;
+	
 	public PerformancePanel(GUI gui) {
+		//Add the option to enable this feature to the Ibis Deploy menu bar	
+		JMenuBar menuBar = gui.getMenuBar();
+        JMenu menu = null;
+        Action menuAction = new GridVisionAction(gui, this);
+        
+        for (int i = 0; i < menuBar.getMenuCount(); i++) {
+            if (menuBar.getMenu(i).getText().equals("View")) {
+                menu = menuBar.getMenu(i);
+            }
+        }
+        if (menu == null) {
+            menu = new JMenu("View");
+            menu.add(menuAction);            
+            menuBar.add(menu, Math.max(0, menuBar.getMenuCount() - 1));
+        } else {
+            boolean found = false;
+            for (int i = 0; i < menu.getComponentCount(); i++) {
+                if (menu.getComponent(i) == menuAction) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                menu.add(menuAction);
+            }
+        }	
+	}
+	
+	public void initialize(GUI gui) {
 		//JOGL initializers
 		GLCapabilities glCapabilities = new GLCapabilities();		
 		glCapabilities.setDoubleBuffered(true);
@@ -29,36 +59,15 @@ public class PerformancePanel extends JPanel {
 		canvas = new GLCanvas(glCapabilities);
 		animator = new Animator(canvas);
 		
-		PerfVis perfvis = new PerfVis(gui, canvas, this);
-				
+		perfvis = new PerfVis(gui, canvas, this);				
 		
-		setLayout(new BorderLayout());
+		setLayout(new BorderLayout());		
 		
-		
-		//Add the Menu bar
+		//Add the GridVision Menu bar to the gui
 		JMenuBar bar = new JMenuBar();
 			String[] refreshgroup = {"5000", "2000", "1000", "500", "200", "100"};
 			JMenu refresh = makeRadioGroup(perfvis, "Refresh delay (in ms)", refreshgroup);
 		bar.add(refresh);
-		/*
-			String[] zoomgroup = {"Pools","Sites", "Nodes"};
-			JMenu zoom = makeRadioGroup(perfvis, "Zoom", zoomgroup);
-		bar.add(zoom);
-			
-			String[] statsgroup = {"All","CPU Usage", "Memory Usage"};
-			JMenu stats = makeRadioGroup(perfvis, "Statistics", statsgroup);
-		bar.add(stats);
-		
-		bar.add(Box.createHorizontalGlue());
-		
-			String[] collectionsgroup = {"Cityscapes", "Circles"};
-			JMenu collections = makeRadioGroup(perfvis, "Collections", collectionsgroup);
-		bar.add(collections);
-		
-			String[] elementsgroup = {"Bars", "Tubes", "Spheres"};
-			JMenu elements = makeRadioGroup(perfvis, "Elements", elementsgroup);
-		bar.add(elements);
-		*/
 		this.add(bar, BorderLayout.NORTH);	    
 		
 		//Add the GLcanvas							
@@ -67,6 +76,11 @@ public class PerformancePanel extends JPanel {
 		animator.start();
 	}
 	
+	public void shutdown() {
+		animator.stop();
+		perfvis.shutdown();
+		perfvis = null;
+	}	
 	
 	private JMenu makeRadioGroup(PerfVis perfvis, String menuName, String[] itemNames) {
 		JMenu result = new JMenu(menuName);

@@ -17,6 +17,8 @@ import ibis.deploy.gui.misc.SaveAsWorkSpaceAction;
 import ibis.deploy.gui.misc.SaveWorkSpaceAction;
 import ibis.deploy.gui.misc.SmartSocketsVizAction;
 import ibis.deploy.gui.misc.Utils;
+import ibis.deploy.gui.performance.PerformancePanel;
+import ibis.deploy.gui.worldmap.WorldMapPanel;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -67,6 +69,8 @@ public class GUI {
     private JFrame frame = null;
 
     private JMenuBar menuBar = null;
+    
+    private RootPanel myRoot;
 
     // private Boolean sharedHubs;
 
@@ -126,7 +130,7 @@ public class GUI {
 
     private void createAndShowGUI() {
         JMenuItem menuItem;
-
+        
         UIManager.put("swing.boldMetal", Boolean.FALSE);
         frame = new JFrame("Ibis Deploy - " + workspaceLocation.getName());
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -159,7 +163,7 @@ public class GUI {
         this.menuBar.add(menu);
 
         menu = new JMenu("View");
-        menu.add(new SmartSocketsVizAction(frame, this));
+        menu.add(new SmartSocketsVizAction(frame, this));        
         this.menuBar.add(menu);
 
         menu = new JMenu("Options");
@@ -189,7 +193,8 @@ public class GUI {
         frame.setJMenuBar(this.menuBar);
 
         frame.getContentPane().setLayout(new BorderLayout());
-        frame.getContentPane().add(new RootPanel(this), BorderLayout.CENTER);
+        myRoot = new RootPanel(this);
+        frame.getContentPane().add(myRoot, BorderLayout.CENTER);
 
         frame.setPreferredSize(new Dimension(DEFAULT_SCREEN_WIDTH,
                 DEFAULT_SCREEN_HEIGHT));
@@ -207,6 +212,8 @@ public class GUI {
         frame.setLocationRelativeTo(null);
 
         frame.setVisible(true);
+        
+        PerformancePanel gridVisionPanel = new PerformancePanel(this);
     }
 
     private static void printUsage() {
@@ -522,5 +529,9 @@ public class GUI {
 
     public JFrame getFrame() {
         return frame;
+    }
+    
+    public RootPanel getRootPanel() {
+    	return myRoot;
     }
 }

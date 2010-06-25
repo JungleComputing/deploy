@@ -7,6 +7,7 @@ import ibis.deploy.gui.performance.PerformancePanel;
 import ibis.deploy.gui.misc.Utils;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -14,6 +15,8 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
 public class RootPanel extends JPanel {
+	JTabbedPane tabs;
+	TabTitlePanel gridVisionTab;
 
     private static class TabTitlePanel extends JPanel {
 
@@ -22,7 +25,7 @@ public class RootPanel extends JPanel {
         public TabTitlePanel(String name, ImageIcon icon) {
             setOpaque(false);
             add(new JLabel(icon));
-            add(new JLabel(name));
+            add(new JLabel(name));            
         }
 
     }
@@ -31,7 +34,13 @@ public class RootPanel extends JPanel {
 
     public RootPanel(GUI gui) {
         setLayout(new BorderLayout());
-        JTabbedPane tabs = new JTabbedPane();
+        tabs = new JTabbedPane();
+        gridVisionTab = new TabTitlePanel("Performance", Utils
+        		.createImageIcon("/images/network-transmit-receive.png",
+                "Performance Tab"));
+        
+        
+        
         tabs.add(new ExperimentsPanel(gui));
         tabs.setTabComponentAt(0, new TabTitlePanel("Experiment", Utils
                 .createImageIcon("images/utilities-system-monitor.png",
@@ -43,13 +52,32 @@ public class RootPanel extends JPanel {
         tabs.add(new ClusterEditorPanel(gui));
         tabs.setTabComponentAt(2, new TabTitlePanel("Clusters", Utils
                 .createImageIcon("images/network-transmit-receive.png",
-                        "Clusters Tab")));
-        tabs.add(new PerformancePanel(gui));
-        tabs.setTabComponentAt(3, new TabTitlePanel("Performance", Utils
-                .createImageIcon("/images/network-transmit-receive.png",
-                        "Performance Tab")));
+                        "Clusters Tab")));        
         add(tabs, BorderLayout.CENTER);
-
+    }
+    
+    public void toggleGridVisionPane(GUI gui, PerformancePanel panel) {   
+    	System.err.println("toggle!");
+    	
+    	Component[] comps = tabs.getComponents();
+    	boolean present = false;
+    	for (Component comp : comps) {
+    		if (comp == panel) {
+    			present = true;
+    		}
+    	}
+    	    	
+    	if (!present) {    	
+    		System.err.println("and null");
+    		tabs.add(panel);
+    		tabs.setTabComponentAt(tabs.indexOfComponent(panel), gridVisionTab);    		
+    		panel.initialize(gui);
+    	} else {
+    		System.err.println("and not null: "+tabs.indexOfComponent(panel));
+    		panel.shutdown();
+    		panel.removeAll();
+    		tabs.removeTabAt(tabs.indexOfComponent(panel));
+    	}
     }
 
 }

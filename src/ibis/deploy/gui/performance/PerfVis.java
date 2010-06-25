@@ -1,14 +1,12 @@
 package ibis.deploy.gui.performance;
 
 import ibis.deploy.gui.GUI;
-import ibis.deploy.gui.performance.dataholders.Pool;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
 
 import java.awt.Point;
 import java.awt.PopupMenu;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
@@ -74,6 +72,15 @@ public class PerfVis implements GLEventListener {
 		
 		mouseHandler = new MouseHandler(this, canvas);
 		visman = new VisualManager(this);				
+	}
+	
+	public void shutdown() {
+		try {
+			//we put the thread on hold, waiting for the garbage collector to finish it off.
+			statman.wait();
+		} catch (InterruptedException e) {			
+			e.printStackTrace();
+		}
 	}
 				
 	public void display(GLAutoDrawable drawable) {
