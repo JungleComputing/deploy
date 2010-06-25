@@ -11,7 +11,7 @@ import ibis.ipl.support.management.AttributeDescription;
 public class BytesReceivedPerIbisMetric extends LinkMetricsMap implements MetricInterface {
 	public static final String NAME = "BYTES_RECEIVED_PER_IBIS";
 	public static final int DESCRIPTIONS_COUNT_NEEDED = 1;
-	public static final Float[] COLOR = {0.2f, 0.0f, 1.0f};
+	public static final Float[] COLOR = {0.3f, 0.3f, 1.0f};
 	
 	private Map<IbisIdentifier, Long> received_prev;
 	private Map<IbisIdentifier, Float> bps_max;	
@@ -37,7 +37,7 @@ public class BytesReceivedPerIbisMetric extends LinkMetricsMap implements Metric
 	public void update(Object[] results) {
 		long time_now = System.currentTimeMillis();
 		long time_elapsed = time_now - time_prev;	
-		float time_seconds = time_elapsed / 1000L;
+		float time_seconds = (float)time_elapsed / 1000.0f;
 		Float value = 0.0f;
 		
 		Map<IbisIdentifier, Long> sent = (Map<IbisIdentifier, Long>) results[0];

@@ -65,7 +65,7 @@ public class Vlink implements VisualElementInterface {
 		
 		this.separation = 0.0f;
 		
-		scaleXZ = 0.25f;
+		scaleXZ = 0.1f;
 		scaleY = 1.0f;
 				
 		this.vmetrics 	= new HashMap<String, Vmetric>();
@@ -185,29 +185,19 @@ public class Vlink implements VisualElementInterface {
 	}
 	
 	protected void drawCityscape(GL gl, int glMode, float length) {		
-		//get the breakoff point for rows and columns
-		int rows 		= (int)Math.ceil(Math.sqrt(shownMetrics.size()));
-		int columns 	= (int)Math.floor(Math.sqrt(shownMetrics.size()));
-				
 		Float[] shift = new Float[3];
-		
-		int row = 0, column = 0, i = 0;
+				
+		int i =0;
 		for (Entry<String, Vmetric> entry : vmetrics.entrySet()) {			
-			if (shownMetrics.contains(entry.getKey())) {
-				row = i % rows;
-				//Move to next row (if applicable)
-				if (i != 0 && row == 0) {
-					column++;						
-				}
-							
+			if (shownMetrics.contains(entry.getKey())) {							
 				//Setup the form
 				try {					
-					shift[0] = -(scaleXZ+separation)*row;
+					shift[0] = -scaleXZ*i;
 					shift[1] = 0.0f;
-					shift[2] =  (scaleXZ+separation)*column;
+					shift[2] =  ((0.5f*scaleXZ)+separation);
 					entry.getValue().setLocation(shift);
 					
-					entry.getValue().setSize(0.25f, length);
+					entry.getValue().setSize(scaleXZ, length);
 				} catch (Exception e) {					
 					e.printStackTrace();
 				}

@@ -174,16 +174,7 @@ public class Vsite implements VisualElementInterface {
 		}
 	}
 	
-	public void drawThis(GL gl, int glMode) {
-		//Save the old matrix mode and transformation matrix
-		//IntBuffer oldMode = IntBuffer.allocate(1);		
-		//gl.glGetIntegerv(GL.GL_MATRIX_MODE, oldMode);
-		//gl.glPushMatrix();
-		//gl.glMatrixMode(GL.GL_MODELVIEW);		
-
-		//Move towards the intended location
-		//gl.glTranslatef(location[0], location[1], location[2]);
-		
+	public void drawThis(GL gl, int glMode) {		
 		if (!showAverages) {
 			//Draw the desired form
 			if (currentCollectionForm == VisualElementInterface.COLLECTION_CITYSCAPE) {
@@ -193,26 +184,18 @@ public class Vsite implements VisualElementInterface {
 			} else if (currentCollectionForm == VisualElementInterface.COLLECTION_SPHERE) {
 				drawSphere(gl, glMode);
 			}
+			drawLinks(gl, glMode);
 		} else {
 			if (currentCollectionForm == VisualElementInterface.COLLECTION_CITYSCAPE) {
 				drawAveragesCityscape(gl, glMode);
 			} else if (currentCollectionForm == VisualElementInterface.COLLECTION_CIRCLE) {
 				drawAveragesCircle(gl, glMode);
 			}
-		}
-		
-		drawLinks(gl, glMode);
-		
-		//Restore the old matrix mode and transformation matrix		
-		//gl.glMatrixMode(oldMode.get());
-		//gl.glPopMatrix();
+		}		
 	}
 	
 	protected void drawLinks(GL gl, int glMode) {
-		for (Vlink vlink : vlinks) {
-			//vlink.setLocation(location);
-			//vlink.setSeparation(0.5f);
-			
+		for (Vlink vlink : vlinks) {			
 			vlink.drawThis(gl, glMode);
 		}		
 	}
