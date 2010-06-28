@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.Map.Entry;
 
 import javax.media.opengl.GL;
@@ -297,7 +298,7 @@ public class Vsite implements VisualElementInterface {
 	public void setForm(int newForm) throws ModeUnknownException {
 		if (newForm == VisualElementInterface.METRICS_BAR || newForm == VisualElementInterface.METRICS_TUBE || newForm == VisualElementInterface.METRICS_SPHERE) {
 			currentMetricForm = newForm;			
-		} else if (newForm == VisualElementInterface.COLLECTION_CITYSCAPE || newForm == VisualElementInterface.COLLECTION_CIRCLE) {
+		} else if (newForm == VisualElementInterface.COLLECTION_CITYSCAPE || newForm == VisualElementInterface.COLLECTION_CIRCLE || newForm == VisualElementInterface.COLLECTION_SPHERE) {
 			currentCollectionForm = newForm;
 		} else {
 			throw new ModeUnknownException();
@@ -444,9 +445,9 @@ public class Vsite implements VisualElementInterface {
 	}
 	
 	public void drawAveragesCityscape(GL gl, int glMode) {		
-		//get the breakoff point for rows and columns
-		int rows 		= (int)Math.ceil(Math.sqrt(shownMetrics.size()));
-		int columns 	= (int)Math.floor(Math.sqrt(shownMetrics.size()));
+		///get the breakoff point for rows and columns
+		int rows 		= 3;
+		int columns 	= (shownMetrics.size()/3); //always come in groups of 3
 		
 		float tempSeparation = separation;
 		separation = 0.25f;
@@ -459,7 +460,9 @@ public class Vsite implements VisualElementInterface {
 		setRelativeLocation(shift);
 		
 		int row = 0, column = 0, i = 0;
-		for (Entry<String, Vmetric> entry : vmetrics.entrySet()) {
+		Map<String, Vmetric> sortedMap = new TreeMap<String, Vmetric>(vmetrics);
+		
+		for (Entry<String, Vmetric> entry : sortedMap.entrySet()) {
 			if (shownMetrics.contains(entry.getKey())) {
 				row = i % rows;
 				//Move to next row (if applicable)

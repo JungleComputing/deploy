@@ -106,26 +106,13 @@ public class Vnode implements VisualElementInterface {
 		}		
 	}
 	
-	public void drawThis(GL gl, int glMode) {		
-		//Save the old matrix mode and transformation matrix
-		//IntBuffer oldMode = IntBuffer.allocate(1);		
-		//gl.glGetIntegerv(GL.GL_MATRIX_MODE, oldMode);
-		//gl.glPushMatrix();
-		//gl.glMatrixMode(GL.GL_MODELVIEW);		
-
-		//Move towards the intended location
-		//gl.glTranslatef(location[0], location[1], location[2]);
-		
+	public void drawThis(GL gl, int glMode) {
 		//Draw the desired form
 		if (currentCollectionForm == VisualElementInterface.COLLECTION_CITYSCAPE) {
 			drawCityscape(gl, glMode);
 		} else if (currentCollectionForm == VisualElementInterface.COLLECTION_CIRCLE) {
 			drawCircle(gl, glMode);
-		}
-		
-		//Restore the old matrix mode and transformation matrix		
-		//gl.glMatrixMode(oldMode.get());
-		//gl.glPopMatrix();		
+		}		
 	}
 	
 	protected void drawCityscape(GL gl, int glMode) {		
@@ -209,7 +196,7 @@ public class Vnode implements VisualElementInterface {
 	
 	public PopupMenu getMenu() {		
 		String[] elementsgroup = {"Bars", "Tubes", "Spheres"};
-		String[] collectionsgroup = {"Cityscape", "Circle"};
+		String[] collectionsgroup = {"Cityscape", "Circle", "Sphere"};
 		
 		PopupMenu newMenu = new PopupMenu();	
 		

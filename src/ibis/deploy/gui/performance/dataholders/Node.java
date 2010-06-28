@@ -111,8 +111,6 @@ public class Node implements IbisConceptInterface {
 						}
 					}
 				}
-			} catch (MethodNotOverriddenException e) {
-				e.printStackTrace();
 			} catch (Exception e) {			
 				e.printStackTrace();
 			} 

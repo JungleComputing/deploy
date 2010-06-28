@@ -6,11 +6,13 @@ import java.util.List;
 import java.util.Map;
 
 import ibis.deploy.gui.performance.dataholders.*;
+import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
 import ibis.deploy.gui.performance.metrics.link.*;
 import ibis.deploy.gui.performance.metrics.node.*;
 import ibis.deploy.gui.performance.metrics.special.*;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
+import ibis.smartsockets.virtual.NoSuitableModuleException;
 
 public class StatsManager implements Runnable {
 	//Variables needed for the operation of this class		
@@ -60,8 +62,10 @@ public class StatsManager implements Runnable {
 		for (Pool pool : newPools) {
 			try {
 				pool.update();
-			} catch (Exception e) {
+			} catch (NoSuitableModuleException e) {
 				e.printStackTrace();
+				
+			} catch (StatNotRequestedException e) {
 				pools.clear();
 				poolSizes.clear();
 				initPools();

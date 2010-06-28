@@ -30,9 +30,7 @@ public class BytesSentPerIbisMetric extends LinkMetricsMap implements MetricInte
 				
 		attributesCountNeeded = DESCRIPTIONS_COUNT_NEEDED;
 		necessaryAttributes = new AttributeDescription[DESCRIPTIONS_COUNT_NEEDED];
-		necessaryAttributes[0] = new AttributeDescription("ibis", "sentBytesPerIbis");
-		//necessaryAttributes[1] = new AttributeDescription("java.lang:type=Runtime", "Uptime");
-		
+		necessaryAttributes[0] = new AttributeDescription("ibis", "sentBytesPerIbis");		
 	}
 		
 	@SuppressWarnings("unchecked")
@@ -64,7 +62,7 @@ public class BytesSentPerIbisMetric extends LinkMetricsMap implements MetricInte
 			
 			sent_prev.put(ibis, bytes_elapsed);			
 			
-			values.put(ibis, value);					
+			values.put(ibis, value);			
 		}	
 		time_prev = time_now;
 	}

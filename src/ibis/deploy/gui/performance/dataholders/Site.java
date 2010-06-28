@@ -87,22 +87,23 @@ public class Site implements IbisConceptInterface {
 			
 			for (Metric metric : currentlyGatheredMetrics) {
 				if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
-				//if (!metric.getName().equals(ConnStatistic.NAME)) {
 					String key = metric.getName();
 					List<Float> results = new ArrayList<Float>();
 					for (Node node : nodes) {			
 						results.add((Float)node.getValue(key));
 					}
-					float total = 0, average = 0;
+					float total = 0, average = 0, min = 1, max = 0;
 					for (Float entry : results) {
+						min = Math.min(min, entry);
+						max = Math.max(max, entry);
 						total += entry;
 					}
 					average = total / results.size();
 					
 					if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
-						nodeMetricsValues.put(metric.getName(), average);					
-					//} else if (metric.getGroup() == LinkMetricsObject.METRICSGROUP) {
-					//	linkMetricsValues.put(metric.getName(), average);					
+						nodeMetricsValues.put(metric.getName()+"_min", min);						
+						nodeMetricsValues.put(metric.getName(), average);
+						nodeMetricsValues.put(metric.getName()+"_max", max);
 					}
 				}
 			}
@@ -117,7 +118,9 @@ public class Site implements IbisConceptInterface {
 		for (Metric metric : newMetrics) {
 			currentlyGatheredMetrics.add(metric.clone());
 			if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
+				nodeMetricsColors.put(metric.getName()+"_min", metric.getColor());
 				nodeMetricsColors.put(metric.getName(), metric.getColor());
+				nodeMetricsColors.put(metric.getName()+"_max", metric.getColor());
 			} else if (metric.getGroup() == LinkMetricsObject.METRICSGROUP) {
 				linkMetricsColors.put(metric.getName(), metric.getColor());
 			}

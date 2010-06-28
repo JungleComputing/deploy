@@ -94,23 +94,24 @@ public class Pool implements IbisConceptInterface {
 			MetricsList stats = sites.get(0).getCurrentlyGatheredMetrics();
 			for (Metric metric : stats) {
 				if (compareStats(metric)) {
-					if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
-					//if (!metric.getName().equals(ConnStatistic.NAME)) {
+					if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {					
 						String key = metric.getName();
 						List<Float> results = new ArrayList<Float>();
 						for (Site site : sites) {			
 							results.add(site.getValue(key));
 						}
-						float total = 0, average = 0;
+						float total = 0, average = 0, min = 1, max = 0;
 						for (Float entry : results) {
+							min = Math.min(min, entry);
+							max = Math.max(max, entry);
 							total += entry;
 						}
 						average = total / results.size();
 						
 						if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
-							nodeMetricsValues.put(metric.getName(), average);						
-						//} else if (metric.getGroup() == LinkMetricsObject.METRICSGROUP) {
-						//	linkMetricsValues.put(metric.getName(), average);
+							nodeMetricsValues.put(metric.getName()+"_min", min);						
+							nodeMetricsValues.put(metric.getName(), average);
+							nodeMetricsValues.put(metric.getName()+"_max", max);
 						}
 					}
 				}
@@ -131,9 +132,9 @@ public class Pool implements IbisConceptInterface {
 		
 		for (Metric metric : newMetrics) {			
 			if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
+				nodeMetricsColors.put(metric.getName()+"_min", metric.getColor());
 				nodeMetricsColors.put(metric.getName(), metric.getColor());
-			//} else if (metric.getGroup() == LinkMetricsObject.METRICSGROUP) {
-			//	linkMetricsColors.put(metric.getName(), metric.getColor());
+				nodeMetricsColors.put(metric.getName()+"_max", metric.getColor());
 			}
 		}
 		

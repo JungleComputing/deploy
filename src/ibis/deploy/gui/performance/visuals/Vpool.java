@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.Map.Entry;
 
 import javax.media.opengl.GL;
@@ -125,6 +126,8 @@ public class Vpool implements VisualElementInterface {
 				drawCityscape(gl, glMode);
 			} else if (currentCollectionForm == VisualElementInterface.COLLECTION_CIRCLE) {
 				drawCircle(gl, glMode);
+			} else if (currentCollectionForm == VisualElementInterface.COLLECTION_SPHERE) {
+				drawSphere(gl, glMode);
 			}
 		} else {
 			if (currentCollectionForm == VisualElementInterface.COLLECTION_CITYSCAPE) {
@@ -201,10 +204,41 @@ public class Vpool implements VisualElementInterface {
 		}
 	}
 	
+	protected void drawSphere(GL gl, int glMode) {	
+		//http://www.cgafaq.info/wiki/Evenly_distributed_points_on_sphere
+		
+		double dlong = Math.PI*(3-Math.sqrt(5));
+		double olong = 0.0;
+		double dz    = 2.0/vsites.size();
+		double z     = 1 - (dz/2);
+		Float[][] pt = new Float[vsites.size()][3]; 
+		double r = 0;
+		
+		for (int k=0;k<vsites.size();k++) {
+			r = Math.sqrt(1-(z*z));
+			pt[k][0] = location[0] + 4*((float) (Math.cos(olong)*r));
+			pt[k][1] = location[1] + 4*((float) (Math.sin(olong)*r));
+			pt[k][2] = location[2] + 4*((float) z);
+			z = z -dz;
+			olong = olong +dlong;			
+		}	
+		
+		int k=0;				
+		for (Vsite vsite : vsites) {						
+			//set the location						
+			vsite.setLocation(pt[k]);
+														
+			//Draw the form at that location
+			vsite.drawThis(gl, glMode);
+						
+			k++;
+		}
+	}
+	
 	public void setForm(int newForm) throws ModeUnknownException {
 		if (newForm == VisualElementInterface.METRICS_BAR || newForm == VisualElementInterface.METRICS_TUBE || newForm == VisualElementInterface.METRICS_SPHERE) {
 			currentMetricForm = newForm;			
-		} else if (newForm == VisualElementInterface.COLLECTION_CITYSCAPE || newForm == VisualElementInterface.COLLECTION_CIRCLE) {
+		} else if (newForm == VisualElementInterface.COLLECTION_CITYSCAPE || newForm == VisualElementInterface.COLLECTION_CIRCLE || newForm == VisualElementInterface.COLLECTION_SPHERE) {
 			currentCollectionForm = newForm;
 		} else {
 			throw new ModeUnknownException();
@@ -216,7 +250,7 @@ public class Vpool implements VisualElementInterface {
 	
 	public PopupMenu getMenu() {		
 		String[] elementsgroup = {"Bars", "Tubes", "Spheres"};
-		String[] collectionsgroup = {"Cityscape", "Circle"};
+		String[] collectionsgroup = {"Cityscape", "Circle", "Sphere"};
 		
 		PopupMenu newMenu = new PopupMenu();	
 		
@@ -336,10 +370,10 @@ public class Vpool implements VisualElementInterface {
 		this.showAverages = !showAverages;
 	}
 	
-	public void drawAveragesCityscape(GL gl, int glMode) {		
+	public void drawAveragesCityscape(GL gl, int glMode) {	
 		//get the breakoff point for rows and columns
-		int rows 		= (int)Math.ceil(Math.sqrt(shownMetrics.size()));
-		int columns 	= (int)Math.floor(Math.sqrt(shownMetrics.size()));
+		int rows 		= 3;
+		int columns 	= (shownMetrics.size()/3); //always come in groups of 3
 		
 		float tempSeparation = separation;
 		separation = 0.25f;
@@ -352,7 +386,9 @@ public class Vpool implements VisualElementInterface {
 		setRelativeLocation(shift);
 		
 		int row = 0, column = 0, i = 0;
-		for (Entry<String, Vmetric> entry : vmetrics.entrySet()) {
+		Map<String, Vmetric> sortedMap = new TreeMap<String, Vmetric>(vmetrics);
+		
+		for (Entry<String, Vmetric> entry : sortedMap.entrySet()) {
 			if (shownMetrics.contains(entry.getKey())) {
 				row = i % rows;
 				//Move to next row (if applicable)
