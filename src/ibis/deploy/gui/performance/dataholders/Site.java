@@ -77,37 +77,41 @@ public class Site implements IbisConceptInterface {
 	}	
 	
 	public void update() throws NoSuitableModuleException, StatNotRequestedException {	
-		synchronized(this) {
-			nodeMetricsValues.clear();
-			linkMetricsValues.clear();
-			
-			for (Node node : nodes) {			
-				node.update();
-			}
-			
-			for (Metric metric : currentlyGatheredMetrics) {
+		HashMap<String, Float> newNodeMetricsValues = new HashMap<String, Float>();
+		HashMap<IbisIdentifier, Map<String, Float>> newLinkMetricsValues = new HashMap<IbisIdentifier, Map<String, Float>>();
+							
+		for (Node node : nodes) {			
+			node.update();
+		}
+		
+		for (Metric metric : currentlyGatheredMetrics) {
+			if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
+				String key = metric.getName();
+				List<Float> results = new ArrayList<Float>();
+				for (Node node : nodes) {
+					results.add((Float)node.getValue(key));
+				}
+				float total = 0, average = 0, min = 1, max = 0;
+				for (Float entry : results) {
+					min = Math.min(min, entry);
+					max = Math.max(max, entry);
+					total += entry;
+				}
+				average = total / results.size();
+				
 				if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
-					String key = metric.getName();
-					List<Float> results = new ArrayList<Float>();
-					for (Node node : nodes) {			
-						results.add((Float)node.getValue(key));
-					}
-					float total = 0, average = 0, min = 1, max = 0;
-					for (Float entry : results) {
-						min = Math.min(min, entry);
-						max = Math.max(max, entry);
-						total += entry;
-					}
-					average = total / results.size();
-					
-					if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
-						nodeMetricsValues.put(metric.getName()+"_min", min);						
-						nodeMetricsValues.put(metric.getName(), average);
-						nodeMetricsValues.put(metric.getName()+"_max", max);
-					}
+					newNodeMetricsValues.put(metric.getName()+"_min", min);						
+					newNodeMetricsValues.put(metric.getName(), average);
+					newNodeMetricsValues.put(metric.getName()+"_max", max);
 				}
 			}
+		}	
+		
+		synchronized(this) {			
+			nodeMetricsValues = newNodeMetricsValues;
+			linkMetricsValues = newLinkMetricsValues;
 		}
+		
 	}
 	
 	public void setCurrentlyGatheredMetrics(MetricsList newMetrics) {

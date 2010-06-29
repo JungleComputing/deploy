@@ -25,7 +25,7 @@ public class ThreadsStatistic extends NodeMetricsObject implements MetricInterfa
 		int num_threads		= (Integer) results[0];
 		thread_max = Math.max(thread_max, num_threads);		
 		
-		value = ((long)num_threads / (long)thread_max);
+		value = ((float)num_threads / (float)thread_max);
 	}
 	
 	public ThreadsStatistic clone() {

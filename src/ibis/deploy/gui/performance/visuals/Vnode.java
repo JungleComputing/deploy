@@ -119,13 +119,14 @@ public class Vnode implements VisualElementInterface {
 		//get the breakoff point for rows and columns
 		int rows 		= (int)Math.ceil(Math.sqrt(shownMetrics.size()));
 		int columns 	= (int)Math.floor(Math.sqrt(shownMetrics.size()));
+		float xzShift = scaleXZ+separation;
 		
 		//Center the drawing around the location	
 		Float[] shift = new Float[3];
-		shift[0] =  ((((scaleXZ+separation)*rows   )-separation)-(0.5f*scaleXZ))*0.5f;
-		shift[1] = 0.0f;
-		shift[2] = -((((scaleXZ+separation)*columns)-separation)-(0.5f*scaleXZ))*0.5f;
-		setRelativeLocation(shift);
+		shift[0] = location[0] +  (((xzShift*rows   )-separation)-(0.5f*scaleXZ))*0.5f;
+		shift[1] = location[1];
+		shift[2] = location[2] + -(((xzShift*columns)-separation)-(0.5f*scaleXZ))*0.5f;
+		setLocation(shift);
 		
 		int row = 0, column = 0, i = 0;
 		for (Entry<String, Vmetric> entry : vmetrics.entrySet()) {
@@ -138,12 +139,11 @@ public class Vnode implements VisualElementInterface {
 							
 				//Setup the form
 				try {
-					entry.getValue().setLocation(location);
-					
-					shift[0] = -(scaleXZ+separation)*row;
-					shift[1] = 0.0f;
-					shift[2] =  (scaleXZ+separation)*column;
-					entry.getValue().setRelativeLocation(shift);
+					Float[] newLocation = new Float[3];
+					newLocation[0] = location[0] - xzShift*row;
+					newLocation[1] = location[1];
+					newLocation[2] = location[2] + xzShift*column;				
+					entry.getValue().setLocation(newLocation);
 						
 				} catch (Exception e) {					
 					e.printStackTrace();
@@ -157,41 +157,40 @@ public class Vnode implements VisualElementInterface {
 	}
 	
 	protected void drawCircle(GL gl, int glMode) {				
-		double angle  = 2*Math.PI / shownMetrics.size();
+		double angle  = 2*Math.PI / vmetrics.size();
 		float degs = (float) Math.toDegrees(angle);
-		float radius = (float) ((scaleXZ/2) / Math.tan(angle/2));	
-		radius = Math.max(radius, 0);
-				
-		for (Entry<String, Vmetric> entry : vmetrics.entrySet()) {	
-			if (shownMetrics.contains(entry.getKey())) {
-				//move towards the position			
-				gl.glTranslatef(radius, 0.0f, 0.0f);
-				gl.glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);
-									
-				//Draw the form
-				entry.getValue().drawThis(gl, glMode);
-				
-				//Move back to the center			
-				gl.glRotatef(90.0f, 0.0f, 0.0f, 1.0f);
-				gl.glTranslatef(-radius, 0.0f, 0.0f);
-				
-				//Turn for the next iteration		
-				gl.glRotatef(degs, 0.0f, 0.0f, 1.0f);
-			}
+		float radius = (float) ((scaleXZ/2) / Math.tan(degs/2));		
+		
+		int i = 0;
+		for (VisualElementInterface vitem : vmetrics.values()) {
+			float xCoord = (float) (Math.acos(degs*i) / radius);
+			float zCoord = (float) (Math.asin(degs*i) / radius);
+			
+			Float[] newLocation = new Float[3];
+			newLocation[0] = location[0] + xCoord;
+			newLocation[1] = location[1];
+			newLocation[2] = location[2] + zCoord;
+			vitem.setLocation(newLocation);
+			
+			//Draw the form
+			vitem.drawThis(gl, glMode);
+			
+			i++;
 		}
 	}
 	
 	public void setForm(int newForm) throws ModeUnknownException {
 		if (newForm == VisualElementInterface.METRICS_BAR || newForm == VisualElementInterface.METRICS_TUBE || newForm == VisualElementInterface.METRICS_SPHERE) {
-			currentMetricForm = newForm;			
+			currentMetricForm = newForm;	
+			for (Map.Entry<String, Vmetric> entry : vmetrics.entrySet()) {
+				entry.getValue().setForm(newForm);
+			}
 		} else if (newForm == VisualElementInterface.COLLECTION_CITYSCAPE || newForm == VisualElementInterface.COLLECTION_CIRCLE) {
 			currentCollectionForm = newForm;
 		} else {
 			throw new ModeUnknownException();
 		}
-		for (Map.Entry<String, Vmetric> entry : vmetrics.entrySet()) {
-			entry.getValue().setForm(newForm);
-		}
+		
 	}
 	
 	public PopupMenu getMenu() {		
@@ -254,12 +253,6 @@ public class Vnode implements VisualElementInterface {
 		this.location[0] = newLocation[0];
 		this.location[1] = newLocation[1];
 		this.location[2] = newLocation[2];
-	}
-	
-	public void setRelativeLocation(Float[] locationShift) {
-		location[0] += locationShift[0];
-		location[1] += locationShift[1];
-		location[2] += locationShift[2];
 	}
 	
 	public void setSeparation(float newSeparation) {

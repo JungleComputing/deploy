@@ -56,9 +56,7 @@ public class RootPanel extends JPanel {
         add(tabs, BorderLayout.CENTER);
     }
     
-    public void toggleGridVisionPane(GUI gui, PerformancePanel panel) {   
-    	System.err.println("toggle!");
-    	
+    public void toggleGridVisionPane(GUI gui, PerformancePanel panel) {
     	Component[] comps = tabs.getComponents();
     	boolean present = false;
     	for (Component comp : comps) {
@@ -68,15 +66,9 @@ public class RootPanel extends JPanel {
     	}
     	    	
     	if (!present) {    	
-    		System.err.println("and null");
     		tabs.add(panel);
     		tabs.setTabComponentAt(tabs.indexOfComponent(panel), gridVisionTab);    		
     		panel.initialize(gui);
-    	} else {
-    		System.err.println("and not null: "+tabs.indexOfComponent(panel));
-    		panel.shutdown();
-    		panel.removeAll();
-    		tabs.removeTabAt(tabs.indexOfComponent(panel));
     	}
     }
 

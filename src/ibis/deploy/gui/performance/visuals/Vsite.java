@@ -68,7 +68,7 @@ public class Vsite implements VisualElementInterface {
 		this.location[1] = 0.0f;
 		this.location[2] = 0.0f;
 		
-		this.separation = 0.0f;
+		this.separation = 0.25f;
 		
 		scaleXZ = 0.25f;
 		scaleY = 1.0f;
@@ -125,9 +125,7 @@ public class Vsite implements VisualElementInterface {
 			for (IbisIdentifier destination : node.getConnections()) {
 				Vnode to = nodesToVisuals.get(site.getNode(destination));
 				
-				if (to != null) {
-				//only show links within this site
-				//if (nodesToVisuals.containsKey(destination)) {
+				if (to != null) { //This link is site-internal
 					if (vlinkMap.containsKey(source)) {
 						if (!vlinkMap.get(source).containsKey(destination)) {
 							vlinkMap.get(source).put(destination, new Vlink(perfvis, visman, this, node, source, from, destination, to));
@@ -136,8 +134,9 @@ public class Vsite implements VisualElementInterface {
 						HashMap<IbisIdentifier, Vlink> newMap = new HashMap<IbisIdentifier, Vlink>();
 						newMap.put(destination, new Vlink(perfvis, visman, this, node, source, from, destination, to));
 						vlinkMap.put(source, newMap);
-					}	
-				//}
+					}
+				} else { //this link is site-external
+					
 				}
 			}
 		}
@@ -192,7 +191,64 @@ public class Vsite implements VisualElementInterface {
 			} else if (currentCollectionForm == VisualElementInterface.COLLECTION_CIRCLE) {
 				drawAveragesCircle(gl, glMode);
 			}
-		}		
+		}
+		//drawBoundingBox(gl, glMode);
+	}
+	
+	protected void drawBoundingBox(GL gl, int glMode) {
+		//use nice variables, so that the ogl code is readable
+		float o = 0.0f;			//(o)rigin
+		float x = getRadius();	//(x) maximum coordinate
+		float y = getRadius();	//(y) maximum coordinate
+		float z = getRadius();	//(z) maximum coordinate		 
+		float alpha = 0.2f;
+							
+		float quad_color_r = 0.3f;
+		float quad_color_g = 0.0f;
+		float quad_color_b = 0.3f;
+		
+		//Center the drawing startpoint
+		gl.glTranslatef(location[0], location[1], location[2]);
+		gl.glTranslatef(-0.5f*x, 0.0f, -0.5f*z);
+		
+		gl.glBegin(GL.GL_QUADS);		
+			//TOP
+			gl.glColor4f(quad_color_r, quad_color_g, quad_color_b, alpha);			
+			gl.glVertex3f( x, y, o);			
+			gl.glVertex3f( o, y, o);			
+			gl.glVertex3f( o, y, z);			
+			gl.glVertex3f( x, y, z);
+			
+			//BOTTOM left out
+			
+			//FRONT
+			gl.glColor4f(quad_color_r, quad_color_g, quad_color_b, alpha);			
+			gl.glVertex3f( x, y, z);			
+			gl.glVertex3f( o, y, z);			
+			gl.glVertex3f( o, o, z);			
+			gl.glVertex3f( x, o, z);
+			
+			//BACK
+			gl.glColor4f(quad_color_r, quad_color_g, quad_color_b, alpha);			
+			gl.glVertex3f( x, o, o);			
+			gl.glVertex3f( o, o, o);			
+			gl.glVertex3f( o, y, o);			
+			gl.glVertex3f( x, y, o);
+			
+			//LEFT
+			gl.glColor4f(quad_color_r, quad_color_g, quad_color_b, alpha);			
+			gl.glVertex3f( o, y, z);			
+			gl.glVertex3f( o, y, o);			
+			gl.glVertex3f( o, o, o);			
+			gl.glVertex3f( o, o, z);
+			
+			//RIGHT
+			gl.glColor4f(quad_color_r, quad_color_g, quad_color_b, alpha);			
+			gl.glVertex3f( x, y, o);			
+			gl.glVertex3f( x, y, z);			
+			gl.glVertex3f( x, o, z);			
+			gl.glVertex3f( x, o, o);
+		gl.glEnd();		
 	}
 	
 	protected void drawLinks(GL gl, int glMode) {
@@ -205,13 +261,15 @@ public class Vsite implements VisualElementInterface {
 		//get the breakoff point for rows and columns
 		int rows 		= (int)Math.ceil(Math.sqrt(vnodes.size()));
 		int columns 	= (int)Math.floor(Math.sqrt(vnodes.size()));
+		separation = vnodes.get(0).getRadius()*1.5f;
+		float xzShift = scaleXZ+separation;
 		
 		//Center the drawing around the location	
-		Float[] shift = new Float[3];
-		shift[0] =  ((((scaleXZ+separation)*rows   )-separation)-(0.5f*scaleXZ))*0.5f;
-		shift[1] = 0.0f;
-		shift[2] = -((((scaleXZ+separation)*columns)-separation)-(0.5f*scaleXZ))*0.5f;
-		setRelativeLocation(shift);
+		Float[] shift = new Float[3];		
+		shift[0] =  location[0] +(((xzShift*rows   )-separation)-(0.5f*scaleXZ))*0.5f;
+		shift[1] =  location[1];
+		shift[2] =  location[2] -(((xzShift*columns)-separation)-(0.5f*scaleXZ))*0.5f;		
+		setLocation(shift);
 		
 		int row = 0, column = 0, i =0;
 		for (Vnode vnode : vnodes) {
@@ -223,14 +281,12 @@ public class Vsite implements VisualElementInterface {
 						
 			//Setup the form
 			try {
-				vnode.setLocation(location);
-				vnode.setSeparation(0.0f);		
+				Float[] newLocation = new Float[3];
+				newLocation[0] = location[0] - xzShift*row;
+				newLocation[1] = location[1];
+				newLocation[2] = location[2] + xzShift*column;				
+				vnode.setLocation(newLocation);
 				
-				shift[0] = -(scaleXZ+separation)*row;
-				shift[1] = 0.0f;
-				shift[2] =  (scaleXZ+separation)*column;
-				vnode.setRelativeLocation(shift);
-					
 			} catch (Exception e) {					
 				e.printStackTrace();
 			}
@@ -244,23 +300,23 @@ public class Vsite implements VisualElementInterface {
 	protected void drawCircle(GL gl, int glMode) {				
 		double angle  = 2*Math.PI / vnodes.size();
 		float degs = (float) Math.toDegrees(angle);
-		float radius = (float) ((scaleXZ/2) / Math.tan(angle/2));	
-		radius = Math.max(radius, 0);
-						
-		for (Vnode vnode : vnodes) {						
-			//move towards the position			
-			gl.glTranslatef(radius, 0.0f, 0.0f);
-			gl.glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);
-											
+		float radius = (float) ((vnodes.get(0).getRadius()/2) / Math.tan(degs/2));
+		
+		int i = 0;
+		for (VisualElementInterface vitem : vnodes) {
+			float xCoord = (float) (Math.acos(degs*i) / radius);
+			float zCoord = (float) (Math.asin(degs*i) / radius);
+			
+			Float[] newLocation = new Float[3];
+			newLocation[0] = location[0] + xCoord;
+			newLocation[1] = location[1];
+			newLocation[2] = location[2] + zCoord;
+			vitem.setLocation(newLocation);
+			
 			//Draw the form
-			vnode.drawThis(gl, glMode);
+			vitem.drawThis(gl, glMode);
 			
-			//Move back to the center			
-			gl.glRotatef(90.0f, 0.0f, 0.0f, 1.0f);
-			gl.glTranslatef(-radius, 0.0f, 0.0f);
-			
-			//Turn for the next iteration		
-			gl.glRotatef(degs, 0.0f, 0.0f, 1.0f);
+			i++;
 		}
 	}
 	
@@ -297,14 +353,14 @@ public class Vsite implements VisualElementInterface {
 	
 	public void setForm(int newForm) throws ModeUnknownException {
 		if (newForm == VisualElementInterface.METRICS_BAR || newForm == VisualElementInterface.METRICS_TUBE || newForm == VisualElementInterface.METRICS_SPHERE) {
-			currentMetricForm = newForm;			
+			currentMetricForm = newForm;
+			for (Map.Entry<String, Vmetric> entry : vmetrics.entrySet()) {
+				entry.getValue().setForm(newForm);
+			}
 		} else if (newForm == VisualElementInterface.COLLECTION_CITYSCAPE || newForm == VisualElementInterface.COLLECTION_CIRCLE || newForm == VisualElementInterface.COLLECTION_SPHERE) {
 			currentCollectionForm = newForm;
 		} else {
 			throw new ModeUnknownException();
-		}
-		for (Vnode vnode : vnodes) {
-			vnode.setForm(newForm);
 		}
 	}
 	
@@ -382,12 +438,6 @@ public class Vsite implements VisualElementInterface {
 		this.location[2] = newLocation[2];
 	}
 	
-	public void setRelativeLocation(Float[] locationShift) {
-		location[0] += locationShift[0];
-		location[1] += locationShift[1];
-		location[2] += locationShift[2];
-	}
-	
 	public void setSeparation(float newSeparation) {
 		separation = newSeparation;		
 	}
@@ -397,10 +447,19 @@ public class Vsite implements VisualElementInterface {
 	}	
 
 	public float getRadius() {
-		float radius = 0.0f;
-		if (currentCollectionForm == VisualElementInterface.COLLECTION_CITYSCAPE) {
-			radius = (float) Math.max((Math.ceil(Math.sqrt(vmetrics.size()))*(scaleXZ)), scaleY);
+		float radius = 0.0f, maxRadiusChildren = 0.0f;
+		for (Vnode vnode : vnodes) {
+			maxRadiusChildren = Math.max(vnode.getRadius(),maxRadiusChildren);
 		}
+		
+		if (currentCollectionForm == VisualElementInterface.COLLECTION_CITYSCAPE) {
+			radius = (float) Math.max((Math.ceil(Math.sqrt(vnodes.size()))*(maxRadiusChildren)), maxRadiusChildren);
+		} else if (currentCollectionForm == VisualElementInterface.COLLECTION_CIRCLE) {
+			
+		} else if (currentCollectionForm == VisualElementInterface.COLLECTION_SPHERE) {
+			radius = (float) 10*maxRadiusChildren;
+		}
+		
 		return radius;
 	}
 	
@@ -448,16 +507,15 @@ public class Vsite implements VisualElementInterface {
 		///get the breakoff point for rows and columns
 		int rows 		= 3;
 		int columns 	= (shownMetrics.size()/3); //always come in groups of 3
-		
-		float tempSeparation = separation;
-		separation = 0.25f;
 				
+		float xzShift = scaleXZ+separation;
+		
 		//Center the drawing around the location	
-		Float[] shift = new Float[3];
-		shift[0] =  ((((scaleXZ+separation)*rows   )-separation)-(0.5f*scaleXZ))*0.5f;
-		shift[1] = 0.0f;
-		shift[2] = -((((scaleXZ+separation)*columns)-separation)-(0.5f*scaleXZ))*0.5f;
-		setRelativeLocation(shift);
+		Float[] shift = new Float[3];		
+		shift[0] =  location[0] +(((xzShift*rows   )-separation)-(0.5f*scaleXZ))*0.5f;
+		shift[1] =  location[1];
+		shift[2] =  location[2] -(((xzShift*columns)-separation)-(0.5f*scaleXZ))*0.5f;		
+		setLocation(shift);
 		
 		int row = 0, column = 0, i = 0;
 		Map<String, Vmetric> sortedMap = new TreeMap<String, Vmetric>(vmetrics);
@@ -471,13 +529,12 @@ public class Vsite implements VisualElementInterface {
 				}
 							
 				//Setup the form
-				try {
-					entry.getValue().setLocation(location);
-					
-					shift[0] = -(scaleXZ+separation)*row;
-					shift[1] = 0.0f;
-					shift[2] =  (scaleXZ+separation)*column;
-					entry.getValue().setRelativeLocation(shift);
+				try {					
+					Float[] newLocation = new Float[3];
+					newLocation[0] = location[0] - xzShift*row;
+					newLocation[1] = location[1];
+					newLocation[2] = location[2] + xzShift*column;				
+					entry.getValue().setLocation(newLocation);
 						
 				} catch (Exception e) {					
 					e.printStackTrace();
@@ -488,8 +545,6 @@ public class Vsite implements VisualElementInterface {
 				i++;
 			}
 		}
-		
-		separation = tempSeparation;
 	}
 	
 	public void drawAveragesCircle(GL gl, int glMode) {				

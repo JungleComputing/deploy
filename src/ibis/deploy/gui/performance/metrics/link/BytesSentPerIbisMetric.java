@@ -38,10 +38,12 @@ public class BytesSentPerIbisMetric extends LinkMetricsMap implements MetricInte
 		long time_now = System.currentTimeMillis();
 		long time_elapsed = time_now - time_prev;	
 		float time_seconds = (float)time_elapsed / 1000.0f;
-		Float value = 0.0f;
+		Float value = 1.0f;
 		
 		Map<IbisIdentifier, Long> sent = (Map<IbisIdentifier, Long>) results[0];
-				
+		
+		values.clear();
+		
 		for (Map.Entry<IbisIdentifier, Long> entry : sent.entrySet()) {
 			IbisIdentifier ibis = entry.getKey();
 			

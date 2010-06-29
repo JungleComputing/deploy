@@ -129,7 +129,7 @@ public class Vpool implements VisualElementInterface {
 			} else if (currentCollectionForm == VisualElementInterface.COLLECTION_SPHERE) {
 				drawSphere(gl, glMode);
 			}
-		} else {
+		} else {			
 			if (currentCollectionForm == VisualElementInterface.COLLECTION_CITYSCAPE) {
 				drawAveragesCityscape(gl, glMode);
 			} else if (currentCollectionForm == VisualElementInterface.COLLECTION_CIRCLE) {
@@ -142,13 +142,15 @@ public class Vpool implements VisualElementInterface {
 		//get the breakoff point for rows and columns
 		int rows 		= (int)Math.ceil(Math.sqrt(vsites.size()));
 		int columns 	= (int)Math.floor(Math.sqrt(vsites.size()));
+		separation = vsites.get(0).getRadius()*1.5f;
+		float xzShift = scaleXZ+separation;
 		
 		//Center the drawing around the location	
-		Float[] shift = new Float[3];
-		shift[0] =  ((((scaleXZ+separation)*rows   )-separation)-(0.5f*scaleXZ))*0.5f;
-		shift[1] = 0.0f;
-		shift[2] = -((((scaleXZ+separation)*columns)-separation)-(0.5f*scaleXZ))*0.5f;
-		setRelativeLocation(shift);
+		Float[] shift = new Float[3];		
+		shift[0] =  location[0] +(((xzShift*rows   )-separation)-(0.5f*scaleXZ))*0.5f;
+		shift[1] =  location[1];
+		shift[2] =  location[2] -(((xzShift*columns)-separation)-(0.5f*scaleXZ))*0.5f;		
+		setLocation(shift);
 				
 		radius = 0;
 		int row = 0, column = 0, i = 0;
@@ -161,16 +163,12 @@ public class Vpool implements VisualElementInterface {
 						
 			//Setup the form
 			try {
-				vsite.setLocation(location);
-				float siteRadius = vsite.getRadius()+separation;
-				radius += siteRadius;
-				vsite.setSeparation(siteRadius);
+				Float[] newLocation = new Float[3];
+				newLocation[0] = location[0] - xzShift*row;
+				newLocation[1] = location[1];
+				newLocation[2] = location[2] + xzShift*column;				
+				vsite.setLocation(newLocation);
 				
-				shift[0] = -(scaleXZ+separation)*row;
-				shift[1] = 0.0f;
-				shift[2] =  (scaleXZ+separation)*column;
-				vsite.setRelativeLocation(shift);
-					
 			} catch (Exception e) {					
 				e.printStackTrace();
 			}
@@ -184,23 +182,23 @@ public class Vpool implements VisualElementInterface {
 	protected void drawCircle(GL gl, int glMode) {				
 		double angle  = 2*Math.PI / vsites.size();
 		float degs = (float) Math.toDegrees(angle);
-		float radius = (float) ((scaleXZ/2) / Math.tan(angle/2));	
-		radius = Math.max(radius, 0);
-						
-		for (Vsite vsite : vsites) {						
-			//move towards the position			
-			gl.glTranslatef(radius, 0.0f, 0.0f);
-			gl.glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);
-											
+		float radius = (float) ((vsites.get(0).getRadius()/2) / Math.tan(degs/2));		
+		
+		int i = 0;
+		for (VisualElementInterface vitem : vsites) {
+			float xCoord = (float) (Math.acos(degs*i) / radius);
+			float zCoord = (float) (Math.asin(degs*i) / radius);
+			
+			Float[] newLocation = new Float[3];
+			newLocation[0] = location[0] + xCoord;
+			newLocation[1] = location[1];
+			newLocation[2] = location[2] + zCoord;
+			vitem.setLocation(newLocation);
+			
 			//Draw the form
-			vsite.drawThis(gl, glMode);
+			vitem.drawThis(gl, glMode);
 			
-			//Move back to the center			
-			gl.glRotatef(90.0f, 0.0f, 0.0f, 1.0f);
-			gl.glTranslatef(-radius, 0.0f, 0.0f);
-			
-			//Turn for the next iteration		
-			gl.glRotatef(degs, 0.0f, 0.0f, 1.0f);
+			i++;
 		}
 	}
 	
@@ -237,14 +235,14 @@ public class Vpool implements VisualElementInterface {
 	
 	public void setForm(int newForm) throws ModeUnknownException {
 		if (newForm == VisualElementInterface.METRICS_BAR || newForm == VisualElementInterface.METRICS_TUBE || newForm == VisualElementInterface.METRICS_SPHERE) {
-			currentMetricForm = newForm;			
+			currentMetricForm = newForm;	
+			for (Map.Entry<String, Vmetric> entry : vmetrics.entrySet()) {
+				entry.getValue().setForm(newForm);
+			}
 		} else if (newForm == VisualElementInterface.COLLECTION_CITYSCAPE || newForm == VisualElementInterface.COLLECTION_CIRCLE || newForm == VisualElementInterface.COLLECTION_SPHERE) {
 			currentCollectionForm = newForm;
 		} else {
 			throw new ModeUnknownException();
-		}
-		for (Vsite vsite : vsites) {
-			vsite.setForm(newForm);
 		}
 	}
 	
@@ -323,10 +321,19 @@ public class Vpool implements VisualElementInterface {
 	}	
 
 	public float getRadius() {
-		float radius = 0.0f;
-		if (currentCollectionForm == VisualElementInterface.COLLECTION_CITYSCAPE) {
-			radius = (float) Math.max((Math.ceil(Math.sqrt(vmetrics.size()))*(scaleXZ)), scaleY);
+		float radius = 0.0f, maxRadiusChildren = 0.0f;
+		for (Vsite vsite : vsites) {
+			maxRadiusChildren = Math.max(vsite.getRadius(),maxRadiusChildren);
 		}
+		
+		if (currentCollectionForm == VisualElementInterface.COLLECTION_CITYSCAPE) {
+			radius = (float) Math.max((Math.ceil(Math.sqrt(vsites.size()))*(maxRadiusChildren)), maxRadiusChildren);
+		} else if (currentCollectionForm == VisualElementInterface.COLLECTION_CIRCLE) {
+			
+		} else if (currentCollectionForm == VisualElementInterface.COLLECTION_SPHERE) {
+			radius = (float) Math.max((Math.ceil(2*(vsites.size()))*(maxRadiusChildren)), maxRadiusChildren);
+		}
+		
 		return radius;
 	}
 	
@@ -371,19 +378,18 @@ public class Vpool implements VisualElementInterface {
 	}
 	
 	public void drawAveragesCityscape(GL gl, int glMode) {	
-		//get the breakoff point for rows and columns
+		///get the breakoff point for rows and columns
 		int rows 		= 3;
 		int columns 	= (shownMetrics.size()/3); //always come in groups of 3
 		
-		float tempSeparation = separation;
-		separation = 0.25f;
-				
+		float xzShift = scaleXZ+separation;
+		
 		//Center the drawing around the location	
-		Float[] shift = new Float[3];
-		shift[0] =  ((((scaleXZ+separation)*rows   )-separation)-(0.5f*scaleXZ))*0.5f;
-		shift[1] = 0.0f;
-		shift[2] = -((((scaleXZ+separation)*columns)-separation)-(0.5f*scaleXZ))*0.5f;
-		setRelativeLocation(shift);
+		Float[] shift = new Float[3];		
+		shift[0] =  location[0] +(((xzShift*rows   )-separation)-(0.5f*scaleXZ))*0.5f;
+		shift[1] =  location[1];
+		shift[2] =  location[2] -(((xzShift*columns)-separation)-(0.5f*scaleXZ))*0.5f;		
+		setLocation(shift);
 		
 		int row = 0, column = 0, i = 0;
 		Map<String, Vmetric> sortedMap = new TreeMap<String, Vmetric>(vmetrics);
@@ -398,12 +404,11 @@ public class Vpool implements VisualElementInterface {
 							
 				//Setup the form
 				try {
-					entry.getValue().setLocation(location);
-					
-					shift[0] = -(scaleXZ+separation)*row;
-					shift[1] = 0.0f;
-					shift[2] =  (scaleXZ+separation)*column;
-					entry.getValue().setRelativeLocation(shift);
+					Float[] newLocation = new Float[3];
+					newLocation[0] = location[0] - xzShift*row;
+					newLocation[1] = location[1];
+					newLocation[2] = location[2] + xzShift*column;				
+					entry.getValue().setLocation(newLocation);
 						
 				} catch (Exception e) {					
 					e.printStackTrace();
@@ -414,8 +419,6 @@ public class Vpool implements VisualElementInterface {
 				i++;
 			}
 		}
-		
-		separation = tempSeparation;
 	}
 	
 	public void drawAveragesCircle(GL gl, int glMode) {				

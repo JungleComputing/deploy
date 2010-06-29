@@ -86,37 +86,44 @@ public class Pool implements IbisConceptInterface {
 	}	
 	
 	public void update() throws StatNotRequestedException, NoSuitableModuleException {	
-		synchronized(this) {
-			for (Site site : sites) {			
-				site.update();
-			}
-			
-			MetricsList stats = sites.get(0).getCurrentlyGatheredMetrics();
-			for (Metric metric : stats) {
-				if (compareStats(metric)) {
-					if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {					
-						String key = metric.getName();
-						List<Float> results = new ArrayList<Float>();
-						for (Site site : sites) {			
-							results.add(site.getValue(key));
-						}
-						float total = 0, average = 0, min = 1, max = 0;
-						for (Float entry : results) {
-							min = Math.min(min, entry);
-							max = Math.max(max, entry);
-							total += entry;
-						}
-						average = total / results.size();
-						
-						if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
-							nodeMetricsValues.put(metric.getName()+"_min", min);						
-							nodeMetricsValues.put(metric.getName(), average);
-							nodeMetricsValues.put(metric.getName()+"_max", max);
-						}
+		HashMap<String, Float> newNodeMetricsValues = new HashMap<String, Float>();
+		HashMap<IbisIdentifier, Map<String, Float>> newLinkMetricsValues = new HashMap<IbisIdentifier, Map<String, Float>>();
+		
+		
+		for (Site site : sites) {			
+			site.update();
+		}
+		
+		MetricsList stats = sites.get(0).getCurrentlyGatheredMetrics();
+		for (Metric metric : stats) {
+			if (compareStats(metric)) {
+				if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {					
+					String key = metric.getName();
+					List<Float> results = new ArrayList<Float>();
+					for (Site site : sites) {			
+						results.add(site.getValue(key));
+					}
+					float total = 0, average = 0, min = 1, max = 0;
+					for (Float entry : results) {
+						min = Math.min(min, entry);
+						max = Math.max(max, entry);
+						total += entry;
+					}
+					average = total / results.size();
+					
+					if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
+						newNodeMetricsValues.put(metric.getName()+"_min", min);						
+						newNodeMetricsValues.put(metric.getName(), average);
+						newNodeMetricsValues.put(metric.getName()+"_max", max);
 					}
 				}
 			}
 		}
+		
+		synchronized(this) {			
+			nodeMetricsValues = newNodeMetricsValues;
+			linkMetricsValues = newLinkMetricsValues;
+		}	
 	}	
 	
 	private boolean compareStats(Metric stat) {							

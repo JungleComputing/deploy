@@ -39,8 +39,6 @@ public interface VisualElementInterface {
 	public Float[] getLocation();
 	
 	public void setLocation(Float[] newLocation);
-		
-	public void setRelativeLocation(Float[] locationShift);
 	
 	public void setSeparation(float newSeparation);
 	

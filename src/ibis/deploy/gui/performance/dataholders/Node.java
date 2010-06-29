@@ -7,7 +7,6 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import ibis.deploy.gui.performance.MetricsList;
-import ibis.deploy.gui.performance.exceptions.MethodNotOverriddenException;
 import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
 import ibis.deploy.gui.performance.metrics.Metric;
 import ibis.deploy.gui.performance.metrics.link.LinkMetricsMap;
@@ -62,58 +61,61 @@ public class Node implements IbisConceptInterface {
 		}
 	}
 	
-	public void update() throws NoSuitableModuleException {
-		synchronized(this) {
-			//First, clear the Maps with the values, to be refilled with the newly requested entries
-			nodeMetricsValues.clear();
-			linkMetricsValues.clear();
-			connections.clear();
+	public void update() throws NoSuitableModuleException {		
+		HashMap<String, Float> newNodeMetricsValues = new HashMap<String, Float>();
+		HashMap<IbisIdentifier, Map<String, Float>> newLinkMetricsValues = new HashMap<IbisIdentifier, Map<String, Float>>();
+		HashSet<IbisIdentifier> newConnections = new HashSet<IbisIdentifier>();		
+		
+		try {
+			int size = 0;
+			for (Metric metric : metrics) {
+				size += metric.getAttributesCountNeeded();
+			}
 			
-			try {
-				int size = 0;
-				for (Metric metric : metrics) {
-					size += metric.getAttributesCountNeeded();
+			AttributeDescription[] requestArray = new AttributeDescription[size]; 
+			int j=0;
+			for (Metric metric : metrics) {
+				AttributeDescription[] tempArray = metric.getNecessaryAttributes();
+				for (int i=0; i < tempArray.length; i++) {
+					requestArray[j] = tempArray[i];
+					j++;
 				}
-				
-				AttributeDescription[] requestArray = new AttributeDescription[size]; 
-				int j=0;
-				for (Metric metric : metrics) {
-					AttributeDescription[] tempArray = metric.getNecessaryAttributes();
-					for (int i=0; i < tempArray.length; i++) {
-						requestArray[j] = tempArray[i];
-						j++;
-					}
+			}
+			
+			Object[] results = manInterface.getAttributes(name, requestArray);
+			
+			j=0;			
+			for (Metric metric : metrics) {
+				Object[] partialResults = new Object[metric.getAttributesCountNeeded()];				
+				for (int i=0; i < partialResults.length ; i++) {
+					partialResults[i] = results[j];	
+					j++;
 				}
+				metric.update(partialResults);
+								
+				if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
+					newNodeMetricsValues.put(metric.getName(), metric.getValue());
 				
-				Object[] results = manInterface.getAttributes(name, requestArray);
-				
-				j=0;			
-				for (Metric metric : metrics) {
-					Object[] partialResults = new Object[metric.getAttributesCountNeeded()];				
-					for (int i=0; i < partialResults.length ; i++) {
-						partialResults[i] = results[j];	
-						j++;
-					}
-					metric.update(partialResults);
-									
-					if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
-						nodeMetricsValues.put(metric.getName(), metric.getValue());
-					
-					} else if (metric.getGroup() == LinkMetricsMap.METRICSGROUP) {
-						Map<IbisIdentifier, Float> values = ((LinkMetricsMap) metric).getValues();
-											
-						for (IbisIdentifier ibis : values.keySet()) {
-							if (!linkMetricsValues.containsKey(ibis)) {								
-								linkMetricsValues.put(ibis, new HashMap<String, Float>());				
-							}
-							linkMetricsValues.get(ibis).put(metric.getName(), values.get(ibis));
-							connections.add(ibis);
+				} else if (metric.getGroup() == LinkMetricsMap.METRICSGROUP) {
+					Map<IbisIdentifier, Float> values = ((LinkMetricsMap) metric).getValues();
+										
+					for (IbisIdentifier ibis : values.keySet()) {
+						if (!newLinkMetricsValues.containsKey(ibis)) {								
+							newLinkMetricsValues.put(ibis, new HashMap<String, Float>());				
 						}
+						newLinkMetricsValues.get(ibis).put(metric.getName(), values.get(ibis));
+						newConnections.add(ibis);
 					}
 				}
-			} catch (Exception e) {			
-				e.printStackTrace();
-			} 
+			}
+		} catch (Exception e) {			
+			e.printStackTrace();
+		} 
+		
+		synchronized(this) {			
+			nodeMetricsValues = newNodeMetricsValues;
+			linkMetricsValues = newLinkMetricsValues;
+			connections = newConnections;
 		}
 	}	
 

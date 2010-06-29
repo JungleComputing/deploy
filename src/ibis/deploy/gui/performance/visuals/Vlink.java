@@ -95,7 +95,13 @@ public class Vlink implements VisualElementInterface {
 		HashMap<String, Float[]> colors = node.getLinkColors();
 						
 		for (Map.Entry<String, Float[]> entry : colors.entrySet()) {
-			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, this, entry.getValue(), from, to));
+			Vmetric newLinkMetric = new Vmetric(perfvis, visman, this, entry.getValue());
+			try {
+				newLinkMetric.setForm(METRICS_TUBE);
+			} catch (ModeUnknownException e) {
+				//impossible
+			}
+			vmetrics.put(entry.getKey(), newLinkMetric);
 		}		
 	}
 	
@@ -224,7 +230,7 @@ public class Vlink implements VisualElementInterface {
 	
 	public PopupMenu getMenu() {		
 		String[] elementsgroup = {"Bars", "Tubes", "Spheres"};
-		String[] collectionsgroup = {"Cityscape", "Circle"};
+		String[] collectionsgroup = {"Cityscape", "Circle", "Sphere"};
 		
 		PopupMenu newMenu = new PopupMenu();	
 		
@@ -282,12 +288,6 @@ public class Vlink implements VisualElementInterface {
 		this.location[0] = newLocation[0];
 		this.location[1] = newLocation[1];
 		this.location[2] = newLocation[2];
-	}
-	
-	public void setRelativeLocation(Float[] locationShift) {
-		location[0] += locationShift[0];
-		location[1] += locationShift[1];
-		location[2] += locationShift[2];
 	}
 	
 	public void setSeparation(float newSeparation) {

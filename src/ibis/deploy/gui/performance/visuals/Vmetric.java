@@ -50,7 +50,6 @@ public class Vmetric implements VisualElementInterface {
 	private float alpha;
 	
 	private float value;
-	private VisualElementInterface from, to;
 		
 	public Vmetric(PerfVis perfvis, VisualManager visman, VisualElementInterface parent, Float[] color) {
 		this.perfvis = perfvis;
@@ -80,46 +79,8 @@ public class Vmetric implements VisualElementInterface {
 		this.value = 1.0f;
 		this.currentMetricForm = VisualElementInterface.METRICS_BAR;
 		
-		this.from = null;
-		this.to = null;
-		
 		//Register the new object with the Performance visualization object
 		this.glName = visman.registerMetric(this);		
-	}
-	
-	public Vmetric(PerfVis perfvis, VisualManager visman, VisualElementInterface parent, Float[] color, VisualElementInterface from, VisualElementInterface to) {
-		this.perfvis = perfvis;
-		this.visman = visman;
-		
-		glu = new GLU();
-		this.showAverages = false;
-		shownMetrics = new HashSet<String>();
-		
-		this.location = new Float[3];
-		this.location[0] = 0.0f;
-		this.location[1] = 0.0f;
-		this.location[2] = 0.0f;
-		
-		this.separation = 0.0f;
-		
-		scaleXZ = 0.25f;
-		scaleY = 1.0f;
-				
-		this.vmetrics 	= new HashMap<String, Vmetric>();
-		
-		this.parent = parent;
-		
-		this.color = color;
-		this.alpha = ALPHA;
-		
-		this.value = 1.0f;
-		this.currentMetricForm = VisualElementInterface.METRICS_TUBE;
-		
-		this.from = from;
-		this.to = to;
-		
-		//Register the new object with the Performance visualization object
-		this.glName = visman.registerMetric(this);	
 	}
 	
 	public void setValue(float value) throws ValueOutOfBoundsException {
@@ -136,30 +97,18 @@ public class Vmetric implements VisualElementInterface {
 		gl.glGetIntegerv(GL.GL_MATRIX_MODE, oldMode);
 		gl.glPushMatrix();
 		gl.glMatrixMode(GL.GL_MODELVIEW);		
-		
-		if (from == null || to == null) {
-			//Move towards the intended location
-			if (glMode == GL.GL_SELECT) gl.glLoadName(glName);
-			gl.glTranslatef(location[0], location[1], location[2]);
-						
-			//Draw the form
-			if (currentMetricForm == VisualElementInterface.METRICS_BAR) {
-				drawBar(gl, scaleY);
-			} else if (currentMetricForm == VisualElementInterface.METRICS_TUBE) {				
-				drawTube(gl, scaleY);
-			} else if (currentMetricForm == VisualElementInterface.METRICS_SPHERE) {
-				drawSphere(gl);
-			}		
-		} else {			
-			//And draw the link
-			if (glMode == GL.GL_SELECT) gl.glLoadName(glName);
-			gl.glTranslatef(location[0], location[1], location[2]);
-			
-			if (currentMetricForm == VisualElementInterface.METRICS_BAR) {
-				drawBar(gl, scaleY);
-			} else if (currentMetricForm == VisualElementInterface.METRICS_TUBE) {
-				drawTube(gl, scaleY);
-			}			
+				
+		//Move towards the intended location
+		if (glMode == GL.GL_SELECT) gl.glLoadName(glName);
+		gl.glTranslatef(location[0], location[1], location[2]);
+					
+		//Draw the form
+		if (currentMetricForm == VisualElementInterface.METRICS_BAR) {
+			drawBar(gl, scaleY);
+		} else if (currentMetricForm == VisualElementInterface.METRICS_TUBE) {				
+			drawTube(gl, scaleY);
+		} else if (currentMetricForm == VisualElementInterface.METRICS_SPHERE) {
+			drawSphere(gl);
 		}
 		
 		//Restore the old matrix mode and transformation matrix		
@@ -518,12 +467,6 @@ public class Vmetric implements VisualElementInterface {
 		this.location[0] = newLocation[0];
 		this.location[1] = newLocation[1];
 		this.location[2] = newLocation[2];
-	}
-	
-	public void setRelativeLocation(Float[] locationShift) {
-		location[0] += locationShift[0];
-		location[1] += locationShift[1];
-		location[2] += locationShift[2];
 	}
 	
 	public void setSeparation(float newSeparation) {
