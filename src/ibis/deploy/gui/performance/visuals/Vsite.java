@@ -49,8 +49,10 @@ public class Vsite implements VisualElementInterface {
 	protected VisualElementInterface parent;
 	
 	private List<Vnode> vnodes;
+	private List<IbisIdentifier> ids;
 	private HashMap<Node, Vnode> nodesToVisuals;
 	private HashMap<IbisIdentifier, HashMap<IbisIdentifier, Vlink>> vlinkMap;
+	private HashMap<IbisIdentifier, IbisIdentifier> externalLinks;
 	private Set<Vlink> vlinks;
 	
 	private Site site;
@@ -86,14 +88,17 @@ public class Vsite implements VisualElementInterface {
 		//Preparing the vnodes
 		Node[] nodes = site.getSubConcepts();
 		vnodes = new ArrayList<Vnode>();
+		ids = new ArrayList<IbisIdentifier>();
 		vlinkMap = new HashMap<IbisIdentifier, HashMap<IbisIdentifier, Vlink>>();
 		vlinks = new HashSet<Vlink>();
+		externalLinks = new HashMap<IbisIdentifier, IbisIdentifier>();
 		nodesToVisuals = new HashMap<Node, Vnode>();
 				
 		for (Node node : nodes) {
 			Vnode newVnode = new Vnode(perfvis, visman, this, node);
 			vnodes.add(newVnode);
-			nodesToVisuals.put(node, newVnode);
+			ids.add(node.getName());
+			nodesToVisuals.put(node, newVnode);			
 		}		
 		
 		initializeMetrics();	
@@ -115,6 +120,7 @@ public class Vsite implements VisualElementInterface {
 		
 	private void createLinks() {	
 		vlinks.clear();
+		externalLinks.clear();
 		
 		for (Map.Entry<Node, Vnode> entry : nodesToVisuals.entrySet()) {
 			Node node = entry.getKey();
@@ -136,7 +142,7 @@ public class Vsite implements VisualElementInterface {
 						vlinkMap.put(source, newMap);
 					}
 				} else { //this link is site-external
-					
+					externalLinks.put(source, destination);
 				}
 			}
 		}
@@ -146,6 +152,22 @@ public class Vsite implements VisualElementInterface {
 				vlinks.add(entry2.getValue());
 			}
 		}		
+	}
+	
+	public VisualElementInterface getVisual(IbisIdentifier id) {
+		if (ids.contains(id)) {
+			return nodesToVisuals.get(site.getNode(id));
+		} else {
+			return null;
+		}
+	}
+	
+	public Node getNode(IbisIdentifier id) {
+		if (ids.contains(id)) {
+			return site.getNode(id);
+		} else {
+			return null;
+		}
 	}
 	
 	public void update() {
@@ -366,7 +388,7 @@ public class Vsite implements VisualElementInterface {
 	
 	public PopupMenu getMenu() {		
 		String[] elementsgroup = {"Bars", "Tubes", "Spheres"};
-		String[] collectionsgroup = {"Cityscape", "Circle", "Sphere"};
+		String[] collectionsgroup = {"Cityscape", "Sphere"};
 		
 		PopupMenu newMenu = new PopupMenu();	
 		
@@ -387,7 +409,7 @@ public class Vsite implements VisualElementInterface {
 		return newMenu;		
 	}	
 	
-	protected Menu makeRadioGroup(String menuName, String[] itemNames) {
+	public Menu makeRadioGroup(String menuName, String[] itemNames) {
 		Menu result = new Menu(menuName);
 		
 		for (String item : itemNames) {
@@ -481,6 +503,10 @@ public class Vsite implements VisualElementInterface {
 		}
 		
 		return result;
+	}
+	
+	public HashMap<IbisIdentifier, IbisIdentifier> getExternalLinks() {
+		return externalLinks;
 	}
 	
 	public Menu getAveragesMenu(String label) {

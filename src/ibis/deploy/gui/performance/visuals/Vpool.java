@@ -1,6 +1,7 @@
 package ibis.deploy.gui.performance.visuals;
 import ibis.deploy.gui.performance.PerfVis;
 import ibis.deploy.gui.performance.VisualManager;
+import ibis.deploy.gui.performance.dataholders.Node;
 import ibis.deploy.gui.performance.dataholders.Pool;
 import ibis.deploy.gui.performance.dataholders.Site;
 import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
@@ -10,6 +11,7 @@ import ibis.deploy.gui.performance.swing.SetCollectionFormAction;
 import ibis.deploy.gui.performance.swing.SetMetricFormAction;
 import ibis.deploy.gui.performance.swing.ToggleAveragesAction;
 import ibis.deploy.gui.performance.swing.ToggleMetricAction;
+import ibis.ipl.IbisIdentifier;
 
 import java.awt.Menu;
 import java.awt.MenuItem;
@@ -46,6 +48,9 @@ public class Vpool implements VisualElementInterface {
 	protected HashMap<String, Vmetric> vmetrics;
 	protected Set<String> shownMetrics;
 	protected VisualElementInterface parent;
+	private HashMap<IbisIdentifier, IbisIdentifier> interSiteLinks;
+	private HashMap<IbisIdentifier, HashMap<IbisIdentifier, Vlink>> vlinkMap;
+	private Set<Vlink> vlinks;
 	
 	private List<Vsite> vsites;	
 	private Pool pool; 
@@ -78,6 +83,9 @@ public class Vpool implements VisualElementInterface {
 				
 		Site[] sites = pool.getSubConcepts();
 		vsites = new ArrayList<Vsite>();
+		interSiteLinks = new HashMap<IbisIdentifier, IbisIdentifier>();
+		vlinkMap = new HashMap<IbisIdentifier, HashMap<IbisIdentifier, Vlink>>();
+		vlinks = new HashSet<Vlink>();
 				
 		for (Site site : sites) {
 			vsites.add(new Vsite(perfvis, visman, this, site));			
@@ -100,10 +108,63 @@ public class Vpool implements VisualElementInterface {
 		}		
 	}	
 	
+	private void createLinks() {				
+		for (Vsite vsite : vsites) {
+			interSiteLinks.putAll(vsite.getExternalLinks());
+		}
+		
+		for (Entry<IbisIdentifier, IbisIdentifier> interLink : interSiteLinks.entrySet()) {
+			VisualElementInterface from = null, to = null;
+			IbisIdentifier source = interLink.getKey();
+			IbisIdentifier destination = interLink.getValue();
+			Node node = null;
+			
+			for (Vsite vsite :vsites) {
+				from = vsite.getVisual(source);
+				node = vsite.getNode(source);
+				if (from != null) {
+					break;
+				}				
+			}
+						
+			for (Vsite vsite :vsites) {
+				to = vsite.getVisual(destination);
+				if (to != null) {
+					break;
+				}				
+			}
+			
+			if (vlinkMap.containsKey(source)) {
+				if (!vlinkMap.get(source).containsKey(destination)) {
+					vlinkMap.get(source).put(destination, new Vlink(perfvis, visman, this, node, source, from, destination, to));
+				}
+			} else {
+				HashMap<IbisIdentifier, Vlink> newMap = new HashMap<IbisIdentifier, Vlink>();
+				newMap.put(destination, new Vlink(perfvis, visman, this, node, source, from, destination, to));
+				vlinkMap.put(source, newMap);
+			}			
+		}	
+		
+		for (Entry<IbisIdentifier, HashMap<IbisIdentifier, Vlink>> entry : vlinkMap.entrySet()) {
+			for (Entry<IbisIdentifier, Vlink> entry2 : entry.getValue().entrySet()) {
+				vlinks.add(entry2.getValue());
+			}
+		}
+	}
+	
 	public void update() {		
 		for (Vsite vsite : vsites) {
 			vsite.update();			
 		}
+		
+		//do inter-site links
+		createLinks();
+		
+		for (Vlink vlink : vlinks) {
+			vlink.update();
+		}	
+		
+		//Calculate averages
 		HashMap<String, Float> stats = pool.getMonitoredNodeMetrics();
 		for (Map.Entry<String, Float> entry : stats.entrySet()) {
 			try {
@@ -129,13 +190,21 @@ public class Vpool implements VisualElementInterface {
 			} else if (currentCollectionForm == VisualElementInterface.COLLECTION_SPHERE) {
 				drawSphere(gl, glMode);
 			}
+			
+			drawLinks(gl, glMode);
 		} else {			
 			if (currentCollectionForm == VisualElementInterface.COLLECTION_CITYSCAPE) {
 				drawAveragesCityscape(gl, glMode);
 			} else if (currentCollectionForm == VisualElementInterface.COLLECTION_CIRCLE) {
 				drawAveragesCircle(gl, glMode);
 			}
-		}
+		}		
+	}
+	
+	protected void drawLinks(GL gl, int glMode) {
+		for (Vlink vlink : vlinks) {			
+			vlink.drawThis(gl, glMode);
+		}		
 	}
 	
 	protected void drawCityscape(GL gl, int glMode) {		
@@ -248,7 +317,7 @@ public class Vpool implements VisualElementInterface {
 	
 	public PopupMenu getMenu() {		
 		String[] elementsgroup = {"Bars", "Tubes", "Spheres"};
-		String[] collectionsgroup = {"Cityscape", "Circle", "Sphere"};
+		String[] collectionsgroup = {"Cityscape", "Sphere"};
 		
 		PopupMenu newMenu = new PopupMenu();	
 		
@@ -263,7 +332,7 @@ public class Vpool implements VisualElementInterface {
 		return newMenu;		
 	}	
 	
-	protected Menu makeRadioGroup(String menuName, String[] itemNames) {
+	public Menu makeRadioGroup(String menuName, String[] itemNames) {
 		Menu result = new Menu(menuName);
 		
 		for (String item : itemNames) {

@@ -35,7 +35,7 @@ public class RootPanel extends JPanel {
     public RootPanel(GUI gui) {
         setLayout(new BorderLayout());
         tabs = new JTabbedPane();
-        gridVisionTab = new TabTitlePanel("Performance", Utils
+        gridVisionTab = new TabTitlePanel("GridVision", Utils
         		.createImageIcon("/images/network-transmit-receive.png",
                 "Performance Tab"));
         

@@ -195,32 +195,33 @@ public class Vnode implements VisualElementInterface {
 	
 	public PopupMenu getMenu() {		
 		String[] elementsgroup = {"Bars", "Tubes", "Spheres"};
-		String[] collectionsgroup = {"Cityscape", "Circle", "Sphere"};
+		String[] collectionsgroup = {"Cityscape", "Sphere"};
 		
 		PopupMenu newMenu = new PopupMenu();	
 		
-		Menu metricsForms 	= makeRadioGroup("Metric Form", elementsgroup);
-		Menu nodeForms 		= makeRadioGroup("Group Form", collectionsgroup);
-		Menu siteForms 		= makeRadioGroup("Site Group Form", collectionsgroup);
-		Menu siteMetricForms= makeRadioGroup("Site Metric Form", elementsgroup);
-		Menu poolForms 		= makeRadioGroup("Pool Group Form", collectionsgroup);
-		Menu poolMetricForms= makeRadioGroup("Pool Metric Form", elementsgroup);
+		//Menu nodeForms 		= makeRadioGroup("Group Form", collectionsgroup);
+		Menu metricsForms 	= makeRadioGroup("Metric Form", elementsgroup);		
+		Menu siteForms 		= parent.makeRadioGroup("Site Group Form", collectionsgroup);
+		Menu siteMetricForms= parent.getParent().makeRadioGroup("Site Metric Form", elementsgroup);
+		Menu poolForms 		= parent.makeRadioGroup("Pool Group Form", collectionsgroup);
+		Menu poolMetricForms= parent.getParent().makeRadioGroup("Pool Metric Form", elementsgroup);
 		
-		newMenu.add(metricsForms);
-		newMenu.add(nodeForms);
+		//newMenu.add(nodeForms);
+		newMenu.add(metricsForms);		
 		newMenu.add(siteForms);
 		newMenu.add(siteMetricForms);
 		newMenu.add(poolForms);
 		newMenu.add(poolMetricForms);
 		newMenu.add(getMetricsMenu("Metrics Toggle"));
-		newMenu.add(getAveragesMenu("Compound Node"));
+		newMenu.add(parent.getMetricsMenu("Site Metrics Toggle"));
+		newMenu.add(parent.getParent().getMetricsMenu("Pool Metrics Toggle"));
 		newMenu.add(parent.getAveragesMenu("Compound Site"));
 		newMenu.add(parent.getParent().getAveragesMenu("Compound Pool"));
 		
 		return newMenu;		
 	}	
 	
-	protected Menu makeRadioGroup(String menuName, String[] itemNames) {
+	public Menu makeRadioGroup(String menuName, String[] itemNames) {
 		Menu result = new Menu(menuName);
 		
 		for (String item : itemNames) {

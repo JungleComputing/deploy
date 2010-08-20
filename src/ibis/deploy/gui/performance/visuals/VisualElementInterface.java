@@ -56,7 +56,11 @@ public interface VisualElementInterface {
 	
 	public void toggleAverages();	
 	
-	public Menu getAveragesMenu(String label);	
+	public Menu makeRadioGroup(String menuName, String[] itemNames);
+	
+	public Menu getAveragesMenu(String label);
+	
+	public Menu getMetricsMenu(String label);	
 	
 	//Specific to each Vobject type
 	public void drawThis(GL gl, int glName);

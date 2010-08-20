@@ -55,7 +55,7 @@ public class PerformancePanel extends JPanel {
 		//JOGL initializers
 		GLCapabilities glCapabilities = new GLCapabilities();		
 		glCapabilities.setDoubleBuffered(true);
-		glCapabilities.setHardwareAccelerated(true);
+		glCapabilities.setHardwareAccelerated(false);
 		canvas = new GLCanvas(glCapabilities);
 		animator = new Animator(canvas);
 		
@@ -66,7 +66,7 @@ public class PerformancePanel extends JPanel {
 		//Add the GridVision Menu bar to the gui
 		JMenuBar bar = new JMenuBar();
 			String[] refreshgroup = {"5000", "2000", "1000", "500", "200", "100"};
-			JMenu refresh = makeRadioGroup(perfvis, "Refresh delay (in ms)", refreshgroup);
+			JMenu refresh = makeRadioGroup(perfvis, "Refresh delay (in ms)", refreshgroup, "500");
 		bar.add(refresh);
 		this.add(bar, BorderLayout.NORTH);	    
 		
@@ -82,16 +82,23 @@ public class PerformancePanel extends JPanel {
 		perfvis = null;
 	}	
 	
-	private JMenu makeRadioGroup(PerfVis perfvis, String menuName, String[] itemNames) {
+	private JMenu makeRadioGroup(PerfVis perfvis, String menuName, String[] itemNames, String initial) {
 		JMenu result = new JMenu(menuName);
 		ButtonGroup group = new ButtonGroup();
 		JRadioButtonMenuItem firstButton = null;
 		
 		for (int i=0; i<itemNames.length; i++) {
-			JRadioButtonMenuItem action = new JRadioButtonMenuItem(itemNames[i]);
+			JRadioButtonMenuItem action;
+			
+			if (itemNames[i].compareTo(initial) == 0) {
+				action = new JRadioButtonMenuItem(itemNames[i], true);
+			} else {
+				action = new JRadioButtonMenuItem(itemNames[i], false);
+			}
+			
 			if (i == 0) firstButton = action;
 				if (menuName.compareTo("Refresh delay (in ms)") == 0) {
-					action.setAction(new SetRefreshrateAction(perfvis, itemNames[i]));
+					action.setAction(new SetRefreshrateAction(perfvis, itemNames[i]));						
 				}
 			group.add(action);
 			result.add(action);			

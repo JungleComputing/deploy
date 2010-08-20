@@ -31,7 +31,7 @@ public class StatsManager implements Runnable {
 	public StatsManager(ManagementServiceInterface manInterface, RegistryServiceInterface regInterface) {
 		this.manInterface = manInterface;
 		this.regInterface = regInterface;
-		this.refreshrate = 5000;
+		this.refreshrate = 500;
 		
 		//The HashMap used to check whether pools have changed
 		poolSizes = new HashMap<String, Integer>();
@@ -54,7 +54,10 @@ public class StatsManager implements Runnable {
 		initStatistics.add(new BytesReceivedPerIbisMetric());
 	}
 	
-	public void update() {		
+	public void update() {	
+		//long start = System.currentTimeMillis();
+		String init = ""; 
+		
 		//Update the size of all pools and sites
 		ArrayList<Pool> newPools = initPools();
 				
@@ -69,8 +72,12 @@ public class StatsManager implements Runnable {
 				pools.clear();
 				poolSizes.clear();
 				initPools();
+				init = " with initialization";				
 			}
 		}
+		
+		//long end = System.currentTimeMillis();
+        //System.err.println("update cycle"+init+" took " + (end - start) + " ms");
 	}
 			
 	private ArrayList<Pool> initPools() {
@@ -138,13 +145,4 @@ public class StatsManager implements Runnable {
 	public void setRefreshrate(int newRate) {
 		this.refreshrate = newRate;
 	}
-
-	//public ArrayList<String> getAvailableNodeMetrics() {
-	//	return availableNodeMetrics;
-	//}
-	
-	//public ArrayList<String> getAvailableLinkMetrics() {
-	//	return availableLinkMetrics;
-	//}		
-	
 }
