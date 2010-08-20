@@ -130,19 +130,18 @@ public class Vpool implements VisualElementInterface {
 			for (Vsite vsite :vsites) {
 				to = vsite.getVisual(destination);
 				if (to != null) {
+					if (vlinkMap.containsKey(source)) {
+						if (!vlinkMap.get(source).containsKey(destination)) {
+							vlinkMap.get(source).put(destination, new Vlink(perfvis, visman, this, node, source, from, destination, to));
+						}
+					} else {
+						HashMap<IbisIdentifier, Vlink> newMap = new HashMap<IbisIdentifier, Vlink>();
+						newMap.put(destination, new Vlink(perfvis, visman, this, node, source, from, destination, to));
+						vlinkMap.put(source, newMap);
+					}	
 					break;
 				}				
-			}
-			
-			if (vlinkMap.containsKey(source)) {
-				if (!vlinkMap.get(source).containsKey(destination)) {
-					vlinkMap.get(source).put(destination, new Vlink(perfvis, visman, this, node, source, from, destination, to));
-				}
-			} else {
-				HashMap<IbisIdentifier, Vlink> newMap = new HashMap<IbisIdentifier, Vlink>();
-				newMap.put(destination, new Vlink(perfvis, visman, this, node, source, from, destination, to));
-				vlinkMap.put(source, newMap);
-			}			
+			}					
 		}	
 		
 		for (Entry<IbisIdentifier, HashMap<IbisIdentifier, Vlink>> entry : vlinkMap.entrySet()) {
@@ -221,7 +220,7 @@ public class Vpool implements VisualElementInterface {
 		shift[2] =  location[2] -(((xzShift*columns)-separation)-(0.5f*scaleXZ))*0.5f;		
 		setLocation(shift);
 				
-		radius = 0;
+		//radius = 0;
 		int row = 0, column = 0, i = 0;
 		for (Vsite vsite : vsites) {
 			row = i % rows;
@@ -308,6 +307,9 @@ public class Vpool implements VisualElementInterface {
 			for (Map.Entry<String, Vmetric> entry : vmetrics.entrySet()) {
 				entry.getValue().setForm(newForm);
 			}
+			for (Vsite vsite : vsites) {
+				vsite.setForm(newForm);
+			}
 		} else if (newForm == VisualElementInterface.COLLECTION_CITYSCAPE || newForm == VisualElementInterface.COLLECTION_CIRCLE || newForm == VisualElementInterface.COLLECTION_SPHERE) {
 			currentCollectionForm = newForm;
 		} else {
@@ -315,29 +317,46 @@ public class Vpool implements VisualElementInterface {
 		}
 	}
 	
-	public PopupMenu getMenu() {		
+	public PopupMenu getMenu() {
 		String[] elementsgroup = {"Bars", "Tubes", "Spheres"};
 		String[] collectionsgroup = {"Cityscape", "Sphere"};
+		PopupMenu result = new PopupMenu();
 		
-		PopupMenu newMenu = new PopupMenu();	
+		Menu elements = makeRadioGroup("Metric Forms", elementsgroup);
+		result.add(elements);
 		
-		Menu metricsForms 	= makeRadioGroup("Metric Form", elementsgroup);
-		Menu nodeForms 		= makeRadioGroup("Group Form", collectionsgroup);
+		Menu collection = makeRadioGroup("Group Form", collectionsgroup);
+		result.add(collection);
 		
-		newMenu.add(metricsForms);
-		newMenu.add(nodeForms);
-		newMenu.add(getMetricsMenu("Metrics Toggle"));
-		newMenu.add(getAveragesMenu("Compound Pool"));
+		result.add(getMetricsMenu("Metrics Toggle"));
+		result.add(getAveragesMenu("Compound Pool"));
 		
-		return newMenu;		
-	}	
+		return result;
+	}
+	
+	public Menu getSubMenu() {
+		String[] elementsgroup = {"Bars", "Tubes", "Spheres"};
+		String[] collectionsgroup = {"Cityscape", "Sphere"};
+		Menu result = new Menu("Pool");
+		
+		Menu elements = makeRadioGroup("Metric Forms", elementsgroup);
+		result.add(elements);
+		
+		Menu collection = makeRadioGroup("Group Form", collectionsgroup);
+		result.add(collection);
+		
+		result.add(getMetricsMenu("Metrics Toggle"));
+		result.add(getAveragesMenu("Compound Pool"));
+		
+		return result;
+	}
 	
 	public Menu makeRadioGroup(String menuName, String[] itemNames) {
 		Menu result = new Menu(menuName);
 		
 		for (String item : itemNames) {
 			MenuItem newMenuItem = new MenuItem(item);
-			if (menuName.equals("Metric Form")) {
+			if (menuName.equals("Metric Forms")) {
 				newMenuItem.addActionListener(new SetMetricFormAction(this, item));
 			} else if (menuName.equals("Group Form")) {
 				newMenuItem.addActionListener(new SetCollectionFormAction(this, item));

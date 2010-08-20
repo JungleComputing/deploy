@@ -195,55 +195,44 @@ public class Vnode implements VisualElementInterface {
 	
 	public PopupMenu getMenu() {		
 		String[] elementsgroup = {"Bars", "Tubes", "Spheres"};
-		String[] collectionsgroup = {"Cityscape", "Sphere"};
+		//String[] collectionsgroup = {"Cityscape", "Sphere"};
 		
 		PopupMenu newMenu = new PopupMenu();	
 		
 		//Menu nodeForms 		= makeRadioGroup("Group Form", collectionsgroup);
-		Menu metricsForms 	= makeRadioGroup("Metric Form", elementsgroup);		
-		Menu siteForms 		= parent.makeRadioGroup("Site Group Form", collectionsgroup);
-		Menu siteMetricForms= parent.getParent().makeRadioGroup("Site Metric Form", elementsgroup);
-		Menu poolForms 		= parent.makeRadioGroup("Pool Group Form", collectionsgroup);
-		Menu poolMetricForms= parent.getParent().makeRadioGroup("Pool Metric Form", elementsgroup);
+		Menu metricsForms 	= makeRadioGroup("Metric Forms", elementsgroup);	
 		
 		//newMenu.add(nodeForms);
-		newMenu.add(metricsForms);		
-		newMenu.add(siteForms);
-		newMenu.add(siteMetricForms);
-		newMenu.add(poolForms);
-		newMenu.add(poolMetricForms);
+		newMenu.add(metricsForms);	
 		newMenu.add(getMetricsMenu("Metrics Toggle"));
 		newMenu.add(parent.getMetricsMenu("Site Metrics Toggle"));
 		newMenu.add(parent.getParent().getMetricsMenu("Pool Metrics Toggle"));
 		newMenu.add(parent.getAveragesMenu("Compound Site"));
 		newMenu.add(parent.getParent().getAveragesMenu("Compound Pool"));
+		newMenu.add(parent.getSubMenu());
+		newMenu.add(parent.getParent().getSubMenu());
 		
 		return newMenu;		
 	}	
+	
+	public Menu getSubMenu() {
+		return null;
+	}
 	
 	public Menu makeRadioGroup(String menuName, String[] itemNames) {
 		Menu result = new Menu(menuName);
 		
 		for (String item : itemNames) {
 			MenuItem newMenuItem = new MenuItem(item);
-			if (menuName.equals("Metric Form")) {
+			if (menuName.equals("Metric Forms")) {
 				newMenuItem.addActionListener(new SetMetricFormAction(this, item));
-			} else if (menuName.equals("Group Form")) {
-				newMenuItem.addActionListener(new SetCollectionFormAction(this, item));
-			} else if (menuName.equals("Site Group Form")) {
-				newMenuItem.addActionListener(new SetCollectionFormAction(this.getParent(), item));
-			} else if (menuName.equals("Site Metric Form")) {
-				newMenuItem.addActionListener(new SetMetricFormAction(this.getParent(), item));
-			} else if (menuName.equals("Pool Group Form")) {
-				newMenuItem.addActionListener(new SetCollectionFormAction(this.getParent().getParent(), item));
-			} else if (menuName.equals("Pool Metric Form")) {
-				newMenuItem.addActionListener(new SetMetricFormAction(this.getParent().getParent(), item));
 			}
 			result.add(newMenuItem);			
 		}
 				
 		return result;
 	}
+	
 	
 	public void setSize(float width, float height) {
 		this.scaleXZ = width;

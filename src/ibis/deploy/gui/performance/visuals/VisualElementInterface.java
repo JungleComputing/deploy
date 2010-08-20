@@ -4,6 +4,7 @@ import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
 import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
 
 import java.awt.Menu;
+import java.awt.MenuItem;
 import java.awt.PopupMenu;
 
 import javax.media.opengl.GL;
@@ -56,6 +57,8 @@ public interface VisualElementInterface {
 	
 	public void toggleAverages();	
 	
+	public Menu getSubMenu();
+	
 	public Menu makeRadioGroup(String menuName, String[] itemNames);
 	
 	public Menu getAveragesMenu(String label);
@@ -64,4 +67,6 @@ public interface VisualElementInterface {
 	
 	//Specific to each Vobject type
 	public void drawThis(GL gl, int glName);
+
+	
 }

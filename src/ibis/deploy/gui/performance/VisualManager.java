@@ -60,7 +60,7 @@ public class VisualManager {
 			vpool.setLocation(origin);						
 			vpool.setSeparation(vpool.getRadius()+1.0f);
 			
-			vpool.setSeparation(0.5f);
+			vpool.setSeparation(2.5f);
 			vpool.drawThis(gl, glMode);			
 		}
 	}
@@ -105,18 +105,7 @@ public class VisualManager {
 	}
 	
 	public PopupMenu getContextSensitiveMenu(int currentSelection) {
-		if (glNameRegistry.containsKey(currentSelection)) {
-			if (poolRegistry.containsKey(currentSelection)) {
-				
-			} else if (siteRegistry.containsKey(currentSelection)) {
-				
-			} else if (nodeRegistry.containsKey(currentSelection)) {
-				
-			} else if (linkRegistry.containsKey(currentSelection)) {
-				
-			} else if (metricRegistry.containsKey(currentSelection)) {
-				
-			}
+		if (glNameRegistry.containsKey(currentSelection)) {			
 			return glNameRegistry.get(currentSelection).getMenu();
 		} else {
 			return new PopupMenu();

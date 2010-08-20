@@ -379,6 +379,9 @@ public class Vsite implements VisualElementInterface {
 			for (Map.Entry<String, Vmetric> entry : vmetrics.entrySet()) {
 				entry.getValue().setForm(newForm);
 			}
+			for (Vnode vnode : vnodes) {
+				vnode.setForm(newForm);
+			}
 		} else if (newForm == VisualElementInterface.COLLECTION_CITYSCAPE || newForm == VisualElementInterface.COLLECTION_CIRCLE || newForm == VisualElementInterface.COLLECTION_SPHERE) {
 			currentCollectionForm = newForm;
 		} else {
@@ -392,36 +395,43 @@ public class Vsite implements VisualElementInterface {
 		
 		PopupMenu newMenu = new PopupMenu();	
 		
-		Menu metricsForms 	= makeRadioGroup("Metric Form", elementsgroup);
+		Menu metricsForms 	= makeRadioGroup("Metric Forms", elementsgroup);
 		Menu nodeForms 		= makeRadioGroup("Group Form", collectionsgroup);
-		Menu poolForms 		= makeRadioGroup("Pool Group Form", collectionsgroup);
-		Menu poolMetricForms= makeRadioGroup("Pool Metric Form", elementsgroup);
 		
 		newMenu.add(metricsForms);
 		newMenu.add(nodeForms);
-		newMenu.add(poolForms);
-		newMenu.add(poolMetricForms);
 		newMenu.add(getMetricsMenu("Metrics Toggle"));
-		newMenu.add(getAveragesMenu("Compound Site"));
-		newMenu.add(parent.getAveragesMenu("Compound Pool"));
-		
+		newMenu.add(getAveragesMenu("Compound"));		
 		
 		return newMenu;		
 	}	
+	
+	public Menu getSubMenu() {
+		String[] elementsgroup = {"Bars", "Tubes", "Spheres"};
+		String[] collectionsgroup = {"Cityscape", "Sphere"};
+		Menu result = new Menu("Site");
+		
+		Menu elements = makeRadioGroup("Metric Forms", elementsgroup);
+		result.add(elements);
+		
+		Menu collection = makeRadioGroup("Group Form", collectionsgroup);
+		result.add(collection);
+		
+		result.add(getMetricsMenu("Metrics Toggle"));
+		result.add(getAveragesMenu("Compound"));
+		
+		return result;
+	}
 	
 	public Menu makeRadioGroup(String menuName, String[] itemNames) {
 		Menu result = new Menu(menuName);
 		
 		for (String item : itemNames) {
 			MenuItem newMenuItem = new MenuItem(item);
-			if (menuName.equals("Metric Form")) {
+			if (menuName.equals("Metric Forms")) {
 				newMenuItem.addActionListener(new SetMetricFormAction(this, item));
 			} else if (menuName.equals("Group Form")) {
 				newMenuItem.addActionListener(new SetCollectionFormAction(this, item));
-			} else if (menuName.equals("Pool Group Form")) {
-				newMenuItem.addActionListener(new SetCollectionFormAction(this.getParent(), item));
-			} else if (menuName.equals("Pool Metric Form")) {
-				newMenuItem.addActionListener(new SetMetricFormAction(this.getParent(), item));
 			}
 			result.add(newMenuItem);			
 		}

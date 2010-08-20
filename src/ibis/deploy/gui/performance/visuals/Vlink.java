@@ -255,6 +255,10 @@ public class Vlink implements VisualElementInterface {
 		return newMenu;		
 	}	
 	
+	public Menu getSubMenu() {
+		return null;
+	}
+	
 	public Menu makeRadioGroup(String menuName, String[] itemNames) {
 		Menu result = new Menu(menuName);
 		

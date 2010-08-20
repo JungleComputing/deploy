@@ -432,6 +432,10 @@ public class Vmetric implements VisualElementInterface {
 		return parent.getMenu();
 	}	
 	
+	public Menu getSubMenu() {
+		return null;
+	}
+	
 	public Menu makeRadioGroup(String menuName, String[] itemNames) {
 		Menu result = new Menu(menuName);
 		
