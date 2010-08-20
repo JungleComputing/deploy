@@ -53,6 +53,8 @@ public class Main {
             }
         }
     
+        Thread.sleep(5000);
+        
         Go go = new Go();
         
         // register shutdown hook
@@ -61,7 +63,8 @@ public class Main {
         } catch (Exception e) {
             System.err.println("warning: could not registry shutdown hook");
         }
-    
+        
+        
         if (go.isMaster()) {
             if (fileName == null) {
                 board = new Board(size, stones, seed);
@@ -74,7 +77,7 @@ public class Main {
 
             //add initial job to job Q
             go.addToJobQ(new Job(go.getIbisIdentifier(), null, board, null));
-    
+             
             long start = System.currentTimeMillis();
     
             runWorkers(threads, go);
