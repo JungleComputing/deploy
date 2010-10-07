@@ -52,10 +52,21 @@ Rubiks.libs = lib-server,ipl-apps,/home/maarten/studie/afstud/rubiks/lib
 # Application "Go"
 Go.main.class = go.dac.Main
 Go.arguments = --size,4,--stones,2
-Go.libs = lib-server,ipl-apps,/home/maarten/workspace/deploy-maarten/go/lib
+Go.libs = lib-server,ipl-apps,C:\\Users\\maarten\\workspace\\deploy-maarten\\go\\lib
 #Go.input.files =
 #Go.output.files =
 Go.system.properties = ibis.bytescount=true,
+#Go.java.options =
+#Go.log4j.file =
+#Go.memory.size =
+
+# Application "GoCripple"
+GoCripple.main.class = go.daccripple.Main
+GoCripple.arguments = --size,4,--stones,2
+GoCripple.libs = lib-server,ipl-apps,/home/maarten/workspace/deploy-maarten/go/lib
+#Go.input.files =
+#Go.output.files =
+GoCripple.system.properties = ibis.bytescount=true,
 #Go.java.options =
 #Go.log4j.file =
 #Go.memory.size =
