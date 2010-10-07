@@ -1,4 +1,4 @@
-package ibis.deploy.gui.performance.dataholders;
+package ibis.deploy.gui.gridvision.dataholders;
 
 import java.io.IOException;
 import java.util.ArrayList;

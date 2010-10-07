@@ -1,4 +1,4 @@
-package ibis.deploy.gui.performance.dataholders;
+package ibis.deploy.gui.gridvision.dataholders;
 
 import java.util.HashMap;
 import java.util.HashSet;

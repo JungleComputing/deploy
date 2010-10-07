@@ -1,4 +1,4 @@
-package ibis.deploy.gui.performance;
+package ibis.deploy.gui.gridvision;
 
 import ibis.deploy.gui.GUI;
 import ibis.ipl.server.ManagementServiceInterface;
