@@ -9,6 +9,7 @@ import ibis.deploy.JobDescription;
 import ibis.deploy.Workspace;
 import ibis.deploy.Deploy.HubPolicy;
 import ibis.deploy.gui.experiment.composer.SubmitJobListener;
+import ibis.deploy.gui.gridvision.PerformancePanel;
 import ibis.deploy.gui.misc.AboutAction;
 import ibis.deploy.gui.misc.HubPolicyAction;
 import ibis.deploy.gui.misc.NewWorkSpaceAction;
@@ -17,7 +18,6 @@ import ibis.deploy.gui.misc.SaveAsWorkSpaceAction;
 import ibis.deploy.gui.misc.SaveWorkSpaceAction;
 import ibis.deploy.gui.misc.SmartSocketsVizAction;
 import ibis.deploy.gui.misc.Utils;
-import ibis.deploy.gui.performance.PerformancePanel;
 import ibis.deploy.gui.worldmap.WorldMapPanel;
 
 import java.awt.BorderLayout;

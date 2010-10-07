@@ -3,7 +3,7 @@ package ibis.deploy.gui;
 import ibis.deploy.gui.applications.ApplicationEditorPanel;
 import ibis.deploy.gui.clusters.ClusterEditorPanel;
 import ibis.deploy.gui.experiment.ExperimentsPanel;
-import ibis.deploy.gui.performance.PerformancePanel;
+import ibis.deploy.gui.gridvision.PerformancePanel;
 import ibis.deploy.gui.misc.Utils;
 
 import java.awt.BorderLayout;
