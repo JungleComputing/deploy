@@ -8,7 +8,7 @@
 
     <property environment="env"/>
 
-    <property name="ibis" location="${env.IPL_HOME}" />
+    <property name="ibis" location="../../" />
 
     <property name="version" value="" />
 
