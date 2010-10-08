@@ -1,0 +1,1 @@
+java -classpath .;.\lib\*;.\lib\castor-1.1.1-xml.jar -Djava.library.path=.\external\native_libraries -Dgat.adaptor.path=.\lib\adaptors -Dibis.deploy.home=. ibis.deploy.gui.GUI
