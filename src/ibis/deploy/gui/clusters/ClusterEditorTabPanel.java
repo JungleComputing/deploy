@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -90,7 +89,13 @@ public class ClusterEditorTabPanel extends JPanel {
         formPanel.add(new Spacer("Deployment"));
 
         formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
+                
+        final TextEditor keyFileEditor = new TextEditor(this, formPanel,
+                "User Keyfile: ", source.getKeyFile());
+        fields.add(keyFileEditor);
 
+        formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
+        
         final NumberEditor memoryEditor = new NumberEditor(this, formPanel,
                 "Memory (MB): ", source.getMemory(), true);
         fields.add(memoryEditor);
@@ -240,10 +245,16 @@ public class ClusterEditorTabPanel extends JPanel {
                 if (userNameEditor.getText().length() > 0)
                     source.setUserName(userNameEditor.getText());
                 else
-                    source.setUserName(null);
-
+                	source.setUserName(null);
+                
+                if (keyFileEditor.getText().length() > 0)
+                    source.setKeyFile(keyFileEditor.getText());
+                else
+                    source.setKeyFile(null);
+            
+                
                 if (javaPathEditor.getText().length() > 0)
-                    source.setJavaPath(javaPathEditor.getText());
+                	source.setJavaPath(javaPathEditor.getText());
                 else
                     source.setJavaPath(null);
 
@@ -329,6 +340,8 @@ public class ClusterEditorTabPanel extends JPanel {
 
                 userNameEditor.setText(source.getUserName());
 
+				keyFileEditor.setText(source.getKeyFile());
+				
                 javaPathEditor.setText(source.getJavaPath());
 
                 if (source.getCacheDir() != null)

@@ -63,6 +63,8 @@ public class ApplicationListPanel extends JPanel {
                 BorderLayout.NORTH);
 
         add(new JScrollPane(applicationList), BorderLayout.CENTER);
+        
+        this.applicationEditorPanel = applicationEditorPanel;
 
         init(gui, model, editApplicationPanels);
 

@@ -31,7 +31,7 @@ public class ClusterWaypoint extends Waypoint {
      * Radius of a cluster based on the number of nodes. Number of nodes
      * represents the AREA of the cluster, so we convert to the radius.
      * 
-     * @return
+     * @return the radius
      */
     public int getRadius() {
         int nodes = cluster.getNodes();

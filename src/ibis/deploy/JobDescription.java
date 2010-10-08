@@ -489,7 +489,7 @@ public class JobDescription {
      * <li>Defaults in parent experiment</li>
      * <li>Application settings in given ApplicationSet</li>
      * <li>Default settings in given ApplicationSet</li>
-     * <li>Cluster settings in given Grid
+     * <li>Cluster settings in given Grid</li>
      * <li>Default settings in given Grid</li>
      * </ol>
      * 
