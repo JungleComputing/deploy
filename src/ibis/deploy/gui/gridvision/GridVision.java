@@ -18,7 +18,7 @@ import javax.swing.JPanel;
 import com.sun.opengl.util.BufferUtil;
 import com.sun.opengl.util.GLUT;
 
-public class PerfVis implements GLEventListener {
+public class GridVision implements GLEventListener {
 	private static final int BUFSIZE = 512;
 		
 	private GLU glu;
@@ -47,17 +47,17 @@ public class PerfVis implements GLEventListener {
 	private RegistryServiceInterface regInterface;
 	private ManagementServiceInterface manInterface;
 		
-	private StatsManager statman;
+	private MetricsManager statman;
 	private VisualManager visman;
 	private MouseHandler mouseHandler;
 
 	
 	
-	PerfVis() {
+	GridVision() {
 		glu = new GLU();
 	}
 	
-	PerfVis (GUI gui, GLCanvas canvas, JPanel panel) {
+	GridVision (GUI gui, GLCanvas canvas, JPanel panel) {
 		this.gui = gui;
 		this.panel = panel;
 		glu = new GLU();
@@ -193,7 +193,7 @@ public class PerfVis implements GLEventListener {
 		
 		canvas.requestFocusInWindow();
 		
-		statman = new StatsManager(manInterface, regInterface);
+		statman = new MetricsManager(manInterface, regInterface);
 		new Thread(statman).start();
 	}
 	

@@ -1,5 +1,5 @@
 package ibis.deploy.gui.gridvision.visuals;
-import ibis.deploy.gui.gridvision.PerfVis;
+import ibis.deploy.gui.gridvision.GridVision;
 import ibis.deploy.gui.gridvision.VisualManager;
 import ibis.deploy.gui.gridvision.dataholders.Node;
 import ibis.deploy.gui.gridvision.dataholders.Site;
@@ -28,7 +28,7 @@ import javax.media.opengl.GL;
 import javax.media.opengl.glu.GLU;
 
 public class Vsite implements VisualElementInterface {
-	PerfVis perfvis;
+	GridVision perfvis;
 	VisualManager visman;
 	
 	protected Float[] location;
@@ -57,7 +57,7 @@ public class Vsite implements VisualElementInterface {
 	
 	private Site site;
 		
-	public Vsite(PerfVis perfvis, VisualManager visman, VisualElementInterface parent, Site site) {
+	public Vsite(GridVision perfvis, VisualManager visman, VisualElementInterface parent, Site site) {
 		this.perfvis = perfvis;
 		this.visman = visman;
 		

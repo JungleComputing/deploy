@@ -3,7 +3,7 @@ package ibis.deploy.gui;
 import ibis.deploy.gui.applications.ApplicationEditorPanel;
 import ibis.deploy.gui.clusters.ClusterEditorPanel;
 import ibis.deploy.gui.experiment.ExperimentsPanel;
-import ibis.deploy.gui.gridvision.PerformancePanel;
+import ibis.deploy.gui.gridvision.GridVisionPanel;
 import ibis.deploy.gui.misc.Utils;
 
 import java.awt.BorderLayout;
@@ -56,7 +56,7 @@ public class RootPanel extends JPanel {
         add(tabs, BorderLayout.CENTER);
     }
     
-    public void toggleGridVisionPane(GUI gui, PerformancePanel panel) {
+    public void toggleGridVisionPane(GUI gui, GridVisionPanel panel) {
     	Component[] comps = tabs.getComponents();
     	boolean present = false;
     	for (Component comp : comps) {

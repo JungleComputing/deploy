@@ -1,6 +1,6 @@
 package ibis.deploy.gui.gridvision.visuals;
 
-import ibis.deploy.gui.gridvision.PerfVis;
+import ibis.deploy.gui.gridvision.GridVision;
 import ibis.deploy.gui.gridvision.VisualManager;
 import ibis.deploy.gui.gridvision.dataholders.Node;
 import ibis.deploy.gui.gridvision.exceptions.ModeUnknownException;
@@ -26,7 +26,7 @@ import javax.media.opengl.GL;
 import javax.media.opengl.glu.GLU;
 
 public class Vlink implements VisualElementInterface {
-	PerfVis perfvis;
+	GridVision perfvis;
 	VisualManager visman;
 	
 	protected Float[] location;
@@ -50,7 +50,7 @@ public class Vlink implements VisualElementInterface {
 	private VisualElementInterface from, to;	
 	private IbisIdentifier source, destination;
 	
-	public Vlink(PerfVis perfvis, VisualManager visman, VisualElementInterface parent, Node node, IbisIdentifier source, VisualElementInterface from, IbisIdentifier destination, VisualElementInterface to) {
+	public Vlink(GridVision perfvis, VisualManager visman, VisualElementInterface parent, Node node, IbisIdentifier source, VisualElementInterface from, IbisIdentifier destination, VisualElementInterface to) {
 		this.perfvis = perfvis;
 		this.visman = visman;
 		

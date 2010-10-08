@@ -9,7 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import ibis.deploy.gui.gridvision.PerfVis;
+import ibis.deploy.gui.gridvision.GridVision;
 import ibis.deploy.gui.gridvision.VisualManager;
 import ibis.deploy.gui.gridvision.exceptions.ModeUnknownException;
 import ibis.deploy.gui.gridvision.exceptions.StatNotRequestedException;
@@ -24,7 +24,7 @@ import javax.media.opengl.glu.GLU;
 import javax.media.opengl.glu.GLUquadric;
 
 public class Vmetric implements VisualElementInterface {	
-	PerfVis perfvis;
+	GridVision perfvis;
 	VisualManager visman;
 	
 	protected Float[] location;
@@ -51,7 +51,7 @@ public class Vmetric implements VisualElementInterface {
 	
 	private float value;
 		
-	public Vmetric(PerfVis perfvis, VisualManager visman, VisualElementInterface parent, Float[] color) {
+	public Vmetric(GridVision perfvis, VisualManager visman, VisualElementInterface parent, Float[] color) {
 		this.perfvis = perfvis;
 		this.visman = visman;
 		

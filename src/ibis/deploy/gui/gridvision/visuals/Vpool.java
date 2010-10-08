@@ -1,5 +1,5 @@
 package ibis.deploy.gui.gridvision.visuals;
-import ibis.deploy.gui.gridvision.PerfVis;
+import ibis.deploy.gui.gridvision.GridVision;
 import ibis.deploy.gui.gridvision.VisualManager;
 import ibis.deploy.gui.gridvision.dataholders.Node;
 import ibis.deploy.gui.gridvision.dataholders.Pool;
@@ -29,7 +29,7 @@ import javax.media.opengl.GL;
 import javax.media.opengl.glu.GLU;
 
 public class Vpool implements VisualElementInterface {	
-	PerfVis perfvis;
+	GridVision perfvis;
 	VisualManager visman;
 	
 	protected Float[] location;
@@ -55,7 +55,7 @@ public class Vpool implements VisualElementInterface {
 	private List<Vsite> vsites;	
 	private Pool pool; 
 		
-	public Vpool(PerfVis perfvis, VisualManager visman, VisualElementInterface parent, Pool pool) {
+	public Vpool(GridVision perfvis, VisualManager visman, VisualElementInterface parent, Pool pool) {
 		this.perfvis = perfvis;
 		this.visman = visman;
 		

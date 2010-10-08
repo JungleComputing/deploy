@@ -14,7 +14,7 @@ import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
 import ibis.smartsockets.virtual.NoSuitableModuleException;
 
-public class StatsManager implements Runnable {
+public class MetricsManager implements Runnable {
 	//Variables needed for the operation of this class		
 	private ManagementServiceInterface manInterface;
 	private RegistryServiceInterface regInterface;
@@ -28,7 +28,7 @@ public class StatsManager implements Runnable {
 	//The list that holds the statistics necessary for initializing the visualization 
 	private MetricsList initStatistics;
 	
-	public StatsManager(ManagementServiceInterface manInterface, RegistryServiceInterface regInterface) {
+	public MetricsManager(ManagementServiceInterface manInterface, RegistryServiceInterface regInterface) {
 		this.manInterface = manInterface;
 		this.regInterface = regInterface;
 		this.refreshrate = 500;

@@ -1,6 +1,6 @@
 package ibis.deploy.gui.gridvision.swing;
 
-import ibis.deploy.gui.gridvision.PerfVis;
+import ibis.deploy.gui.gridvision.GridVision;
 import ibis.deploy.gui.gridvision.exceptions.ModeUnknownException;
 
 import java.awt.event.ActionEvent;
@@ -10,10 +10,10 @@ import javax.swing.AbstractAction;
 public class SetStatAction extends AbstractAction {	
 	private static final long serialVersionUID = 7380908030018875303L;
 	
-	PerfVis perfvis;
+	GridVision perfvis;
 	int myStat;
 	
-	public SetStatAction(PerfVis perfvis, String label) {
+	public SetStatAction(GridVision perfvis, String label) {
 		super(label);
 		this.perfvis = perfvis;
 		

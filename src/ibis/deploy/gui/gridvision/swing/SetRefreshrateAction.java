@@ -1,6 +1,6 @@
 package ibis.deploy.gui.gridvision.swing;
 
-import ibis.deploy.gui.gridvision.PerfVis;
+import ibis.deploy.gui.gridvision.GridVision;
 
 import java.awt.event.ActionEvent;
 
@@ -9,10 +9,10 @@ import javax.swing.AbstractAction;
 public class SetRefreshrateAction extends AbstractAction {	
 	private static final long serialVersionUID = 7380908030018875303L;
 	
-	PerfVis perfvis;
+	GridVision perfvis;
 	int myRefreshrate;
 	
-	public SetRefreshrateAction(PerfVis perfvis, String label) {
+	public SetRefreshrateAction(GridVision perfvis, String label) {
 		super(label);
 		this.perfvis = perfvis;
 		

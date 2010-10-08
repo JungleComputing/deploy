@@ -16,14 +16,14 @@ import javax.swing.JRadioButtonMenuItem;
 
 import com.sun.opengl.util.Animator;
 
-public class PerformancePanel extends JPanel {	
+public class GridVisionPanel extends JPanel {	
 	private static final long serialVersionUID = 2947480963529559102L;
 	
 	protected GLCanvas canvas;
 	protected Animator animator;
-	PerfVis perfvis;
+	GridVision perfvis;
 	
-	public PerformancePanel(GUI gui) {
+	public GridVisionPanel(GUI gui) {
 		//Add the option to enable this feature to the Ibis Deploy menu bar	
 		JMenuBar menuBar = gui.getMenuBar();
         JMenu menu = null;
@@ -60,7 +60,7 @@ public class PerformancePanel extends JPanel {
 		canvas = new GLCanvas(glCapabilities);
 		animator = new Animator(canvas);
 		
-		perfvis = new PerfVis(gui, canvas, this);				
+		perfvis = new GridVision(gui, canvas, this);				
 		
 		setLayout(new BorderLayout());		
 		
@@ -83,7 +83,7 @@ public class PerformancePanel extends JPanel {
 		perfvis = null;
 	}	
 	
-	private JMenu makeRadioGroup(PerfVis perfvis, String menuName, String[] itemNames, String initial) {
+	private JMenu makeRadioGroup(GridVision perfvis, String menuName, String[] itemNames, String initial) {
 		JMenu result = new JMenu(menuName);
 		ButtonGroup group = new ButtonGroup();
 		JRadioButtonMenuItem firstButton = null;
