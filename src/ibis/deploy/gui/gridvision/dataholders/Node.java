@@ -55,8 +55,8 @@ public class Node implements IbisConceptInterface {
 			
 			if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {			
 				nodeMetricsColors.put(metric.getName(), metric.getColor());
-			//} else if (metric.getGroup() == LinkMetricsMap.METRICSGROUP) {
-			//	linkMetricsColors.put(metric.getName(), metric.getColor());					
+			} else if (metric.getGroup() == LinkMetricsMap.METRICSGROUP) {
+				linkMetricsColors.put(metric.getName(), metric.getColor());					
 			}
 		}
 	}
