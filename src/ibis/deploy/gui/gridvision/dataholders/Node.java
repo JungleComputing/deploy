@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 
 import ibis.deploy.gui.gridvision.MetricsList;
 import ibis.deploy.gui.gridvision.exceptions.StatNotRequestedException;
+import ibis.deploy.gui.gridvision.interfaces.IbisConcept;
 import ibis.deploy.gui.gridvision.metrics.Metric;
 import ibis.deploy.gui.gridvision.metrics.link.LinkMetricsMap;
 import ibis.deploy.gui.gridvision.metrics.node.NodeMetricsObject;
@@ -16,7 +17,7 @@ import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.support.management.AttributeDescription;
 import ibis.smartsockets.virtual.NoSuitableModuleException;
 
-public class Node implements IbisConceptInterface {
+public class Node implements IbisConcept {
 	//Variables needed for the operation of this class	
 	private ManagementServiceInterface manInterface;
 
@@ -25,16 +26,20 @@ public class Node implements IbisConceptInterface {
 	private HashMap<String, Float[]> nodeMetricsColors;
 	private HashMap<String, Float[]> linkMetricsColors;
 	
+	private MetricsList currentlyGatheredMetrics;
+	
 	private String siteName;
 	private IbisIdentifier name;	
 	
 	protected HashSet<IbisIdentifier> connections;
-	private MetricsList metrics;
 	
-	public Node(ManagementServiceInterface manInterface, String siteName, IbisIdentifier name) {
+	public Node(ManagementServiceInterface manInterface, MetricsList initialMetrics, String siteName, IbisIdentifier name) {
 		this.siteName = siteName;
 		this.name = name;
 		this.manInterface = manInterface;
+		
+		currentlyGatheredMetrics = new MetricsList();
+		setCurrentlyGatheredMetrics(initialMetrics.clone());
 		
 		nodeMetricsValues = new HashMap<String, Float>();
 		nodeMetricsColors = new HashMap<String, Float[]>();
@@ -42,16 +47,24 @@ public class Node implements IbisConceptInterface {
 		linkMetricsColors = new HashMap<String, Float[]>();
 		
 		connections = new HashSet<IbisIdentifier>();
-		
-		metrics = new MetricsList();
+	}
+	
+	public void setMetricUnmonitored(Metric metricToUncheck) {
+		getCurrentlyGatheredMetrics();
+	}
+	
+	public MetricsList getCurrentlyGatheredMetrics() {
+		synchronized(this) {
+			return currentlyGatheredMetrics;
+		}
 	}
 	
 	public void setCurrentlyGatheredMetrics(MetricsList newMetrics) {
-		metrics.clear();
+		currentlyGatheredMetrics.clear();
 		nodeMetricsColors.clear();
 		linkMetricsColors.clear();
 		for (Metric metric : newMetrics) {
-			metrics.add(metric.clone());
+			currentlyGatheredMetrics.add(metric.clone());
 			
 			if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {			
 				nodeMetricsColors.put(metric.getName(), metric.getColor());
@@ -68,13 +81,13 @@ public class Node implements IbisConceptInterface {
 		
 		try {
 			int size = 0;
-			for (Metric metric : metrics) {
+			for (Metric metric : currentlyGatheredMetrics) {
 				size += metric.getAttributesCountNeeded();
 			}
 			
 			AttributeDescription[] requestArray = new AttributeDescription[size]; 
 			int j=0;
-			for (Metric metric : metrics) {
+			for (Metric metric : currentlyGatheredMetrics) {
 				AttributeDescription[] tempArray = metric.getNecessaryAttributes();
 				for (int i=0; i < tempArray.length; i++) {
 					requestArray[j] = tempArray[i];
@@ -85,7 +98,7 @@ public class Node implements IbisConceptInterface {
 			Object[] results = manInterface.getAttributes(name, requestArray);
 			
 			j=0;			
-			for (Metric metric : metrics) {
+			for (Metric metric : currentlyGatheredMetrics) {
 				Object[] partialResults = new Object[metric.getAttributesCountNeeded()];				
 				for (int i=0; i < partialResults.length ; i++) {
 					partialResults[i] = results[j];	
@@ -127,7 +140,7 @@ public class Node implements IbisConceptInterface {
 		return name;
 	}
 	
-	public IbisConceptInterface[] getSubConcepts() {	
+	public IbisConcept[] getSubConcepts() {	
 		return null;
 	}
 	

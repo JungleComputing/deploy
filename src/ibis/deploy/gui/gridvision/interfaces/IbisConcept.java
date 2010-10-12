@@ -1,0 +1,111 @@
+package ibis.deploy.gui.gridvision.interfaces;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+import ibis.deploy.gui.gridvision.MetricsList;
+import ibis.deploy.gui.gridvision.exceptions.ModeUnknownException;
+import ibis.deploy.gui.gridvision.exceptions.StatNotRequestedException;
+import ibis.ipl.IbisIdentifier;
+import ibis.smartsockets.virtual.NoSuitableModuleException;
+
+/**
+ * The Data-holding 
+ * @author maarten
+ *
+ */
+public interface IbisConcept {
+	public static final int MAX = 2350;
+	public static final int AVG = 2351;
+	public static final int MIN = 2352;
+	
+	/**
+	 * Returns the value of the requested Metric, as identified by its name (String).
+	 * @param key 
+	 * 		The name of the metric.
+	 * @param mod
+	 * 		The modifier, defined as MAX, MIN or AVG constants in this interface
+	 * @return
+	 * 		a float, giving the maximum, average or minimum value of the requested metric.
+	 * @throws StatNotRequestedException
+	 * 		is thrown in case the requested metric was not enabled for gathering.
+	 * @throws ModeUnknownException
+	 * 		is thrown in case the modifier does not correspond to any of the constants in this interface.
+	 */
+	public float getNodeMetricsValue(String key, int mod) throws StatNotRequestedException, ModeUnknownException;
+	
+	/**
+	 * Returns the children of this particular IbisConcept.
+	 * @return
+	 * 		The children.
+	 */
+	public IbisConcept[] getSubConcepts();
+	
+	
+	/**
+	 * Returns the network links to other concepts of this level.
+	 * @return
+	 * 		The concepts which this concept has network links to.
+	 */
+	public IbisConcept[] getLinks();
+	
+	/**
+	 * Returns the Set of currently monitored node-based metrics.
+	 * @return
+	 * 		The set of currently monitored node-based metrics.
+	 */
+	public Set<String> getMonitoredNodeMetrics();
+	
+	/**
+	 * Returns the Set of currently monitored link-based metrics.
+	 * @return
+	 * 		The set of currently monitored link-based metrics.
+	 */
+	public Set<String> getMonitoredLinkMetrics();
+	
+	/**
+	 * Sets the currently monitored metrics to be equal to those in the list provided. 
+	 * @param newMetrics
+	 * 		The list of desired metrics to be monitored.
+	 */
+	public void setCurrentlyGatheredMetrics(MetricsList newMetrics);
+		
+	/**
+	 * Returns the MetricsList of currently gathered metrics.
+	 * @return
+	 * 		a MetricsList containing all of the metrics that are gathered in this IbisConcept.
+	 */
+	public MetricsList getCurrentlyGatheredMetrics();
+		
+	/**
+	 * Updates the values of all the currently monitored metrics by asking the ibisConcepts 
+	 * down the chain to update first, and then updating its own values.
+	 * @throws NoSuitableModuleException
+	 * 		In case the network connection to one of the children was not yet established.
+	 * @throws StatNotRequestedException
+	 * 		In case one of the children did not have the metric in its currently monitored list.
+	 */
+	public void update() throws NoSuitableModuleException, StatNotRequestedException;
+	
+	/**
+	 * Returns a map of the connections of this IbisConcept to the IbisConcepts of the same level.
+	 * @return
+	 * 		the map of the connections of this IbisConcept to the IbisConcepts of the same level.
+	 */
+	public HashMap<IbisConcept, Map<String, Float>> getLinkValues();
+	
+	/**
+	 * Returns the colors of the visual representations of the node-based metrics.
+	 * @return
+	 * 		A map of the string names of the node-based metrics, coupled with the colors in Float[3] format.
+	 */
+	public HashMap<String, Float[]> getNodeMetricColors();
+	
+	/**
+	 * Returns the colors of the visual representations of the link-based metrics.
+	 * @return
+	 * 		A map of the string names of the link-based metrics, coupled with the colors in Float[3] format.
+	 */
+	public HashMap<String, Float[]> getLinkMetricColors();
+}

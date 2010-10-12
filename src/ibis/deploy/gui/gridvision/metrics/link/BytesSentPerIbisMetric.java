@@ -3,12 +3,18 @@ package ibis.deploy.gui.gridvision.metrics.link;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import ibis.deploy.gui.gridvision.dataholders.Node;
 import ibis.deploy.gui.gridvision.metrics.MetricInterface;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.support.management.AttributeDescription;
 
 
 public class BytesSentPerIbisMetric extends LinkMetricsMap implements MetricInterface {
+	private static final Logger logger = LoggerFactory.getLogger(BytesSentPerIbisMetric.class);
+	
 	public static final String NAME = "BYTES_SENT_PER_IBIS";
 	public static final int DESCRIPTIONS_COUNT_NEEDED = 1;
 	public static final Float[] COLOR = {0.0f, 0.6f, 0.6f};
@@ -34,14 +40,14 @@ public class BytesSentPerIbisMetric extends LinkMetricsMap implements MetricInte
 	}
 		
 	@SuppressWarnings("unchecked")
-	public void update(Object[] results) {
+	public void update(Node parent, Object[] results) {
 		long time_now = System.currentTimeMillis();
 		long time_elapsed = time_now - time_prev;	
 		float time_seconds = (float)time_elapsed / 1000.0f;
 		Float value = 1.0f;
 		
 		if (results[0] == null) {
-			System.err.println("NULL: results[0] in sentBytesPerIbis");
+			logger.info("GridVision: sentBytesPerIbis not available");			
 			return;
 		}
 		

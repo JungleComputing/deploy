@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 
 import ibis.deploy.gui.gridvision.MetricsList;
 import ibis.deploy.gui.gridvision.exceptions.StatNotRequestedException;
+import ibis.deploy.gui.gridvision.interfaces.IbisConcept;
 import ibis.deploy.gui.gridvision.metrics.Metric;
 import ibis.deploy.gui.gridvision.metrics.link.LinkMetricsMap;
 import ibis.deploy.gui.gridvision.metrics.node.NodeMetricsObject;
@@ -17,7 +18,7 @@ import ibis.ipl.IbisIdentifier;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.smartsockets.virtual.NoSuitableModuleException;
 
-public class Site implements IbisConceptInterface {
+public class Site implements IbisConcept {
 	private HashMap<String, Float> nodeMetricsValues;
 	private HashMap<IbisIdentifier, Map<String, Float>> linkMetricsValues;
 	private HashMap<String, Float[]> nodeMetricsColors;
@@ -29,12 +30,14 @@ public class Site implements IbisConceptInterface {
 	
 	private MetricsList currentlyGatheredMetrics;
 	
-	public Site(ManagementServiceInterface manInterface, MetricsList initialStatistics, IbisIdentifier[] poolIbises, String siteName) {		
+	public Site(ManagementServiceInterface manInterface, MetricsList initialMetrics, IbisIdentifier[] poolIbises, String siteName) {		
 		this.name = siteName;				
 		this.nodes = new ArrayList<Node>();
 		this.ibisesToNodes = new HashMap<IbisIdentifier, Node>();
 		
 		currentlyGatheredMetrics = new MetricsList();
+		setCurrentlyGatheredMetrics(initialMetrics);
+		
 		nodeMetricsValues = new HashMap<String, Float>();
 		nodeMetricsColors = new HashMap<String, Float[]>();
 		linkMetricsValues = new HashMap<IbisIdentifier, Map<String, Float>>();
@@ -48,12 +51,14 @@ public class Site implements IbisConceptInterface {
 			
 			//And compare all ibises' locations to that sitename
 			if (ibisLocationName.compareTo(siteName) == 0) {
-				Node node = new Node(manInterface, siteName, poolIbises[i]);
+				Node node = new Node(manInterface, initialMetrics, siteName, poolIbises[i]);
 				nodes.add(node);
 				//new Thread(node).start();
 				ibisesToNodes.put(poolIbises[i], node);
 			}
-		}				
+		}
+		
+		
 	}
 		
 	public String getName() {

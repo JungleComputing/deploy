@@ -11,6 +11,7 @@ import java.util.Map.Entry;
 
 import ibis.deploy.gui.gridvision.MetricsList;
 import ibis.deploy.gui.gridvision.exceptions.StatNotRequestedException;
+import ibis.deploy.gui.gridvision.interfaces.IbisConcept;
 import ibis.deploy.gui.gridvision.metrics.Metric;
 import ibis.deploy.gui.gridvision.metrics.node.NodeMetricsObject;
 import ibis.ipl.IbisIdentifier;
@@ -18,7 +19,7 @@ import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
 import ibis.smartsockets.virtual.NoSuitableModuleException;
 
-public class Pool implements IbisConceptInterface {
+public class Pool implements IbisConcept {
 	private HashMap<String, Float> nodeMetricsValues;
 	private HashMap<IbisIdentifier, Map<String, Float>> linkMetricsValues;
 	private HashMap<String, Float[]> nodeMetricsColors;
@@ -26,8 +27,10 @@ public class Pool implements IbisConceptInterface {
 	
 	private String name;
 	private List<Site> sites;
+	
+	private MetricsList currentlyGatheredMetrics;
 
-	public Pool(ManagementServiceInterface manInterface, RegistryServiceInterface regInterface, MetricsList initialStatistics, String poolName) {		
+	public Pool(ManagementServiceInterface manInterface, RegistryServiceInterface regInterface, MetricsList initialMetrics, String poolName) {		
 		this.name = poolName;
 		
 		this.sites = new ArrayList<Site>();	
@@ -35,6 +38,9 @@ public class Pool implements IbisConceptInterface {
 		nodeMetricsColors = new HashMap<String, Float[]>();
 		linkMetricsValues = new HashMap<IbisIdentifier, Map<String, Float>>();
 		linkMetricsColors = new HashMap<String, Float[]>();
+		
+		currentlyGatheredMetrics = new MetricsList();
+		setCurrentlyGatheredMetrics(initialMetrics);
 		
 		//Get the members of this pool
 		IbisIdentifier[] ibises = {};
@@ -61,10 +67,8 @@ public class Pool implements IbisConceptInterface {
 						
 		//For all sites			
 		for (String siteName : siteNames) {
-			sites.add(new Site(manInterface, initialStatistics.clone(), ibises, siteName));
-		}
-		
-		setCurrentlyGatheredMetrics(initialStatistics);
+			sites.add(new Site(manInterface, initialMetrics.clone(), ibises, siteName));
+		}				
 	}
 	
 	public String getName() {
