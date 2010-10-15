@@ -7,11 +7,10 @@ import java.util.Set;
 import ibis.deploy.gui.gridvision.MetricsList;
 import ibis.deploy.gui.gridvision.exceptions.ModeUnknownException;
 import ibis.deploy.gui.gridvision.exceptions.StatNotRequestedException;
-import ibis.ipl.IbisIdentifier;
 import ibis.smartsockets.virtual.NoSuitableModuleException;
 
 /**
- * The Data-holding 
+ * The Generic data-holding class for the Ibis Concepts. 
  * @author maarten
  *
  */
@@ -36,12 +35,28 @@ public interface IbisConcept {
 	public float getNodeMetricsValue(String key, int mod) throws StatNotRequestedException, ModeUnknownException;
 	
 	/**
+	 * Returns the value of the requested link Metric.
+	 * @param link
+	 * 		The IbisConcept to which the link was established.
+	 * @param key
+	 * 		The name of the metric value to be returned.
+	 * @param mod
+	 * 		The modifier, defined as MAX, MIN or AVG constants in this interface
+	 * @return
+	 * 	a float, giving the maximum, average or minimum value of the requested metric.
+	 * @throws StatNotRequestedException
+	 * 		is thrown in case the requested metric was not enabled for gathering.
+	 * @throws ModeUnknownException
+	 * 		is thrown in case the modifier does not correspond to any of the constants in this interface.
+	 */	 
+	public float getLinkMetricsValue(IbisConcept link, String key, int mod) throws StatNotRequestedException, ModeUnknownException;
+	
+	/**
 	 * Returns the children of this particular IbisConcept.
 	 * @return
 	 * 		The children.
 	 */
-	public IbisConcept[] getSubConcepts();
-	
+	public IbisConcept[] getChildren();	
 	
 	/**
 	 * Returns the network links to other concepts of this level.
@@ -83,17 +98,19 @@ public interface IbisConcept {
 	 * down the chain to update first, and then updating its own values.
 	 * @throws NoSuitableModuleException
 	 * 		In case the network connection to one of the children was not yet established.
-	 * @throws StatNotRequestedException
-	 * 		In case one of the children did not have the metric in its currently monitored list.
+	 * @throws StatNotRequestedException 
+	 * 		if the children do not all have the same list of gathered metrics. This should be avoidable.
 	 */
 	public void update() throws NoSuitableModuleException, StatNotRequestedException;
 	
 	/**
 	 * Returns a map of the connections of this IbisConcept to the IbisConcepts of the same level.
+	 * @param mod
+	 * 		The modifier of the requested value. MIN, AVG or MAX
 	 * @return
 	 * 		the map of the connections of this IbisConcept to the IbisConcepts of the same level.
 	 */
-	public HashMap<IbisConcept, Map<String, Float>> getLinkValues();
+	public HashMap<IbisConcept, Map<String, Float>> getLinkValues(int mod) throws ModeUnknownException;
 	
 	/**
 	 * Returns the colors of the visual representations of the node-based metrics.
@@ -108,4 +125,18 @@ public interface IbisConcept {
 	 * 		A map of the string names of the link-based metrics, coupled with the colors in Float[3] format.
 	 */
 	public HashMap<String, Float[]> getLinkMetricColors();
+	
+	/**
+	 * Returns the string representation of this IbisConcept
+	 * @return
+	 * 		a String representation of this Concept.
+	 */
+	public String getName();
+	
+	/**
+	 * Returns whether this is the lowest concept in the tree.
+	 * @return
+	 * 		true if this is the lowest concept, false if there are children
+	 */
+	public boolean isLowestConcept();
 }

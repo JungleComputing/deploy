@@ -81,7 +81,7 @@ public class Vpool implements VisualElementInterface {
 		//Register the new object with the Performance visualization object
 		this.glName = visman.registerPool(this);
 				
-		Site[] sites = pool.getSubConcepts();
+		Site[] sites = pool.getChildren();
 		vsites = new ArrayList<Vsite>();
 		interSiteLinks = new HashMap<IbisIdentifier, IbisIdentifier>();
 		vlinkMap = new HashMap<IbisIdentifier, HashMap<IbisIdentifier, Vlink>>();

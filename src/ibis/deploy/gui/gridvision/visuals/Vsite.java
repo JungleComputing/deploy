@@ -86,7 +86,7 @@ public class Vsite implements VisualElementInterface {
 		this.glName = visman.registerSite(this);
 		
 		//Preparing the vnodes
-		Node[] nodes = site.getSubConcepts();
+		Node[] nodes = site.getChildren();
 		vnodes = new ArrayList<Vnode>();
 		ids = new ArrayList<IbisIdentifier>();
 		vlinkMap = new HashMap<IbisIdentifier, HashMap<IbisIdentifier, Vlink>>();
