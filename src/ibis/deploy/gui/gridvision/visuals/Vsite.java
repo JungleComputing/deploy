@@ -1,11 +1,11 @@
 package ibis.deploy.gui.gridvision.visuals;
+
 import ibis.deploy.gui.gridvision.GridVision;
 import ibis.deploy.gui.gridvision.VisualManager;
-import ibis.deploy.gui.gridvision.dataholders.Node;
-import ibis.deploy.gui.gridvision.dataholders.Site;
 import ibis.deploy.gui.gridvision.exceptions.ModeUnknownException;
 import ibis.deploy.gui.gridvision.exceptions.StatNotRequestedException;
 import ibis.deploy.gui.gridvision.exceptions.ValueOutOfBoundsException;
+import ibis.deploy.gui.gridvision.interfaces.IbisConcept;
 import ibis.deploy.gui.gridvision.swing.SetCollectionFormAction;
 import ibis.deploy.gui.gridvision.swing.SetMetricFormAction;
 import ibis.deploy.gui.gridvision.swing.ToggleAveragesAction;
@@ -49,15 +49,15 @@ public class Vsite implements VisualElementInterface {
 	protected VisualElementInterface parent;
 	
 	private List<Vnode> vnodes;
-	private List<IbisIdentifier> ids;
-	private HashMap<Node, Vnode> nodesToVisuals;
-	private HashMap<IbisIdentifier, HashMap<IbisIdentifier, Vlink>> vlinkMap;
-	private HashMap<IbisIdentifier, IbisIdentifier> externalLinks;
+	private List<IbisConcept> ids;
+	private HashMap<IbisConcept, Vnode> nodesToVisuals;
+	private HashMap<IbisConcept, HashMap<IbisConcept, Vlink>> vlinkMap;
+	private HashMap<IbisConcept, IbisConcept> externalLinks;
 	private Set<Vlink> vlinks;
 	
-	private Site site;
+	private IbisConcept site;
 		
-	public Vsite(GridVision perfvis, VisualManager visman, VisualElementInterface parent, Site site) {
+	public Vsite(GridVision perfvis, VisualManager visman, VisualElementInterface parent, IbisConcept site) {
 		this.perfvis = perfvis;
 		this.visman = visman;
 		
@@ -86,18 +86,18 @@ public class Vsite implements VisualElementInterface {
 		this.glName = visman.registerSite(this);
 		
 		//Preparing the vnodes
-		Node[] nodes = site.getChildren();
+		IbisConcept[] nodes = site.getChildren();
 		vnodes = new ArrayList<Vnode>();
-		ids = new ArrayList<IbisIdentifier>();
-		vlinkMap = new HashMap<IbisIdentifier, HashMap<IbisIdentifier, Vlink>>();
+		ids = new ArrayList<IbisConcept>();
+		vlinkMap = new HashMap<IbisConcept, HashMap<IbisConcept, Vlink>>();
 		vlinks = new HashSet<Vlink>();
-		externalLinks = new HashMap<IbisIdentifier, IbisIdentifier>();
-		nodesToVisuals = new HashMap<Node, Vnode>();
+		externalLinks = new HashMap<IbisConcept, IbisConcept>();
+		nodesToVisuals = new HashMap<IbisConcept, Vnode>();
 				
-		for (Node node : nodes) {
+		for (IbisConcept node : nodes) {
 			Vnode newVnode = new Vnode(perfvis, visman, this, node);
 			vnodes.add(newVnode);
-			ids.add(node.getName());
+			ids.add(node);
 			nodesToVisuals.put(node, newVnode);			
 		}		
 		
@@ -111,7 +111,7 @@ public class Vsite implements VisualElementInterface {
 	private void initializeMetrics() {
 		vmetrics.clear();		
 		
-		HashMap<String, Float[]> colors = site.getMetricsColors();
+		HashMap<String, Float[]> colors = site.getNodeMetricColors();
 		
 		for (Map.Entry<String, Float[]> entry : colors.entrySet()) {
 			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, this, entry.getValue()));			
@@ -122,13 +122,11 @@ public class Vsite implements VisualElementInterface {
 		vlinks.clear();
 		externalLinks.clear();
 		
-		for (Map.Entry<Node, Vnode> entry : nodesToVisuals.entrySet()) {
-			Node node = entry.getKey();
+		for (Map.Entry<IbisConcept, Vnode> entry : nodesToVisuals.entrySet()) {
+			IbisConcept source = entry.getKey();
 			Vnode from = entry.getValue();
-			
-			IbisIdentifier source = node.getName();
 						
-			for (IbisIdentifier destination : node.getConnections()) {
+			for (IbisConcept destination : source.getLinks()) {
 				Vnode to = nodesToVisuals.get(site.getNode(destination));
 				
 				if (to != null) { //This link is site-internal
@@ -162,7 +160,7 @@ public class Vsite implements VisualElementInterface {
 		}
 	}
 	
-	public Node getNode(IbisIdentifier id) {
+	public IbisConcept getNode(IbisIdentifier id) {
 		if (ids.contains(id)) {
 			return site.getNode(id);
 		} else {

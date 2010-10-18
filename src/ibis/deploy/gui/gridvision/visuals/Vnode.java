@@ -1,11 +1,11 @@
 package ibis.deploy.gui.gridvision.visuals;
+
 import ibis.deploy.gui.gridvision.GridVision;
 import ibis.deploy.gui.gridvision.VisualManager;
-import ibis.deploy.gui.gridvision.dataholders.Node;
 import ibis.deploy.gui.gridvision.exceptions.ModeUnknownException;
 import ibis.deploy.gui.gridvision.exceptions.StatNotRequestedException;
 import ibis.deploy.gui.gridvision.exceptions.ValueOutOfBoundsException;
-import ibis.deploy.gui.gridvision.swing.SetCollectionFormAction;
+import ibis.deploy.gui.gridvision.interfaces.IbisConcept;
 import ibis.deploy.gui.gridvision.swing.SetMetricFormAction;
 import ibis.deploy.gui.gridvision.swing.ToggleAveragesAction;
 import ibis.deploy.gui.gridvision.swing.ToggleMetricAction;
@@ -13,6 +13,7 @@ import ibis.deploy.gui.gridvision.swing.ToggleMetricAction;
 import java.awt.Menu;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -43,9 +44,9 @@ public class Vnode implements VisualElementInterface {
 	protected Set<String> shownMetrics;
 	protected VisualElementInterface parent;
 	
-	private Node node;
+	private IbisConcept node;
 	
-	public Vnode(GridVision perfvis, VisualManager visman, VisualElementInterface parent, Node node) {
+	public Vnode(GridVision perfvis, VisualManager visman, VisualElementInterface parent, IbisConcept node) {
 		this.perfvis = perfvis;
 		this.visman = visman;
 		
@@ -83,16 +84,28 @@ public class Vnode implements VisualElementInterface {
 	private void initializeMetrics() {
 		vmetrics.clear();
 		
-		HashMap<String, Float[]> colors = node.getMetricsColors();
+		HashMap<String, Float[]> colors = node.getNodeMetricColors();
 		
 		for (Map.Entry<String, Float[]> entry : colors.entrySet()) {
 			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, this, entry.getValue()));
 		}		
 	}
 	
-	public void update() {		
-		HashMap<String, Float> stats = node.getMonitoredNodeMetrics();
-		for (Map.Entry<String, Float> entry : stats.entrySet()) {
+	public void update() {
+		ArrayList<String> metrics = node.getMonitoredNodeMetrics();
+		HashMap<String, Float> metricsValues = new HashMap<String, Float>();
+		for (String metric : metrics) {
+			try {
+				metricsValues.put(metric, node.getNodeMetricsValue(metric, ibis.deploy.gui.gridvision.interfaces.IbisConcept.AVG));
+			} catch (StatNotRequestedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ModeUnknownException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		for (Map.Entry<String, Float> entry : metricsValues.entrySet()) {
 			try {
 				String metricName = entry.getKey();
 				Float metricValue = entry.getValue();

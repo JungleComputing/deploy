@@ -1,12 +1,10 @@
 package ibis.deploy.gui.gridvision.dataholders;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
 
 import ibis.deploy.gui.gridvision.MetricsList;
+import ibis.deploy.gui.gridvision.MetricsManager;
 import ibis.deploy.gui.gridvision.exceptions.StatNotRequestedException;
 import ibis.deploy.gui.gridvision.metrics.Metric;
 import ibis.deploy.gui.gridvision.metrics.link.LinkMetricsMap;
@@ -18,17 +16,18 @@ import ibis.ipl.support.management.AttributeDescription;
 import ibis.smartsockets.virtual.NoSuitableModuleException;
 
 public class Node extends ibis.deploy.gui.gridvision.dataholders.IbisConcept implements ibis.deploy.gui.gridvision.interfaces.IbisConcept {	
-	private IbisIdentifier name;
+	private IbisIdentifier ii;
 	
-	public Node(ibis.deploy.gui.gridvision.interfaces.IbisConcept parent, ManagementServiceInterface manInterface, RegistryServiceInterface regInterface, MetricsList initialMetrics, String siteName, IbisIdentifier name) {
-		super(parent, manInterface, regInterface, initialMetrics);		
-		this.name = name;
+	public Node(MetricsManager mm, ibis.deploy.gui.gridvision.interfaces.IbisConcept parent, ManagementServiceInterface manInterface, RegistryServiceInterface regInterface, MetricsList initialMetrics, String siteName, IbisIdentifier ii) {
+		super(mm, parent, manInterface, regInterface, initialMetrics);		
+		this.ii = ii;
+		mm.registerIbis(ii, this);
 	}
 	
-	public void update() throws NoSuitableModuleException {		
+	@Override
+	public void update() throws NoSuitableModuleException, StatNotRequestedException {
 		HashMap<String, Float> newNodeMetricsValues = new HashMap<String, Float>();
 		HashMap<ibis.deploy.gui.gridvision.interfaces.IbisConcept, Map<String, Float>> newLinkMetricsValues = new HashMap<ibis.deploy.gui.gridvision.interfaces.IbisConcept, Map<String, Float>>();
-		HashSet<IbisIdentifier> newConnections = new HashSet<IbisIdentifier>();		
 		
 		try {
 			int size = 0;
@@ -46,7 +45,7 @@ public class Node extends ibis.deploy.gui.gridvision.dataholders.IbisConcept imp
 				}
 			}
 			
-			Object[] results = manInterface.getAttributes(name, requestArray);
+			Object[] results = manInterface.getAttributes(ii, requestArray);
 			
 			j=0;			
 			for (Metric metric : currentlyGatheredMetrics) {
@@ -61,14 +60,18 @@ public class Node extends ibis.deploy.gui.gridvision.dataholders.IbisConcept imp
 					newNodeMetricsValues.put(metric.getName(), metric.getValue());
 				
 				} else if (metric.getGroup() == LinkMetricsMap.METRICSGROUP) {
+					HashMap<ibis.deploy.gui.gridvision.interfaces.IbisConcept, Float> transformedValues = new HashMap<ibis.deploy.gui.gridvision.interfaces.IbisConcept, Float>();
+					
 					Map<IbisIdentifier, Float> values = ((LinkMetricsMap) metric).getValues();
-										
 					for (IbisIdentifier ibis : values.keySet()) {
-						if (!newLinkMetricsValues.containsKey(ibis)) {								
-							newLinkMetricsValues.put(ibis, new HashMap<String, Float>());				
+						transformedValues.put(mm.getConcept(ibis),values.get(ibis));						
+					}
+					
+					for (ibis.deploy.gui.gridvision.interfaces.IbisConcept ic : transformedValues.keySet()) {
+						if (!newLinkMetricsValues.containsKey(ic)) {								
+							newLinkMetricsValues.put(ic, new HashMap<String, Float>());				
 						}
-						newLinkMetricsValues.get(ibis).put(metric.getName(), values.get(ibis));
-						newConnections.add(ibis);
+						newLinkMetricsValues.get(ic).put(metric.getName(), transformedValues.get(ic));
 					}
 				}
 			}
@@ -80,5 +83,6 @@ public class Node extends ibis.deploy.gui.gridvision.dataholders.IbisConcept imp
 			nodeMetricsAvgValues = newNodeMetricsValues;
 			linkMetricsAvgValues = newLinkMetricsValues;
 		}
+		
 	}
 }

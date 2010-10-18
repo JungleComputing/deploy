@@ -10,6 +10,7 @@ import ibis.deploy.gui.gridvision.exceptions.StatNotRequestedException;
 import ibis.deploy.gui.gridvision.metrics.link.*;
 import ibis.deploy.gui.gridvision.metrics.node.*;
 import ibis.deploy.gui.gridvision.metrics.special.*;
+import ibis.ipl.IbisIdentifier;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
 import ibis.smartsockets.virtual.NoSuitableModuleException;
@@ -27,6 +28,8 @@ public class MetricsManager implements Runnable {
 	
 	//The list that holds the statistics necessary for initializing the visualization 
 	private MetricsList initStatistics;
+	
+	private HashMap<IbisIdentifier, IbisConcept> iiToIbisConcept;
 	
 	public MetricsManager(ManagementServiceInterface manInterface, RegistryServiceInterface regInterface) {
 		this.manInterface = manInterface;
@@ -52,11 +55,13 @@ public class MetricsManager implements Runnable {
 		initStatistics.add(new ThreadsMetric());
 		initStatistics.add(new BytesSentPerIbisMetric());
 		initStatistics.add(new BytesReceivedPerIbisMetric());
+		
+		iiToIbisConcept = new HashMap<IbisIdentifier, IbisConcept>();
 	}
 	
 	public void update() {	
 		//long start = System.currentTimeMillis();
-		String init = ""; 
+		//String init = ""; 
 		
 		//Update the size of all pools and sites
 		ArrayList<Pool> newPools = initPools();
@@ -72,7 +77,7 @@ public class MetricsManager implements Runnable {
 				pools.clear();
 				poolSizes.clear();
 				initPools();
-				init = " with initialization";				
+				//init = " with initialization";				
 			}
 		}
 		
@@ -97,6 +102,7 @@ public class MetricsManager implements Runnable {
 
 	        if (!poolSizes.containsKey(poolName) || newSize != poolSizes.get(poolName)) {
 	         	pools.clear();
+	         	iiToIbisConcept.clear();
 	         	reinitializeSetter = true;	         	
 	        }	        			
 		}	            
@@ -108,7 +114,7 @@ public class MetricsManager implements Runnable {
 
 	        if (!poolSizes.containsKey(poolName) || newSize != poolSizes.get(poolName)) {
 	        	if (newSize > 0) {		            
-		          	pools.add(new Pool(manInterface, regInterface, initStatistics.clone(), poolName));		            	
+		          	pools.add(new Pool(this, manInterface, regInterface, initStatistics.clone(), poolName));		            	
 		        }		        	            
 	        }
 		}
@@ -144,5 +150,13 @@ public class MetricsManager implements Runnable {
 	
 	public void setRefreshrate(int newRate) {
 		this.refreshrate = newRate;
+	}
+	
+	public void registerIbis(IbisIdentifier ii, IbisConcept ic) {
+		iiToIbisConcept.put(ii, ic);
+	}
+	
+	public IbisConcept getConcept(IbisIdentifier ii) {
+		return iiToIbisConcept.get(ii);
 	}
 }

@@ -1,8 +1,8 @@
 package ibis.deploy.gui.gridvision.interfaces;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import ibis.deploy.gui.gridvision.MetricsList;
 import ibis.deploy.gui.gridvision.exceptions.ModeUnknownException;
@@ -70,14 +70,14 @@ public interface IbisConcept {
 	 * @return
 	 * 		The set of currently monitored node-based metrics.
 	 */
-	public Set<String> getMonitoredNodeMetrics();
+	public ArrayList<String> getMonitoredNodeMetrics();
 	
 	/**
 	 * Returns the Set of currently monitored link-based metrics.
 	 * @return
 	 * 		The set of currently monitored link-based metrics.
 	 */
-	public Set<String> getMonitoredLinkMetrics();
+	public ArrayList<String> getMonitoredLinkMetrics();
 	
 	/**
 	 * Sets the currently monitored metrics to be equal to those in the list provided. 

@@ -1,6 +1,7 @@
 package ibis.deploy.gui.gridvision.dataholders;
 
 import ibis.deploy.gui.gridvision.MetricsList;
+import ibis.deploy.gui.gridvision.MetricsManager;
 import ibis.deploy.gui.gridvision.exceptions.ModeUnknownException;
 import ibis.deploy.gui.gridvision.exceptions.StatNotRequestedException;
 import ibis.deploy.gui.gridvision.metrics.Metric;
@@ -16,11 +17,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 public abstract class IbisConcept implements ibis.deploy.gui.gridvision.interfaces.IbisConcept {
+	protected MetricsManager mm;
 	protected ManagementServiceInterface manInterface;
-	private RegistryServiceInterface regInterface;
 			
 	protected HashMap<String, Float> nodeMetricsMaxValues;
 	protected HashMap<String, Float> nodeMetricsAvgValues;
@@ -42,9 +42,9 @@ public abstract class IbisConcept implements ibis.deploy.gui.gridvision.interfac
 	
 	protected String name;
 
-	public IbisConcept(ibis.deploy.gui.gridvision.interfaces.IbisConcept parent, ManagementServiceInterface manInterface, RegistryServiceInterface regInterface, MetricsList initialMetrics) {
+	public IbisConcept(MetricsManager mm, ibis.deploy.gui.gridvision.interfaces.IbisConcept parent, ManagementServiceInterface manInterface, RegistryServiceInterface regInterface, MetricsList initialMetrics) {
+		this.mm = mm;
 		this.manInterface = manInterface;
-		this.regInterface = regInterface;
 		
 		nodeMetricsMaxValues = new HashMap<String, Float>();
 		nodeMetricsAvgValues = new HashMap<String, Float>();
@@ -126,9 +126,9 @@ public abstract class IbisConcept implements ibis.deploy.gui.gridvision.interfac
 		}
 	}
 
-	public Set<String> getMonitoredNodeMetrics() {
+	public ArrayList<String> getMonitoredNodeMetrics() {
 		synchronized(this) {
-			Set<String> copy = new HashSet<String>();
+			ArrayList<String> copy = new ArrayList<String>();
 			for (Metric metric: currentlyGatheredMetrics) {
 				if (metric.getGroup() == NodeMetricsObject.METRICSGROUP) {
 					copy.add(metric.getName());
@@ -138,9 +138,9 @@ public abstract class IbisConcept implements ibis.deploy.gui.gridvision.interfac
 		}
 	}
 
-	public Set<String> getMonitoredLinkMetrics() {
+	public ArrayList<String> getMonitoredLinkMetrics() {
 		synchronized(this) {
-			Set<String> copy = new HashSet<String>();
+			ArrayList<String> copy = new ArrayList<String>();
 			for (Metric metric: currentlyGatheredMetrics) {
 				if (metric.getGroup() == LinkMetricsMap.METRICSGROUP) {
 					copy.add(metric.getName());

@@ -1,28 +1,19 @@
 package ibis.deploy.gui.gridvision.dataholders;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import ibis.deploy.gui.gridvision.MetricsList;
-import ibis.deploy.gui.gridvision.exceptions.StatNotRequestedException;
-import ibis.deploy.gui.gridvision.interfaces.IbisConcept;
-import ibis.deploy.gui.gridvision.metrics.Metric;
-import ibis.deploy.gui.gridvision.metrics.node.NodeMetricsObject;
+import ibis.deploy.gui.gridvision.MetricsManager;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
-import ibis.smartsockets.virtual.NoSuitableModuleException;
 
 public class Pool extends ibis.deploy.gui.gridvision.dataholders.IbisConcept implements ibis.deploy.gui.gridvision.interfaces.IbisConcept {
 
-	public Pool(ManagementServiceInterface manInterface, RegistryServiceInterface regInterface, MetricsList initialMetrics, String poolName) {	
-		super(null, manInterface, regInterface, initialMetrics);
+	public Pool(MetricsManager mm, ManagementServiceInterface manInterface, RegistryServiceInterface regInterface, MetricsList initialMetrics, String poolName) {	
+		super(mm, null, manInterface, regInterface, initialMetrics);
 		this.name = poolName;
 		
 		//Get the members of this pool
@@ -50,21 +41,7 @@ public class Pool extends ibis.deploy.gui.gridvision.dataholders.IbisConcept imp
 		
 		//For all sites			
 		for (String siteName : siteNames) {
-			children.add(new Site(this, manInterface, regInterface, initialMetrics.clone(), ibises, siteName));
+			children.add(new Site(mm, this, manInterface, regInterface, initialMetrics.clone(), ibises, siteName));
 		}				
-	}
-	
-	public IbisIdentifier[] getIbises() {
-		synchronized(this) {
-			List<IbisIdentifier> result = new ArrayList<IbisIdentifier>();
-		
-			for (Site site : children) {
-				IbisIdentifier[] nodes = site.getIbises();
-				for (int j=0; j<nodes.length; j++) {
-					result.add(nodes[j]);
-				}
-			}
-			return (IbisIdentifier[]) result.toArray();
-		}
 	}
 }
