@@ -120,7 +120,7 @@ public class GridVision implements GLEventListener {
 	}
 	
 	private void doView(GL gl) {	
-		gl.glTranslatef(origin[0], origin[1], origin[2]);
+		//gl.glTranslatef(origin[0], origin[1], origin[2]);
 		gl.glTranslatef(translation[0], translation[1], translation[2]);
 		gl.glTranslatef(0,0,viewDist);
 		gl.glRotatef(rotation[0], 1,0,0);		
@@ -285,7 +285,7 @@ public class GridVision implements GLEventListener {
 	    if (hits > 0) {
 	    	currentSelection = buffer[3+4*(hits-1)];
 	    	if (relocateOriginNextCycle) {
-	    		setOrigin(visman.getVisualLocation(currentSelection));
+	    		setTranslation(visman.getVisualLocation(currentSelection));
 	    		mouseHandler.resetTranslation();
 	    		relocateOriginNextCycle = false;
 	    	}	    	
