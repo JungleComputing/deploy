@@ -88,7 +88,7 @@ public class Vnode implements VisualElementInterface {
 		
 		for (Map.Entry<String, Float[]> entry : colors.entrySet()) {
 			vmetrics.put(entry.getKey(), new Vmetric(perfvis, visman, this, entry.getValue()));
-		}		
+		}
 	}
 	
 	public void update() {
@@ -128,7 +128,7 @@ public class Vnode implements VisualElementInterface {
 		}		
 	}
 	
-	protected void drawCityscape(GL gl, int glMode) {		
+	private void drawCityscape(GL gl, int glMode) {
 		//get the breakoff point for rows and columns
 		int rows 		= (int)Math.ceil(Math.sqrt(shownMetrics.size()));
 		int columns 	= (int)Math.floor(Math.sqrt(shownMetrics.size()));
@@ -169,7 +169,7 @@ public class Vnode implements VisualElementInterface {
 		}
 	}
 	
-	protected void drawCircle(GL gl, int glMode) {				
+	private void drawCircle(GL gl, int glMode) {				
 		double angle  = 2*Math.PI / vmetrics.size();
 		float degs = (float) Math.toDegrees(angle);
 		float radius = (float) ((scaleXZ/2) / Math.tan(degs/2));		
@@ -227,10 +227,6 @@ public class Vnode implements VisualElementInterface {
 		
 		return newMenu;		
 	}	
-	
-	public Menu getSubMenu() {
-		return null;
-	}
 	
 	public Menu makeRadioGroup(String menuName, String[] itemNames) {
 		Menu result = new Menu(menuName);
@@ -326,5 +322,11 @@ public class Vnode implements VisualElementInterface {
 	
 	public void toggleAverages() {
 		this.showAverages = !showAverages;
+	}
+
+	@Override
+	public Menu getSubMenu() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

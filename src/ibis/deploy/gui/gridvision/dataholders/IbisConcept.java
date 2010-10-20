@@ -41,6 +41,7 @@ public abstract class IbisConcept implements ibis.deploy.gui.gridvision.interfac
 	private ibis.deploy.gui.gridvision.interfaces.IbisConcept parent;
 	
 	protected String name;
+	protected int level;
 
 	public IbisConcept(MetricsManager mm, ibis.deploy.gui.gridvision.interfaces.IbisConcept parent, ManagementServiceInterface manInterface, RegistryServiceInterface regInterface, MetricsList initialMetrics) {
 		this.mm = mm;
@@ -62,6 +63,8 @@ public abstract class IbisConcept implements ibis.deploy.gui.gridvision.interfac
 		
 		currentlyGatheredMetrics = new MetricsList();
 		setCurrentlyGatheredMetrics(initialMetrics.clone());
+		
+		this.level = parent.getLevel()+1;
 		
 		this.parent = parent;		
 	}
@@ -312,21 +315,6 @@ public abstract class IbisConcept implements ibis.deploy.gui.gridvision.interfac
 			}
 		}
 	}
-	
-	public HashMap<ibis.deploy.gui.gridvision.interfaces.IbisConcept, Map<String, Float>> getLinkValues(int mod) throws ModeUnknownException{
-		HashMap<ibis.deploy.gui.gridvision.interfaces.IbisConcept, Map<String, Float>> newLinkValues = new HashMap<ibis.deploy.gui.gridvision.interfaces.IbisConcept, Map<String, Float>>();
-		if (mod == MAX) {
-			newLinkValues.putAll(linkMetricsMaxValues);
-		} else if (mod == AVG) {
-			newLinkValues.putAll(linkMetricsAvgValues);
-		} else if (mod == MIN) {
-			newLinkValues.putAll(linkMetricsMinValues);
-		} else {
-			throw new ModeUnknownException();
-		}		
-		
-		return newLinkValues;		
-	}
 
 	public HashMap<String, Float[]> getNodeMetricColors() {
 		HashMap<String, Float[]> newNodeMetricsColors = new HashMap<String, Float[]>();
@@ -342,12 +330,16 @@ public abstract class IbisConcept implements ibis.deploy.gui.gridvision.interfac
 		return newLinkMetricsColors;
 	}
 		
-	public boolean isLowestConcept() {
+	public boolean isLeaf() {
 		return !children.isEmpty();
 	}
 	
 	public String getName() {
 		return name;
+	}
+	
+	public int getLevel() {
+		return level;
 	}
 	
 	private boolean compareStats(Metric stat) {							
@@ -356,6 +348,4 @@ public abstract class IbisConcept implements ibis.deploy.gui.gridvision.interfac
 		}		
 		return true;
 	}
-	
-
 }

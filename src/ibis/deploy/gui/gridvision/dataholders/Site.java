@@ -20,7 +20,7 @@ public class Site extends ibis.deploy.gui.gridvision.dataholders.IbisConcept imp
 			//And compare all ibises' locations to that sitename
 			if (ibisLocationName.compareTo(siteName) == 0) {
 				Node node = new Node(mm, this, manInterface, regInterface, initialMetrics, siteName, poolIbises[i]);
-				children.add(node);				
+				children.add(node);
 			}
 		}		
 	}

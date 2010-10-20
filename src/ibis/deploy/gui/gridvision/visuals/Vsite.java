@@ -347,7 +347,7 @@ public class Vsite implements VisualElementInterface {
 		double olong = 0.0;
 		double dz    = 2.0/vnodes.size();
 		double z     = 1 - (dz/2);
-		Float[][] pt = new Float[vnodes.size()][3]; 
+		Float[][] pt = new Float[vnodes.size()][3];
 		double r = 0;
 		
 		for (int k=0;k<vnodes.size();k++) {
@@ -356,7 +356,7 @@ public class Vsite implements VisualElementInterface {
 			pt[k][1] = location[1] + 4*((float) (Math.sin(olong)*r));
 			pt[k][2] = location[2] + 4*((float) z);
 			z = z -dz;
-			olong = olong +dlong;			
+			olong = olong +dlong;
 		}	
 		
 		int k=0;				

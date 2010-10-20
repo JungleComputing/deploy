@@ -2,7 +2,6 @@ package ibis.deploy.gui.gridvision.interfaces;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
 import ibis.deploy.gui.gridvision.MetricsList;
 import ibis.deploy.gui.gridvision.exceptions.ModeUnknownException;
@@ -104,15 +103,6 @@ public interface IbisConcept {
 	public void update() throws NoSuitableModuleException, StatNotRequestedException;
 	
 	/**
-	 * Returns a map of the connections of this IbisConcept to the IbisConcepts of the same level.
-	 * @param mod
-	 * 		The modifier of the requested value. MIN, AVG or MAX
-	 * @return
-	 * 		the map of the connections of this IbisConcept to the IbisConcepts of the same level.
-	 */
-	public HashMap<IbisConcept, Map<String, Float>> getLinkValues(int mod) throws ModeUnknownException;
-	
-	/**
 	 * Returns the colors of the visual representations of the node-based metrics.
 	 * @return
 	 * 		A map of the string names of the node-based metrics, coupled with the colors in Float[3] format.
@@ -134,9 +124,16 @@ public interface IbisConcept {
 	public String getName();
 	
 	/**
+	 * Returns the level at which this ibisConcept is placed (determined by the IbisLocation)
+	 * @return
+	 * 		the level, higher is deeper.
+	 */
+	public int getLevel();
+	
+	/**
 	 * Returns whether this is the lowest concept in the tree.
 	 * @return
 	 * 		true if this is the lowest concept, false if there are children
 	 */
-	public boolean isLowestConcept();
+	public boolean isLeaf();
 }
