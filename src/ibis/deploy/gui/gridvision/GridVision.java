@@ -286,7 +286,7 @@ public class GridVision implements GLEventListener {
 	    	currentSelection = buffer[3+4*(hits-1)];
 	    	if (relocateOriginNextCycle) {
 	    		setTranslation(visman.getVisualLocation(currentSelection));
-	    		mouseHandler.resetTranslation();
+	    		//mouseHandler.resetTranslation();
 	    		relocateOriginNextCycle = false;
 	    	}	    	
 	    }

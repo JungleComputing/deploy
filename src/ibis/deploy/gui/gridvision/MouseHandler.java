@@ -11,7 +11,7 @@ import javax.media.opengl.GLCanvas;
 import javax.swing.SwingUtilities;
 
 public class MouseHandler implements MouseListener, MouseMotionListener, MouseWheelListener{
-	GridVision perfvis;
+	GridVision gv;
 	GLCanvas canvas;
 	
 	private float viewDistOrigin; 
@@ -38,8 +38,8 @@ public class MouseHandler implements MouseListener, MouseMotionListener, MouseWh
 	
 	private float translationZ = 0;
 	
-	MouseHandler(GridVision perfvis, GLCanvas canvas) {
-		this.perfvis = perfvis;
+	MouseHandler(GridVision gv, GLCanvas canvas) {
+		this.gv = gv;
 		this.canvas = canvas;
 		
 		rotation = new Float[3];
@@ -59,17 +59,17 @@ public class MouseHandler implements MouseListener, MouseMotionListener, MouseWh
 	public void mouseClicked(MouseEvent e) {
 		if (SwingUtilities.isLeftMouseButton(e)) {
 			if (e.getClickCount() == 1) {	
-				perfvis.pickRequest(e.getPoint());				
+				gv.pickRequest(e.getPoint());				
 			} else {
-				perfvis.relocateOrigin(e.getPoint());
+				gv.relocateOrigin(e.getPoint());
 			}
 		} else if (SwingUtilities.isMiddleMouseButton(e)) {
 			
 		} else if (SwingUtilities.isRightMouseButton(e)) {		
 			if (e.getClickCount() == 1) {
-				PopupMenu popup = perfvis.menuRequest();
+				PopupMenu popup = gv.menuRequest();
 				canvas.add(popup);
-				popup.show(perfvis.canvas, e.getX(), e.getY());
+				popup.show(gv.canvas, e.getX(), e.getY());
 			}
 		}		
 	}
@@ -109,14 +109,14 @@ public class MouseHandler implements MouseListener, MouseMotionListener, MouseWh
 			rotation[0] = rotationX;				 
 			rotation[1] = rotationY;
 			rotation[2] = 0.0f;
-			perfvis.setRotation(rotation);			
+			gv.setRotation(rotation);			
 		} else if (SwingUtilities.isLeftMouseButton(e)) {
-			translationX =  ((e.getPoint().x - dragLeftXorigin) + translationXorigin)/10;
-			translationY = -((e.getPoint().y - dragLeftYorigin) + translationYorigin)/10;
-			translation[0] = translationX;				 
-			translation[1] = translationY;
-			translation[2] = translationZ;
-			perfvis.setTranslation(translation);
+			translationX =  ((e.getPoint().x - dragLeftXorigin) + translationXorigin);
+			translationY = -((e.getPoint().y - dragLeftYorigin) + translationYorigin);
+			translation[0] = translationX/10;				 
+			translation[1] = translationY/10;
+			translation[2] = 0.0f;
+			gv.setTranslation(translation);
 		}
 	}
 
@@ -127,7 +127,7 @@ public class MouseHandler implements MouseListener, MouseMotionListener, MouseWh
 
 	public void mouseWheelMoved(MouseWheelEvent e) {	
 		viewDist += viewDistOrigin + e.getWheelRotation();	
-		perfvis.setViewDist(viewDist);
+		gv.setViewDist(viewDist);
 	}
 
 }
