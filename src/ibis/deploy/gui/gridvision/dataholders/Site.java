@@ -8,11 +8,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import ibis.deploy.gui.performance.MetricsList;
-import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
-import ibis.deploy.gui.performance.metrics.Metric;
-import ibis.deploy.gui.performance.metrics.link.LinkMetricsObject;
-import ibis.deploy.gui.performance.metrics.node.NodeMetricsObject;
+import ibis.deploy.gui.gridvision.MetricsList;
+import ibis.deploy.gui.gridvision.exceptions.StatNotRequestedException;
+import ibis.deploy.gui.gridvision.metrics.Metric;
+import ibis.deploy.gui.gridvision.metrics.link.LinkMetricsMap;
+import ibis.deploy.gui.gridvision.metrics.node.NodeMetricsObject;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.smartsockets.virtual.NoSuitableModuleException;
@@ -125,7 +125,7 @@ public class Site implements IbisConceptInterface {
 				nodeMetricsColors.put(metric.getName()+"_min", metric.getColor());
 				nodeMetricsColors.put(metric.getName(), metric.getColor());
 				nodeMetricsColors.put(metric.getName()+"_max", metric.getColor());
-			} else if (metric.getGroup() == LinkMetricsObject.METRICSGROUP) {
+			} else if (metric.getGroup() == LinkMetricsMap.METRICSGROUP) {
 				linkMetricsColors.put(metric.getName(), metric.getColor());
 			}
 		}

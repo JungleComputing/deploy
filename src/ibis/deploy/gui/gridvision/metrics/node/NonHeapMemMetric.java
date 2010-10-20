@@ -1,16 +1,16 @@
-package ibis.deploy.gui.performance.metrics.node;
+package ibis.deploy.gui.gridvision.metrics.node;
 
-import ibis.deploy.gui.performance.metrics.MetricInterface;
+import ibis.deploy.gui.gridvision.metrics.MetricInterface;
 import ibis.ipl.support.management.AttributeDescription;
 
 import javax.management.openmbean.CompositeData;
 
-public class NonHeapMemStatistic extends NodeMetricsObject implements MetricInterface {
+public class NonHeapMemMetric extends NodeMetricsObject implements MetricInterface {
 	public static final String NAME = "MEM_NONHEAP";
 	public static final int DESCRIPTIONS_COUNT_NEEDED = 1;
 	public static final Float[] COLOR = {0.5f, 1.0f, 0.0f};
 	
-	public NonHeapMemStatistic() {
+	public NonHeapMemMetric() {
 		super();
 		this.name = NAME;
 		this.color = COLOR;
@@ -28,8 +28,8 @@ public class NonHeapMemStatistic extends NodeMetricsObject implements MetricInte
 		value = (float) mem_nonheap_used / (float) mem_nonheap_max;
 	}
 	
-	public NonHeapMemStatistic clone() {
-		NonHeapMemStatistic clone = new NonHeapMemStatistic();
+	public NonHeapMemMetric clone() {
+		NonHeapMemMetric clone = new NonHeapMemMetric();
 		clone.setName(name);
 		clone.setGroup(group);
 		clone.setColor(color);

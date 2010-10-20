@@ -1,16 +1,16 @@
-package ibis.deploy.gui.performance.visuals;
-import ibis.deploy.gui.performance.PerfVis;
-import ibis.deploy.gui.performance.VisualManager;
-import ibis.deploy.gui.performance.dataholders.Node;
-import ibis.deploy.gui.performance.dataholders.Pool;
-import ibis.deploy.gui.performance.dataholders.Site;
-import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
-import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
-import ibis.deploy.gui.performance.exceptions.ValueOutOfBoundsException;
-import ibis.deploy.gui.performance.swing.SetCollectionFormAction;
-import ibis.deploy.gui.performance.swing.SetMetricFormAction;
-import ibis.deploy.gui.performance.swing.ToggleAveragesAction;
-import ibis.deploy.gui.performance.swing.ToggleMetricAction;
+package ibis.deploy.gui.gridvision.visuals;
+import ibis.deploy.gui.gridvision.GridVision;
+import ibis.deploy.gui.gridvision.VisualManager;
+import ibis.deploy.gui.gridvision.dataholders.Node;
+import ibis.deploy.gui.gridvision.dataholders.Pool;
+import ibis.deploy.gui.gridvision.dataholders.Site;
+import ibis.deploy.gui.gridvision.exceptions.ModeUnknownException;
+import ibis.deploy.gui.gridvision.exceptions.StatNotRequestedException;
+import ibis.deploy.gui.gridvision.exceptions.ValueOutOfBoundsException;
+import ibis.deploy.gui.gridvision.swing.SetCollectionFormAction;
+import ibis.deploy.gui.gridvision.swing.SetMetricFormAction;
+import ibis.deploy.gui.gridvision.swing.ToggleAveragesAction;
+import ibis.deploy.gui.gridvision.swing.ToggleMetricAction;
 import ibis.ipl.IbisIdentifier;
 
 import java.awt.Menu;
@@ -29,7 +29,7 @@ import javax.media.opengl.GL;
 import javax.media.opengl.glu.GLU;
 
 public class Vpool implements VisualElementInterface {	
-	PerfVis perfvis;
+	GridVision perfvis;
 	VisualManager visman;
 	
 	protected Float[] location;
@@ -55,7 +55,7 @@ public class Vpool implements VisualElementInterface {
 	private List<Vsite> vsites;	
 	private Pool pool; 
 		
-	public Vpool(PerfVis perfvis, VisualManager visman, VisualElementInterface parent, Pool pool) {
+	public Vpool(GridVision perfvis, VisualManager visman, VisualElementInterface parent, Pool pool) {
 		this.perfvis = perfvis;
 		this.visman = visman;
 		

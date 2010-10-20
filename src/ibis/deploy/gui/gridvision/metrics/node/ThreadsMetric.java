@@ -1,16 +1,16 @@
-package ibis.deploy.gui.performance.metrics.node;
+package ibis.deploy.gui.gridvision.metrics.node;
 
-import ibis.deploy.gui.performance.metrics.MetricInterface;
+import ibis.deploy.gui.gridvision.metrics.MetricInterface;
 import ibis.ipl.support.management.AttributeDescription;
 
-public class ThreadsStatistic extends NodeMetricsObject implements MetricInterface {
+public class ThreadsMetric extends NodeMetricsObject implements MetricInterface {
 	public static final String NAME = "THREADS";
 	public static final int DESCRIPTIONS_COUNT_NEEDED = 1;
 	public static final Float[] COLOR = {0.5f, 0.5f, 0.5f};
 	
 	private int thread_max;
 	
-	public ThreadsStatistic() {
+	public ThreadsMetric() {
 		super();
 		this.name = NAME;
 		this.color = COLOR;
@@ -28,8 +28,8 @@ public class ThreadsStatistic extends NodeMetricsObject implements MetricInterfa
 		value = ((float)num_threads / (float)thread_max);
 	}
 	
-	public ThreadsStatistic clone() {
-		ThreadsStatistic clone = new ThreadsStatistic();
+	public ThreadsMetric clone() {
+		ThreadsMetric clone = new ThreadsMetric();
 		clone.setName(name);
 		clone.setGroup(group);
 		clone.setColor(color);

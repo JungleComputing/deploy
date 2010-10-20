@@ -1,7 +1,7 @@
-package ibis.deploy.gui.performance.swing;
+package ibis.deploy.gui.gridvision.swing;
 
 import ibis.deploy.gui.GUI;
-import ibis.deploy.gui.performance.PerformancePanel;
+import ibis.deploy.gui.gridvision.GridVisionPanel;
 
 import java.awt.event.ActionEvent;
 
@@ -14,9 +14,9 @@ public class GridVisionAction extends AbstractAction {
      */
     private static final long serialVersionUID = 1L;
     private GUI gui;
-    private PerformancePanel panel;
+    private GridVisionPanel panel;
 
-    public GridVisionAction(GUI gui, PerformancePanel panel) {
+    public GridVisionAction(GUI gui, GridVisionPanel panel) {
         super("GridVision");
         this.gui = gui;
         this.panel = panel;

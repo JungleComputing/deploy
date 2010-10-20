@@ -373,9 +373,7 @@ public class MapEditor extends ChangeableField implements
         }
 
         /**
-         * Based on the current zoom level, it sets the maximum size for the map
-         * 
-         * @param zoom
+         * Based on the current zoom level, it sets the maximum size for the map.
          */
         public void adjustMapSize() {
             int zoom = getMainMap().getZoom();

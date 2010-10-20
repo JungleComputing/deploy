@@ -18,7 +18,7 @@ class Rsync {
     private static final Logger logger = LoggerFactory.getLogger(Rsync.class);
 
     private static Process createProcess(File src, File dst, String userName,
-            String host) throws Exception {
+            String host, String keyFile) throws Exception {
         ProcessBuilder builder = new ProcessBuilder();
 
         List<String> command = builder.command();
@@ -39,7 +39,11 @@ class Rsync {
         command.add("--checksum");
 
         // use ssh
-        command.add("--rsh=ssh");
+        if (userName == null || keyFile == null) {
+            command.add("--rsh=ssh -o StrictHostKeyChecking=no");
+        } else {
+            command.add("--rsh=ssh -o StrictHostKeyChecking=no -i " + keyFile);
+        }
 
         // delete any file not at source
         command.add("--delete");
@@ -69,8 +73,8 @@ class Rsync {
     }
 
     static void rsync(File src, File dst, String host,
-            String userName) throws Exception {
-        Process process = createProcess(src, dst, userName, host);
+            String userName, String keyFile) throws Exception {
+        Process process = createProcess(src, dst, userName, host, keyFile);
 
         OutputForwarder out = new OutputForwarder(process.getInputStream(),
                 System.out);

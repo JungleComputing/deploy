@@ -1,4 +1,4 @@
-package ibis.deploy.gui.performance.visuals;
+package ibis.deploy.gui.gridvision.visuals;
 
 import java.awt.Menu;
 import java.awt.MenuItem;
@@ -9,22 +9,22 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import ibis.deploy.gui.performance.PerfVis;
-import ibis.deploy.gui.performance.VisualManager;
-import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
-import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
-import ibis.deploy.gui.performance.exceptions.ValueOutOfBoundsException;
-import ibis.deploy.gui.performance.swing.SetCollectionFormAction;
-import ibis.deploy.gui.performance.swing.SetMetricFormAction;
-import ibis.deploy.gui.performance.swing.ToggleAveragesAction;
-import ibis.deploy.gui.performance.swing.ToggleMetricAction;
+import ibis.deploy.gui.gridvision.GridVision;
+import ibis.deploy.gui.gridvision.VisualManager;
+import ibis.deploy.gui.gridvision.exceptions.ModeUnknownException;
+import ibis.deploy.gui.gridvision.exceptions.StatNotRequestedException;
+import ibis.deploy.gui.gridvision.exceptions.ValueOutOfBoundsException;
+import ibis.deploy.gui.gridvision.swing.SetCollectionFormAction;
+import ibis.deploy.gui.gridvision.swing.SetMetricFormAction;
+import ibis.deploy.gui.gridvision.swing.ToggleAveragesAction;
+import ibis.deploy.gui.gridvision.swing.ToggleMetricAction;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.glu.GLU;
 import javax.media.opengl.glu.GLUquadric;
 
 public class Vmetric implements VisualElementInterface {	
-	PerfVis perfvis;
+	GridVision perfvis;
 	VisualManager visman;
 	
 	protected Float[] location;
@@ -51,7 +51,7 @@ public class Vmetric implements VisualElementInterface {
 	
 	private float value;
 		
-	public Vmetric(PerfVis perfvis, VisualManager visman, VisualElementInterface parent, Float[] color) {
+	public Vmetric(GridVision perfvis, VisualManager visman, VisualElementInterface parent, Float[] color) {
 		this.perfvis = perfvis;
 		this.visman = visman;
 		
@@ -401,7 +401,7 @@ public class Vmetric implements VisualElementInterface {
 		glu.gluDeleteQuadric(qobj);
 	}
 	
-	protected void drawSphere(GL gl) {
+	protected void drawSphere(GL gl) {		
 		float quad_color_r = color[0];
 		float quad_color_g = color[1];
 		float quad_color_b = color[2];
@@ -426,6 +426,138 @@ public class Vmetric implements VisualElementInterface {
 		
 		//Cleanup
 		glu.gluDeleteQuadric(qobj);
+	}
+	
+	protected void drawCubes(GL gl, float length) {
+		//use nice variables, so that the ogl code is readable
+		float o = 0.0f;			//(o)rigin
+		float x = scaleXZ;		//(x) maximum coordinate
+		float y = length;		//(y) maximum coordinate
+		float z = scaleXZ;		//(z) maximum coordinate	
+		float f = value * y; 	//(f)illed area
+		float r = y - f;		//(r)est area (non-filled, up until the maximum) 
+		
+		//Transparency
+		float lineAlpha = alpha;
+		
+		//Color for the lines around the box
+		float line_color_r = 0.8f;
+		float line_color_g = 0.8f;
+		float line_color_b = 0.8f;
+		
+		if (perfvis.getSelection() == glName) {
+			line_color_r = 1.0f;
+			line_color_g = 1.0f;
+			line_color_b = 1.0f;
+			lineAlpha = 1.0f;
+		}
+		
+		float quad_color_r = color[0];
+		float quad_color_g = color[1];
+		float quad_color_b = color[2];
+		
+		//Center the drawing startpoint
+		gl.glTranslatef(-0.5f*x, 0.0f, -0.5f*z);		
+		
+		//The solid Element
+			gl.glBegin(GL.GL_LINE_LOOP);
+				//TOP of filled area
+				gl.glColor3f(line_color_r,line_color_g,line_color_b);			
+				gl.glVertex3f( x, f, o);			
+				gl.glVertex3f( o, f, o);			
+				gl.glVertex3f( o, f, z);			
+				gl.glVertex3f( x, f, z);			
+			gl.glEnd();		
+			
+			gl.glBegin(GL.GL_LINE_LOOP);
+				//BOTTOM
+				gl.glColor3f(line_color_r,line_color_g,line_color_b);			
+				gl.glVertex3f( x, o, z);			
+				gl.glVertex3f( o, o, z);			
+				gl.glVertex3f( o, o, o);			
+				gl.glVertex3f( x, o, o);			
+			gl.glEnd();	
+			
+			gl.glBegin(GL.GL_LINE_LOOP);
+				//FRONT
+				gl.glColor3f(line_color_r,line_color_g,line_color_b);			
+				gl.glVertex3f( x, f, z);			
+				gl.glVertex3f( o, f, z);			
+				gl.glVertex3f( o, o, z);			
+				gl.glVertex3f( x, o, z);			
+			gl.glEnd();
+			
+			gl.glBegin(GL.GL_LINE_LOOP);
+				//BACK
+				gl.glColor3f(line_color_r,line_color_g,line_color_b);			
+				gl.glVertex3f( x, o, o);			
+				gl.glVertex3f( o, o, o);			
+				gl.glVertex3f( o, f, o);			
+				gl.glVertex3f( x, f, o);			
+			gl.glEnd();	
+			
+			gl.glBegin(GL.GL_LINE_LOOP);
+				//LEFT
+				gl.glColor3f(line_color_r,line_color_g,line_color_b);			
+				gl.glVertex3f( o, f, z);			
+				gl.glVertex3f( o, f, o);			
+				gl.glVertex3f( o, o, o);			
+				gl.glVertex3f( o, o, z);			
+			gl.glEnd();
+			
+			gl.glBegin(GL.GL_LINE_LOOP);
+				//RIGHT
+				gl.glColor3f(line_color_r,line_color_g,line_color_b);			
+				gl.glVertex3f( x, f, o);			
+				gl.glVertex3f( x, f, z);			
+				gl.glVertex3f( x, o, z);			
+				gl.glVertex3f( x, o, o);
+			gl.glEnd();
+				
+			gl.glBegin(GL.GL_QUADS);		
+				//TOP
+				gl.glColor3f(quad_color_r, quad_color_g, quad_color_b);			
+				gl.glVertex3f( x, f, o);			
+				gl.glVertex3f( o, f, o);			
+				gl.glVertex3f( o, f, z);			
+				gl.glVertex3f( x, f, z);
+				
+				//BOTTOM
+				gl.glColor3f(quad_color_r, quad_color_g, quad_color_b);			
+				gl.glVertex3f( x, o, z);			
+				gl.glVertex3f( o, o, z);			
+				gl.glVertex3f( o, o, o);			
+				gl.glVertex3f( x, o, o);
+				
+				//FRONT
+				gl.glColor3f(quad_color_r, quad_color_g, quad_color_b);			
+				gl.glVertex3f( x, f, z);			
+				gl.glVertex3f( o, f, z);			
+				gl.glVertex3f( o, o, z);			
+				gl.glVertex3f( x, o, z);
+				
+				//BACK
+				gl.glColor3f(quad_color_r, quad_color_g, quad_color_b);			
+				gl.glVertex3f( x, o, o);			
+				gl.glVertex3f( o, o, o);			
+				gl.glVertex3f( o, f, o);			
+				gl.glVertex3f( x, f, o);
+				
+				//LEFT
+				gl.glColor3f(quad_color_r, quad_color_g, quad_color_b);			
+				gl.glVertex3f( o, f, z);			
+				gl.glVertex3f( o, f, o);			
+				gl.glVertex3f( o, o, o);			
+				gl.glVertex3f( o, o, z);
+				
+				//RIGHT
+				gl.glColor3f(quad_color_r, quad_color_g, quad_color_b);			
+				gl.glVertex3f( x, f, o);			
+				gl.glVertex3f( x, f, z);			
+				gl.glVertex3f( x, o, z);			
+				gl.glVertex3f( x, o, o);
+			gl.glEnd();	
+		
 	}
 	
 	public PopupMenu getMenu() {	

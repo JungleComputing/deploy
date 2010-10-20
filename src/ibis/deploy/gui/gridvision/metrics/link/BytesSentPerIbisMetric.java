@@ -1,9 +1,9 @@
-package ibis.deploy.gui.performance.metrics.link;
+package ibis.deploy.gui.gridvision.metrics.link;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import ibis.deploy.gui.performance.metrics.MetricInterface;
+import ibis.deploy.gui.gridvision.metrics.MetricInterface;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.support.management.AttributeDescription;
 
@@ -39,6 +39,11 @@ public class BytesSentPerIbisMetric extends LinkMetricsMap implements MetricInte
 		long time_elapsed = time_now - time_prev;	
 		float time_seconds = (float)time_elapsed / 1000.0f;
 		Float value = 1.0f;
+		
+		if (results[0] == null) {
+			System.err.println("NULL: results[0] in sentBytesPerIbis");
+			return;
+		}
 		
 		Map<IbisIdentifier, Long> sent = (Map<IbisIdentifier, Long>) results[0];
 		

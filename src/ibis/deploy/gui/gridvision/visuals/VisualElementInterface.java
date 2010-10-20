@@ -1,7 +1,7 @@
-package ibis.deploy.gui.performance.visuals;
+package ibis.deploy.gui.gridvision.visuals;
 
-import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
-import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
+import ibis.deploy.gui.gridvision.exceptions.ModeUnknownException;
+import ibis.deploy.gui.gridvision.exceptions.StatNotRequestedException;
 
 import java.awt.Menu;
 import java.awt.MenuItem;

@@ -55,6 +55,8 @@ public class Cluster {
         out
                 .println("# user.name           User name used for authentication at cluster");
         out
+                .println("# user.key            User keyfile used for authentication at cluster (only when user.name is set)");
+        out
                 .println("# cache.dir           Directory on cluster used to cache pre-stage files");
         out.println("#                     (updated using rsync)");
         out
@@ -108,6 +110,9 @@ public class Cluster {
 
     // user name to authenticate user with
     private String userName;
+    
+    // Key file for user authentication
+    private String keyFile;
 
     // cache dir for pre-stage files (updating using rsync)
     private File cacheDir;
@@ -187,6 +192,7 @@ public class Cluster {
             javaPath = null;
             jobWrapperScript = null;
             userName = null;
+            keyFile = null;
             cacheDir = null;
             serverOutputFiles = null;
             serverSystemProperties = null;
@@ -218,6 +224,7 @@ public class Cluster {
         javaPath = null;
         jobWrapperScript = null;
         userName = null;
+        keyFile = null;
         cacheDir = null;
         serverOutputFiles = null;
         serverSystemProperties = null;
@@ -279,6 +286,7 @@ public class Cluster {
                     + "job.wrapper.script");
 
             userName = properties.getProperty(defaultPrefix + "user.name");
+            keyFile = properties.getProperty(defaultPrefix + "user.key");
             cacheDir = properties.getFileProperty(defaultPrefix + "cache.dir");
             serverOutputFiles = properties.getFileListProperty(defaultPrefix
                     + "server.output.files");
@@ -339,6 +347,9 @@ public class Cluster {
         if (properties.getProperty(prefix + "user.name") != null) {
             userName = properties.getProperty(prefix + "user.name");
         }
+        if (properties.getProperty(prefix + "user.key") != null) {
+            keyFile = properties.getProperty(prefix + "user.key");
+        }
         if (properties.getFileProperty(prefix + "cache.dir") != null) {
             cacheDir = properties.getFileProperty(prefix + "cache.dir");
         }
@@ -387,6 +398,7 @@ public class Cluster {
                 && serverOutputFiles == null && jobAdaptor == null
                 && jobURI == null && fileAdaptors == null && javaPath == null
                 && jobWrapperScript == null && userName == null
+                && keyFile == null
                 && cacheDir == null && serverOutputFiles == null
                 && serverSystemProperties == null && nodes == 0 && cores == 0
                 && memory == 0 && latitude == 0 && longitude == 0
@@ -439,6 +451,10 @@ public class Cluster {
 
         if (other.userName != null) {
             userName = other.userName;
+        }
+        
+        if (other.keyFile != null) {
+            keyFile = other.keyFile;
         }
 
         if (other.cacheDir != null) {
@@ -751,6 +767,25 @@ public class Cluster {
      */
     public void setUserName(String userName) {
         this.userName = userName;
+    }
+    
+    /**
+     * Returns keyfile used to authenticate at this cluster
+     * 
+     * @return keyfile used to authenticate at this cluster
+     */    
+    public String getKeyFile() {
+        return keyFile;
+    }
+    
+    /**
+     * Sets keyfile used to authenticate at this cluster
+     * 
+     * @param keyFile
+     *            keyfile used to authenticate at this cluster
+     */   
+    public void setKeyFile(String keyFile) {
+        this.keyFile = keyFile;
     }
 
     /**
@@ -1140,6 +1175,13 @@ public class Cluster {
         } else if (printComments) {
             out.println("#" + dotPrefix + "user.name = ");
         }
+        
+        if (keyFile != null) {
+            out.println(dotPrefix + "user.key = " + keyFile);
+            empty = false;
+        } else if (printComments) {
+            out.println("#" + dotPrefix + "user.key = ");
+        }
 
         if (cacheDir != null) {
             out.println(dotPrefix + "cache.dir = " + cacheDir);
@@ -1248,6 +1290,7 @@ public class Cluster {
         result += " Java path = " + getJavaPath() + "\n";
         result += " Wrapper Script = " + getJobWrapperScript() + "\n";
         result += " User name = " + getUserName() + "\n";
+        result += " User keyfile = " + getKeyFile() + "\n";
         result += " Cache dir = " + getCacheDir() + "\n";
         result += " Server output files = " + Util.files2CSS(serverOutputFiles)
                 + "\n";

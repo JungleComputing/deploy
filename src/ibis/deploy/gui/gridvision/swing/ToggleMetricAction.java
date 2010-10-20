@@ -1,7 +1,7 @@
-package ibis.deploy.gui.performance.swing;
+package ibis.deploy.gui.gridvision.swing;
 
-import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
-import ibis.deploy.gui.performance.visuals.VisualElementInterface;
+import ibis.deploy.gui.gridvision.exceptions.StatNotRequestedException;
+import ibis.deploy.gui.gridvision.visuals.VisualElementInterface;
 
 import java.awt.event.ActionEvent;
 

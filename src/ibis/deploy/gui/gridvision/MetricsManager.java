@@ -1,20 +1,20 @@
-package ibis.deploy.gui.performance;
+package ibis.deploy.gui.gridvision;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ibis.deploy.gui.performance.dataholders.*;
-import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
-import ibis.deploy.gui.performance.metrics.link.*;
-import ibis.deploy.gui.performance.metrics.node.*;
-import ibis.deploy.gui.performance.metrics.special.*;
+import ibis.deploy.gui.gridvision.dataholders.*;
+import ibis.deploy.gui.gridvision.exceptions.StatNotRequestedException;
+import ibis.deploy.gui.gridvision.metrics.link.*;
+import ibis.deploy.gui.gridvision.metrics.node.*;
+import ibis.deploy.gui.gridvision.metrics.special.*;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
 import ibis.smartsockets.virtual.NoSuitableModuleException;
 
-public class StatsManager implements Runnable {
+public class MetricsManager implements Runnable {
 	//Variables needed for the operation of this class		
 	private ManagementServiceInterface manInterface;
 	private RegistryServiceInterface regInterface;
@@ -28,7 +28,7 @@ public class StatsManager implements Runnable {
 	//The list that holds the statistics necessary for initializing the visualization 
 	private MetricsList initStatistics;
 	
-	public StatsManager(ManagementServiceInterface manInterface, RegistryServiceInterface regInterface) {
+	public MetricsManager(ManagementServiceInterface manInterface, RegistryServiceInterface regInterface) {
 		this.manInterface = manInterface;
 		this.regInterface = regInterface;
 		this.refreshrate = 500;
@@ -44,12 +44,12 @@ public class StatsManager implements Runnable {
 		//initStatistics.add(new XcoordStatistic());
 		//initStatistics.add(new YcoordStatistic());
 		//initStatistics.add(new ZcoordStatistic());
-		initStatistics.add(new ConnStatistic());
-		initStatistics.add(new CPUStatistic());
+		initStatistics.add(new ConnMetric());
+		initStatistics.add(new CPUMetric());
 		//initStatistics.add(new BytesSentMetric());
-		initStatistics.add(new HeapMemStatistic());
-		initStatistics.add(new NonHeapMemStatistic());
-		initStatistics.add(new ThreadsStatistic());
+		initStatistics.add(new HeapMemMetric());
+		initStatistics.add(new NonHeapMemMetric());
+		initStatistics.add(new ThreadsMetric());
 		initStatistics.add(new BytesSentPerIbisMetric());
 		initStatistics.add(new BytesReceivedPerIbisMetric());
 	}

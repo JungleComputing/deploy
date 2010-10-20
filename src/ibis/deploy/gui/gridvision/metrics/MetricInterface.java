@@ -1,6 +1,6 @@
-package ibis.deploy.gui.performance.metrics;
+package ibis.deploy.gui.gridvision.metrics;
 
-import ibis.deploy.gui.performance.exceptions.MethodNotOverriddenException;
+import ibis.deploy.gui.gridvision.exceptions.MethodNotOverriddenException;
 import ibis.ipl.support.management.AttributeDescription;
 
 public interface MetricInterface {

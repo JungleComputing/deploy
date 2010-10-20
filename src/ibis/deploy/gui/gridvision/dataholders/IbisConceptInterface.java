@@ -1,11 +1,11 @@
-package ibis.deploy.gui.performance.dataholders;
+package ibis.deploy.gui.gridvision.dataholders;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import ibis.deploy.gui.performance.MetricsList;
-import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
+import ibis.deploy.gui.gridvision.MetricsList;
+import ibis.deploy.gui.gridvision.exceptions.StatNotRequestedException;
 import ibis.ipl.IbisIdentifier;
 import ibis.smartsockets.virtual.NoSuitableModuleException;
 

@@ -1,4 +1,4 @@
-package ibis.deploy.gui.performance;
+package ibis.deploy.gui.gridvision;
 
 import java.awt.PopupMenu;
 import java.awt.event.MouseEvent;
@@ -11,7 +11,7 @@ import javax.media.opengl.GLCanvas;
 import javax.swing.SwingUtilities;
 
 public class MouseHandler implements MouseListener, MouseMotionListener, MouseWheelListener{
-	PerfVis perfvis;
+	GridVision perfvis;
 	GLCanvas canvas;
 	
 	private float viewDistOrigin; 
@@ -38,7 +38,7 @@ public class MouseHandler implements MouseListener, MouseMotionListener, MouseWh
 	
 	private float translationZ = 0;
 	
-	MouseHandler(PerfVis perfvis, GLCanvas canvas) {
+	MouseHandler(GridVision perfvis, GLCanvas canvas) {
 		this.perfvis = perfvis;
 		this.canvas = canvas;
 		

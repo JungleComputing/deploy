@@ -1,6 +1,6 @@
-package ibis.deploy.gui.performance.metrics.node;
+package ibis.deploy.gui.gridvision.metrics.node;
 
-import ibis.deploy.gui.performance.metrics.Metric;
+import ibis.deploy.gui.gridvision.metrics.Metric;
 
 public class NodeMetricsObject extends Metric {	
 	public static final int METRICSGROUP = 1;

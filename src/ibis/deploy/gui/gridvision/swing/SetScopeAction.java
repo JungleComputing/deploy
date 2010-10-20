@@ -1,7 +1,7 @@
-package ibis.deploy.gui.performance.swing;
+package ibis.deploy.gui.gridvision.swing;
 
-import ibis.deploy.gui.performance.PerfVis;
-import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
+import ibis.deploy.gui.gridvision.GridVision;
+import ibis.deploy.gui.gridvision.exceptions.ModeUnknownException;
 
 import java.awt.event.ActionEvent;
 
@@ -10,10 +10,10 @@ import javax.swing.AbstractAction;
 public class SetScopeAction extends AbstractAction {	
 	private static final long serialVersionUID = 7380908030018875303L;
 	
-	PerfVis perfvis;
+	GridVision perfvis;
 	int myScope;
 	
-	public SetScopeAction(PerfVis perfvis, String label) {
+	public SetScopeAction(GridVision perfvis, String label) {
 		super(label);
 		
 		this.perfvis = perfvis;

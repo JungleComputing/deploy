@@ -1,4 +1,4 @@
-package ibis.deploy.gui.performance;
+package ibis.deploy.gui.gridvision;
 
 import java.awt.PopupMenu;
 import java.util.ArrayList;
@@ -7,9 +7,9 @@ import java.util.List;
 
 import javax.media.opengl.GL;
 
-import ibis.deploy.gui.performance.dataholders.Pool;
-import ibis.deploy.gui.performance.visuals.VisualElementInterface;
-import ibis.deploy.gui.performance.visuals.Vpool;
+import ibis.deploy.gui.gridvision.dataholders.Pool;
+import ibis.deploy.gui.gridvision.visuals.VisualElementInterface;
+import ibis.deploy.gui.gridvision.visuals.Vpool;
 
 public class VisualManager {
 	List<Pool> pools;
@@ -22,11 +22,11 @@ public class VisualManager {
 	private HashMap<Integer, VisualElementInterface> linkRegistry;
 	private HashMap<Integer, VisualElementInterface> metricRegistry;
 	
-	private PerfVis perfvis;
+	private GridVision perfvis;
 	
 	private Float[] origin = {0.0f, 0.0f, 0.0f};
 	
-	public VisualManager(PerfVis perfvis) {
+	public VisualManager(GridVision perfvis) {
 		this.perfvis = perfvis;
 		pools = new ArrayList<Pool>();
 		vpools = new ArrayList<Vpool>();

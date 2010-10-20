@@ -1,6 +1,6 @@
-package ibis.deploy.gui.performance;
+package ibis.deploy.gui.gridvision;
 
-import ibis.deploy.gui.performance.metrics.Metric;
+import ibis.deploy.gui.gridvision.metrics.Metric;
 
 import java.util.ArrayList;
 import java.util.Collection;

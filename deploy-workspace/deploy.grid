@@ -30,11 +30,11 @@
 
 
 # Details of cluster "VU"
-VU.server.adaptor = commandlinessh
+VU.server.adaptor = SshTrilead
 VU.server.uri = any://fs0.das3.cs.vu.nl
-VU.job.adaptor = commandlinessh
+VU.job.adaptor = SshTrilead
 VU.job.uri = any://fs0.das3.cs.vu.nl/jobmanager-sge
-VU.file.adaptors = commandlinessh,local
+VU.file.adaptors = SshTrilead,local
 VU.java.path = /usr/local/package/jdk1.6.0/bin/java
 VU.job.wrapper.script = deploy-workspace/das3.script
 #VU.user.name = 
@@ -50,11 +50,11 @@ VU.longitude = 4.872222
 #VU.node.hostnames = 
 
 # Details of cluster "MultimediaN"
-MultimediaN.server.adaptor = commandlinessh
+MultimediaN.server.adaptor = SshTrilead
 MultimediaN.server.uri = any://fs4.das3.science.uva.nl
-MultimediaN.job.adaptor = commandlinessh
+MultimediaN.job.adaptor = SshTrilead
 MultimediaN.job.uri = any://fs4.das3.science.uva.nl/jobmanager-sge
-MultimediaN.file.adaptors = commandlinessh,local
+MultimediaN.file.adaptors = SshTrilead,local
 MultimediaN.java.path = /usr/local/package/jdk1.6.0/bin/java
 MultimediaN.job.wrapper.script = deploy-workspace/das3.script
 #MultimediaN.user.name = 
@@ -70,11 +70,11 @@ MultimediaN.longitude = 5.336797
 #MultimediaN.node.hostnames = 
 
 # Details of cluster "UvA"
-UvA.server.adaptor = commandlinessh
+UvA.server.adaptor = SshTrilead
 UvA.server.uri = any://fs2.das3.science.uva.nl
-UvA.job.adaptor = commandlinessh
+UvA.job.adaptor = SshTrilead
 UvA.job.uri = any://fs2.das3.science.uva.nl/jobmanager-sge
-UvA.file.adaptors = commandlinessh,local
+UvA.file.adaptors = SshTrilead,local
 UvA.java.path = /usr/local/package/jdk1.6.0/bin/java
 UvA.job.wrapper.script = deploy-workspace/das3.script
 #UvA.user.name = 
@@ -90,11 +90,11 @@ UvA.longitude = 4.779656
 #UvA.node.hostnames = 
 
 # Details of cluster "Delft"
-Delft.server.adaptor = commandlinessh
+Delft.server.adaptor = SshTrilead
 Delft.server.uri = any://fs3.das3.tudelft.nl
-Delft.job.adaptor = commandlinessh
+Delft.job.adaptor = SshTrilead
 Delft.job.uri = any://fs3.das3.tudelft.nl/jobmanager-sge
-Delft.file.adaptors = commandlinessh,local
+Delft.file.adaptors = SshTrilead,local
 Delft.java.path = /usr/local/package/jdk1.6.0/bin/java
 Delft.job.wrapper.script = deploy-workspace/das3.script
 #Delft.user.name = 
@@ -130,11 +130,11 @@ Grommit.longitude = 4.865741729736328
 #Grommit.node.hostnames = 
 
 # Details of cluster "Leiden"
-Leiden.server.adaptor = commandlinessh
+Leiden.server.adaptor = SshTrilead
 Leiden.server.uri = any://fs1.das3.liacs.nl
-Leiden.job.adaptor = commandlinessh
+Leiden.job.adaptor = SshTrilead
 Leiden.job.uri = any://fs1.das3.liacs.nl/jobmanager-sge
-Leiden.file.adaptors = commandlinessh,local
+Leiden.file.adaptors = SshTrilead,local
 Leiden.java.path = /usr/local/package/jdk1.6.0/bin/java
 Leiden.job.wrapper.script = deploy-workspace/das3.script
 #Leiden.user.name = 

@@ -104,8 +104,9 @@ public class RemoteServer implements Runnable, Server {
     private GATContext createGATContext() throws Exception {
         GATContext context = new GATContext();
         if (cluster.getUserName() != null) {
+            String keyFile = cluster.getKeyFile();
             SecurityContext securityContext = new CertificateSecurityContext(
-                    null, null, cluster.getUserName(), null);
+                    keyFile == null ? null : new URI(keyFile), null, cluster.getUserName(), null);
             context.addSecurityContext(securityContext);
         }
         // ensure files are readable on the other side
@@ -129,6 +130,7 @@ public class RemoteServer implements Runnable, Server {
             throws Exception {
         String host = cluster.getServerURI().getHost();
         String user = cluster.getUserName();
+        String keyFile = cluster.getKeyFile();
         File cacheDir = cluster.getCacheDir();
 
         org.gridlab.gat.io.File gatCwd = GAT.createFile(context, ".");
@@ -147,7 +149,7 @@ public class RemoteServer implements Runnable, Server {
 
         // rsync to cluster cache server dir
         File rsyncLocation = new File(cacheDir + "/server/");
-        Rsync.rsync(src, rsyncLocation, host, user);
+        Rsync.rsync(src, rsyncLocation, host, user, keyFile);
 
         // tell job to pre-stage from cache dir
         org.gridlab.gat.io.File gatFile = GAT.createFile(context, "any://"

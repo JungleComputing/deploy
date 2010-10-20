@@ -1,9 +1,9 @@
-package ibis.deploy.gui.performance.metrics.link;
+package ibis.deploy.gui.gridvision.metrics.link;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import ibis.deploy.gui.performance.metrics.Metric;
+import ibis.deploy.gui.gridvision.metrics.Metric;
 import ibis.ipl.IbisIdentifier;
 
 public class LinkMetricsMap extends Metric {

@@ -1,15 +1,15 @@
-package ibis.deploy.gui.performance.metrics.node;
+package ibis.deploy.gui.gridvision.metrics.node;
 
-import ibis.deploy.gui.performance.metrics.MetricInterface;
+import ibis.deploy.gui.gridvision.metrics.MetricInterface;
 import ibis.ipl.support.management.AttributeDescription;
 import ibis.ipl.support.vivaldi.Coordinates;
 
-public class XcoordStatistic extends NodeMetricsObject implements MetricInterface {
+public class XcoordMetric extends NodeMetricsObject implements MetricInterface {
 	public static final String NAME = "COORDS_X";
 	public static final int DESCRIPTIONS_COUNT_NEEDED = 1;
 	public static final Float[] COLOR = {0.0f, 0.0f, 0.0f};
 	
-	public XcoordStatistic() {
+	public XcoordMetric() {
 		super();
 		this.name = NAME;
 		this.color = COLOR;
@@ -25,8 +25,8 @@ public class XcoordStatistic extends NodeMetricsObject implements MetricInterfac
 		value = (float) unUsableCoords[0];
 	}
 	
-	public XcoordStatistic clone() {
-		XcoordStatistic clone = new XcoordStatistic();
+	public XcoordMetric clone() {
+		XcoordMetric clone = new XcoordMetric();
 		clone.setName(name);
 		clone.setGroup(group);
 		clone.setColor(color);

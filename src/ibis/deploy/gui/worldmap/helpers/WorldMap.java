@@ -140,9 +140,7 @@ public final class WorldMap extends JXMapKit {
     }
 
     /**
-     * Based on the current zoom level, it sets the maximum size for the map
-     * 
-     * @param zoom
+     * Based on the current zoom level, it sets the maximum size for the map.
      */
     public void adjustMapSize() {
         int zoom = getMainMap().getZoom();

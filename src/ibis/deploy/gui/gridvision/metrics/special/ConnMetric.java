@@ -1,18 +1,18 @@
-package ibis.deploy.gui.performance.metrics.special;
+package ibis.deploy.gui.gridvision.metrics.special;
 
-import ibis.deploy.gui.performance.metrics.Metric;
-import ibis.deploy.gui.performance.metrics.MetricInterface;
+import ibis.deploy.gui.gridvision.metrics.Metric;
+import ibis.deploy.gui.gridvision.metrics.MetricInterface;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.support.management.AttributeDescription;
 
-public class ConnStatistic extends Metric implements MetricInterface {
+public class ConnMetric extends Metric implements MetricInterface {
 	public static final String NAME = "CONN";
 	public static final int DESCRIPTIONS_COUNT_NEEDED = 1;
 	public static final Float[] COLOR = {0.0f, 0.0f, 0.0f};
 	
 	protected IbisIdentifier[] ibises;
 	
-	public ConnStatistic() {
+	public ConnMetric() {
 		super();
 		this.group = 4;
 		this.name = NAME;
@@ -30,8 +30,8 @@ public class ConnStatistic extends Metric implements MetricInterface {
 		return ibises;
 	}
 	
-	public ConnStatistic clone() {
-		ConnStatistic clone = new ConnStatistic();
+	public ConnMetric clone() {
+		ConnMetric clone = new ConnMetric();
 		clone.setName(name);
 		clone.setGroup(group);
 		clone.setColor(color);

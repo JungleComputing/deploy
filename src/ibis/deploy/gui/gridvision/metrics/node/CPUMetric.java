@@ -1,16 +1,16 @@
-package ibis.deploy.gui.performance.metrics.node;
+package ibis.deploy.gui.gridvision.metrics.node;
 
-import ibis.deploy.gui.performance.metrics.MetricInterface;
+import ibis.deploy.gui.gridvision.metrics.MetricInterface;
 import ibis.ipl.support.management.AttributeDescription;
 
-public class CPUStatistic extends NodeMetricsObject implements MetricInterface {
+public class CPUMetric extends NodeMetricsObject implements MetricInterface {
 	public static final String NAME = "CPU";
 	public static final int DESCRIPTIONS_COUNT_NEEDED = 3;
 	public static final Float[] COLOR = {1.0f, 0.0f, 0.0f};
 	
 	private long cpu_prev, upt_prev;
 	
-	public CPUStatistic() {
+	public CPUMetric() {
 		super();
 		this.name = NAME;
 		this.color = COLOR;
@@ -35,8 +35,8 @@ public class CPUStatistic extends NodeMetricsObject implements MetricInterface {
 		value = (cpuUsage / 100);
 	}
 	
-	public CPUStatistic clone() {
-		CPUStatistic clone = new CPUStatistic();
+	public CPUMetric clone() {
+		CPUMetric clone = new CPUMetric();
 		clone.setName(name);
 		clone.setGroup(group);
 		clone.setColor(color);

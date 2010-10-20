@@ -1,14 +1,14 @@
-package ibis.deploy.gui.performance.visuals;
-import ibis.deploy.gui.performance.PerfVis;
-import ibis.deploy.gui.performance.VisualManager;
-import ibis.deploy.gui.performance.dataholders.Node;
-import ibis.deploy.gui.performance.exceptions.ModeUnknownException;
-import ibis.deploy.gui.performance.exceptions.StatNotRequestedException;
-import ibis.deploy.gui.performance.exceptions.ValueOutOfBoundsException;
-import ibis.deploy.gui.performance.swing.SetCollectionFormAction;
-import ibis.deploy.gui.performance.swing.SetMetricFormAction;
-import ibis.deploy.gui.performance.swing.ToggleAveragesAction;
-import ibis.deploy.gui.performance.swing.ToggleMetricAction;
+package ibis.deploy.gui.gridvision.visuals;
+import ibis.deploy.gui.gridvision.GridVision;
+import ibis.deploy.gui.gridvision.VisualManager;
+import ibis.deploy.gui.gridvision.dataholders.Node;
+import ibis.deploy.gui.gridvision.exceptions.ModeUnknownException;
+import ibis.deploy.gui.gridvision.exceptions.StatNotRequestedException;
+import ibis.deploy.gui.gridvision.exceptions.ValueOutOfBoundsException;
+import ibis.deploy.gui.gridvision.swing.SetCollectionFormAction;
+import ibis.deploy.gui.gridvision.swing.SetMetricFormAction;
+import ibis.deploy.gui.gridvision.swing.ToggleAveragesAction;
+import ibis.deploy.gui.gridvision.swing.ToggleMetricAction;
 
 import java.awt.Menu;
 import java.awt.MenuItem;
@@ -23,7 +23,7 @@ import javax.media.opengl.GL;
 import javax.media.opengl.glu.GLU;
 
 public class Vnode implements VisualElementInterface {
-	PerfVis perfvis;
+	GridVision perfvis;
 	VisualManager visman;
 	
 	protected Float[] location;
@@ -45,7 +45,7 @@ public class Vnode implements VisualElementInterface {
 	
 	private Node node;
 	
-	public Vnode(PerfVis perfvis, VisualManager visman, VisualElementInterface parent, Node node) {
+	public Vnode(GridVision perfvis, VisualManager visman, VisualElementInterface parent, Node node) {
 		this.perfvis = perfvis;
 		this.visman = visman;
 		
