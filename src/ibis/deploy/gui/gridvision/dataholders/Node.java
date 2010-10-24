@@ -15,7 +15,7 @@ import ibis.ipl.server.RegistryServiceInterface;
 import ibis.ipl.support.management.AttributeDescription;
 import ibis.smartsockets.virtual.NoSuitableModuleException;
 
-public class Node extends ibis.deploy.gui.gridvision.dataholders.IbisConcept implements ibis.deploy.gui.gridvision.interfaces.IbisConcept {	
+public class Node extends ibis.deploy.gui.gridvision.impl.Flock implements ibis.deploy.gui.gridvision.interfaces.IbisConcept {	
 	private IbisIdentifier ii;
 	
 	public Node(MetricsManager mm, ibis.deploy.gui.gridvision.interfaces.IbisConcept parent, ManagementServiceInterface manInterface, RegistryServiceInterface regInterface, MetricsList initialMetrics, String siteName, IbisIdentifier ii) {

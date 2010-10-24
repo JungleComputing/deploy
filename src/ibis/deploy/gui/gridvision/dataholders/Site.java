@@ -6,7 +6,7 @@ import ibis.ipl.IbisIdentifier;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
 
-public class Site extends ibis.deploy.gui.gridvision.dataholders.IbisConcept implements ibis.deploy.gui.gridvision.interfaces.IbisConcept {	
+public class Site extends ibis.deploy.gui.gridvision.impl.Flock implements ibis.deploy.gui.gridvision.interfaces.IbisConcept {	
 	public Site(MetricsManager mm, ibis.deploy.gui.gridvision.interfaces.IbisConcept parent, ManagementServiceInterface manInterface, RegistryServiceInterface regInterface, MetricsList initialMetrics, IbisIdentifier[] poolIbises, String siteName) {
 		super(mm, parent, manInterface, regInterface, initialMetrics);
 		this.name = siteName;

@@ -10,7 +10,7 @@ import ibis.ipl.IbisIdentifier;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
 
-public class Pool extends ibis.deploy.gui.gridvision.dataholders.IbisConcept implements ibis.deploy.gui.gridvision.interfaces.IbisConcept {
+public class Pool extends ibis.deploy.gui.gridvision.impl.Flock implements ibis.deploy.gui.gridvision.interfaces.IbisConcept {
 
 	public Pool(MetricsManager mm, ManagementServiceInterface manInterface, RegistryServiceInterface regInterface, MetricsList initialMetrics, String poolName) {	
 		super(mm, null, manInterface, regInterface, initialMetrics);
