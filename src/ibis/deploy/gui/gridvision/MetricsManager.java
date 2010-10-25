@@ -13,6 +13,7 @@ import ibis.deploy.gui.gridvision.metrics.link.*;
 import ibis.deploy.gui.gridvision.metrics.node.*;
 import ibis.deploy.gui.gridvision.metrics.special.*;
 import ibis.ipl.IbisIdentifier;
+import ibis.ipl.Location;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
 import ibis.smartsockets.virtual.NoSuitableModuleException;
@@ -22,6 +23,7 @@ public class MetricsManager implements Runnable {
 	
 	//Variables needed for the operation of this class
 	private RegistryServiceInterface regInterface;
+	private ManagementServiceInterface manInterface;
 
 	private Map<String, Integer> poolSizes;	
 	private Flock universe;
@@ -35,13 +37,15 @@ public class MetricsManager implements Runnable {
 		
 	public MetricsManager(ManagementServiceInterface manInterface, RegistryServiceInterface regInterface) {
 		this.regInterface = regInterface;
+		this.manInterface = manInterface;
 		this.refreshrate = 500;
 		
 		//The HashMap used to check whether pools have changed
 		poolSizes = new HashMap<String, Integer>();
 		
 		//Maps to store ibises and their groups
-		universe = new ibis.deploy.gui.gridvision.impl.Flock(this, null, manInterface, regInterface, initStatistics);
+		Location universeLocation = new ibis.ipl.impl.Location(new String[0]);
+		universe = new ibis.deploy.gui.gridvision.impl.Flock(this, null, universeLocation, manInterface, regInterface, initStatistics);
 		iiToFlock = new HashMap<IbisIdentifier, Flock>();
 		
 		//List that holds the initial statistics necessary to create the data structure (links and coordinates)
@@ -129,7 +133,7 @@ public class MetricsManager implements Runnable {
 			//add the newcomers			
 			for (IbisIdentifier ibis : newIbises) {
 				if (!iiToFlock.containsKey(ibis)) {
-					iiToFlock.put(ibis, universe.addLeaf(ibis));					
+					iiToFlock.put(ibis, addLeaf(ibis));					
 				}
 			}
 			
@@ -137,11 +141,25 @@ public class MetricsManager implements Runnable {
 			for (Map.Entry<IbisIdentifier, Flock> entry : iiToFlock.entrySet()) {
 				IbisIdentifier ibis = entry.getKey();
 				if (!newIbises.contains(ibis)) {
-					universe.removeLeaf(iiToFlock.remove(ibis));					
+					iiToFlock.remove(removeLeaf(ibis));					
 				}
 			}
 		}		
 	}	
+	
+	public Flock addLeaf(IbisIdentifier ii) {		
+		Location ibisLocation = ii.location();
+		
+		
+		//TODO FIX
+		return null;
+	}
+	
+	public Flock removeLeaf(IbisIdentifier ii) {
+		Flock flockToRemove = iiToFlock.get(ii);
+		flockToRemove.getParent().removeChild(flockToRemove);
+		return flockToRemove;
+	}
 
 	public Flock getUniverse() {
 		reinitializeNeeded = false;

@@ -20,18 +20,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-public class Flock implements ibis.deploy.gui.gridvision.Flock {
-	protected MetricsManager mm;
-	protected ManagementServiceInterface manInterface;
-	protected RegistryServiceInterface regInterface;
+public class Flock implements ibis.deploy.gui.gridvision.Flock {	
+	private MetricsManager mm;
+	private ManagementServiceInterface manInterface;
+	private RegistryServiceInterface regInterface;
 			
-	protected HashMap<String, Float> nodeMetricsMaxValues;
-	protected HashMap<String, Float> nodeMetricsAvgValues;
-	protected HashMap<String, Float> nodeMetricsMinValues;
+	private HashMap<String, Float> nodeMetricsMaxValues;
+	private HashMap<String, Float> nodeMetricsAvgValues;
+	private HashMap<String, Float> nodeMetricsMinValues;
 		
-	protected HashMap<ibis.deploy.gui.gridvision.Flock, Map<String, Float>> linkMetricsMaxValues;
-	protected HashMap<ibis.deploy.gui.gridvision.Flock, Map<String, Float>> linkMetricsAvgValues;
-	protected HashMap<ibis.deploy.gui.gridvision.Flock, Map<String, Float>> linkMetricsMinValues;
+	private HashMap<ibis.deploy.gui.gridvision.Flock, Map<String, Float>> linkMetricsMaxValues;
+	private HashMap<ibis.deploy.gui.gridvision.Flock, Map<String, Float>> linkMetricsAvgValues;
+	private HashMap<ibis.deploy.gui.gridvision.Flock, Map<String, Float>> linkMetricsMinValues;
 	
 	private HashMap<String, Float[]> nodeMetricsColors;
 	private HashMap<String, Float[]> linkMetricsColors;
@@ -39,14 +39,14 @@ public class Flock implements ibis.deploy.gui.gridvision.Flock {
 	protected List<ibis.deploy.gui.gridvision.Flock> children;
 	private   List<ibis.deploy.gui.gridvision.Flock> links;
 	
-	protected MetricsList currentlyGatheredMetrics;
+	private MetricsList currentlyGatheredMetrics;
 	
 	private ibis.deploy.gui.gridvision.Flock parent;
-	private Location myLocation;
 	
-	protected String name;
+	private String name;
+	private Location myLocation;
 
-	public Flock(MetricsManager mm, ibis.deploy.gui.gridvision.Flock parent, ManagementServiceInterface manInterface, RegistryServiceInterface regInterface, MetricsList initialMetrics) {
+	public Flock(MetricsManager mm, ibis.deploy.gui.gridvision.Flock parent, Location location, ManagementServiceInterface manInterface, RegistryServiceInterface regInterface, MetricsList initialMetrics) {
 		this.mm = mm;
 		this.manInterface = manInterface;
 		this.regInterface = regInterface;
@@ -68,7 +68,8 @@ public class Flock implements ibis.deploy.gui.gridvision.Flock {
 		currentlyGatheredMetrics = new MetricsList();
 		setCurrentlyGatheredMetrics(initialMetrics.clone());
 		
-		this.parent = parent;		
+		this.parent = parent;
+		this.myLocation = location;
 	}
 
 	public float getNodeMetricsValue(String key, int mod) throws StatNotRequestedException, ModeUnknownException {
@@ -331,6 +332,12 @@ public class Flock implements ibis.deploy.gui.gridvision.Flock {
 		
 		return newLinkMetricsColors;
 	}
+	
+	public boolean isRoot() {
+		if (parent == null) {
+			return true;
+		} else return false;
+	}
 		
 	public boolean isLeaf() {
 		return !children.isEmpty();
@@ -339,20 +346,24 @@ public class Flock implements ibis.deploy.gui.gridvision.Flock {
 	public String getName() {
 		return name;
 	}
-
-	public ibis.deploy.gui.gridvision.Flock addLeaf(IbisIdentifier ii) {
-		Location ibisLocation = ii.location();
-		ibisLocation.
-		// TODO Auto-generated method stub
-		return null;
+	
+	public Location getLocation() {
+		return myLocation;
+	}
+	
+	public ibis.deploy.gui.gridvision.Flock getParent() {
+		return parent;
 	}
 
-	@Override
-	public void removeLeaf(ibis.deploy.gui.gridvision.Flock flockToRemove) {
-		// TODO Auto-generated method stub
-		
-	}	
+	public Flock addChild(IbisIdentifier ii, Location newLocation) {
+		Flock newFlock = new Flock(mm, this, newLocation, manInterface, regInterface, currentlyGatheredMetrics);
+		children.add(newFlock);
+		return newFlock;
+	}
 	
+	public void removeChild(ibis.deploy.gui.gridvision.Flock child) {
+		children.remove(child);
+	}	
 	
 	private boolean compareStats(Metric stat) {							
 		for (ibis.deploy.gui.gridvision.Flock child : children) {
@@ -360,6 +371,4 @@ public class Flock implements ibis.deploy.gui.gridvision.Flock {
 		}		
 		return true;
 	}
-	
-
 }

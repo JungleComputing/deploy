@@ -7,6 +7,7 @@ import ibis.deploy.gui.gridvision.MetricsList;
 import ibis.deploy.gui.gridvision.exceptions.ModeUnknownException;
 import ibis.deploy.gui.gridvision.exceptions.StatNotRequestedException;
 import ibis.ipl.IbisIdentifier;
+import ibis.ipl.Location;
 import ibis.smartsockets.virtual.NoSuitableModuleException;
 
 /**
@@ -125,6 +126,27 @@ public interface Flock {
 	public String getName();
 	
 	/**
+	 * Returns the location of this flock.
+	 * @return
+	 * 		the location of this flock.
+	 */
+	public Location getLocation();
+	
+	/**
+	 * Returns the parent of this flock.
+	 * @return
+	 * 		the parent flock.
+	 */
+	public Flock getParent();
+	
+	/**
+	 * Returns whether this flock is root of the tree.
+	 * @return
+	 * 		true if this flock is root, false if not.
+	 */
+	public boolean isRoot();
+	
+	/**
 	 * Returns whether this is the lowest flock in the tree.
 	 * @return
 	 * 		true if this is the lowest flock, false if there are children
@@ -132,18 +154,20 @@ public interface Flock {
 	public boolean isLeaf();
 	
 	/**
-	 * Adds a leaf to the flock. 
+	 * Adds a child to this flock. 
 	 * @param ii
-	 * 		the IbisIdentifier of the leaf to add.
+	 * 		the IbisIdentifier of the child to add.
+	 * @param newLocation
+	 * 		the location of the new flock.
 	 * @return
-	 * 		the newly created flock node corresponding to the leaf.
+	 * 		the newly created flock node corresponding to the child.
 	 */
-	public Flock addLeaf(IbisIdentifier ii);
+	public Flock addChild(IbisIdentifier ii, Location newLocation);
 	
 	/**
-	 * Removes a leaf from the flock.
-	 * @param flockToRemove
-	 * 		the flock that needs to be removed.
+	 * Removes a child from the flock.
+	 * @param child
+	 * 		the child that needs to be removed.
 	 */
-	public void removeLeaf(Flock flockToRemove);
+	public void removeChild(Flock child);
 }
