@@ -106,10 +106,10 @@ public class MouseHandler implements MouseListener, MouseMotionListener, MouseWh
 		if (SwingUtilities.isMiddleMouseButton(e)) {
 			rotationX = ((e.getPoint().y - dragRightXorigin) + rotationXorigin) % 360;
 			rotationY = ((e.getPoint().x - dragRightYorigin) + rotationYorigin) % 360;
-			rotation[0] = rotationX;				 
+			rotation[0] = rotationX;
 			rotation[1] = rotationY;
 			rotation[2] = 0.0f;
-			gv.setRotation(rotation);			
+			gv.setRotation(rotation);
 		} else if (SwingUtilities.isLeftMouseButton(e)) {
 			translationX =  ((e.getPoint().x - dragLeftXorigin) + translationXorigin);
 			translationY = -((e.getPoint().y - dragLeftYorigin) + translationYorigin);
