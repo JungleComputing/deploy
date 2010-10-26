@@ -69,7 +69,6 @@ public class MetricsManager implements Runnable {
 				e.printStackTrace();
 				
 			} catch (StatNotRequestedException e) {
-				pools.clear();
 				poolSizes.clear();
 				try {
 					Thread.sleep(100);
