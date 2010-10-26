@@ -2,6 +2,7 @@ package ibis.deploy.gui.gridvision;
 
 import ibis.deploy.gui.GUI;
 import ibis.deploy.gui.gridvision.swing.*;
+import ibis.deploy.gui.misc.Utils;
 
 import java.awt.BorderLayout;
 
@@ -9,6 +10,7 @@ import javax.media.opengl.GLCanvas;
 import javax.media.opengl.GLCapabilities;
 import javax.swing.Action;
 import javax.swing.ButtonGroup;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
@@ -28,6 +30,10 @@ public class GridVisionPanel extends JPanel {
 		JMenuBar menuBar = gui.getMenuBar();
         JMenu menu = null;
         Action menuAction = new GridVisionAction(gui, this);
+        
+        //add the icon to the tab
+        add(new JLabel(Utils.createImageIcon("/images/utilities-system-monitor.png",
+        										"GridVision Tab")));
         
         for (int i = 0; i < menuBar.getMenuCount(); i++) {
             if (menuBar.getMenu(i).getText().equals("View")) {
