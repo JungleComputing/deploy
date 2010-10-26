@@ -248,7 +248,9 @@ public class Vmetric implements VisualElementInterface {
 		
 		//The shadow (nonfilled) element		
 		gl.glTranslatef(0.0f, f, 0.0f);
-	
+		
+		gl.glEnable(GL.GL_BLEND);
+		
 		gl.glBegin(GL.GL_LINE_LOOP);
 			//TOP of shadow area
 			gl.glColor4f(line_color_r,line_color_g,line_color_b, lineAlpha);			
@@ -333,7 +335,9 @@ public class Vmetric implements VisualElementInterface {
 			gl.glVertex3f( x, r, z);			
 			gl.glVertex3f( x, o, z);			
 			gl.glVertex3f( x, o, o);
-		gl.glEnd();		
+		gl.glEnd();
+		
+		gl.glDisable(GL.GL_BLEND);
 	}
 	
 	protected void drawTube(GL gl, float length) {		
@@ -379,6 +383,8 @@ public class Vmetric implements VisualElementInterface {
 		
 		//The shadow Element				
 		//Bottom disk left out, since it's the top disk of the solid
+			
+		gl.glEnable(GL.GL_BLEND);
 								
 		//Sides
 		gl.glColor4f(quad_color_r, quad_color_g, quad_color_b, alpha);
@@ -396,6 +402,7 @@ public class Vmetric implements VisualElementInterface {
 		gl.glColor4f(line_color_r, line_color_g, line_color_b, alpha);
 		glu.gluCylinder(qobj, radius, radius, 0.01f, 8, 1);	
 		
+		gl.glDisable(GL.GL_BLEND);
 		
 		//Cleanup
 		glu.gluDeleteQuadric(qobj);
