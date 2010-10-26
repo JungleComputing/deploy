@@ -67,12 +67,12 @@ public class MetricsManager implements Runnable {
 				try {
 					pool.update();
 					updateSucceeded = true;
-				} catch (Exception e) {
+				} catch (Exception e) {					
 					try {
 						Thread.sleep(100);
 						updateSucceeded = false;
 					} catch (InterruptedException e1) {
-						//Unnecessary catch						
+						//Unnecessary catch
 					}					
 				}
 			}

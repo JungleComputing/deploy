@@ -1,5 +1,6 @@
 package ibis.deploy.gui.gridvision.dataholders;
 
+import java.net.ConnectException;
 import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +22,7 @@ public interface IbisConceptInterface {
 	
 	public void setCurrentlyGatheredMetrics(MetricsList newMetrics);
 	
-	public void update() throws NoSuitableModuleException, StatNotRequestedException, SocketException;
+	public void update() throws NoSuitableModuleException, StatNotRequestedException, SocketException, ConnectException;
 			
 	public HashMap<IbisIdentifier, Map<String, Float>> getLinkValues();
 	
