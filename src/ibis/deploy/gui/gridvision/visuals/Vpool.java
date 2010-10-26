@@ -210,14 +210,14 @@ public class Vpool implements VisualElementInterface {
 		//get the breakoff point for rows and columns
 		int rows 		= (int)Math.ceil(Math.sqrt(vsites.size()));
 		int columns 	= (int)Math.floor(Math.sqrt(vsites.size()));
-		float tempSeparation = vsites.get(0).getRadius()*1.5f;
+		separation = vsites.get(0).getRadius()*1.5f;
 		float xzShift = scaleXZ+separation;
 		
 		//Center the drawing around the location	
 		Float[] shift = new Float[3];		
-		shift[0] =  location[0] +(((xzShift*rows   )-tempSeparation)-(0.5f*scaleXZ))*0.5f;
+		shift[0] =  location[0] +(((xzShift*rows   )-separation)-(0.5f*scaleXZ))*0.5f;
 		shift[1] =  location[1];
-		shift[2] =  location[2] -(((xzShift*columns)-tempSeparation)-(0.5f*scaleXZ))*0.5f;		
+		shift[2] =  location[2] -(((xzShift*columns)-separation)-(0.5f*scaleXZ))*0.5f;		
 		setLocation(shift);
 				
 		//radius = 0;
@@ -234,15 +234,15 @@ public class Vpool implements VisualElementInterface {
 				Float[] newLocation = new Float[3];
 				newLocation[0] = location[0] - xzShift*row;
 				newLocation[1] = location[1];
-				newLocation[2] = location[2] + xzShift*column;				
+				newLocation[2] = location[2] + xzShift*column;
 				vsite.setLocation(newLocation);
 				
-			} catch (Exception e) {					
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 			
 			//Draw the form
-			vsite.drawThis(gl, glMode);	
+			vsite.drawThis(gl, glMode);
 			i++;
 		}
 	}
