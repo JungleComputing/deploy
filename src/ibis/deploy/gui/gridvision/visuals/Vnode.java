@@ -58,7 +58,7 @@ public class Vnode implements VisualElementInterface {
 		this.location[1] = 0.0f;
 		this.location[2] = 0.0f;
 		
-		this.separation = 0.0f;
+		this.separation = 0.01f;
 		
 		scaleXZ = 0.25f;
 		scaleY = 1.0f;
