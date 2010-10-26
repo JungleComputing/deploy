@@ -20,12 +20,12 @@ public class ApplicationEditorPanel extends JPanel {
 
     private final List<EditorListener> applicationListeners = new ArrayList<EditorListener>();
 
-    private GUI gui;
+    //private GUI gui;
 
     private JSplitPane splitPane;
 
     public ApplicationEditorPanel(GUI gui) {
-        this.gui = gui;
+        //this.gui = gui;
         setLayout(new BorderLayout());
         JPanel editPanel = new JPanel(new BorderLayout());
         ApplicationListPanel applicationListPanel = new ApplicationListPanel(

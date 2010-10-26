@@ -24,7 +24,7 @@ public class ClusterListPanel extends JPanel {
      */
     private static final long serialVersionUID = -7171659896010561242L;
 
-    private static final String DEFAULTS = "<html><i>defaults</i></html>";
+    //private static final String DEFAULTS = "<html><i>defaults</i></html>";
 
     private ClusterEditorPanel clusterEditorPanel;
 
