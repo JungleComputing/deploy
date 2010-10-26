@@ -71,6 +71,11 @@ public class MetricsManager implements Runnable {
 			} catch (StatNotRequestedException e) {
 				pools.clear();
 				poolSizes.clear();
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e1) {
+					//unimportant
+				}
 				initPools();
 				//init = " with initialization";				
 			}

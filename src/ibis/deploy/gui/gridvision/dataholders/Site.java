@@ -112,6 +112,9 @@ public class Site implements IbisConceptInterface {
 			linkMetricsValues = newLinkMetricsValues;
 		}
 		
+		
+		//TODO DEBUG
+		System.out.println("Site Metrics: " + newNodeMetricsValues.size());		
 	}
 	
 	public void setCurrentlyGatheredMetrics(MetricsList newMetrics) {

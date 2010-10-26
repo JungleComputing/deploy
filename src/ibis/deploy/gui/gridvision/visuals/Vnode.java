@@ -1,4 +1,5 @@
 package ibis.deploy.gui.gridvision.visuals;
+
 import ibis.deploy.gui.gridvision.GridVision;
 import ibis.deploy.gui.gridvision.VisualManager;
 import ibis.deploy.gui.gridvision.dataholders.Node;
@@ -33,7 +34,7 @@ public class Vnode implements VisualElementInterface {
 	
 	protected int glName;
 	protected float scaleXZ;
-	protected float scaleY;	
+	protected float scaleY;
 	
 	GLU glu;
 	protected float separation;
@@ -204,8 +205,8 @@ public class Vnode implements VisualElementInterface {
 		//newMenu.add(nodeForms);
 		newMenu.add(metricsForms);	
 		newMenu.add(getMetricsMenu("Metrics Toggle"));
-		newMenu.add(parent.getMetricsMenu("Site Metrics Toggle"));
-		newMenu.add(parent.getParent().getMetricsMenu("Pool Metrics Toggle"));
+		//newMenu.add(parent.getMetricsMenu("Site Metrics Toggle"));
+		//newMenu.add(parent.getParent().getMetricsMenu("Pool Metrics Toggle"));
 		//newMenu.add(parent.getAveragesMenu("Compound Site"));
 		//newMenu.add(parent.getParent().getAveragesMenu("Compound Pool"));
 		newMenu.add(parent.getSubMenu());
