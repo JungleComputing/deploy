@@ -1,6 +1,7 @@
 package ibis.deploy.gui.gridvision.dataholders;
 
 import java.io.IOException;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -85,7 +86,7 @@ public class Pool implements IbisConceptInterface {
 		}		
 	}	
 	
-	public void update() throws StatNotRequestedException, NoSuitableModuleException {	
+	public void update() throws StatNotRequestedException, NoSuitableModuleException, SocketException {	
 		HashMap<String, Float> newNodeMetricsValues = new HashMap<String, Float>();
 		HashMap<IbisIdentifier, Map<String, Float>> newLinkMetricsValues = new HashMap<IbisIdentifier, Map<String, Float>>();
 		
