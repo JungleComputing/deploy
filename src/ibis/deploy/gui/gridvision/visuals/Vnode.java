@@ -5,7 +5,6 @@ import ibis.deploy.gui.gridvision.dataholders.Node;
 import ibis.deploy.gui.gridvision.exceptions.ModeUnknownException;
 import ibis.deploy.gui.gridvision.exceptions.StatNotRequestedException;
 import ibis.deploy.gui.gridvision.exceptions.ValueOutOfBoundsException;
-import ibis.deploy.gui.gridvision.swing.SetCollectionFormAction;
 import ibis.deploy.gui.gridvision.swing.SetMetricFormAction;
 import ibis.deploy.gui.gridvision.swing.ToggleAveragesAction;
 import ibis.deploy.gui.gridvision.swing.ToggleMetricAction;
@@ -208,7 +207,7 @@ public class Vnode implements VisualElementInterface {
 		newMenu.add(parent.getMetricsMenu("Site Metrics Toggle"));
 		newMenu.add(parent.getParent().getMetricsMenu("Pool Metrics Toggle"));
 		//newMenu.add(parent.getAveragesMenu("Compound Site"));
-		newMenu.add(parent.getParent().getAveragesMenu("Compound Pool"));
+		//newMenu.add(parent.getParent().getAveragesMenu("Compound Pool"));
 		newMenu.add(parent.getSubMenu());
 		newMenu.add(parent.getParent().getSubMenu());
 		

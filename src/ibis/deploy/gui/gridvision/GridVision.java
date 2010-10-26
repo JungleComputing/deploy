@@ -35,7 +35,7 @@ public class GridVision implements GLEventListener {
 	
 	//MouseHandler variables
 	private float viewDist = -6;
-	private Float[] rotation = {0.0f,0.0f,0.0f}, translation = {0.0f,0.0f,0.0f}, origin = {0.0f,0.0f,0.0f};
+	private Float[] rotation = {0.0f,0.0f,0.0f}, translation = {0.0f,0.0f,0.0f};
 	private boolean doPickNextCycle = false;
 	private boolean relocateOriginNextCycle = false;
 	
@@ -105,10 +105,6 @@ public class GridVision implements GLEventListener {
 	
 	public void setRotation(Float[] rotation) {
 		this.rotation = rotation;
-	}
-	
-	public void setOrigin(Float[] origin) {
-		this.origin = origin;
 	}
 	
 	public void setTranslation(Float[] translation) {

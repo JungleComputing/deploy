@@ -544,7 +544,7 @@ public class Vsite implements VisualElementInterface {
 		int rows 		= 3;
 		int columns 	= (shownMetrics.size()/3); //always come in groups of 3
 				
-		float xzShift = scaleXZ+separation;
+		float xzShift = scaleXZ+0.1f;
 		
 		//Center the drawing around the location	
 		Float[] shift = new Float[3];		

@@ -435,10 +435,10 @@ public class Vmetric implements VisualElementInterface {
 		float y = length;		//(y) maximum coordinate
 		float z = scaleXZ;		//(z) maximum coordinate	
 		float f = value * y; 	//(f)illed area
-		float r = y - f;		//(r)est area (non-filled, up until the maximum) 
+		//float r = y - f;		//(r)est area (non-filled, up until the maximum) 
 		
 		//Transparency
-		float lineAlpha = alpha;
+		//float lineAlpha = alpha;
 		
 		//Color for the lines around the box
 		float line_color_r = 0.8f;
@@ -449,7 +449,7 @@ public class Vmetric implements VisualElementInterface {
 			line_color_r = 1.0f;
 			line_color_g = 1.0f;
 			line_color_b = 1.0f;
-			lineAlpha = 1.0f;
+			//lineAlpha = 1.0f;
 		}
 		
 		float quad_color_r = color[0];

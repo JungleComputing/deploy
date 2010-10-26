@@ -36,8 +36,6 @@ public class MouseHandler implements MouseListener, MouseMotionListener, MouseWh
 	private float translationYorigin = 0; 
 	private float translationY = 0;
 	
-	private float translationZ = 0;
-	
 	MouseHandler(GridVision gv, GLCanvas canvas) {
 		this.gv = gv;
 		this.canvas = canvas;
@@ -50,7 +48,6 @@ public class MouseHandler implements MouseListener, MouseMotionListener, MouseWh
 		this.translation = new Float[3];
 		this.translationX = 0.0f;
 		this.translationY = 0.0f;
-		this.translationZ = 0.0f;
 		
 		this.translationXorigin = 0.0f;
 		this.translationYorigin = 0.0f;
@@ -75,13 +72,11 @@ public class MouseHandler implements MouseListener, MouseMotionListener, MouseWh
 	}
 
 	public void mouseEntered(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
+		//Empty - unneeded		
 	}
 
 	public void mouseExited(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
+		//Empty - unneeded		
 	}
 
 	public void mousePressed(MouseEvent e) {
@@ -121,8 +116,7 @@ public class MouseHandler implements MouseListener, MouseMotionListener, MouseWh
 	}
 
 	public void mouseMoved(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
+		//Empty - unneeded		
 	}
 
 	public void mouseWheelMoved(MouseWheelEvent e) {	

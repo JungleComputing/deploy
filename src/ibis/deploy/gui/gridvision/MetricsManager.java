@@ -56,7 +56,7 @@ public class MetricsManager implements Runnable {
 	
 	public void update() {	
 		//long start = System.currentTimeMillis();
-		String init = ""; 
+		//String init = ""; 
 		
 		//Update the size of all pools and sites
 		ArrayList<Pool> newPools = initPools();
@@ -72,7 +72,7 @@ public class MetricsManager implements Runnable {
 				pools.clear();
 				poolSizes.clear();
 				initPools();
-				init = " with initialization";				
+				//init = " with initialization";				
 			}
 		}
 		

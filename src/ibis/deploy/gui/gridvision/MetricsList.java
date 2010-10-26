@@ -126,7 +126,6 @@ public class MetricsList implements List<Metric> {
 		return metrics.toArray();
 	}
 
-	@SuppressWarnings("hiding")
 	@Override
 	public <MetricsObject> MetricsObject[] toArray(MetricsObject[] a) {
 		return metrics.toArray(a);
