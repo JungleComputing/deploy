@@ -172,8 +172,8 @@ public class GridVision implements GLEventListener {
 		
 		//Found at http://pyopengl.sourceforge.net/documentation/manual/glBlendFunc.3G.html
 		//To be the best blend function
-		//gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
-		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_DST_ALPHA);		
+		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+		//gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_DST_ALPHA);		
 		gl.glEnable(GL.GL_BLEND);
 		
 		//Initial perspective
