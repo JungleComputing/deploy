@@ -6,13 +6,11 @@ import java.util.List;
 import java.util.Map;
 
 import ibis.deploy.gui.gridvision.dataholders.*;
-import ibis.deploy.gui.gridvision.exceptions.StatNotRequestedException;
 import ibis.deploy.gui.gridvision.metrics.link.*;
 import ibis.deploy.gui.gridvision.metrics.node.*;
 import ibis.deploy.gui.gridvision.metrics.special.*;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
-import ibis.smartsockets.virtual.NoSuitableModuleException;
 
 public class MetricsManager implements Runnable {
 	//Variables needed for the operation of this class		
@@ -58,25 +56,25 @@ public class MetricsManager implements Runnable {
 		//long start = System.currentTimeMillis();
 		//String init = ""; 
 		
-		//Update the size of all pools and sites
-		ArrayList<Pool> newPools = initPools();
-				
-		//for all pools
-		for (Pool pool : newPools) {
-			try {
-				pool.update();
-			} catch (NoSuitableModuleException e) {
-				e.printStackTrace();
-				
-			} catch (StatNotRequestedException e) {
-				poolSizes.clear();
+		boolean updateSucceeded = false;
+		
+		while (!updateSucceeded) {
+			//Update the size of all pools and sites
+			ArrayList<Pool> newPools = initPools();
+					
+			//for all pools
+			for (Pool pool : newPools) {
 				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e1) {
-					//unimportant
+					pool.update();
+					updateSucceeded = true;
+				} catch (Exception e) {
+					try {
+						Thread.sleep(100);
+						updateSucceeded = false;
+					} catch (InterruptedException e1) {
+						//Unnecessary catch						
+					}					
 				}
-				initPools();
-				//init = " with initialization";				
 			}
 		}
 		
