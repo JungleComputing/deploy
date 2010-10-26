@@ -67,7 +67,9 @@ public class MetricsManager implements Runnable {
 				try {
 					pool.update();
 					updateSucceeded = true;
-				} catch (Exception e) {					
+				} catch (Exception e) {
+					//If an exception is caught here, we know it is because the destination ibises were not all ready.
+					//Sleep a while and try again.
 					try {
 						Thread.sleep(100);
 						updateSucceeded = false;
