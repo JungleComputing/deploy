@@ -4,7 +4,6 @@ import ibis.deploy.gui.gridvision.exceptions.ModeUnknownException;
 import ibis.deploy.gui.gridvision.exceptions.StatNotRequestedException;
 
 import java.awt.Menu;
-import java.awt.MenuItem;
 import java.awt.PopupMenu;
 
 import javax.media.opengl.GL;
