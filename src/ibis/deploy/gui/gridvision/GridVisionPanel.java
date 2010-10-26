@@ -32,7 +32,7 @@ public class GridVisionPanel extends JPanel {
         Action menuAction = new GridVisionAction(gui, this);
         
         //add the icon to the tab
-        add(new JLabel(Utils.createImageIcon("images/utilities-system-monitor.png",
+        add(new JLabel(Utils.createImageIcon("images/plot-bars.png",
         										"GridVision Tab")));
         
         for (int i = 0; i < menuBar.getMenuCount(); i++) {
