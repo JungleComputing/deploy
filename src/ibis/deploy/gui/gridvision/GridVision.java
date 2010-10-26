@@ -180,7 +180,7 @@ public class GridVision implements GLEventListener {
 		fovy = 45.0f; 
 		aspect = (this.width / this.height); 
 		zNear = 0.1f;
-		zFar = 1000.0f;
+		zFar = 100.0f;
 		
 		//Mouse events		
 		canvas.addMouseListener(mouseHandler);
