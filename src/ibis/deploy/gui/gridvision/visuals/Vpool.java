@@ -210,14 +210,14 @@ public class Vpool implements VisualElementInterface {
 		//get the breakoff point for rows and columns
 		int rows 		= (int)Math.ceil(Math.sqrt(vsites.size()));
 		int columns 	= (int)Math.floor(Math.sqrt(vsites.size()));
-		separation = vsites.get(0).getRadius()*1.5f;
+		float tempSeparation = vsites.get(0).getRadius()*1.5f;
 		float xzShift = scaleXZ+separation;
 		
 		//Center the drawing around the location	
 		Float[] shift = new Float[3];		
-		shift[0] =  location[0] +(((xzShift*rows   )-separation)-(0.5f*scaleXZ))*0.5f;
+		shift[0] =  location[0] +(((xzShift*rows   )-tempSeparation)-(0.5f*scaleXZ))*0.5f;
 		shift[1] =  location[1];
-		shift[2] =  location[2] -(((xzShift*columns)-separation)-(0.5f*scaleXZ))*0.5f;		
+		shift[2] =  location[2] -(((xzShift*columns)-tempSeparation)-(0.5f*scaleXZ))*0.5f;		
 		setLocation(shift);
 				
 		//radius = 0;

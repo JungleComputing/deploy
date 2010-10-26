@@ -228,7 +228,9 @@ public class Vlink implements VisualElementInterface {
 		}
 	}
 	
-	public PopupMenu getMenu() {		
+	public PopupMenu getMenu() {	
+		return parent.getMenu();
+		/*
 		String[] elementsgroup = {"Bars", "Tubes", "Spheres"};
 		String[] collectionsgroup = {"Cityscape", "Circle", "Sphere"};
 		
@@ -252,7 +254,8 @@ public class Vlink implements VisualElementInterface {
 		newMenu.add(parent.getAveragesMenu("Compound Site"));
 		newMenu.add(parent.getParent().getAveragesMenu("Compound Pool"));
 		
-		return newMenu;		
+		return newMenu;
+		*/		
 	}	
 	
 	public Menu getSubMenu() {

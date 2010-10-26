@@ -207,7 +207,7 @@ public class Vnode implements VisualElementInterface {
 		newMenu.add(getMetricsMenu("Metrics Toggle"));
 		newMenu.add(parent.getMetricsMenu("Site Metrics Toggle"));
 		newMenu.add(parent.getParent().getMetricsMenu("Pool Metrics Toggle"));
-		newMenu.add(parent.getAveragesMenu("Compound Site"));
+		//newMenu.add(parent.getAveragesMenu("Compound Site"));
 		newMenu.add(parent.getParent().getAveragesMenu("Compound Pool"));
 		newMenu.add(parent.getSubMenu());
 		newMenu.add(parent.getParent().getSubMenu());
