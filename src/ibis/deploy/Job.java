@@ -291,7 +291,8 @@ public class Job implements Runnable {
 
         if (clusterCacheDir == null
                 || cluster.getJobAdaptor().equalsIgnoreCase("zorilla")) {
-            org.gridlab.gat.io.File gatFile = GAT.createFile(context, src
+            java.net.URI netURI = src.toURI();
+            org.gridlab.gat.io.File gatFile = GAT.createFile(context, netURI
                     .toString());
             sd.addPreStagedFile(gatFile, gatCwd);
             return;
@@ -449,8 +450,8 @@ public class Job implements Runnable {
         if (application.getOutputFiles() != null) {
             org.gridlab.gat.io.File gatCwd = GAT.createFile(context, ".");
             for (File file : application.getOutputFiles()) {
-                org.gridlab.gat.io.File gatFile = GAT.createFile(context, file
-                        .getPath());
+                java.net.URI netURI = file.toURI();
+                org.gridlab.gat.io.File gatFile = GAT.createFile(context, netURI.toString());
 
                 sd.addPostStagedFile(gatFile, gatCwd);
             }
