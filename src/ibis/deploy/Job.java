@@ -450,8 +450,7 @@ public class Job implements Runnable {
         if (application.getOutputFiles() != null) {
             org.gridlab.gat.io.File gatCwd = GAT.createFile(context, ".");
             for (File file : application.getOutputFiles()) {
-                java.net.URI netURI = file.toURI();
-                org.gridlab.gat.io.File gatFile = GAT.createFile(context, netURI.toString());
+                org.gridlab.gat.io.File gatFile = GAT.createFile(context, "file:///" + file.getPath());
 
                 sd.addPostStagedFile(gatFile, gatCwd);
             }
