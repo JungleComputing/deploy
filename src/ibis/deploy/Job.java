@@ -615,12 +615,14 @@ public class Job implements Runnable {
             org.gridlab.gat.resources.JobDescription jobDescription = createJobDescription(javaSoftwareDescription);
 
             if (verbose) {
-                logger.info("JavaGAT job description for " + this + " ="
-                        + jobDescription);
-            } else {
-                logger.debug("JavaGAT job description for " + this + " ="
+                System.err.println("JavaGAT job description for " + this + " ="
                         + jobDescription);
             }
+            if (logger.isDebugEnabled()) {
+            	logger.debug("JavaGAT job description for " + this + " ="
+                        + jobDescription);
+            }
+            
 
             forwarder.setState(State.SUBMITTING);
 
