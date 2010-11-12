@@ -9,6 +9,7 @@ import ibis.deploy.JobDescription;
 import ibis.deploy.Workspace;
 import ibis.deploy.Deploy.HubPolicy;
 import ibis.deploy.gui.experiment.composer.SubmitJobListener;
+import ibis.deploy.gui.gridvision.GridVisionPanel;
 import ibis.deploy.gui.gridvision.swing.GridVisionAction;
 import ibis.deploy.gui.misc.AboutAction;
 import ibis.deploy.gui.misc.HubPolicyAction;
