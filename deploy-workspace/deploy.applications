@@ -19,7 +19,7 @@
 # Application "Go"
 Go.main.class = go.dac.Main
 Go.arguments = --size,4,--stones,2
-Go.libs = lib-server,ipl-apps,C:\Users\maarten\workspace\gridvision\examples\go\lib
+Go.libs = lib-server,ipl-apps,examples/go/lib
 #Go.input.files =
 #Go.output.files =
 Go.system.properties = ibis.managementclient=true,ibis.bytescount=true,
