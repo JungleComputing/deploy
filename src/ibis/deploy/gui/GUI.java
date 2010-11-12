@@ -163,8 +163,7 @@ public class GUI {
         this.menuBar.add(menu);
 
         menu = new JMenu("View");
-        menu.add(new SmartSocketsVizAction(frame, this));        
-        menu.add(new GridVisionAction(frame, this));
+        menu.add(new SmartSocketsVizAction(frame, this));
         this.menuBar.add(menu);
 
         menu = new JMenu("Options");
