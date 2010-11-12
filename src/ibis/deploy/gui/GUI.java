@@ -9,6 +9,7 @@ import ibis.deploy.JobDescription;
 import ibis.deploy.Workspace;
 import ibis.deploy.Deploy.HubPolicy;
 import ibis.deploy.gui.experiment.composer.SubmitJobListener;
+import ibis.deploy.gui.gridvision.swing.GridVisionAction;
 import ibis.deploy.gui.misc.AboutAction;
 import ibis.deploy.gui.misc.HubPolicyAction;
 import ibis.deploy.gui.misc.NewWorkSpaceAction;
@@ -162,6 +163,7 @@ public class GUI {
 
         menu = new JMenu("View");
         menu.add(new SmartSocketsVizAction(frame, this));        
+        menu.add(new GridVisionAction(frame, this));
         this.menuBar.add(menu);
 
         menu = new JMenu("Options");
@@ -211,7 +213,7 @@ public class GUI {
 
         frame.setVisible(true);
         
-        //GridVisionPanel gridVisionPanel = new GridVisionPanel(this);
+        GridVisionPanel gridVisionPanel = new GridVisionPanel(this);
     }
 
     private static void printUsage() {
