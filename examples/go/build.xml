@@ -50,7 +50,7 @@
         <!-- Put everything in ${tmp} into the jar file -->
         <jar jarfile="${jar}" basedir="${tmp}" />
 
-        <!-- rewrite applications using IbisC -->
+	<!-- rewrite applications using IbisC -->
         <java classname="ibis.compile.Ibisc"
               taskname="Ibisc"
               failonerror="true"
@@ -58,7 +58,6 @@
             <arg file="${jar}" />
             <classpath refid="default.classpath" />
         </java>
-
 
         <!-- And delete the build dir -->
         <delete dir="${tmp}" />
