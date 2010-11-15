@@ -161,6 +161,11 @@ public class GridVision implements GLEventListener {
 		final GL gl = drawable.getGL();
 		
 		gl.glShadeModel(GL.GL_SMOOTH);
+		
+		//Anti-Aliasing
+		gl.glEnable(GL.GL_LINE_SMOOTH);      
+	    gl.glEnable(GL.GL_POLYGON_SMOOTH);    
+	      
 		gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		gl.glClearDepth(1.0f);
 		
