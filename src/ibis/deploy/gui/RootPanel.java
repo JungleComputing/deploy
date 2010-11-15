@@ -2,6 +2,7 @@ package ibis.deploy.gui;
 
 import ibis.deploy.gui.applications.ApplicationEditorPanel;
 import ibis.deploy.gui.clusters.ClusterEditorPanel;
+import ibis.deploy.gui.deployViz.DeployVizPanel;
 import ibis.deploy.gui.experiment.ExperimentsPanel;
 import ibis.deploy.gui.gridvision.GridVisionPanel;
 import ibis.deploy.gui.misc.Utils;
@@ -16,7 +17,7 @@ import javax.swing.JTabbedPane;
 
 public class RootPanel extends JPanel {
 	JTabbedPane tabs;
-	TabTitlePanel gridVisionTab;
+	TabTitlePanel gridVisionTab, deployVizTab;
 
     private static class TabTitlePanel extends JPanel {
 
@@ -38,6 +39,10 @@ public class RootPanel extends JPanel {
         gridVisionTab = new TabTitlePanel("GridVision", Utils
         		.createImageIcon("images/gridvision.png",
                 "GridVision Tab"));
+        
+        deployVizTab = new TabTitlePanel("DeployViz", Utils // TODO change the icon
+                .createImageIcon("images/gridvision.png",
+                "Clusters Tab"));
                 
         
         tabs.add(new ExperimentsPanel(gui));
@@ -51,7 +56,8 @@ public class RootPanel extends JPanel {
         tabs.add(new ClusterEditorPanel(gui));
         tabs.setTabComponentAt(2, new TabTitlePanel("Clusters", Utils
                 .createImageIcon("images/network-transmit-receive.png",
-                        "Clusters Tab")));        
+                        "Clusters Tab"))); 
+        
         add(tabs, BorderLayout.CENTER);
     }
     
@@ -69,6 +75,25 @@ public class RootPanel extends JPanel {
     		tabs.setTabComponentAt(tabs.indexOfComponent(panel), gridVisionTab);    		
     		panel.initialize(gui);
     	}
+    }
+    
+    public void toggleDeployVizPane(GUI gui, DeployVizPanel deployVizPanel) {
+        Component[] comps = tabs.getComponents();
+        boolean present = false;
+        for (Component comp : comps) {
+                if (comp == deployVizPanel) {
+                        present = true;
+                }
+        }
+                
+        if (!present) {         
+                tabs.add(deployVizPanel);
+                tabs.setTabComponentAt(tabs.indexOfComponent(deployVizPanel), deployVizTab);                    
+        } else {
+            int idx = tabs.indexOfComponent(deployVizPanel);
+            tabs.remove(deployVizPanel);
+            tabs.removeTabAt(idx);
+        }
     }
 
 }

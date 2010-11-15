@@ -8,6 +8,7 @@ import ibis.deploy.Grid;
 import ibis.deploy.JobDescription;
 import ibis.deploy.Workspace;
 import ibis.deploy.Deploy.HubPolicy;
+import ibis.deploy.gui.deployViz.DeployVizPanel;
 import ibis.deploy.gui.experiment.composer.SubmitJobListener;
 import ibis.deploy.gui.gridvision.GridVisionPanel;
 import ibis.deploy.gui.gridvision.swing.GridVisionAction;
@@ -69,7 +70,7 @@ public class GUI {
     private JFrame frame = null;
 
     private JMenuBar menuBar = null;
-    
+
     private RootPanel myRoot;
 
     // private Boolean sharedHubs;
@@ -130,7 +131,7 @@ public class GUI {
 
     private void createAndShowGUI() {
         JMenuItem menuItem;
-        
+
         UIManager.put("swing.boldMetal", Boolean.FALSE);
         frame = new JFrame("Ibis Deploy - " + workspaceLocation.getName());
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -212,8 +213,9 @@ public class GUI {
         frame.setLocationRelativeTo(null);
 
         frame.setVisible(true);
-        
+
         GridVisionPanel gridVisionPanel = new GridVisionPanel(this);
+        DeployVizPanel deployVizPanel = new DeployVizPanel(this);
     }
 
     private static void printUsage() {
@@ -517,8 +519,8 @@ public class GUI {
     public JFrame getFrame() {
         return frame;
     }
-    
+
     public RootPanel getRootPanel() {
-    	return myRoot;
+        return myRoot;
     }
 }
