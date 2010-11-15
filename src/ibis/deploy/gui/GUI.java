@@ -233,7 +233,6 @@ public class GUI {
         File experimentFile = null;
         boolean verbose = false;
         boolean keepSandboxes = false;
-        boolean zorilla = false;
         String serverCluster = null;
         int port = 0;
 
@@ -252,8 +251,6 @@ public class GUI {
             } else if (arguments[i].equals("-p")) {
                 i++;
                 port = Integer.parseInt(arguments[i]);
-            } else if (arguments[i].equals("-z")) {
-                zorilla = true;
             } else if (arguments[i].startsWith("-")) {
                 System.err.println("unknown option: " + arguments[i]);
                 System.exit(1);
@@ -358,17 +355,7 @@ public class GUI {
         }
 
         try {
-            if (zorilla) {
-                Grid grid = workspace.getGrid();
-
-                if (grid == null) {
-                    System.err.println("ERROR: Cannot initialize zorilla "
-                            + "mode, no grid file specified");
-                    System.exit(1);
-                }
-
-                deploy = new Deploy(null, verbose, keepSandboxes, port, grid);
-            } else if (serverCluster == null) {
+            if (serverCluster == null) {
                 logger.info("Initializing Ibis Deploy, using build-in server");
 
                 // init with build-in server

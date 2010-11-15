@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Server, Hub, or Zorilla node running on a remote cluster
+ * Server or Hub running on a remote cluster
  */
 public class RemoteServer implements Runnable, Server {
 

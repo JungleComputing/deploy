@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.gridlab.gat.GAT;
-import org.gridlab.gat.URI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +38,7 @@ public class Deploy {
 
     private static final Logger logger = LoggerFactory.getLogger(Deploy.class);
 
-    // local "root" hub (perhaps including a server and/or a zorilla node)
+    // local "root" hub (perhaps including a server)
     private final LocalServer localServer;
 
     // remote server (if it exists)
@@ -143,11 +142,11 @@ public class Deploy {
 
         if (serverCluster == null) {
             // rootHub includes server
-            localServer = new LocalServer(true, false, verbose, port);
+            localServer = new LocalServer(true, verbose, port);
             localServer.addListener(listener);
             remoteServer = null;
         } else {
-            localServer = new LocalServer(false, false, verbose, port);
+            localServer = new LocalServer(false, verbose, port);
             remoteServer = new RemoteServer(serverCluster, false, localServer,
                     this.home, verbose,
 
@@ -165,89 +164,6 @@ public class Deploy {
 
         logger.info("Ibis Deploy initialized, root hub address is "
                 + localServer.getAddress());
-    }
-
-    /**
-     * Create a new deployment interface. Also deploys Zorilla, embedded in this
-     * JVM, and on each specified cluster.
-     * 
-     * @param home
-     *            "home" directory of ibis-deploy. If null, the default location
-     *            is used from the "ibis.deploy.home" system property. If this
-     *            property is unspecified, final default value is the current
-     *            working directory.
-     * @param verbose
-     *            If true, start Ibis-Deploy in verbose mode
-     * @param keepSandboxes
-     *            If true, will keep sandboxes of servers and jobs
-     * @param port
-     *            port used to bind local hub/server to. Defaults to
-     *            automatically allocated free port.
-     * @param grid
-     *            Grid used
-     * @throws Exception
-     *             if required files cannot be found in home, or the server
-     *             cannot be started.
-     * 
-     */
-    public Deploy(File home, boolean verbose, boolean keepSandboxes, int port,
-            Grid grid) throws Exception {
-        this.verbose = verbose;
-        this.keepSandboxes = keepSandboxes;
-
-        jobs = new ArrayList<Job>();
-        hubs = new HashMap<String, Server>();
-
-        this.home = checkHome(home);
-
-        localServer = new LocalServer(true, true, verbose, port);
-        remoteServer = null;
-
-        for (Cluster cluster : grid.getClusters()) {
-            cluster = cluster.resolve();
-
-            if (cluster.getName().equalsIgnoreCase("local")
-                    || cluster.getName().equalsIgnoreCase("zorilla")) {
-                // NOTHING
-            } else if (cluster.getJobAdaptor() != null
-                    && cluster.getJobAdaptor().equalsIgnoreCase("zorilla")) {
-                // this cluster has an existing zorilla node running, add it to
-                // the
-                // hub/zorilla network
-                localServer.addZorillaNode(cluster.getJobURI()
-                        .getSchemeSpecificPart());
-            } else {
-                // start a Zorilla node on the provided cluster
-
-                RemoteZorilla node = new RemoteZorilla(cluster, localServer,
-                        this.home, verbose, null, keepSandboxes);
-
-                //node.waitUntilRunning();
-
-                hubs.put(cluster.getName(), node);
-            }
-        }
-
-        // make sure a zorilla cluster is present so the user can select it.
-        Cluster zorilla = grid.getCluster("zorilla");
-        if (zorilla == null) {
-            zorilla = grid.createNewCluster("zorilla");
-        }
-        zorilla.setServerURI(new URI("zorilla"));
-        zorilla.setServerAdaptor("zorilla");
-        zorilla.setJobURI(new URI("zorilla:" + localServer.getAddress()));
-        zorilla.setJobAdaptor("zorilla");
-        zorilla.addFileAdaptor("local");
-        zorilla.setColor("#FF0000");
-
-        hubs.put("zorilla", localServer);
-
-        // print pool size statistics
-        poolSizePrinter = new PoolSizePrinter(this);
-
-        logger
-                .info("Ibis Deploy initialized, root hub/server/zorilla address is "
-                        + localServer.getAddress());
     }
 
     /**
@@ -543,8 +459,6 @@ public class Deploy {
         }
 
         if (localServer != null) {
-            localServer.killAll();
-            logger.info("killing root Hub " + localServer);
             localServer.kill();
         }
 

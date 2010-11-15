@@ -75,11 +75,6 @@ public class Cluster {
                 .println("# latitude            Latitude position of this cluster (double)");
         out
                 .println("# longitude           Longitude position of this cluster (double)");
-        out
-                .println("# start.zorilla       Boolean: if true, a zorilla node is started at the cluster");
-        out
-                .println("# node.hostnames      Comma seperated list of hostnames for the nodes in this cluster. Used by Zorilla to start slaves");
-
     }
 
     private final Grid parent;
@@ -138,10 +133,6 @@ public class Cluster {
     // Longitude position of this cluster
     private double longitude;
 
-    private Boolean startZorilla;
-
-    private String nodeHostnames;
-
     private String color;
 
     private boolean visibleOnMap;
@@ -163,7 +154,6 @@ public class Cluster {
         setCores(Runtime.getRuntime().availableProcessors());
         setLatitude(MapUtilities.localClusterLatitude);
         setLongitude(MapUtilities.localClusterLongitude);
-        setStartZorilla(null);
 
         setVisibleOnMap(false);
     }
@@ -201,8 +191,6 @@ public class Cluster {
             memory = 0;
             latitude = 0;
             longitude = 0;
-            startZorilla = null;
-            nodeHostnames = null;
             color = null;
             visibleOnMap = true;
         }
@@ -233,8 +221,6 @@ public class Cluster {
         memory = 0;
         latitude = 0;
         longitude = 0;
-        startZorilla = null;
-        nodeHostnames = null;
         color = null;
         visibleOnMap = true;
     }
@@ -261,8 +247,6 @@ public class Cluster {
 
         // add separator to prefix
         prefix = prefix + ".";
-
-        String startZorillaString;
 
         String defaultPrefix = "default.";
 
@@ -302,18 +286,6 @@ public class Cluster {
             longitude = properties.getDoubleProperty(defaultPrefix
                     + "longitude", 0);
 
-            startZorillaString = properties.getProperty(defaultPrefix
-                    + "start.zorilla", null);
-
-            if (startZorillaString == null) {
-                startZorilla = null;
-            } else {
-                startZorilla = properties.getBooleanProperty(defaultPrefix
-                        + "start.zorilla");
-            }
-
-            nodeHostnames = properties.getProperty(defaultPrefix
-                    + "node.hostnames");
             visibleOnMap = true;
         }
 
@@ -378,18 +350,6 @@ public class Cluster {
             longitude = properties.getDoubleProperty(prefix + "longitude", 0);
         }
 
-        startZorillaString = properties.getProperty(prefix + "start.zorilla",
-                null);
-
-        if (startZorillaString != null) {
-            startZorilla = properties.getBooleanProperty(prefix
-                    + "start.zorilla");
-        }
-
-        if (properties.getProperty(prefix + "node.hostnames") != null) {
-            nodeHostnames = properties.getProperty(prefix + "node.hostnames");
-        }
-
         this.color = null;
     }
 
@@ -401,8 +361,7 @@ public class Cluster {
                 && keyFile == null
                 && cacheDir == null && serverOutputFiles == null
                 && serverSystemProperties == null && nodes == 0 && cores == 0
-                && memory == 0 && latitude == 0 && longitude == 0
-                && startZorilla == null && nodeHostnames == null;
+                && memory == 0 && latitude == 0 && longitude == 0;
     }
 
     /**
@@ -491,14 +450,6 @@ public class Cluster {
 
         if (other.longitude != 0) {
             longitude = other.longitude;
-        }
-
-        if (other.startZorilla != null) {
-            startZorilla = other.startZorilla;
-        }
-
-        if (other.nodeHostnames != null) {
-            nodeHostnames = other.nodeHostnames;
         }
 
         if (other.color != null) {
@@ -973,33 +924,6 @@ public class Cluster {
         this.longitude = longitude;
     }
 
-    public Boolean getStartZorilla() {
-        return startZorilla;
-    }
-
-    public void setStartZorilla(Boolean startZorilla) {
-        this.startZorilla = startZorilla;
-    }
-
-    /**
-     * Returns hostnames of the nodes in this cluster
-     * 
-     * @return hostnames of the nodes in this cluster
-     */
-    public String getNodeHostnames() {
-        return nodeHostnames;
-    }
-
-    /**
-     * Sets hostnames of the nodes in this cluster
-     * 
-     * @param nodeHostnames
-     *            host names of the nodes in this cluster
-     */
-    public void setNodeHostnames(String nodeHostnames) {
-        this.nodeHostnames = nodeHostnames;
-    }
-
     public String getColorCode() {
         return color;
     }
@@ -1241,20 +1165,6 @@ public class Cluster {
             out.println("#" + dotPrefix + "longitude = ");
         }
 
-        if (startZorilla != null) {
-            out.println(dotPrefix + "start.zorilla = " + startZorilla);
-            empty = false;
-        } else if (printComments) {
-            out.println("#" + dotPrefix + "start.zorilla = ");
-        }
-
-        if (nodeHostnames != null) {
-            out.println(dotPrefix + "node.hostnames = " + nodeHostnames);
-            empty = false;
-        } else if (printComments) {
-            out.println("#" + dotPrefix + "node.hostnames = ");
-        }
-
         if (empty && printComments) {
             out
                     .println("#Dummy property to make sure cluster is actually defined");
@@ -1301,8 +1211,6 @@ public class Cluster {
         result += " Memory = " + getMemory() + "\n";
         result += " Latitude = " + getLatitude() + "\n";
         result += " Longitude = " + getLongitude() + "\n";
-        result += " Start Zorilla = " + getStartZorilla() + "\n";
-        result += " Node Hostnames = " + getNodeHostnames() + "\n";
         result += " Color = " + getColorCode() + "\n";
 
         return result;
