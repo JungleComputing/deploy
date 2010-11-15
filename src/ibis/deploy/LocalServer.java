@@ -40,7 +40,7 @@ public class LocalServer implements Server {
             properties.put(ServerProperties.HUB_ONLY, !isServer + "");
             properties.put(ServerProperties.PRINT_ERRORS, "true");
             properties.put(ServerProperties.VIZ_INFO, "D^Ibis Deploy @ local^"
-                    + Grid.LOCAL_COLOR);
+                    + Grid.LOCAL_COLOR + "^0");
             properties.put(ServerProperties.PORT, "" + port);
 
             if (verbose) {
