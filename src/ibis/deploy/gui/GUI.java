@@ -9,6 +9,8 @@ import ibis.deploy.JobDescription;
 import ibis.deploy.Workspace;
 import ibis.deploy.Deploy.HubPolicy;
 import ibis.deploy.gui.experiment.composer.SubmitJobListener;
+import ibis.deploy.gui.gridvision.GridVisionPanel;
+import ibis.deploy.gui.gridvision.swing.GridVisionAction;
 import ibis.deploy.gui.misc.AboutAction;
 import ibis.deploy.gui.misc.HubPolicyAction;
 import ibis.deploy.gui.misc.NewWorkSpaceAction;
@@ -67,6 +69,8 @@ public class GUI {
     private JFrame frame = null;
 
     private JMenuBar menuBar = null;
+    
+    private RootPanel myRoot;
 
     // private Boolean sharedHubs;
 
@@ -126,7 +130,7 @@ public class GUI {
 
     private void createAndShowGUI() {
         JMenuItem menuItem;
-
+        
         UIManager.put("swing.boldMetal", Boolean.FALSE);
         frame = new JFrame("Ibis Deploy - " + workspaceLocation.getName());
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -189,7 +193,8 @@ public class GUI {
         frame.setJMenuBar(this.menuBar);
 
         frame.getContentPane().setLayout(new BorderLayout());
-        frame.getContentPane().add(new RootPanel(this), BorderLayout.CENTER);
+        myRoot = new RootPanel(this);
+        frame.getContentPane().add(myRoot, BorderLayout.CENTER);
 
         frame.setPreferredSize(new Dimension(DEFAULT_SCREEN_WIDTH,
                 DEFAULT_SCREEN_HEIGHT));
@@ -207,6 +212,8 @@ public class GUI {
         frame.setLocationRelativeTo(null);
 
         frame.setVisible(true);
+        
+        GridVisionPanel gridVisionPanel = new GridVisionPanel(this);
     }
 
     private static void printUsage() {
@@ -522,5 +529,9 @@ public class GUI {
 
     public JFrame getFrame() {
         return frame;
+    }
+    
+    public RootPanel getRootPanel() {
+    	return myRoot;
     }
 }

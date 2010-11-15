@@ -20,7 +20,7 @@
 default.libs = lib-server,ipl-apps
 #default.input.files =
 #default.output.files =
-#default.system.properties =
+default.system.properties = ibis.managementclient=true,ibis.bytescount=true
 #default.jvm.options =
 #default.log4j.file =
 
