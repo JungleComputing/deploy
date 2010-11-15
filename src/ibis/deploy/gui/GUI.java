@@ -9,7 +9,8 @@ import ibis.deploy.JobDescription;
 import ibis.deploy.Workspace;
 import ibis.deploy.Deploy.HubPolicy;
 import ibis.deploy.gui.experiment.composer.SubmitJobListener;
-import ibis.deploy.gui.gridvision.PerformancePanel;
+import ibis.deploy.gui.gridvision.GridVisionPanel;
+import ibis.deploy.gui.gridvision.swing.GridVisionAction;
 import ibis.deploy.gui.misc.AboutAction;
 import ibis.deploy.gui.misc.HubPolicyAction;
 import ibis.deploy.gui.misc.NewWorkSpaceAction;
@@ -18,7 +19,6 @@ import ibis.deploy.gui.misc.SaveAsWorkSpaceAction;
 import ibis.deploy.gui.misc.SaveWorkSpaceAction;
 import ibis.deploy.gui.misc.SmartSocketsVizAction;
 import ibis.deploy.gui.misc.Utils;
-import ibis.deploy.gui.worldmap.WorldMapPanel;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -163,7 +163,7 @@ public class GUI {
         this.menuBar.add(menu);
 
         menu = new JMenu("View");
-        menu.add(new SmartSocketsVizAction(frame, this));        
+        menu.add(new SmartSocketsVizAction(frame, this));
         this.menuBar.add(menu);
 
         menu = new JMenu("Options");
@@ -213,7 +213,7 @@ public class GUI {
 
         frame.setVisible(true);
         
-        PerformancePanel gridVisionPanel = new PerformancePanel(this);
+        GridVisionPanel gridVisionPanel = new GridVisionPanel(this);
     }
 
     private static void printUsage() {
@@ -233,7 +233,6 @@ public class GUI {
         File experimentFile = null;
         boolean verbose = false;
         boolean keepSandboxes = false;
-        boolean zorilla = false;
         String serverCluster = null;
         int port = 0;
 
@@ -252,8 +251,6 @@ public class GUI {
             } else if (arguments[i].equals("-p")) {
                 i++;
                 port = Integer.parseInt(arguments[i]);
-            } else if (arguments[i].equals("-z")) {
-                zorilla = true;
             } else if (arguments[i].startsWith("-")) {
                 System.err.println("unknown option: " + arguments[i]);
                 System.exit(1);
@@ -358,17 +355,7 @@ public class GUI {
         }
 
         try {
-            if (zorilla) {
-                Grid grid = workspace.getGrid();
-
-                if (grid == null) {
-                    System.err.println("ERROR: Cannot initialize zorilla "
-                            + "mode, no grid file specified");
-                    System.exit(1);
-                }
-
-                deploy = new Deploy(null, verbose, keepSandboxes, port, grid);
-            } else if (serverCluster == null) {
+            if (serverCluster == null) {
                 logger.info("Initializing Ibis Deploy, using build-in server");
 
                 // init with build-in server

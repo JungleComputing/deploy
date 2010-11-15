@@ -9,7 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import ibis.deploy.gui.gridvision.PerfVis;
+import ibis.deploy.gui.gridvision.GridVision;
 import ibis.deploy.gui.gridvision.VisualManager;
 import ibis.deploy.gui.gridvision.exceptions.ModeUnknownException;
 import ibis.deploy.gui.gridvision.exceptions.StatNotRequestedException;
@@ -24,7 +24,7 @@ import javax.media.opengl.glu.GLU;
 import javax.media.opengl.glu.GLUquadric;
 
 public class Vmetric implements VisualElementInterface {	
-	PerfVis perfvis;
+	GridVision perfvis;
 	VisualManager visman;
 	
 	protected Float[] location;
@@ -51,7 +51,7 @@ public class Vmetric implements VisualElementInterface {
 	
 	private float value;
 		
-	public Vmetric(PerfVis perfvis, VisualManager visman, VisualElementInterface parent, Float[] color) {
+	public Vmetric(GridVision perfvis, VisualManager visman, VisualElementInterface parent, Float[] color) {
 		this.perfvis = perfvis;
 		this.visman = visman;
 		
@@ -248,7 +248,10 @@ public class Vmetric implements VisualElementInterface {
 		
 		//The shadow (nonfilled) element		
 		gl.glTranslatef(0.0f, f, 0.0f);
-	
+		
+		gl.glEnable(GL.GL_BLEND);
+		gl.glDisable(GL.GL_DEPTH_TEST);
+		
 		gl.glBegin(GL.GL_LINE_LOOP);
 			//TOP of shadow area
 			gl.glColor4f(line_color_r,line_color_g,line_color_b, lineAlpha);			
@@ -333,7 +336,10 @@ public class Vmetric implements VisualElementInterface {
 			gl.glVertex3f( x, r, z);			
 			gl.glVertex3f( x, o, z);			
 			gl.glVertex3f( x, o, o);
-		gl.glEnd();		
+		gl.glEnd();
+		
+		gl.glDisable(GL.GL_BLEND);
+		gl.glEnable(GL.GL_DEPTH_TEST);
 	}
 	
 	protected void drawTube(GL gl, float length) {		
@@ -379,6 +385,9 @@ public class Vmetric implements VisualElementInterface {
 		
 		//The shadow Element				
 		//Bottom disk left out, since it's the top disk of the solid
+			
+		gl.glEnable(GL.GL_BLEND);
+		//gl.glDisable(GL.GL_DEPTH_TEST);		
 								
 		//Sides
 		gl.glColor4f(quad_color_r, quad_color_g, quad_color_b, alpha);
@@ -396,6 +405,8 @@ public class Vmetric implements VisualElementInterface {
 		gl.glColor4f(line_color_r, line_color_g, line_color_b, alpha);
 		glu.gluCylinder(qobj, radius, radius, 0.01f, 8, 1);	
 		
+		gl.glDisable(GL.GL_BLEND);
+		//gl.glEnable(GL.GL_DEPTH_TEST);		
 		
 		//Cleanup
 		glu.gluDeleteQuadric(qobj);
@@ -435,10 +446,10 @@ public class Vmetric implements VisualElementInterface {
 		float y = length;		//(y) maximum coordinate
 		float z = scaleXZ;		//(z) maximum coordinate	
 		float f = value * y; 	//(f)illed area
-		float r = y - f;		//(r)est area (non-filled, up until the maximum) 
+		//float r = y - f;		//(r)est area (non-filled, up until the maximum) 
 		
 		//Transparency
-		float lineAlpha = alpha;
+		//float lineAlpha = alpha;
 		
 		//Color for the lines around the box
 		float line_color_r = 0.8f;
@@ -449,7 +460,7 @@ public class Vmetric implements VisualElementInterface {
 			line_color_r = 1.0f;
 			line_color_g = 1.0f;
 			line_color_b = 1.0f;
-			lineAlpha = 1.0f;
+			//lineAlpha = 1.0f;
 		}
 		
 		float quad_color_r = color[0];

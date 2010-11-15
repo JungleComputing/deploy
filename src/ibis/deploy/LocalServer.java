@@ -4,7 +4,7 @@ import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
 import ibis.ipl.server.ServerProperties;
 import ibis.smartsockets.virtual.VirtualSocketFactory;
-import ibis.zorilla.Config;
+
 
 import java.util.Properties;
 
@@ -22,45 +22,20 @@ public class LocalServer implements Server {
 
     private final boolean isServer;
 
-    private final boolean isZorilla;
-
-    // used in case of a local Zorilla node
-    private final ibis.zorilla.Node zorilla;
-
     // used in case of a local server
     private final ibis.ipl.server.Server server;
 
-    LocalServer(boolean isServer, boolean isZorilla, boolean verbose, int port)
+    LocalServer(boolean isServer,boolean verbose, int port)
             throws Exception {
         this.isServer = isServer;
-        this.isZorilla = isZorilla;
 
-        if (isZorilla) {
-            logger.debug("Starting build-in Zorilla node, with server");
-        } else if (isServer) {
+        if (isServer) {
             logger.debug("Starting build-in server");
         } else {
             logger.debug("Starting build-in hub");
         }
 
-        if (isZorilla) {
-            Properties properties = new Properties();
-
-            properties.put(Config.VIZ_INFO,
-                    "Z^Ibis Deploy with Zorilla Node @ local^"
-                            + Grid.LOCAL_COLOR);
-            properties.put(Config.PORT, "" + port);
-            properties.put(Config.RESOURCE_CORES, "0");
-
-            if (verbose) {
-                properties.put(Config.VERBOSE, "true");
-            }
-
-            zorilla = new ibis.zorilla.Node(properties);
-            server = zorilla.getIPLServer();
-        } else {
-            zorilla = null;
-
+        
             Properties properties = new Properties();
             properties.put(ServerProperties.HUB_ONLY, !isServer + "");
             properties.put(ServerProperties.PRINT_ERRORS, "true");
@@ -74,14 +49,10 @@ public class LocalServer implements Server {
             }
 
             server = new ibis.ipl.server.Server(properties);
-        }
 
         logger.debug(server.toString());
     }
 
-    void addZorillaNode(String node) {
-        zorilla.discoveryService().addPeer(node);
-    }
 
     /**
      * Get the address of this server.
@@ -103,26 +74,13 @@ public class LocalServer implements Server {
     }
 
     public void kill() {
-        if (zorilla != null) {
-            zorilla.end();
-        } else if (server != null) {
+        if (server != null) {
             server.end(-1);
         }
     }
 
     public boolean isFinished() {
         return false;
-    }
-
-    void killAll() {
-        if (zorilla != null) {
-            logger.info("Broadcasting kill across zorilla network");
-            try {
-                zorilla.floodService().killNetwork();
-            } catch (Exception e) {
-                // IGNORE
-            }
-        }
     }
 
     public void waitUntilRunning() {
@@ -133,9 +91,7 @@ public class LocalServer implements Server {
      * @see java.lang.Object#toString()
      */
     public String toString() {
-        if (isZorilla) {
-            return "Local Zorilla Node @ " + getAddress();
-        } else if (isServer) {
+        if (isServer) {
             return "Local Server @ " + getAddress();
         } else {
             return "Local Hub @ " + getAddress();

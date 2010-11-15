@@ -1,11 +1,11 @@
 package ibis.deploy.gui.gridvision.visuals;
-import ibis.deploy.gui.gridvision.PerfVis;
+
+import ibis.deploy.gui.gridvision.GridVision;
 import ibis.deploy.gui.gridvision.VisualManager;
 import ibis.deploy.gui.gridvision.dataholders.Node;
 import ibis.deploy.gui.gridvision.exceptions.ModeUnknownException;
 import ibis.deploy.gui.gridvision.exceptions.StatNotRequestedException;
 import ibis.deploy.gui.gridvision.exceptions.ValueOutOfBoundsException;
-import ibis.deploy.gui.gridvision.swing.SetCollectionFormAction;
 import ibis.deploy.gui.gridvision.swing.SetMetricFormAction;
 import ibis.deploy.gui.gridvision.swing.ToggleAveragesAction;
 import ibis.deploy.gui.gridvision.swing.ToggleMetricAction;
@@ -23,7 +23,7 @@ import javax.media.opengl.GL;
 import javax.media.opengl.glu.GLU;
 
 public class Vnode implements VisualElementInterface {
-	PerfVis perfvis;
+	GridVision perfvis;
 	VisualManager visman;
 	
 	protected Float[] location;
@@ -34,7 +34,7 @@ public class Vnode implements VisualElementInterface {
 	
 	protected int glName;
 	protected float scaleXZ;
-	protected float scaleY;	
+	protected float scaleY;
 	
 	GLU glu;
 	protected float separation;
@@ -45,7 +45,7 @@ public class Vnode implements VisualElementInterface {
 	
 	private Node node;
 	
-	public Vnode(PerfVis perfvis, VisualManager visman, VisualElementInterface parent, Node node) {
+	public Vnode(GridVision perfvis, VisualManager visman, VisualElementInterface parent, Node node) {
 		this.perfvis = perfvis;
 		this.visman = visman;
 		
@@ -58,7 +58,7 @@ public class Vnode implements VisualElementInterface {
 		this.location[1] = 0.0f;
 		this.location[2] = 0.0f;
 		
-		this.separation = 0.0f;
+		this.separation = 0.01f;
 		
 		scaleXZ = 0.25f;
 		scaleY = 1.0f;
@@ -205,10 +205,10 @@ public class Vnode implements VisualElementInterface {
 		//newMenu.add(nodeForms);
 		newMenu.add(metricsForms);	
 		newMenu.add(getMetricsMenu("Metrics Toggle"));
-		newMenu.add(parent.getMetricsMenu("Site Metrics Toggle"));
-		newMenu.add(parent.getParent().getMetricsMenu("Pool Metrics Toggle"));
-		newMenu.add(parent.getAveragesMenu("Compound Site"));
-		newMenu.add(parent.getParent().getAveragesMenu("Compound Pool"));
+		//newMenu.add(parent.getMetricsMenu("Site Metrics Toggle"));
+		//newMenu.add(parent.getParent().getMetricsMenu("Pool Metrics Toggle"));
+		//newMenu.add(parent.getAveragesMenu("Compound Site"));
+		//newMenu.add(parent.getParent().getAveragesMenu("Compound Pool"));
 		newMenu.add(parent.getSubMenu());
 		newMenu.add(parent.getParent().getSubMenu());
 		

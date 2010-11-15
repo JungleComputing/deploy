@@ -22,11 +22,11 @@ public class VisualManager {
 	private HashMap<Integer, VisualElementInterface> linkRegistry;
 	private HashMap<Integer, VisualElementInterface> metricRegistry;
 	
-	private PerfVis perfvis;
+	private GridVision perfvis;
 	
 	private Float[] origin = {0.0f, 0.0f, 0.0f};
 	
-	public VisualManager(PerfVis perfvis) {
+	public VisualManager(GridVision perfvis) {
 		this.perfvis = perfvis;
 		pools = new ArrayList<Pool>();
 		vpools = new ArrayList<Vpool>();

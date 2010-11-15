@@ -40,6 +40,11 @@ public class BytesSentPerIbisMetric extends LinkMetricsMap implements MetricInte
 		float time_seconds = (float)time_elapsed / 1000.0f;
 		Float value = 1.0f;
 		
+		if (results[0] == null) {
+			System.err.println("NULL: results[0] in sentBytesPerIbis");
+			return;
+		}
+		
 		Map<IbisIdentifier, Long> sent = (Map<IbisIdentifier, Long>) results[0];
 		
 		values.clear();

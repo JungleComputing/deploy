@@ -55,6 +55,8 @@ public class Cluster {
         out
                 .println("# user.name           User name used for authentication at cluster");
         out
+                .println("# user.key            User keyfile used for authentication at cluster (only when user.name is set)");
+        out
                 .println("# cache.dir           Directory on cluster used to cache pre-stage files");
         out.println("#                     (updated using rsync)");
         out
@@ -73,11 +75,6 @@ public class Cluster {
                 .println("# latitude            Latitude position of this cluster (double)");
         out
                 .println("# longitude           Longitude position of this cluster (double)");
-        out
-                .println("# start.zorilla       Boolean: if true, a zorilla node is started at the cluster");
-        out
-                .println("# node.hostnames      Comma seperated list of hostnames for the nodes in this cluster. Used by Zorilla to start slaves");
-
     }
 
     private final Grid parent;
@@ -108,6 +105,9 @@ public class Cluster {
 
     // user name to authenticate user with
     private String userName;
+    
+    // Key file for user authentication
+    private String keyFile;
 
     // cache dir for pre-stage files (updating using rsync)
     private File cacheDir;
@@ -133,10 +133,6 @@ public class Cluster {
     // Longitude position of this cluster
     private double longitude;
 
-    private Boolean startZorilla;
-
-    private String nodeHostnames;
-
     private String color;
 
     private boolean visibleOnMap;
@@ -158,7 +154,6 @@ public class Cluster {
         setCores(Runtime.getRuntime().availableProcessors());
         setLatitude(MapUtilities.localClusterLatitude);
         setLongitude(MapUtilities.localClusterLongitude);
-        setStartZorilla(null);
 
         setVisibleOnMap(false);
     }
@@ -187,6 +182,7 @@ public class Cluster {
             javaPath = null;
             jobWrapperScript = null;
             userName = null;
+            keyFile = null;
             cacheDir = null;
             serverOutputFiles = null;
             serverSystemProperties = null;
@@ -195,8 +191,6 @@ public class Cluster {
             memory = 0;
             latitude = 0;
             longitude = 0;
-            startZorilla = null;
-            nodeHostnames = null;
             color = null;
             visibleOnMap = true;
         }
@@ -218,6 +212,7 @@ public class Cluster {
         javaPath = null;
         jobWrapperScript = null;
         userName = null;
+        keyFile = null;
         cacheDir = null;
         serverOutputFiles = null;
         serverSystemProperties = null;
@@ -226,8 +221,6 @@ public class Cluster {
         memory = 0;
         latitude = 0;
         longitude = 0;
-        startZorilla = null;
-        nodeHostnames = null;
         color = null;
         visibleOnMap = true;
     }
@@ -255,8 +248,6 @@ public class Cluster {
         // add separator to prefix
         prefix = prefix + ".";
 
-        String startZorillaString;
-
         String defaultPrefix = "default.";
 
         // first load all the default properties
@@ -279,6 +270,7 @@ public class Cluster {
                     + "job.wrapper.script");
 
             userName = properties.getProperty(defaultPrefix + "user.name");
+            keyFile = properties.getProperty(defaultPrefix + "user.key");
             cacheDir = properties.getFileProperty(defaultPrefix + "cache.dir");
             serverOutputFiles = properties.getFileListProperty(defaultPrefix
                     + "server.output.files");
@@ -294,18 +286,6 @@ public class Cluster {
             longitude = properties.getDoubleProperty(defaultPrefix
                     + "longitude", 0);
 
-            startZorillaString = properties.getProperty(defaultPrefix
-                    + "start.zorilla", null);
-
-            if (startZorillaString == null) {
-                startZorilla = null;
-            } else {
-                startZorilla = properties.getBooleanProperty(defaultPrefix
-                        + "start.zorilla");
-            }
-
-            nodeHostnames = properties.getProperty(defaultPrefix
-                    + "node.hostnames");
             visibleOnMap = true;
         }
 
@@ -339,6 +319,9 @@ public class Cluster {
         if (properties.getProperty(prefix + "user.name") != null) {
             userName = properties.getProperty(prefix + "user.name");
         }
+        if (properties.getProperty(prefix + "user.key") != null) {
+            keyFile = properties.getProperty(prefix + "user.key");
+        }
         if (properties.getFileProperty(prefix + "cache.dir") != null) {
             cacheDir = properties.getFileProperty(prefix + "cache.dir");
         }
@@ -367,18 +350,6 @@ public class Cluster {
             longitude = properties.getDoubleProperty(prefix + "longitude", 0);
         }
 
-        startZorillaString = properties.getProperty(prefix + "start.zorilla",
-                null);
-
-        if (startZorillaString != null) {
-            startZorilla = properties.getBooleanProperty(prefix
-                    + "start.zorilla");
-        }
-
-        if (properties.getProperty(prefix + "node.hostnames") != null) {
-            nodeHostnames = properties.getProperty(prefix + "node.hostnames");
-        }
-
         this.color = null;
     }
 
@@ -387,10 +358,10 @@ public class Cluster {
                 && serverOutputFiles == null && jobAdaptor == null
                 && jobURI == null && fileAdaptors == null && javaPath == null
                 && jobWrapperScript == null && userName == null
+                && keyFile == null
                 && cacheDir == null && serverOutputFiles == null
                 && serverSystemProperties == null && nodes == 0 && cores == 0
-                && memory == 0 && latitude == 0 && longitude == 0
-                && startZorilla == null && nodeHostnames == null;
+                && memory == 0 && latitude == 0 && longitude == 0;
     }
 
     /**
@@ -440,6 +411,10 @@ public class Cluster {
         if (other.userName != null) {
             userName = other.userName;
         }
+        
+        if (other.keyFile != null) {
+            keyFile = other.keyFile;
+        }
 
         if (other.cacheDir != null) {
             cacheDir = other.cacheDir;
@@ -475,14 +450,6 @@ public class Cluster {
 
         if (other.longitude != 0) {
             longitude = other.longitude;
-        }
-
-        if (other.startZorilla != null) {
-            startZorilla = other.startZorilla;
-        }
-
-        if (other.nodeHostnames != null) {
-            nodeHostnames = other.nodeHostnames;
         }
 
         if (other.color != null) {
@@ -752,6 +719,25 @@ public class Cluster {
     public void setUserName(String userName) {
         this.userName = userName;
     }
+    
+    /**
+     * Returns keyfile used to authenticate at this cluster
+     * 
+     * @return keyfile used to authenticate at this cluster
+     */    
+    public String getKeyFile() {
+        return keyFile;
+    }
+    
+    /**
+     * Sets keyfile used to authenticate at this cluster
+     * 
+     * @param keyFile
+     *            keyfile used to authenticate at this cluster
+     */   
+    public void setKeyFile(String keyFile) {
+        this.keyFile = keyFile;
+    }
 
     /**
      * Cache directory used for pre-stage files (updated using rsync)
@@ -938,33 +924,6 @@ public class Cluster {
         this.longitude = longitude;
     }
 
-    public Boolean getStartZorilla() {
-        return startZorilla;
-    }
-
-    public void setStartZorilla(Boolean startZorilla) {
-        this.startZorilla = startZorilla;
-    }
-
-    /**
-     * Returns hostnames of the nodes in this cluster
-     * 
-     * @return hostnames of the nodes in this cluster
-     */
-    public String getNodeHostnames() {
-        return nodeHostnames;
-    }
-
-    /**
-     * Sets hostnames of the nodes in this cluster
-     * 
-     * @param nodeHostnames
-     *            host names of the nodes in this cluster
-     */
-    public void setNodeHostnames(String nodeHostnames) {
-        this.nodeHostnames = nodeHostnames;
-    }
-
     public String getColorCode() {
         return color;
     }
@@ -1140,6 +1099,13 @@ public class Cluster {
         } else if (printComments) {
             out.println("#" + dotPrefix + "user.name = ");
         }
+        
+        if (keyFile != null) {
+            out.println(dotPrefix + "user.key = " + keyFile);
+            empty = false;
+        } else if (printComments) {
+            out.println("#" + dotPrefix + "user.key = ");
+        }
 
         if (cacheDir != null) {
             out.println(dotPrefix + "cache.dir = " + cacheDir);
@@ -1199,20 +1165,6 @@ public class Cluster {
             out.println("#" + dotPrefix + "longitude = ");
         }
 
-        if (startZorilla != null) {
-            out.println(dotPrefix + "start.zorilla = " + startZorilla);
-            empty = false;
-        } else if (printComments) {
-            out.println("#" + dotPrefix + "start.zorilla = ");
-        }
-
-        if (nodeHostnames != null) {
-            out.println(dotPrefix + "node.hostnames = " + nodeHostnames);
-            empty = false;
-        } else if (printComments) {
-            out.println("#" + dotPrefix + "node.hostnames = ");
-        }
-
         if (empty && printComments) {
             out
                     .println("#Dummy property to make sure cluster is actually defined");
@@ -1248,6 +1200,7 @@ public class Cluster {
         result += " Java path = " + getJavaPath() + "\n";
         result += " Wrapper Script = " + getJobWrapperScript() + "\n";
         result += " User name = " + getUserName() + "\n";
+        result += " User keyfile = " + getKeyFile() + "\n";
         result += " Cache dir = " + getCacheDir() + "\n";
         result += " Server output files = " + Util.files2CSS(serverOutputFiles)
                 + "\n";
@@ -1258,8 +1211,6 @@ public class Cluster {
         result += " Memory = " + getMemory() + "\n";
         result += " Latitude = " + getLatitude() + "\n";
         result += " Longitude = " + getLongitude() + "\n";
-        result += " Start Zorilla = " + getStartZorilla() + "\n";
-        result += " Node Hostnames = " + getNodeHostnames() + "\n";
         result += " Color = " + getColorCode() + "\n";
 
         return result;

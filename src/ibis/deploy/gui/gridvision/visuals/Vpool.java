@@ -1,5 +1,5 @@
 package ibis.deploy.gui.gridvision.visuals;
-import ibis.deploy.gui.gridvision.PerfVis;
+import ibis.deploy.gui.gridvision.GridVision;
 import ibis.deploy.gui.gridvision.VisualManager;
 import ibis.deploy.gui.gridvision.dataholders.Node;
 import ibis.deploy.gui.gridvision.dataholders.Pool;
@@ -29,7 +29,7 @@ import javax.media.opengl.GL;
 import javax.media.opengl.glu.GLU;
 
 public class Vpool implements VisualElementInterface {	
-	PerfVis perfvis;
+	GridVision perfvis;
 	VisualManager visman;
 	
 	protected Float[] location;
@@ -55,7 +55,7 @@ public class Vpool implements VisualElementInterface {
 	private List<Vsite> vsites;	
 	private Pool pool; 
 		
-	public Vpool(PerfVis perfvis, VisualManager visman, VisualElementInterface parent, Pool pool) {
+	public Vpool(GridVision perfvis, VisualManager visman, VisualElementInterface parent, Pool pool) {
 		this.perfvis = perfvis;
 		this.visman = visman;
 		
@@ -234,15 +234,15 @@ public class Vpool implements VisualElementInterface {
 				Float[] newLocation = new Float[3];
 				newLocation[0] = location[0] - xzShift*row;
 				newLocation[1] = location[1];
-				newLocation[2] = location[2] + xzShift*column;				
+				newLocation[2] = location[2] + xzShift*column;
 				vsite.setLocation(newLocation);
 				
-			} catch (Exception e) {					
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 			
 			//Draw the form
-			vsite.drawThis(gl, glMode);	
+			vsite.drawThis(gl, glMode);
 			i++;
 		}
 	}
@@ -470,7 +470,7 @@ public class Vpool implements VisualElementInterface {
 		int rows 		= 3;
 		int columns 	= (shownMetrics.size()/3); //always come in groups of 3
 		
-		float xzShift = scaleXZ+separation;
+		float xzShift = scaleXZ+0.2f;
 		
 		//Center the drawing around the location	
 		Float[] shift = new Float[3];		

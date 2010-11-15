@@ -221,6 +221,9 @@ public class CommandLine {
 
             // run experiments
             for (Experiment experiment : experiments) {
+            	if (verbose) {
+            		System.err.println("Running experiment: " + experiment.toPrintString());
+            	}
                 runExperiment(experiment, grid, applications, deploy, verbose);
             }
 

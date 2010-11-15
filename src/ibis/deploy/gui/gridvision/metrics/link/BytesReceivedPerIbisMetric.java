@@ -38,7 +38,12 @@ public class BytesReceivedPerIbisMetric extends LinkMetricsMap implements Metric
 		long time_now = System.currentTimeMillis();
 		long time_elapsed = time_now - time_prev;	
 		float time_seconds = (float)time_elapsed / 1000.0f;
-		Float value = 1.0f;
+		Float value = 1.0f;		
+		
+		if (results[0] == null) {
+			System.err.println("NULL: results[0] in receivedBytesPerIbis");
+			return;
+		}
 		
 		Map<IbisIdentifier, Long> sent = (Map<IbisIdentifier, Long>) results[0];
 		

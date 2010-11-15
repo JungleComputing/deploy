@@ -1,6 +1,6 @@
 package ibis.deploy.gui.gridvision.visuals;
 
-import ibis.deploy.gui.gridvision.PerfVis;
+import ibis.deploy.gui.gridvision.GridVision;
 import ibis.deploy.gui.gridvision.VisualManager;
 import ibis.deploy.gui.gridvision.dataholders.Node;
 import ibis.deploy.gui.gridvision.exceptions.ModeUnknownException;
@@ -26,7 +26,7 @@ import javax.media.opengl.GL;
 import javax.media.opengl.glu.GLU;
 
 public class Vlink implements VisualElementInterface {
-	PerfVis perfvis;
+	GridVision perfvis;
 	VisualManager visman;
 	
 	protected Float[] location;
@@ -50,7 +50,7 @@ public class Vlink implements VisualElementInterface {
 	private VisualElementInterface from, to;	
 	private IbisIdentifier source, destination;
 	
-	public Vlink(PerfVis perfvis, VisualManager visman, VisualElementInterface parent, Node node, IbisIdentifier source, VisualElementInterface from, IbisIdentifier destination, VisualElementInterface to) {
+	public Vlink(GridVision perfvis, VisualManager visman, VisualElementInterface parent, Node node, IbisIdentifier source, VisualElementInterface from, IbisIdentifier destination, VisualElementInterface to) {
 		this.perfvis = perfvis;
 		this.visman = visman;
 		
@@ -228,31 +228,26 @@ public class Vlink implements VisualElementInterface {
 		}
 	}
 	
-	public PopupMenu getMenu() {		
+	public PopupMenu getMenu() {
 		String[] elementsgroup = {"Bars", "Tubes", "Spheres"};
-		String[] collectionsgroup = {"Cityscape", "Circle", "Sphere"};
+		//String[] collectionsgroup = {"Cityscape", "Sphere"};
 		
 		PopupMenu newMenu = new PopupMenu();	
 		
-		Menu metricsForms 	= makeRadioGroup("Metric Form", elementsgroup);
-		Menu nodeForms 		= makeRadioGroup("Group Form", collectionsgroup);
-		Menu siteForms 		= makeRadioGroup("Site Group Form", collectionsgroup);
-		Menu siteMetricForms= makeRadioGroup("Site Metric Form", elementsgroup);
-		Menu poolForms 		= makeRadioGroup("Pool Group Form", collectionsgroup);
-		Menu poolMetricForms= makeRadioGroup("Pool Metric Form", elementsgroup);
+		//Menu nodeForms 		= makeRadioGroup("Group Form", collectionsgroup);
+		Menu metricsForms 	= makeRadioGroup("Metric Forms", elementsgroup);	
 		
-		newMenu.add(metricsForms);
-		newMenu.add(nodeForms);
-		newMenu.add(siteForms);
-		newMenu.add(siteMetricForms);
-		newMenu.add(poolForms);
-		newMenu.add(poolMetricForms);
+		//newMenu.add(nodeForms);
+		newMenu.add(metricsForms);	
 		newMenu.add(getMetricsMenu("Metrics Toggle"));
-		newMenu.add(getAveragesMenu("Compound Link"));
-		newMenu.add(parent.getAveragesMenu("Compound Site"));
-		newMenu.add(parent.getParent().getAveragesMenu("Compound Pool"));
+		//newMenu.add(parent.getMetricsMenu("Site Metrics Toggle"));
+		//newMenu.add(parent.getParent().getMetricsMenu("Pool Metrics Toggle"));
+		//newMenu.add(parent.getAveragesMenu("Compound Site"));
+		//newMenu.add(parent.getParent().getAveragesMenu("Compound Pool"));
+		newMenu.add(parent.getSubMenu());
+		newMenu.add(parent.getParent().getSubMenu());
 		
-		return newMenu;		
+		return newMenu;	
 	}	
 	
 	public Menu getSubMenu() {
