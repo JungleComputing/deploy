@@ -36,7 +36,6 @@
             <fileset dir="external" includes="*.jar" />
             <fileset dir="${zorilla}" includes="*.jar" />
             <fileset dir="${javagat}" />
-						<fileset dir="${ipl}" />
         </copy>
 
         <copy todir="lib-server">
@@ -47,7 +46,6 @@
         <copy todir="lib-zorilla">
             <fileset dir="${javagat}" includes="*.jar, adaptors/SshTrileadAdaptor/*, adaptors/GlobusAdaptor/*, adaptors/LocalAdaptor, adaptors/SgeAdaptor/*, adaptors/shared/*" />
             <fileset dir="${zorilla}" />
-						<fileset dir="${ipl}" />
         </copy>
 
     </target>
@@ -69,20 +67,17 @@
             <compilerarg value="-Xlint:unchecked" />
         </javac>
 
-	<!-- Create jar file -->
-	<jar destfile="lib/${lib-jar}" basedir="tmp" includes="ibis/deploy/*.class" />
+        <!-- Create jar file -->
+        <jar destfile="lib/${lib-jar}" basedir="tmp" includes="ibis/deploy/*.class">
+        </jar>
 
-	<!-- Create jar file -->
-	<manifest file="MANIFEST.MF">
-	        <attribute name="Main-Class" value="ibis.deploy.gui.GUI"/>
-	</manifest>
-	<jar destfile="lib/${gui-jar}" basedir="tmp" includes="ibis/deploy/gui/**/*.class,images/*" manifest="MANIFEST.MF" />
+        <!-- Create jar file -->
+        <jar destfile="lib/${gui-jar}" basedir="tmp" includes="ibis/deploy/gui/**/*.class,images/*">
+        </jar>
 
-	<!-- Create jar file -->
-	<manifest file="MANIFEST.MF">
-	        <attribute name="Main-Class" value="ibis.deploy.cli.CommandLine"/>
-	</manifest>
-	<jar destfile="lib/${cli-jar}" basedir="tmp" includes="ibis/deploy/cli/**/*.class" manifest="MANIFEST.MF" />
+        <!-- Create jar file -->
+        <jar destfile="lib/${cli-jar}" basedir="tmp" includes="ibis/deploy/cli/**/*.class">
+        </jar>
 
         <!-- Generate javadoc -->
         <javadoc destdir="javadoc" access="public" classpathref="default.classpath" packagenames="ibis.deploy" sourcepath="src" windowtitle="Ibis ${ant.project.name} Documentation" doctitle="Ibis ${ant.project.name} Documentation" bottom="The Ibis project">
@@ -92,6 +87,7 @@
         <delete dir="tmp" />
 
         <mkdir dir="lib-server" />
+
 
 
     </target>
