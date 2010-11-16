@@ -9,7 +9,6 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
 import java.util.HashMap;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -32,7 +31,6 @@ import javax.swing.event.ChangeListener;
 
 import ibis.deploy.gui.deployViz.edgeBundles.*;
 import ibis.deploy.gui.deployViz.helpers.*;
-import ibis.deploy.gui.gridvision.swing.GridVisionAction;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
 

@@ -6,7 +6,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -440,7 +439,8 @@ public class Main {
     // assigns node colors based on the cluster they are in.
     // At the moment, the colors are picked at random from a list of available
     // colors
-    private void assignNodeColours(Tree tree) {
+    @SuppressWarnings("unchecked")
+	private void assignNodeColours(Tree tree) {
         NodeItem item, parent = null;
 
         String nextColor;

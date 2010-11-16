@@ -2,10 +2,8 @@ package ibis.deploy.gui.deployViz.helpers;
 
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import javax.swing.Timer;
 

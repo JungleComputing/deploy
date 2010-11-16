@@ -7,7 +7,6 @@ import java.util.Iterator;
 
 import prefuse.Visualization;
 import prefuse.controls.ControlAdapter;
-import prefuse.util.ColorLib;
 import prefuse.visual.EdgeItem;
 import prefuse.visual.NodeItem;
 import prefuse.visual.VisualItem;
@@ -29,7 +28,8 @@ public class DisplayControlAdaptor extends ControlAdapter {
         highlightSelection(item);
     }
 
-    private void highlightSelection(VisualItem item) {
+    @SuppressWarnings("unchecked")
+	private void highlightSelection(VisualItem item) {
         BSplineEdgeItem edge;
 
         if (item instanceof NodeItem) {
@@ -70,7 +70,8 @@ public class DisplayControlAdaptor extends ControlAdapter {
         vis.repaint();
     }
 
-    private void resetPreviousSelection(NodeItem newNode) {
+    @SuppressWarnings("unchecked")
+	private void resetPreviousSelection(NodeItem newNode) {
         if (lastSelectedNode != null) {
             Iterator<EdgeItem> edgeIter = lastSelectedNode.edges();
 
