@@ -71,7 +71,12 @@ public class GridVision implements GLEventListener {
 		}	
 		
 		mouseHandler = new MouseHandler(this, canvas);
-		visman = new VisualManager(this);				
+		visman = new VisualManager(this);		
+		
+		//Mouse events		
+		canvas.addMouseListener(mouseHandler);
+		canvas.addMouseMotionListener(mouseHandler);
+		canvas.addMouseWheelListener(mouseHandler);
 	}
 	
 	public void shutdown() {
@@ -159,40 +164,39 @@ public class GridVision implements GLEventListener {
 	}
 
 	public void init(GLAutoDrawable drawable) {
-		final GL gl = drawable.getGL();
+GL gl = drawable.getGL();
 		
+		//Shader Model
 		gl.glShadeModel(GL.GL_SMOOTH);
 		
 		//Anti-Aliasing
-		gl.glEnable(GL.GL_LINE_SMOOTH);      
-	    gl.glEnable(GL.GL_POLYGON_SMOOTH);    
-	      
-		gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-		gl.glClearDepth(1.0f);
-		
-		gl.glEnable(GL.GL_DEPTH_TEST);
+		gl.glEnable(GL.GL_LINE_SMOOTH);
+		gl.glHint(GL.GL_LINE_SMOOTH_HINT, GL.GL_NICEST);
+		gl.glEnable(GL.GL_POLYGON_SMOOTH); 
+		gl.glHint(GL.GL_POLYGON_SMOOTH_HINT, GL.GL_NICEST);
+	    	    
+	    //Depth testing
+	    gl.glEnable(GL.GL_DEPTH_TEST);
 		gl.glDepthFunc(GL.GL_LEQUAL);
+		gl.glClearDepth(1.0f);		
 		
+		//Enable Blending (needed for both Transparency and Anti-Aliasing
+		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);				
+		gl.glEnable(GL.GL_BLEND);
+				
+		//General hint for optimum color quality
 		gl.glHint(GL.GL_PERSPECTIVE_CORRECTION_HINT, GL.GL_NICEST);
 		
-		//Found at http://pyopengl.sourceforge.net/documentation/manual/glBlendFunc.3G.html
-		//To be the best blend function
-		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
-		gl.glEnable(GL.GL_BLEND);
+		//Enable Vertical Sync
+		gl.setSwapInterval(1);
 		
-		//Initial perspective
-		fovy = 45.0f; 
-		aspect = (this.width / this.height); 
-		zNear = 0.1f;
-		zFar = 100.0f;
-		
-		//Mouse events		
-		canvas.addMouseListener(mouseHandler);
-		canvas.addMouseMotionListener(mouseHandler);
-		canvas.addMouseWheelListener(mouseHandler);
-		
-		canvas.requestFocusInWindow();
-		
+		//Set black as background color
+	    gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	    
+	    //and set the matrix mode to the modelview matrix in the end
+	    gl.glMatrixMode(GL.GL_MODELVIEW);
+	    gl.glLoadIdentity();		
+				
 		statman = new MetricsManager(manInterface, regInterface);
 		new Thread(statman).start();
 	}

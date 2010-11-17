@@ -14,13 +14,13 @@ import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 
-import com.sun.opengl.util.Animator;
+import com.sun.opengl.util.FPSAnimator;
 
 public class GridVisionPanel extends JPanel {	
 	private static final long serialVersionUID = 2947480963529559102L;
 	
 	protected GLCanvas canvas;
-	protected Animator animator;
+	protected FPSAnimator animator;
 	GridVision perfvis;
 	
 	public GridVisionPanel(GUI gui) {
@@ -64,7 +64,7 @@ public class GridVisionPanel extends JPanel {
 		
 		
 		canvas = new GLCanvas(glCapabilities);
-		animator = new Animator(canvas);
+		animator = new FPSAnimator(canvas,60);
 		
 		perfvis = new GridVision(gui, canvas, this);				
 		
