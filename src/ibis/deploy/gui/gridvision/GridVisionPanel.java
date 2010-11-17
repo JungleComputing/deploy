@@ -60,7 +60,8 @@ public class GridVisionPanel extends JPanel {
 		
 		//Anti-Aliasing
 		glCapabilities.setSampleBuffers(true);
-		glCapabilities.setNumSamples(2);
+		glCapabilities.setNumSamples(4);
+		
 		
 		canvas = new GLCanvas(glCapabilities);
 		animator = new Animator(canvas);
