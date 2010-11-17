@@ -171,15 +171,13 @@ public class GridVision implements GLEventListener {
 		
 		gl.glEnable(GL.GL_DEPTH_TEST);
 		gl.glDepthFunc(GL.GL_LEQUAL);
-		//gl.glDepthRange(0.0, 1.0);
 		
 		gl.glHint(GL.GL_PERSPECTIVE_CORRECTION_HINT, GL.GL_NICEST);
 		
 		//Found at http://pyopengl.sourceforge.net/documentation/manual/glBlendFunc.3G.html
 		//To be the best blend function
 		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
-		//gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_DST_ALPHA);		
-		//gl.glEnable(GL.GL_BLEND);
+		gl.glEnable(GL.GL_BLEND);
 		
 		//Initial perspective
 		fovy = 45.0f; 
