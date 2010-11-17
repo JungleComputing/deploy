@@ -86,6 +86,10 @@ public class GridVision implements GLEventListener {
 	public void display(GLAutoDrawable drawable) {
 		final GL gl = drawable.getGL();
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
+						
+		drawHud(gl);		
+		drawUniverse(gl, GL.GL_RENDER);
+		gl.glFlush();
 		
 		if (statman.isReinitializeNeeded()) {
 			visman.reinitialize(statman.getTopConcepts());			
@@ -97,10 +101,8 @@ public class GridVision implements GLEventListener {
 			pick(gl);
 			doPickNextCycle = false;
 		}
-				
-		drawHud(gl);		
-		drawUniverse(gl, GL.GL_RENDER);
-		gl.glFlush();
+		
+		drawable.SwapBuffers();
 	}
 	
 	public void setRotation(Float[] rotation) {
@@ -120,8 +122,7 @@ public class GridVision implements GLEventListener {
 		gl.glTranslatef(translation[0], translation[1], translation[2]);
 		gl.glTranslatef(0,0,viewDist);
 		gl.glRotatef(rotation[0], 1,0,0);		
-		gl.glRotatef(rotation[1], 0,1,0);
-		
+		gl.glRotatef(rotation[1], 0,1,0);		
 	}
 
 	private void drawUniverse(GL gl, int mode) {		
@@ -200,6 +201,7 @@ public class GridVision implements GLEventListener {
 		final GL gl = drawable.getGL();
 		final GLU glu = new GLU();		
 		
+		//Vertical Sync
 		gl.setSwapInterval(1);
 
 		gl.glViewport(0, 0, width, height);
