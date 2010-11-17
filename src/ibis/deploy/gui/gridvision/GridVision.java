@@ -102,7 +102,7 @@ public class GridVision implements GLEventListener {
 			doPickNextCycle = false;
 		}
 		
-		drawable.SwapBuffers();
+		drawable.swapBuffers();
 	}
 	
 	public void setRotation(Float[] rotation) {
