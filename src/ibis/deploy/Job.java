@@ -473,14 +473,19 @@ public class Job implements Runnable {
 
         // class path
         sd.setJavaClassPath(createClassPath(cluster.getJobAdaptor(), application.getLibs()));
+        String suffix = "";
+        if (File.separator.equals("\\") {
+            // Windows has no idea what to with files that have .out or .err extensions.
+            suffix = ".txt";
+        }
         if (sd instanceof JythonSoftwareDescription) {
             ((JythonSoftwareDescription) sd)
                     .setPythonPath(createClassPath(cluster.getJobAdaptor(), application.getLibs()));
         }
 		sd.setStdout(GAT.createFile(context, description.getPoolName() + "."
-				+ description.getName() + ".out"));
+				+ description.getName() + ".out" + suffix));
 		sd.setStderr(GAT.createFile(context, description.getPoolName() + "."
-				+ description.getName() + ".err"));
+				+ description.getName() + ".err" + suffix));
 
 		logger.info("Submitting application \"" + application.getName()
 				+ "\" to " + cluster.getName() + " using "

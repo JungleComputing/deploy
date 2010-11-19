@@ -67,8 +67,14 @@ public class OutputPanel extends JPanel {
         setBorder(BorderFactory.createTitledBorder("Output Files for '"
                 + job.getDescription().getName() + "'"));
 
+        String suffix = "";
+        if (File.separator.equals("\\") {
+            // Windows has no idea what to with file-suffix .err or .out.
+            suffix = ".txt";
+        }
+
         final File stdout = new File(job.getDescription().getPoolName() + "."
-                + job.getDescription().getName() + ".out");
+                + job.getDescription().getName() + ".out" + suffix);
         
         JLabel stdoutLabel = new JLabel("<html><a href=.>" + stdout
                 + "</a></html>", JLabel.TRAILING);
@@ -88,7 +94,7 @@ public class OutputPanel extends JPanel {
         container.add(stdoutPanel, Component.LEFT_ALIGNMENT);
 
         final File stderr = new File(job.getDescription().getPoolName() + "."
-                + job.getDescription().getName() + ".err");
+                + job.getDescription().getName() + ".err" + suffix);
         JLabel stderrLabel = new JLabel("<html><a href=.>" + stderr
                 + "</a></html>", JLabel.TRAILING);
         
