@@ -174,7 +174,9 @@ public class JobTableModel extends AbstractTableModel {
         // remove in reverse
         for (int row = rows.size() - 1; row >= 0; row--) {
             if (isSelected(row, selection)) {
-                rows.get(row).stop();
+                JobRow r = rows.get(row);
+                r.stop();
+                r.remove();
                 rows.remove(row);
             }
         }
@@ -185,6 +187,7 @@ public class JobTableModel extends AbstractTableModel {
     public void removeAll() {
         for (JobRow row : rows) {
             row.stop();
+            row.remove();
         }
         rows.clear();
         fireTableDataChanged();

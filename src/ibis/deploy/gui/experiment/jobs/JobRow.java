@@ -56,6 +56,10 @@ public class JobRow {
     public Job getJob() {
         return job;
     }
+    
+    public void remove() {
+        gui.getExperiment().removeJob(jobDescription);
+    }
 
     public JobDescription getJobDescription() {
         return jobDescription;

@@ -172,12 +172,18 @@ public class Experiment {
      *            the job to be removed from this experiment
      */
     public void removeJob(JobDescription job) {
-        if (!jobs.contains(job)) {
-            for (JobDescription jd : jobs) {
-                System.out.println(jd + " != " + job);
+        JobDescription toBeRemoved = null;
+        for (JobDescription jd : jobs) {
+            if (jd.getName().equals(job.getName())) {
+                toBeRemoved = jd;
+                break;
             }
         }
-        jobs.remove(job);
+        if (toBeRemoved != null) {
+            jobs.remove(toBeRemoved);
+        } else {
+            // TODO: complain?
+        }
     }
 
     /**

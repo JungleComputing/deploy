@@ -208,34 +208,40 @@ public class Job implements Runnable {
 		}
 	}
 
-	private static String classpathFor(File file, String prefix) {
-		// logger.debug("classpath for: " + file + " prefix = " + prefix);
+    private static String classpathFor(File file, String prefix, String fsep, String psep) {
+        // logger.debug("classpath for: " + file + " prefix = " + prefix);
 
-		if (!file.isDirectory()) {
-			// regular files not in classpath
-			return prefix + file.getName() + File.pathSeparator;
-		}
-		// classpath for dir "lib" with prefix "dir/" is dir/lib/*:dir/lib
-		String result = prefix + file.getName() + File.pathSeparator + prefix
-				+ file.getName() + File.separator + "*" + File.pathSeparator;
-		for (File child : file.listFiles()) {
-			if (child.isDirectory() && !child.isHidden()) {
-				result = result
-						+ classpathFor(child, prefix + file.getName()
-								+ File.separator);
-			}
-		}
-		return result;
-	}
+        if (!file.isDirectory()) {
+            // regular files not in classpath
+            return prefix + file.getName() + psep;
+        }
+        // classpath for dir "lib" with prefix "dir/" is dir/lib/*:dir/lib
+        String result = prefix + file.getName() + psep + prefix
+                + file.getName() + fsep + "*" + psep;
+        for (File child : file.listFiles()) {
+            if (child.isDirectory() && !child.isHidden()) {
+                result = result
+                        + classpathFor(child, prefix + file.getName()
+                                + fsep, fsep, psep);
+            }
+        }
+        return result;
+    }
 
-	// classpath made up of all directories
-	private static String createClassPath(File[] libs) {
-		// start with cwd
-		String result = "." + File.pathSeparator;
+    // classpath made up of all directories
+    private static String createClassPath(String adaptor, File[] libs) {
+        // start with cwd
+        String fsep = "/";
+        String psep = ":";
+        if (adaptor != null && adaptor.startsWith("local")) {
+            fsep = File.separator;
+            psep = File.pathSeparator;
+        }
+        String result = "." + psep;
 
-		for (File file : libs) {
-			result = result + classpathFor(file, "");
-		}
+        for (File file : libs) {
+            result = result + classpathFor(file, "", fsep, psep);
+        }
 
 		return result;
 	}
@@ -465,13 +471,12 @@ public class Job implements Runnable {
 			sd.addAttribute("cputime.max", "" + description.getRuntime());
 		}
 
-		// class path
-		sd.setJavaClassPath(createClassPath(application.getLibs()));
-		if (sd instanceof JythonSoftwareDescription) {
-			((JythonSoftwareDescription) sd)
-					.setPythonPath(createClassPath(application.getLibs()));
-		}
-
+        // class path
+        sd.setJavaClassPath(createClassPath(cluster.getJobAdaptor(), application.getLibs()));
+        if (sd instanceof JythonSoftwareDescription) {
+            ((JythonSoftwareDescription) sd)
+                    .setPythonPath(createClassPath(cluster.getJobAdaptor(), application.getLibs()));
+        }
 		sd.setStdout(GAT.createFile(context, description.getPoolName() + "."
 				+ description.getName() + ".out"));
 		sd.setStderr(GAT.createFile(context, description.getPoolName() + "."
