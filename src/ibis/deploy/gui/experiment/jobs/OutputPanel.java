@@ -68,7 +68,7 @@ public class OutputPanel extends JPanel {
                 + job.getDescription().getName() + "'"));
 
         String suffix = "";
-        if (File.separator.equals("\\") {
+        if (File.separator.equals("\\")) {
             // Windows has no idea what to with file-suffix .err or .out.
             suffix = ".txt";
         }

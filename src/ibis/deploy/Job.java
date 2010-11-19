@@ -474,7 +474,7 @@ public class Job implements Runnable {
         // class path
         sd.setJavaClassPath(createClassPath(cluster.getJobAdaptor(), application.getLibs()));
         String suffix = "";
-        if (File.separator.equals("\\") {
+        if (File.separator.equals("\\")) {
             // Windows has no idea what to with files that have .out or .err extensions.
             suffix = ".txt";
         }
