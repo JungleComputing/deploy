@@ -15,7 +15,7 @@ import org.gridlab.gat.URI;
 /**
  * Cluster, accessible using some sort of middleware. Used to deploy both
  * servers (like hubs) and jobs (applications) on. Clusters are part of (and
- * created by) a parent "Grid"
+ * created by) a parent "Grid".
  * 
  * @author Niels Drost
  * 
