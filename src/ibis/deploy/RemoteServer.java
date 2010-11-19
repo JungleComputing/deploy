@@ -197,7 +197,9 @@ public class RemoteServer implements Runnable, Server {
         File serverLibs = new File(deployHome, "lib-server");
         prestage(serverLibs, cluster, sd);
 
-        // classpath
+        // classpath.
+        // TODO: this assumes that the remote server does not run on windows!
+        // --Ceriel
         sd.setJavaClassPath(".:lib-server:lib-server/*");
 
         // add server log4j file
