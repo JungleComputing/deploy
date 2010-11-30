@@ -12,8 +12,9 @@ import ibis.deploy.gui.deployViz.edgeBundles.BSplineEdgeItem;
 public class VizUtils {
 
     public static final String CLUSTER = "cluster";
-    public static final String HEAD_NODE = "head node";
-    public static final String COMPUTE_NODE = "compute node";
+    public static final String NODE_TYPE_SITE_NODE = "site node";
+    public static final String NODE_TYPE_IBIS_NODE = "ibis node";
+    public static final String NODE_TYPE_ROOT_NODE = "ibis deploy";
 
     public static final int BSPLINE_EDGE_TYPE = 100;
     public static final double INITIAL_BUNDLING_FACTOR = 0.9;
@@ -25,6 +26,15 @@ public class VizUtils {
     public static final int SELECTED_TEXT_COLOR = ColorLib.rgb(255, 255, 255);
 
     public static final int DEFAULT_TEXT_COLOR = ColorLib.rgb(0, 0, 0);
+    
+    public static int MAX_EDGE_WEIGHT = 50;
+    public static final String GRAPH = "graph";
+    public static final String NODES = "graph.nodes";
+    public static final String EDGES = "graph.edges";
+    public static final String NODE_NAME = "name";
+    public static final String NODE_TYPE = "type";
+    public static final String WEIGHT = "weight";
+    public static final int DEFAULT_WEIGHT = 1;
 
     private static final String[] colors = { "#FF0000", "#FF8000", "#80FF00",
             "#00FF00", "#00FF80", "#00FFFF", "#007FFF", "#8000FF", "#FF0080",
@@ -113,6 +123,4 @@ public class VizUtils {
             edge.setUpdated(false);
         }
     }
-
-    public static int MAX_EDGE_WEIGHT = 50;
 }

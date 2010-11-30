@@ -5,6 +5,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
@@ -180,6 +181,9 @@ public class BundledEdgeRenderer extends EdgeRenderer {
                 .getControlPoints();
 
         Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(
+                RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
 
         g2d.setColor(new Color(0.5f, 0.5f, 0.5f, ((BSplineEdgeItem) item)
                 .getAlpha()));

@@ -458,7 +458,7 @@ public class Main {
             item = nodes.next();
 
             // pick the color at random if it's a head node
-            if (item.getString(NODE_TYPE).equals(VizUtils.HEAD_NODE)) {
+            if (item.getString(NODE_TYPE).equals(VizUtils.NODE_TYPE_SITE_NODE)) {
                 if (!mainNodes.contains(item)) {
                     mainNodes.add(item);
 
@@ -483,7 +483,7 @@ public class Main {
                 // color
                 if (parent != null
                         && parent.getString(NODE_TYPE).equals(
-                                VizUtils.HEAD_NODE)) {
+                                VizUtils.NODE_TYPE_SITE_NODE)) {
 
                     int idx = mainNodes.indexOf(parent);
                     if (idx < 0) { // the parent is not in the list

@@ -1,5 +1,6 @@
 package ibis.deploy.gui.deployViz;
 
+import ibis.deploy.Grid;
 import ibis.deploy.gui.GUI;
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
@@ -10,6 +11,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
+
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -29,8 +33,12 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import ibis.deploy.gui.deployViz.data.DataCollector;
+import ibis.deploy.gui.deployViz.data.GraphGenerator;
 import ibis.deploy.gui.deployViz.edgeBundles.*;
 import ibis.deploy.gui.deployViz.helpers.*;
+import ibis.deploy.gui.gridvision.dataholders.Pool;
+import ibis.deploy.gui.misc.Utils;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
 
@@ -49,6 +57,7 @@ import prefuse.controls.PanControl;
 import prefuse.controls.ZoomControl;
 import prefuse.controls.ZoomToFitControl;
 import prefuse.data.Graph;
+import prefuse.data.Node;
 import prefuse.data.Tree;
 import prefuse.data.io.DataIOException;
 import prefuse.data.io.GraphMLReader;
@@ -58,6 +67,7 @@ import prefuse.render.DefaultRendererFactory;
 import prefuse.render.LabelRenderer;
 import prefuse.util.ColorLib;
 import prefuse.util.ui.JFastLabel;
+import prefuse.visual.NodeItem;
 import prefuse.visual.VisualItem;
 import prefuse.visual.expression.InGroupPredicate;
 import prefuse.visual.sort.TreeDepthItemSorter;
@@ -67,13 +77,6 @@ public class DeployVizPanel extends JPanel {
     private static final long serialVersionUID = 1L;
 
     public static final String DATA_FILE = "das3.xml";
-
-    public static final String GRAPH = "graph";
-    public static final String NODES = "graph.nodes";
-    public static final String EDGES = "graph.edges";
-    public static final String AGGR = "aggregates";
-    public static final String NODE_NAME = "name";
-    public static final String NODE_TYPE = "type";
 
     private static Visualization vis;
     private static Tree tree = null;
@@ -89,23 +92,26 @@ public class DeployVizPanel extends JPanel {
     private JButton lastSelectedButton = null, buttonStart = null,
             buttonStop = null;
 
-    private HashMap<String, Color> nodeColorMap;
-
     private Action updateVisualizationAction;
 
     private TreeLayout lastSelectedLayout = null;
     private RadialTreeLayout radialTreeLayout;
     private NodeLinkTreeLayout treeLayout;
-    private RadialGraphView graphDisplay;
+    private RadialGraphDisplay graphDisplay;
     private JPanel vizPanel;
 
     // JMX variables
     private RegistryServiceInterface regInterface;
     private ManagementServiceInterface manInterface;
 
-    private MetricsManager statman;
+    private DataCollector statman;
+    private Graph graph;
+    private GUI gui;
 
     public DeployVizPanel(GUI gui) {
+
+        this.gui = gui;
+
         // Add the option to enable this feature to the Ibis Deploy menu bar
         JMenuBar menuBar = gui.getMenuBar();
         JMenu menu = null;
@@ -152,32 +158,34 @@ public class DeployVizPanel extends JPanel {
             e.printStackTrace();
         }
 
-        statman = new MetricsManager(manInterface, regInterface);
-        // new Thread(statman).start();
+        statman = new DataCollector(manInterface, regInterface, this);
 
         add(vizPanel, BorderLayout.CENTER);
     }
 
-    public void shutdown() {
-        statman.stopTimer();
+    // public void shutdown() {
+    // statman.stopTimer();
+    // }
+
+    public void updateVisualization(HashMap<String, Set<String>> ibisesPerSite) {
+        if (initializeGraph(ibisesPerSite)) {
+            computeVisualParameters(edgeRenderer);
+            vis.repaint();
+        }
     }
 
-    class RadialGraphView extends Display {
+    class RadialGraphDisplay extends Display {
 
         private static final long serialVersionUID = 1L;
         private LabelRenderer m_nodeRenderer;
 
-        public RadialGraphView(Graph g, String label) {
+        public RadialGraphDisplay() {
 
-            super(new BundledEdgeVisualization());
-
-            // set up visualization
-            m_vis.add(GRAPH, g);
-            m_vis.setInteractive(EDGES, null, false);
-            vis = m_vis;
+            super(vis);
+            m_vis.setInteractive(VizUtils.EDGES, null, false);
 
             // draw the "name" label for NodeItems
-            m_nodeRenderer = new LabelRenderer(NODE_NAME);
+            m_nodeRenderer = new LabelRenderer(VizUtils.NODE_NAME);
             m_nodeRenderer
                     .setRenderType(AbstractShapeRenderer.RENDER_TYPE_DRAW_AND_FILL);
 
@@ -185,43 +193,45 @@ public class DeployVizPanel extends JPanel {
 
             DefaultRendererFactory rf = new DefaultRendererFactory(
                     m_nodeRenderer);
-            rf.add(new InGroupPredicate(EDGES), edgeRenderer);
+            rf.add(new InGroupPredicate(VizUtils.EDGES), edgeRenderer);
             m_vis.setRendererFactory(rf);
 
             // create stroke for drawing nodes
-            ColorAction nStroke = new ColorAction(NODES,
+            ColorAction nStroke = new ColorAction(VizUtils.NODES,
                     VisualItem.STROKECOLOR, ColorLib.gray(100));
 
             // use black for node text
-            ColorAction text = new ColorAction(NODES, VisualItem.TEXTCOLOR,
-                    ColorLib.gray(100));
-            text.add("_hover", ColorLib.rgb(255, 0, 0));
+            ColorAction text = new ColorAction(VizUtils.NODES,
+                    VisualItem.TEXTCOLOR, ColorLib.gray(100));
+            // text.add("_hover", ColorLib.rgb(255, 0, 0));
 
-            ColorAction fill = new ColorAction(NODES, VisualItem.FILLCOLOR,
-                    ColorLib.gray(200));
-            fill.add("_hover", ColorLib.gray(220, 230));
+            // ColorAction fill = new ColorAction(VizUtils.NODES,
+            // VisualItem.FILLCOLOR, ColorLib.gray(200));
+            // fill.add("_hover", ColorLib.gray(220, 230));
 
             // create an action list containing all color assignments
             ActionList color = new ActionList();
             color.add(nStroke);
             color.add(text);
-            color.add(fill);
+            // color.add(fill);
 
             m_vis.putAction("color", color);
 
             // create the radial tree layout action
-            radialTreeLayout = new RadialTreeLayout(GRAPH);
+            radialTreeLayout = new RadialTreeLayout(VizUtils.GRAPH);
             m_vis.putAction(RADIAL_TREE_LAYOUT, radialTreeLayout);
             lastSelectedLayout = radialTreeLayout;
 
             // create the tree layout action
-            treeLayout = new NodeLinkTreeLayout(GRAPH,
+            treeLayout = new NodeLinkTreeLayout(VizUtils.GRAPH,
                     Constants.ORIENT_TOP_BOTTOM, 200, 3, 20);
             m_vis.putAction(TREE_LAYOUT, treeLayout);
 
             // initialize the display
-            setSize(600, 600);
+            // setSize(600, 600);
             setAlignmentX(SwingConstants.CENTER);
+            setAlignmentY(SwingConstants.CENTER);
+            setHighQuality(true);
             setItemSorter(new TreeDepthItemSorter());
             addControlListener(new DragControl());
             addControlListener(new ZoomToFitControl());
@@ -229,79 +239,104 @@ public class DeployVizPanel extends JPanel {
             addControlListener(new PanControl());
             setDamageRedraw(false);
             addControlListener(new HoverActionControl("repaint"));
-            addControlListener(new DisplayControlAdaptor(vis));
+            addControlListener(new DisplayControlAdaptor(m_vis));
 
             computeVisualParameters(edgeRenderer);
             // color the graph and perform layout
-            m_vis.run("color");
-            m_vis.run(RADIAL_TREE_LAYOUT);
+            // m_vis.run("color");
+            // m_vis.run(RADIAL_TREE_LAYOUT);
 
         }
     }
 
     // reads the graph from a GraphML file and loads it into the visualization
-    public void initializeGraph(String datafile, String label) {
-        Graph graph = null;
-        try {
-            graph = new GraphMLReader().readGraph(datafile);
-        } catch (DataIOException e) {
-            e.printStackTrace();
-            System.err.println("Error loading graph.");
-            System.exit(1);
+    public boolean initializeGraph(HashMap<String, Set<String>> ibisesPerSite) {
+        // try {
+        // graph = new GraphMLReader().readGraph(datafile);
+        // } catch (DataIOException e) {
+        // e.printStackTrace();
+        // System.err.println("Error loading graph.");
+        // System.exit(1);
+        // }
+
+        graph = GraphGenerator.updatePrefuseGraph(ibisesPerSite);
+        if (graph == null) {
+            return false;
         }
 
         try {
-            // create a new radial tree view
-            if (graphDisplay == null) {
-                graphDisplay = new RadialGraphView(graph, label);
-                vis = graphDisplay.getVisualization();
-            } else {
-
-                vis.addGraph(GRAPH, graph);
+            if (vis == null) {
+                vis = new BundledEdgeVisualization();
+                vis.addGraph(VizUtils.GRAPH, graph);
             }
+
+            // // create a new radial tree view
+            // if (graphDisplay == null) {
+            // graphDisplay = new RadialGraphDisplay(graph, label);
+            // vis = graphDisplay.getVisualization();
+            // } else {
+            //
+            // vis.addGraph(GRAPH, graph);
+            // }
 
         } catch (IllegalArgumentException exc) {
 
-            // an exception will be thrown when the GRAPH group already exists
-            // in the visualization. In this case, remove the existing data
-            // before adding new information
-
-            vis.removeGroup(EDGES);
-            vis.removeGroup(NODES);
-            vis.removeGroup(GRAPH);
-            vis.add(GRAPH, graph);
+            System.err
+                    .println("An exception occurred while creating the visualization");
+            // // an exception will be thrown when the GRAPH group already
+            // exists
+            // // in the visualization. In this case, remove the existing data
+            // // before adding new information
+            //
+            // vis.removeGroup(EDGES);
+            // vis.removeGroup(NODES);
+            // vis.removeGroup(GRAPH);
+            // vis.add(GRAPH, graph);
         }
+        return true;
     }
 
     // redoes the layout and assigns edge colors and alphas.
     // It is called during the simulation when new data is loaded
     public void computeVisualParameters(BundledEdgeRenderer edgeRenderer) {
-        // vis.run("color"); // assign the colors
-        if (lastSelectedLayout == radialTreeLayout) {
-            vis.run(RADIAL_TREE_LAYOUT); // start up the tree layout
-        } else {
-            vis.run(TREE_LAYOUT);
-        }
 
-        // recompute spanning tree based on the new layout
-        TupleSet ts = vis.getGroup(GRAPH);
+        TupleSet ts = vis.getGroup(VizUtils.GRAPH);
+
         if (ts instanceof Graph) {
-            tree = ((Graph) ts).getSpanningTree();
+            Graph g = (Graph) ts;
+
+            // redo computations only if the graph contains nodes
+            if (g.getNodeCount() > 0) {
+                vis.run("color"); // assign the colors
+                if (lastSelectedLayout == radialTreeLayout) {
+                    vis.run(RADIAL_TREE_LAYOUT); // start up the tree layout
+                } else {
+                    vis.run(TREE_LAYOUT);
+                }
+
+                // recompute spanning tree based on the new layout
+                if (g.getNodeCount() > 0) {
+                    tree = g.getSpanningTree();
+                }
+
+                // pass the new spanning tree reference to the renderer for
+                // later use
+                edgeRenderer.setSpanningTree(tree);
+
+                // set the fillColor for the nodes
+                assignNodeColours(tree);
+
+                // compute alphas for the edges, according to their length
+                VizUtils.computeEdgeAlphas(vis, tree);
+            }
         }
 
-        // pass the new spanning tree reference to the renderer for later use
-        edgeRenderer.setSpanningTree(tree);
-
-        // set the fillColor for the nodes
-        // assignNodeColours(tree);
-
-        // compute alphas for the edges, according to their length
-        VizUtils.computeEdgeAlphas(vis, tree);
     }
 
     public JPanel createVisualizationPanels(String datafile, final String label) {
 
-        initializeGraph(datafile, label);
+        initializeGraph(null);
+        graphDisplay = new RadialGraphDisplay();
 
         final JFastLabel title = new JFastLabel("                 ");
         title.setPreferredSize(new Dimension(350, 20));
@@ -330,6 +365,46 @@ public class DeployVizPanel extends JPanel {
         panel.add(box, BorderLayout.SOUTH);
 
         return panel;
+    }
+
+    // assigns node colors based on the cluster they are in.
+    // TODO - do this more efficiently, so that I don't have to re-assign node
+    // colors every time a change occurs in the graph
+    @SuppressWarnings("unchecked")
+    private void assignNodeColours(Tree tree) {
+        NodeItem item;
+        Node parent;
+        Grid grid = gui.getWorkSpace().getGrid();
+        String colorCode;
+        int color;
+
+        Iterator<NodeItem> nodes = vis.visibleItems(VizUtils.NODES);
+
+        while (nodes.hasNext()) {
+            item = nodes.next();
+            if (item.getString(VizUtils.NODE_TYPE).equals(
+                    VizUtils.NODE_TYPE_SITE_NODE)) {
+                colorCode = grid.getCluster(item.getString(VizUtils.NODE_NAME))
+                        .getColorCode();
+                color = Utils.getColor(colorCode).getRGB();
+                item.setFillColor(color);
+                item.setStartFillColor(color);
+            } else if (item.getString(VizUtils.NODE_TYPE).equals(
+                    VizUtils.NODE_TYPE_IBIS_NODE)) {
+                parent = item.getParent();
+                if (parent != null) {
+                    colorCode = grid.getCluster(
+                            parent.getString(VizUtils.NODE_NAME))
+                            .getColorCode();
+                    color = Utils.getColor(colorCode).getRGB();
+                    item.setFillColor(color);
+                    item.setStartFillColor(color);
+                }
+            } else {
+                item.setFillColor(ColorLib.gray(200));
+                item.setStartFillColor(ColorLib.gray(200));
+            }
+        }
     }
 
     // creates the panels and the controls that are used to customize the
@@ -386,18 +461,18 @@ public class DeployVizPanel extends JPanel {
 
         panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         // button for managing simulation
-        final JButton refreshDataButton = new JButton("Start simulation");
+        final JButton refreshDataButton = new JButton("Stop monitoring");
         refreshDataButton.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent arg0) {
-                // if (simulationTimer.isRunning()) {
-                // simulationTimer.stop();
-                // refreshDataButton.setText("Start simulation");
-                // } else {
-                // simulationTimer.start();
-                // refreshDataButton.setText("Stop simulation");
-                // }
+                if (statman.isTimerRunning()) {
+                    statman.stopTimer();
+                    refreshDataButton.setText("Start monitoring");
+                } else {
+                    statman.startTimer();
+                    refreshDataButton.setText("Stop monitoring");
+                }
             }
         });
 
