@@ -34,6 +34,16 @@ Hello.main.class = ibis.ipl.examples.Hello
 #Hello.jvm.options =
 #Hello.log4j.file =
 
+# Application "Go"
+Go.main.class = go.dac.Main
+Go.arguments = --size,4,--stones,2
+#Go.libs =
+#Go.input.files =
+#Go.output.files =
+#Go.system.properties =
+#Go.jvm.options =
+#Go.log4j.file =
+
 # Application "OneToMany"
 OneToMany.main.class = ibis.ipl.examples.OneToMany
 #OneToMany.arguments =

@@ -89,6 +89,8 @@
         <delete dir="tmp" />
         <delete dir="lib" />
         <delete dir="lib-server" />
+	<!-- actually not created anymore, but to cleanup in old copies too -->
+        <delete dir="lib-zorilla" />
         <delete dir="javadoc" />
     </target>
 
