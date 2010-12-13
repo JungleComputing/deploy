@@ -25,8 +25,9 @@ public class VizUtils {
     public static final int SELECTED_FILL_COLOR = ColorLib.rgb(0, 0, 255);
     public static final int SELECTED_TEXT_COLOR = ColorLib.rgb(255, 255, 255);
 
-    public static final int DEFAULT_TEXT_COLOR = ColorLib.rgb(0, 0, 0);
-    
+    public static final int DEFAULT_TEXT_COLOR = ColorLib.gray(0);
+    public static final int DEFAULT_ROOT_NODE_COLOR = ColorLib.gray(200);
+
     public static int MAX_EDGE_WEIGHT = 50;
     public static final String GRAPH = "graph";
     public static final String NODES = "graph.nodes";
@@ -77,7 +78,7 @@ public class VizUtils {
     }
 
     @SuppressWarnings("unchecked")
-	public static void computeEdgeAlphas(Visualization vis, Tree tree) {
+    public static void computeEdgeAlphas(Visualization vis, Tree tree) {
         Iterator<EdgeItem> edgeIter = vis.visibleItems("graph.edges");
         BSplineEdgeItem edge;
         int minlength = Integer.MAX_VALUE, maxlength = Integer.MIN_VALUE, tsize;
@@ -112,7 +113,7 @@ public class VizUtils {
     }
 
     @SuppressWarnings("unchecked")
-	public static void forceEdgeUpdate(Visualization vis) {
+    public static void forceEdgeUpdate(Visualization vis) {
         Iterator<EdgeItem> edgeIter;
         BSplineEdgeItem edge;
 

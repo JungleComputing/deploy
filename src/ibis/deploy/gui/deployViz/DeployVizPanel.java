@@ -1,6 +1,6 @@
 package ibis.deploy.gui.deployViz;
 
-import ibis.deploy.Grid;
+import ibis.deploy.Application;
 import ibis.deploy.gui.GUI;
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
@@ -11,7 +11,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Set;
 
 import javax.swing.Action;
@@ -37,8 +36,6 @@ import ibis.deploy.gui.deployViz.data.DataCollector;
 import ibis.deploy.gui.deployViz.data.GraphGenerator;
 import ibis.deploy.gui.deployViz.edgeBundles.*;
 import ibis.deploy.gui.deployViz.helpers.*;
-import ibis.deploy.gui.gridvision.dataholders.Pool;
-import ibis.deploy.gui.misc.Utils;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
 
@@ -57,17 +54,13 @@ import prefuse.controls.PanControl;
 import prefuse.controls.ZoomControl;
 import prefuse.controls.ZoomToFitControl;
 import prefuse.data.Graph;
-import prefuse.data.Node;
 import prefuse.data.Tree;
-import prefuse.data.io.DataIOException;
-import prefuse.data.io.GraphMLReader;
 import prefuse.data.tuple.TupleSet;
 import prefuse.render.AbstractShapeRenderer;
 import prefuse.render.DefaultRendererFactory;
 import prefuse.render.LabelRenderer;
 import prefuse.util.ColorLib;
 import prefuse.util.ui.JFastLabel;
-import prefuse.visual.NodeItem;
 import prefuse.visual.VisualItem;
 import prefuse.visual.expression.InGroupPredicate;
 import prefuse.visual.sort.TreeDepthItemSorter;
@@ -105,48 +98,48 @@ public class DeployVizPanel extends JPanel {
     private ManagementServiceInterface manInterface;
 
     private DataCollector statman;
-    private Graph graph;
-    private GUI gui;
+    private GraphGenerator generator;
 
     public DeployVizPanel(GUI gui) {
-
-        this.gui = gui;
 
         // Add the option to enable this feature to the Ibis Deploy menu bar
         JMenuBar menuBar = gui.getMenuBar();
         JMenu menu = null;
 
-//        Action menuAction = new DeployVizAction(gui, this);
-//
-//        for (int i = 0; i < menuBar.getMenuCount(); i++) {
-//            if (menuBar.getMenu(i).getText().equals("View")) {
-//                menu = menuBar.getMenu(i);
-//            }
-//        }
-//        if (menu == null) {
-//            menu = new JMenu("View");
-//            menu.add(menuAction);
-//            menuBar.add(menu, Math.max(0, menuBar.getMenuCount() - 1));
-//        } else {
-//            boolean found = false;
-//            for (int i = 0; i < menu.getComponentCount(); i++) {
-//                if (menu.getComponent(i) == menuAction) {
-//                    found = true;
-//                    break;
-//                }
-//            }
-//            if (!found) {
-//                menu.add(menuAction);
-//            }
-//        }
+        Action menuAction = new DeployVizAction(gui, this);
+
+        for (int i = 0; i < menuBar.getMenuCount(); i++) {
+            if (menuBar.getMenu(i).getText().equals("View")) {
+                menu = menuBar.getMenu(i);
+            }
+        }
+        if (menu == null) {
+            menu = new JMenu("View");
+            menu.add(menuAction);
+            menuBar.add(menu, Math.max(0, menuBar.getMenuCount() - 1));
+        } else {
+            boolean found = false;
+            for (int i = 0; i < menu.getComponentCount(); i++) {
+                if (menu.getComponent(i) == menuAction) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                menu.add(menuAction);
+            }
+        }
 
         setLayout(new BorderLayout());
         vizPanel = new JPanel(new BorderLayout());
 
-        String infile = DATA_FILE;
+        // create the graph generator - this needs to be created before the
+        // visualization
+        generator = new GraphGenerator(gui);
+
+        // the panels are created and so is the Visualization object
         String label = "name";
-        vizPanel.add(createVisualizationPanels(infile, label),
-                BorderLayout.CENTER);
+        vizPanel.add(createVisualizationPanels(label), BorderLayout.CENTER);
 
         // retrieve the JMX interfaces
         try {
@@ -158,6 +151,7 @@ public class DeployVizPanel extends JPanel {
             e.printStackTrace();
         }
 
+        // create the statistics manager
         statman = new DataCollector(manInterface, regInterface, this);
 
         add(vizPanel, BorderLayout.CENTER);
@@ -168,7 +162,9 @@ public class DeployVizPanel extends JPanel {
     // }
 
     public void updateVisualization(HashMap<String, Set<String>> ibisesPerSite) {
-        if (initializeGraph(ibisesPerSite)) {
+        // try to update the graph, and only redo the visualization if changes
+        // have occurred in the meanwhile
+        if (generator.updatePrefuseGraph(ibisesPerSite, vis)) {
             computeVisualParameters(edgeRenderer);
             vis.repaint();
         }
@@ -202,20 +198,19 @@ public class DeployVizPanel extends JPanel {
 
             // use black for node text
             ColorAction text = new ColorAction(VizUtils.NODES,
-                    VisualItem.TEXTCOLOR, ColorLib.gray(100));
-            // text.add("_hover", ColorLib.rgb(255, 0, 0));
+                    VisualItem.TEXTCOLOR, VizUtils.DEFAULT_TEXT_COLOR);
 
-            // ColorAction fill = new ColorAction(VizUtils.NODES,
-            // VisualItem.FILLCOLOR, ColorLib.gray(200));
-            // fill.add("_hover", ColorLib.gray(220, 230));
+            // use this to color the root node
+            ColorAction fill = new ColorAction(VizUtils.NODES,
+                    VisualItem.FILLCOLOR, VizUtils.DEFAULT_ROOT_NODE_COLOR);
 
             // create an action list containing all color assignments
-            ActionList color = new ActionList();
-            color.add(nStroke);
-            color.add(text);
-            // color.add(fill);
+            ActionList initialColor = new ActionList();
+            initialColor.add(text);
+            initialColor.add(fill);
 
-            m_vis.putAction("color", color);
+            m_vis.putAction("initialColor", initialColor);
+            m_vis.putAction("color", nStroke);
 
             // create the radial tree layout action
             radialTreeLayout = new RadialTreeLayout(VizUtils.GRAPH);
@@ -243,61 +238,14 @@ public class DeployVizPanel extends JPanel {
 
             computeVisualParameters(edgeRenderer);
             // color the graph and perform layout
-            // m_vis.run("color");
+            m_vis.run("initialColor");
             // m_vis.run(RADIAL_TREE_LAYOUT);
 
         }
     }
 
-    // reads the graph from a GraphML file and loads it into the visualization
-    public boolean initializeGraph(HashMap<String, Set<String>> ibisesPerSite) {
-        // try {
-        // graph = new GraphMLReader().readGraph(datafile);
-        // } catch (DataIOException e) {
-        // e.printStackTrace();
-        // System.err.println("Error loading graph.");
-        // System.exit(1);
-        // }
-
-        graph = GraphGenerator.updatePrefuseGraph(ibisesPerSite);
-        if (graph == null) {
-            return false;
-        }
-
-        try {
-            if (vis == null) {
-                vis = new BundledEdgeVisualization();
-                vis.addGraph(VizUtils.GRAPH, graph);
-            }
-
-            // // create a new radial tree view
-            // if (graphDisplay == null) {
-            // graphDisplay = new RadialGraphDisplay(graph, label);
-            // vis = graphDisplay.getVisualization();
-            // } else {
-            //
-            // vis.addGraph(GRAPH, graph);
-            // }
-
-        } catch (IllegalArgumentException exc) {
-
-            System.err
-                    .println("An exception occurred while creating the visualization");
-            // // an exception will be thrown when the GRAPH group already
-            // exists
-            // // in the visualization. In this case, remove the existing data
-            // // before adding new information
-            //
-            // vis.removeGroup(EDGES);
-            // vis.removeGroup(NODES);
-            // vis.removeGroup(GRAPH);
-            // vis.add(GRAPH, graph);
-        }
-        return true;
-    }
-
     // redoes the layout and assigns edge colors and alphas.
-    // It is called during the simulation when new data is loaded
+    // It is called when the graph structure changes
     public void computeVisualParameters(BundledEdgeRenderer edgeRenderer) {
 
         TupleSet ts = vis.getGroup(VizUtils.GRAPH);
@@ -324,7 +272,7 @@ public class DeployVizPanel extends JPanel {
                 edgeRenderer.setSpanningTree(tree);
 
                 // set the fillColor for the nodes
-                assignNodeColours(tree);
+                // assignNodeColours(tree);
 
                 // compute alphas for the edges, according to their length
                 VizUtils.computeEdgeAlphas(vis, tree);
@@ -333,9 +281,19 @@ public class DeployVizPanel extends JPanel {
 
     }
 
-    public JPanel createVisualizationPanels(String datafile, final String label) {
+    public JPanel createVisualizationPanels(final String label) {
 
-        initializeGraph(null);
+        try {
+            if (vis == null) {
+                vis = new BundledEdgeVisualization();
+                vis.addGraph(VizUtils.GRAPH, generator.getGraph());
+            }
+
+        } catch (IllegalArgumentException exc) {
+
+            System.err
+                    .println("An exception occurred while creating the visualization");
+        }
         graphDisplay = new RadialGraphDisplay();
 
         final JFastLabel title = new JFastLabel("                 ");
@@ -370,42 +328,42 @@ public class DeployVizPanel extends JPanel {
     // assigns node colors based on the cluster they are in.
     // TODO - do this more efficiently, so that I don't have to re-assign node
     // colors every time a change occurs in the graph
-    @SuppressWarnings("unchecked")
-    private void assignNodeColours(Tree tree) {
-        NodeItem item;
-        Node parent;
-        Grid grid = gui.getWorkSpace().getGrid();
-        String colorCode;
-        int color;
-
-        Iterator<NodeItem> nodes = vis.visibleItems(VizUtils.NODES);
-
-        while (nodes.hasNext()) {
-            item = nodes.next();
-            if (item.getString(VizUtils.NODE_TYPE).equals(
-                    VizUtils.NODE_TYPE_SITE_NODE)) {
-                colorCode = grid.getCluster(item.getString(VizUtils.NODE_NAME))
-                        .getColorCode();
-                color = Utils.getColor(colorCode).getRGB();
-                item.setFillColor(color);
-                item.setStartFillColor(color);
-            } else if (item.getString(VizUtils.NODE_TYPE).equals(
-                    VizUtils.NODE_TYPE_IBIS_NODE)) {
-                parent = item.getParent();
-                if (parent != null) {
-                    colorCode = grid.getCluster(
-                            parent.getString(VizUtils.NODE_NAME))
-                            .getColorCode();
-                    color = Utils.getColor(colorCode).getRGB();
-                    item.setFillColor(color);
-                    item.setStartFillColor(color);
-                }
-            } else {
-                item.setFillColor(ColorLib.gray(200));
-                item.setStartFillColor(ColorLib.gray(200));
-            }
-        }
-    }
+    // @SuppressWarnings("unchecked")
+    // private void assignNodeColours(Tree tree) {
+    // NodeItem item;
+    // Node parent;
+    // Grid grid = gui.getWorkSpace().getGrid();
+    // String colorCode;
+    // int color;
+    //
+    // Iterator<NodeItem> nodes = vis.visibleItems(VizUtils.NODES);
+    //
+    // while (nodes.hasNext()) {
+    // item = nodes.next();
+    // if (item.getString(VizUtils.NODE_TYPE).equals(
+    // VizUtils.NODE_TYPE_SITE_NODE)) {
+    // colorCode = grid.getCluster(item.getString(VizUtils.NODE_NAME))
+    // .getColorCode();
+    // color = Utils.getColor(colorCode).getRGB();
+    // item.setFillColor(color);
+    // item.setStartFillColor(color);
+    // } else if (item.getString(VizUtils.NODE_TYPE).equals(
+    // VizUtils.NODE_TYPE_IBIS_NODE)) {
+    // parent = item.getParent();
+    // if (parent != null) {
+    // colorCode = grid.getCluster(
+    // parent.getString(VizUtils.NODE_NAME))
+    // .getColorCode();
+    // color = Utils.getColor(colorCode).getRGB();
+    // item.setFillColor(color);
+    // item.setStartFillColor(color);
+    // }
+    // } else {
+    // item.setFillColor(ColorLib.gray(200));
+    // item.setStartFillColor(ColorLib.gray(200));
+    // }
+    // }
+    // }
 
     // creates the panels and the controls that are used to customize the
     // visualization

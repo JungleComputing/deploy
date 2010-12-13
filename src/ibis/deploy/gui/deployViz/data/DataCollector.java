@@ -22,7 +22,7 @@ public class DataCollector {
 
     private ManagementServiceInterface manInterface;
     private RegistryServiceInterface regInterface;
-    private int refreshrate = 5000;
+    private int refreshrate = 3000;
     private Timer refreshTimer;
     private final DeployVizPanel vizPanel;
 
@@ -55,54 +55,64 @@ public class DataCollector {
     public void stopTimer() {
         refreshTimer.stop();
     }
-    
+
     public void startTimer() {
         refreshTimer.start();
     }
+
     public boolean isTimerRunning() {
         return refreshTimer.isRunning();
     }
 
+    @SuppressWarnings("unchecked")
     public void collectIbisData() {
-        Map<String, Integer> poolSizes;
+        Map<String, Integer> poolSizes = null;
         IbisIdentifier[] ibises = null;
         String poolName, ibisLocation;
         String[] locationList;
         Set<String> oldIbisLocations, dataToRemove = new HashSet<String>(), ibisList;
-
         try {
             poolSizes = regInterface.getPoolSizes();
-            
-            //for every pool
+        } catch (IOException e) {
+            System.err.println("Couldn\'t retrieve pool sizes");
+            e.printStackTrace();
+        }
+
+        if (poolSizes != null) {
+            // for every pool
             for (Map.Entry<String, Integer> pool : poolSizes.entrySet()) {
 
                 poolName = pool.getKey();
 
                 try {
-                    
-                    //retrieve the list of locations
+
+                    // retrieve the list of locations
                     locationList = regInterface.getLocations(poolName);
-                    
+
                     ibises = regInterface.getMembers(poolName);
 
-                    // The site name is after the @ sign, we make sure this array
+                    // The site name is after the @ sign, we make sure this
+                    // array
                     // only contains unique names
                     for (int i = 0; i < locationList.length; i++) {
                         locationList[i] = locationList[i].split("@")[1];
-                        
-                        //if the location didn't previously exist in the list, add it
-                        if(!ibisesPerSite.containsKey(locationList[i])){
-                            ibisesPerSite.put(locationList[i], new HashSet<String>());
+
+                        // if the location didn't previously exist in the list,
+                        // add it
+                        if (!ibisesPerSite.containsKey(locationList[i])) {
+                            ibisesPerSite.put(locationList[i],
+                                    new HashSet<String>());
                         }
-                        
-                        //remove the ibises which are no longer active from the site lists
+
+                        // remove the ibises which are no longer active from the
+                        // site lists
                         ibisList = ibisesPerSite.get(locationList[i]);
-                        for(String ibisName:ibisList){
-                            if(!ibisListContainsName(ibises, ibisName)){
+                        for (String ibisName : ibisList) {
+                            if (!ibisListContainsName(ibises, ibisName)) {
                                 dataToRemove.add(ibisName);
                             }
                         }
-                        for(String ibisName: dataToRemove){
+                        for (String ibisName : dataToRemove) {
                             ibisList.remove(ibisName);
                         }
                         dataToRemove.clear();
@@ -114,41 +124,30 @@ public class DataCollector {
                         // check if the current location is still in the list
                         if (Arrays.binarySearch(locationList, 0,
                                 locationList.length, location) < 0) {
-                            //mark the location for removal
+                            // mark the location for removal
                             dataToRemove.add(location);
                         }
                     }
-//                    //***************
-//                    Set<String> tmp = new HashSet<String>();
-//                    ibisesPerSite.put("X", tmp);
-//                    tmp.add("a");
-//                    tmp.add("dsasda");
-//                    
-//                    tmp = new HashSet<String>();
-//                    ibisesPerSite.put("Y", tmp);
-//                    tmp.add("aaa");
-//                    tmp.add("dsasda");
-//                    
-//                    //*****************
-                    
-                    //remove all the locations that are no longer up to date
-                    for(String location:dataToRemove){
+
+                    // remove all the locations that are no longer up to date
+                    for (String location : dataToRemove) {
                         ibisesPerSite.remove(location);
                     }
                     dataToRemove.clear();
-                    
-                    //add all the ibises that aren't up to date anymore
+
+                    // add all the ibises that aren't up to date anymore
                     for (IbisIdentifier ibis : ibises) {
                         ibisLocation = ibis.location().toString().split("@")[1];
-                        
-                        //check if that location exists, if not, create it
+
+                        // check if that location exists, if not, create it
                         if (ibisesPerSite.get(ibisLocation) == null) {
                             ibisList = new HashSet<String>();
                         } else {
                             ibisList = ibisesPerSite.get(ibisLocation);
                         }
 
-                        //add the ibis to the corresponding list, if it's not already there
+                        // add the ibis to the corresponding list, if it's not
+                        // already there
                         if (!ibisList.contains(ibis.name())) {
                             ibisList.add(ibis.name());
                         }
@@ -160,63 +159,79 @@ public class DataCollector {
 
                 vizPanel.updateVisualization(ibisesPerSite);
 
-                //
-                // AttributeDescription connections = new
-                // AttributeDescription("ibis",
-                // "connections");
-                //
-                // for (IbisIdentifier ibis : ibises) {
-                //
-                // try {
-                // // System.out.println(ibis
-                // // + " connected to = "
-                // // + Arrays.toString((IbisIdentifier[]) manInterface
-                // // .getAttributes(ibis, connections)[0]));
-                // } catch (Exception e) {
-                // e.printStackTrace();
-                // }
-                // }
+                AttributeDescription connections = new AttributeDescription(
+                        "ibis", "connections");
+                AttributeDescription sentBytesPerIbis = new AttributeDescription(
+                        "ibis", "sentBytesPerIbis");
 
-                // AttributeDescription load = new AttributeDescription(
-                // "java.lang:type=OperatingSystem", "SystemLoadAverage");
-                //
-                // AttributeDescription cpu = new AttributeDescription(
-                // "java.lang:type=OperatingSystem", "ProcessCpuTime");
-                //
-                // AttributeDescription connections = new
-                // AttributeDescription("ibis",
-                // "connections");
-                //
-                // // for each ibis, print these attributes
-                // if (ibises != null) {
-                // for (IbisIdentifier ibis : ibises) {
-                // try {
-                // System.err
-                // .println(ibis
-                // + " connected to = "
-                // + Arrays
-                // .toString((IbisIdentifier[]) manInterface
-                // .getAttributes(ibis,
-                // connections)[0]));
-                //
-                // } catch (Exception e) {
-                // System.err.println("Could not get management info: ");
-                // e.printStackTrace();
-                // }
-                // }
-                //
-                // }
+                AttributeDescription receivedBytesPerIbis = new AttributeDescription(
+                        "ibis", "receivedBytesPerIbis");
+
+                AttributeDescription load = new AttributeDescription(
+                        "java.lang:type=OperatingSystem", "SystemLoadAverage");
+
+                for (IbisIdentifier ibis : ibises) {
+
+                    try {
+//                        System.err.println(ibis
+//                                + " [load] = "
+//                                + Arrays.toString(manInterface.getAttributes(
+//                                        ibis, load)));
+
+                        Object[] sentBytes = manInterface.getAttributes(ibis,
+                                sentBytesPerIbis);
+                        HashMap<IbisIdentifier, Long> sent = (HashMap<IbisIdentifier, Long>) sentBytes[0];
+//                        System.out.println(sent.toString());
+
+                    } catch (Exception e1) {
+                        e1.printStackTrace();
+                    }
+
+                    // IbisIdentifier[] connList = (IbisIdentifier[])
+                    // manInterface
+                    // .getAttributes(ibis, connections)[0];
+                    // for (IbisIdentifier conIbis : connList) {
+                    // System.out.println(ibis + " connected to = "
+                    // + conIbis.name());
+                    // }
+
+                    // AttributeDescription load = new AttributeDescription(
+                    // "java.lang:type=OperatingSystem", "SystemLoadAverage");
+                    //
+                    // AttributeDescription cpu = new AttributeDescription(
+                    // "java.lang:type=OperatingSystem", "ProcessCpuTime");
+                    //
+                    // AttributeDescription connections = new
+                    // AttributeDescription("ibis",
+                    // "connections");
+                    //
+                    // // for each ibis, print these attributes
+                    // if (ibises != null) {
+                    // for (IbisIdentifier ibis : ibises) {
+                    // try {
+                    // System.err
+                    // .println(ibis
+                    // + " connected to = "
+                    // + Arrays
+                    // .toString((IbisIdentifier[]) manInterface
+                    // .getAttributes(ibis,
+                    // connections)[0]));
+                    //
+                    // } catch (Exception e) {
+                    // System.err.println("Could not get management info: ");
+                    // e.printStackTrace();
+                    // }
+                    // }
+                    //
+                    // }
+                }
             }
-        } catch (Exception e) {
-            System.err.println("Couldn\'t retrieve pool sizes");
-            e.printStackTrace();
         }
-
     }
-    
-    private boolean ibisListContainsName(IbisIdentifier[] ibisList, String name){
-        for(IbisIdentifier ibis: ibisList){
-            if(ibis.name().equals(name)){
+
+    private boolean ibisListContainsName(IbisIdentifier[] ibisList, String name) {
+        for (IbisIdentifier ibis : ibisList) {
+            if (ibis.name().equals(name)) {
                 return true;
             }
         }
