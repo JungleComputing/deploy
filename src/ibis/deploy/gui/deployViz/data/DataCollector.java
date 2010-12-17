@@ -27,6 +27,18 @@ public class DataCollector {
     private final DeployVizPanel vizPanel;
 
     private HashMap<String, Set<String>> ibisesPerSite = new HashMap<String, Set<String>>();
+    private HashMap<String, HashMap<String, Long>> connectionsPerIbis = new HashMap<String, HashMap<String, Long>>();
+
+    private static final AttributeDescription connections = new AttributeDescription(
+            "ibis", "connections");
+    private static final AttributeDescription sentBytesPerIbis = new AttributeDescription(
+            "ibis", "sentBytesPerIbis");
+
+    private static final AttributeDescription receivedBytesPerIbis = new AttributeDescription(
+            "ibis", "receivedBytesPerIbis");
+
+    private static final AttributeDescription load = new AttributeDescription(
+            "java.lang:type=OperatingSystem", "SystemLoadAverage");
 
     public DataCollector(ManagementServiceInterface manInterface,
             RegistryServiceInterface regInterface, DeployVizPanel vPanel) {
@@ -70,7 +82,8 @@ public class DataCollector {
         IbisIdentifier[] ibises = null;
         String poolName, ibisLocation;
         String[] locationList;
-        Set<String> oldIbisLocations, dataToRemove = new HashSet<String>(), ibisList;
+        Set<String> ibisList;
+        String ibisName, neighbourName, aux;
         try {
             poolSizes = regInterface.getPoolSizes();
         } catch (IOException e) {
@@ -78,22 +91,28 @@ public class DataCollector {
             e.printStackTrace();
         }
 
+        // maybe at some later point do some better memory management,
+        // reallocating these resources all the time might be costly
+        ibisesPerSite.clear();
+        connectionsPerIbis.clear();
+
         if (poolSizes != null) {
-            // for every pool
+
             for (Map.Entry<String, Integer> pool : poolSizes.entrySet()) {
 
                 poolName = pool.getKey();
 
+                // first we take into account the sites and the ibises
                 try {
 
                     // retrieve the list of locations
                     locationList = regInterface.getLocations(poolName);
 
+                    // retrieve the list of ibises
                     ibises = regInterface.getMembers(poolName);
 
                     // The site name is after the @ sign, we make sure this
-                    // array
-                    // only contains unique names
+                    // array only contains unique names
                     for (int i = 0; i < locationList.length; i++) {
                         locationList[i] = locationList[i].split("@")[1];
 
@@ -104,40 +123,13 @@ public class DataCollector {
                                     new HashSet<String>());
                         }
 
-                        // remove the ibises which are no longer active from the
-                        // site lists
-                        ibisList = ibisesPerSite.get(locationList[i]);
-                        for (String ibisName : ibisList) {
-                            if (!ibisListContainsName(ibises, ibisName)) {
-                                dataToRemove.add(ibisName);
-                            }
-                        }
-                        for (String ibisName : dataToRemove) {
-                            ibisList.remove(ibisName);
-                        }
-                        dataToRemove.clear();
                     }
 
-                    // remove the locations that aren't up to date any more
-                    oldIbisLocations = ibisesPerSite.keySet();
-                    for (String location : oldIbisLocations) {
-                        // check if the current location is still in the list
-                        if (Arrays.binarySearch(locationList, 0,
-                                locationList.length, location) < 0) {
-                            // mark the location for removal
-                            dataToRemove.add(location);
-                        }
-                    }
-
-                    // remove all the locations that are no longer up to date
-                    for (String location : dataToRemove) {
-                        ibisesPerSite.remove(location);
-                    }
-                    dataToRemove.clear();
-
-                    // add all the ibises that aren't up to date anymore
+                    // add all the ibises
                     for (IbisIdentifier ibis : ibises) {
                         ibisLocation = ibis.location().toString().split("@")[1];
+
+                        ibisName = ibis.name() + "-" + ibis.location();
 
                         // check if that location exists, if not, create it
                         if (ibisesPerSite.get(ibisLocation) == null) {
@@ -148,82 +140,127 @@ public class DataCollector {
 
                         // add the ibis to the corresponding list, if it's not
                         // already there
-                        if (!ibisList.contains(ibis.name())) {
-                            ibisList.add(ibis.name());
-                        }
+                        ibisList.add(ibisName);
                     }
 
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
-                vizPanel.updateVisualization(ibisesPerSite);
+                Object[] tempResult;
+                HashMap<IbisIdentifier, Long> sentBytes, receivedBytes;
+                HashMap<String, Long> totalBytes;
+                long sum = 0;
 
-                AttributeDescription connections = new AttributeDescription(
-                        "ibis", "connections");
-                AttributeDescription sentBytesPerIbis = new AttributeDescription(
-                        "ibis", "sentBytesPerIbis");
-
-                AttributeDescription receivedBytesPerIbis = new AttributeDescription(
-                        "ibis", "receivedBytesPerIbis");
-
-                AttributeDescription load = new AttributeDescription(
-                        "java.lang:type=OperatingSystem", "SystemLoadAverage");
-
+                // retrieve the connections per ibis
                 for (IbisIdentifier ibis : ibises) {
 
-                    try {
-//                        System.err.println(ibis
-//                                + " [load] = "
-//                                + Arrays.toString(manInterface.getAttributes(
-//                                        ibis, load)));
+                    ibisName = ibis.name() + "-" + ibis.location();
 
-                        Object[] sentBytes = manInterface.getAttributes(ibis,
-                                sentBytesPerIbis);
-                        HashMap<IbisIdentifier, Long> sent = (HashMap<IbisIdentifier, Long>) sentBytes[0];
-//                        System.out.println(sent.toString());
-
-                    } catch (Exception e1) {
-                        e1.printStackTrace();
+                    // retrieve the connection hashmap for this ibis
+                    if (connectionsPerIbis.get(ibisName) == null) {
+                        totalBytes = new HashMap<String, Long>();
+                        connectionsPerIbis.put(ibisName, totalBytes);
+                    } else {
+                        totalBytes = connectionsPerIbis.get(ibisName);
+                        totalBytes.clear();
                     }
 
-                    // IbisIdentifier[] connList = (IbisIdentifier[])
-                    // manInterface
-                    // .getAttributes(ibis, connections)[0];
-                    // for (IbisIdentifier conIbis : connList) {
-                    // System.out.println(ibis + " connected to = "
-                    // + conIbis.name());
-                    // }
+                    try {
 
-                    // AttributeDescription load = new AttributeDescription(
-                    // "java.lang:type=OperatingSystem", "SystemLoadAverage");
-                    //
-                    // AttributeDescription cpu = new AttributeDescription(
-                    // "java.lang:type=OperatingSystem", "ProcessCpuTime");
-                    //
-                    // AttributeDescription connections = new
-                    // AttributeDescription("ibis",
-                    // "connections");
-                    //
-                    // // for each ibis, print these attributes
-                    // if (ibises != null) {
-                    // for (IbisIdentifier ibis : ibises) {
-                    // try {
-                    // System.err
-                    // .println(ibis
-                    // + " connected to = "
-                    // + Arrays
-                    // .toString((IbisIdentifier[]) manInterface
-                    // .getAttributes(ibis,
-                    // connections)[0]));
-                    //
-                    // } catch (Exception e) {
-                    // System.err.println("Could not get management info: ");
-                    // e.printStackTrace();
-                    // }
-                    // }
-                    //
-                    // }
+                        // get the number of bytes sent to every connected ibis
+                        tempResult = manInterface.getAttributes(ibis,
+                                sentBytesPerIbis);
+                        sentBytes = (HashMap<IbisIdentifier, Long>) tempResult[0];
+
+                        // get the number of bytes received from every connected
+                        // ibis
+                        tempResult = manInterface.getAttributes(ibis,
+                                receivedBytesPerIbis);
+                        receivedBytes = (HashMap<IbisIdentifier, Long>) tempResult[0];
+
+                        for (IbisIdentifier neighbour : sentBytes.keySet()) {
+                            neighbourName = neighbour.name() + "-"
+                                    + neighbour.location();
+
+                            // the weight of the connection is the sum of the
+                            // number of sent and received bytes, if both values
+                            // are recorded
+                            if (receivedBytes.get(neighbour) != null) {
+                                sum = sentBytes.get(neighbour)
+                                        + receivedBytes.get(neighbour);
+                                receivedBytes.remove(neighbour);
+                            } else {
+                                sum = sentBytes.get(neighbour);
+                            }
+
+                            totalBytes.put(neighbourName, sum);
+                        }
+
+                        // if there are neighbours from which I received and did
+                        // not send to
+                        for (IbisIdentifier neighbour : receivedBytes.keySet()) {
+                            neighbourName = neighbour.name() + "-"
+                                    + neighbour.location();
+                            totalBytes.put(neighbourName, receivedBytes
+                                    .get(neighbour));
+                        }
+
+                    } catch (Exception e1) {
+                        System.err.println(e1.getMessage());
+
+                        // e1.printStackTrace();
+                        // TODO This one happens pretty often, usually a
+                        // socket-related exception. Printing the stack clogs up
+                        // the output...
+                    }
+
+                }
+            }
+        }
+
+        //generateRandomData();
+
+        vizPanel.updateVisualization(ibisesPerSite, connectionsPerIbis);
+    }
+
+    private void generateRandomData() {
+        int random;
+        int sites = 10, nibises = 15;
+
+        ibisesPerSite.clear();
+        for (int i = 0; i < sites; i++) {
+            random = (int) (Math.random() * 100);
+            random = (int) (Math.random() * 100);
+            if (random % 2 == 0) {
+                String sitename = "site" + i;
+                HashSet<String> ibises = new HashSet<String>();
+                ibisesPerSite.put(sitename, ibises);
+                for (int j = 0; j < nibises; j++) {
+
+                    String startIbis = sitename + "ibis" + j;
+
+                    HashMap<String, Long> tempedge = connectionsPerIbis
+                            .get(startIbis);
+                    if (tempedge == null) {
+                        tempedge = new HashMap<String, Long>();
+                    } else {
+                        tempedge.clear();
+                    }
+
+                    ibises.add(startIbis);
+                    for (int k = 0; k < nibises; k++) {
+                        String stopIbis = sitename + "ibis" + k;
+                        random = (int) (Math.random() * 100);
+                        if (random % 2 == 0) {
+                            if (k != j) {
+
+                                tempedge.put(stopIbis,
+                                        (long) (Math.random() * 100));
+                                connectionsPerIbis.put(startIbis, tempedge);
+                            }
+                        }
+                    }
                 }
             }
         }

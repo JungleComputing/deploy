@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.util.Iterator;
 
 import prefuse.Visualization;
+import prefuse.data.Graph;
 import prefuse.data.Tree;
 import prefuse.util.ColorLib;
 import prefuse.visual.EdgeItem;
@@ -28,14 +29,15 @@ public class VizUtils {
     public static final int DEFAULT_TEXT_COLOR = ColorLib.gray(0);
     public static final int DEFAULT_ROOT_NODE_COLOR = ColorLib.gray(200);
 
-    public static int MAX_EDGE_WEIGHT = 50;
+    public static long MAX_EDGE_WEIGHT = 1;
+    public static long MIN_EDGE_WEIGHT = Long.MAX_VALUE;
     public static final String GRAPH = "graph";
     public static final String NODES = "graph.nodes";
     public static final String EDGES = "graph.edges";
     public static final String NODE_NAME = "name";
     public static final String NODE_TYPE = "type";
     public static final String WEIGHT = "weight";
-    public static final int DEFAULT_WEIGHT = 1;
+    public static final long DEFAULT_WEIGHT = 1;
 
     private static final String[] colors = { "#FF0000", "#FF8000", "#80FF00",
             "#00FF00", "#00FF80", "#00FFFF", "#007FFF", "#8000FF", "#FF0080",
@@ -45,7 +47,7 @@ public class VizUtils {
 
     private static int colorIndex = 0;
 
-    private static double minAlpha = 0.3, maxAlpha = 0.8;
+    private static double minAlpha = 0.4, maxAlpha = 0.85;
 
     public static String getNextColor() {
         if (colorIndex == colors.length) {
@@ -53,6 +55,15 @@ public class VizUtils {
         }
 
         return colors[colorIndex++];
+    }
+
+    public static void updateMinMaxWeights(long value) {
+        if (value > MAX_EDGE_WEIGHT) {
+            MAX_EDGE_WEIGHT = value;
+        }
+        if(value < MIN_EDGE_WEIGHT) {
+            MIN_EDGE_WEIGHT = value;
+        }
     }
 
     public static String getRandomColor() {
@@ -71,8 +82,9 @@ public class VizUtils {
         color1.getColorComponents(rgb1);
         color2.getColorComponents(rgb2);
 
-        Color color = new Color(rgb1[0] * r + rgb2[0] * ir, rgb1[1] * r
-                + rgb2[1] * ir, rgb1[2] * r + rgb2[2] * ir, alpha);
+        Color color = new Color((rgb1[0] * r + rgb2[0] * ir) % 256, (rgb1[1]
+                * r + rgb2[1] * ir) % 256, (rgb1[2] * r + rgb2[2] * ir) % 256,
+                alpha);
 
         return color;
     }
@@ -83,24 +95,42 @@ public class VizUtils {
         BSplineEdgeItem edge;
         int minlength = Integer.MAX_VALUE, maxlength = Integer.MIN_VALUE, tsize;
 
+        // force control point recalculation
+        VizUtils.forceEdgeUpdate(vis);
+
         while (edgeIter.hasNext()) {
-            edge = (BSplineEdgeItem) edgeIter.next();
-            edge.computeControlPoints(false, 1, edge, tree);
-            tsize = edge.getControlPoints().size();
-            if (tsize > maxlength) {
-                maxlength = tsize;
-            }
-            if (tsize < minlength) {
-                minlength = tsize;
+            try {
+                edge = (BSplineEdgeItem) edgeIter.next();
+                edge.computeControlPoints(false, 1, edge, tree);
+                tsize = edge.getControlPoints().size();
+                if (tsize > maxlength) {
+                    maxlength = tsize;
+                }
+                if (tsize < minlength) {
+                    minlength = tsize;
+                }
+            } catch (IllegalArgumentException exc) {
+                System.err.println(exc.getMessage());
+                // Prefuse sometimes throws this exception if the node / edge
+                // has been recently removed. I think it's due to
+                // synchronization issues, plus instead of returning false,
+                // Prefuse just throws an exception
             }
         }
 
-        edgeIter = vis.visibleItems("graph.edges");
+        Graph graph = (Graph) vis.getGroup(GRAPH);
+        edgeIter = graph.edges();
+
         while (edgeIter.hasNext()) {
-            edge = (BSplineEdgeItem) edgeIter.next();
-            edge.setAlpha(fromIntervalToInterval(
-                    edge.getControlPoints().size(), minlength, maxlength,
-                    minAlpha, maxAlpha));
+            try {
+                edge = (BSplineEdgeItem) edgeIter.next();
+                edge.setAlpha(fromIntervalToInterval(edge.getControlPoints()
+                        .size(), minlength, maxlength, minAlpha, maxAlpha));
+            } catch (IllegalArgumentException exc) {
+                // same story here
+                System.err.println(exc.getMessage());
+            }
+
         }
     }
 
@@ -118,10 +148,16 @@ public class VizUtils {
         BSplineEdgeItem edge;
 
         // update all edges - when a node is moved, all edges must be recomputed
-        edgeIter = vis.visibleItems("graph.edges");
+        Graph graph = (Graph) vis.getGroup(GRAPH);
+        edgeIter = graph.edges();
         while (edgeIter.hasNext()) {
-            edge = (BSplineEdgeItem) edgeIter.next();
-            edge.setUpdated(false);
+            try {
+                edge = (BSplineEdgeItem) edgeIter.next();
+                edge.setUpdated(false);
+            } catch (IllegalArgumentException exc) {
+                // same story here
+                System.err.println(exc.getMessage());
+            }
         }
     }
 }

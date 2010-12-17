@@ -61,6 +61,8 @@ import prefuse.render.DefaultRendererFactory;
 import prefuse.render.LabelRenderer;
 import prefuse.util.ColorLib;
 import prefuse.util.ui.JFastLabel;
+import prefuse.visual.EdgeItem;
+import prefuse.visual.NodeItem;
 import prefuse.visual.VisualItem;
 import prefuse.visual.expression.InGroupPredicate;
 import prefuse.visual.sort.TreeDepthItemSorter;
@@ -85,12 +87,10 @@ public class DeployVizPanel extends JPanel {
     private JButton lastSelectedButton = null, buttonStart = null,
             buttonStop = null;
 
-    private Action updateVisualizationAction;
-
     private TreeLayout lastSelectedLayout = null;
     private RadialTreeLayout radialTreeLayout;
     private NodeLinkTreeLayout treeLayout;
-    private RadialGraphDisplay graphDisplay;
+    private RadialGraphDisplay radialGraphDisplay;
     private JPanel vizPanel;
 
     // JMX variables
@@ -157,15 +157,28 @@ public class DeployVizPanel extends JPanel {
         add(vizPanel, BorderLayout.CENTER);
     }
 
-    // public void shutdown() {
-    // statman.stopTimer();
-    // }
+    public void toggleCollectData(boolean collect) {
+        if (!collect) {
+            if (statman.isTimerRunning()) {
+                statman.stopTimer();
+            }
+        } else {
+            statman.startTimer();
+        }
+    }
 
-    public void updateVisualization(HashMap<String, Set<String>> ibisesPerSite) {
+    public void updateVisualization(HashMap<String, Set<String>> ibisesPerSite,
+            HashMap<String, HashMap<String, Long>> edgesPerIbis) {
         // try to update the graph, and only redo the visualization if changes
         // have occurred in the meanwhile
-        if (generator.updatePrefuseGraph(ibisesPerSite, vis)) {
-            computeVisualParameters(edgeRenderer);
+        int result = generator.updatePrefuseGraph(ibisesPerSite, edgesPerIbis,
+                vis);
+        if (result > GraphGenerator.UPDATE_NONE) {
+            if (result == GraphGenerator.UPDATE_REDO_LAYOUT) {
+                computeVisualParameters(edgeRenderer, true);
+            } else {
+                computeVisualParameters(edgeRenderer, false);
+            }
             vis.repaint();
         }
     }
@@ -174,6 +187,7 @@ public class DeployVizPanel extends JPanel {
 
         private static final long serialVersionUID = 1L;
         private LabelRenderer m_nodeRenderer;
+        private DisplayControlAdaptor displayAdaptor;
 
         public RadialGraphDisplay() {
 
@@ -184,6 +198,7 @@ public class DeployVizPanel extends JPanel {
             m_nodeRenderer = new LabelRenderer(VizUtils.NODE_NAME);
             m_nodeRenderer
                     .setRenderType(AbstractShapeRenderer.RENDER_TYPE_DRAW_AND_FILL);
+            // m_nodeRenderer.setRoundedCorner(7, 7);
 
             edgeRenderer = new BundledEdgeRenderer(VizUtils.BSPLINE_EDGE_TYPE);
 
@@ -234,19 +249,24 @@ public class DeployVizPanel extends JPanel {
             addControlListener(new PanControl());
             setDamageRedraw(false);
             addControlListener(new HoverActionControl("repaint"));
-            addControlListener(new DisplayControlAdaptor(m_vis));
+            addControlListener(displayAdaptor = new DisplayControlAdaptor(m_vis));
 
-            computeVisualParameters(edgeRenderer);
+            computeVisualParameters(edgeRenderer, true);
             // color the graph and perform layout
             m_vis.run("initialColor");
             // m_vis.run(RADIAL_TREE_LAYOUT);
 
         }
+
+        public void forceSelectedNodeUpdate() {
+            displayAdaptor.forceSelectedNodeUpdate();
+        }
     }
 
     // redoes the layout and assigns edge colors and alphas.
     // It is called when the graph structure changes
-    public void computeVisualParameters(BundledEdgeRenderer edgeRenderer) {
+    public void computeVisualParameters(BundledEdgeRenderer edgeRenderer,
+            boolean redoLayout) {
 
         TupleSet ts = vis.getGroup(VizUtils.GRAPH);
 
@@ -256,26 +276,34 @@ public class DeployVizPanel extends JPanel {
             // redo computations only if the graph contains nodes
             if (g.getNodeCount() > 0) {
                 vis.run("color"); // assign the colors
-                if (lastSelectedLayout == radialTreeLayout) {
-                    vis.run(RADIAL_TREE_LAYOUT); // start up the tree layout
-                } else {
-                    vis.run(TREE_LAYOUT);
-                }
+                if (redoLayout) {
+                    if (lastSelectedLayout == radialTreeLayout) {
+                        vis.run(RADIAL_TREE_LAYOUT); // start up the tree layout
+                    } else {
+                        vis.run(TREE_LAYOUT);
+                    }
 
-                // recompute spanning tree based on the new layout
-                if (g.getNodeCount() > 0) {
-                    tree = g.getSpanningTree();
-                }
+                    // recompute spanning tree based on the new layout
+                    if (g.getNodeCount() > 0) {
+                        tree = g.getSpanningTree();
+                    }
 
-                // pass the new spanning tree reference to the renderer for
-                // later use
-                edgeRenderer.setSpanningTree(tree);
+                    // pass the new spanning tree reference to the renderer for
+                    // later use
+                    edgeRenderer.setSpanningTree(tree);
+                }
 
                 // set the fillColor for the nodes
                 // assignNodeColours(tree);
 
                 // compute alphas for the edges, according to their length
                 VizUtils.computeEdgeAlphas(vis, tree);
+
+                // if the graph structure changed, it's necessary to update the
+                // selections also
+                if (radialGraphDisplay != null) {
+                    radialGraphDisplay.forceSelectedNodeUpdate();
+                }
             }
         }
 
@@ -294,17 +322,32 @@ public class DeployVizPanel extends JPanel {
             System.err
                     .println("An exception occurred while creating the visualization");
         }
-        graphDisplay = new RadialGraphDisplay();
+        radialGraphDisplay = new RadialGraphDisplay();
 
         final JFastLabel title = new JFastLabel("                 ");
         title.setPreferredSize(new Dimension(350, 20));
         title.setVerticalAlignment(SwingConstants.BOTTOM);
         title.setBorder(BorderFactory.createEmptyBorder(3, 0, 0, 0));
 
-        graphDisplay.addControlListener(new ControlAdapter() {
+        radialGraphDisplay.addControlListener(new ControlAdapter() {
             public void itemEntered(VisualItem item, MouseEvent e) {
-                if (item.canGetString(label))
-                    title.setText(item.getString(label));
+                if (item instanceof NodeItem) {
+                    if (item.canGetString(VizUtils.NODE_NAME)) {
+                        title.setText(item.getString(VizUtils.NODE_NAME));
+                    }
+                }
+                // else if (item instanceof EdgeItem) {
+                // EdgeItem edge = (EdgeItem) item;
+                // String s = edge.getSourceItem().getString(
+                // VizUtils.NODE_NAME)
+                // + " -> "
+                // + edge.getTargetItem()
+                // .getString(VizUtils.NODE_NAME)
+                // + " - "
+                // + edge.getLong(VizUtils.WEIGHT)
+                // + "";
+                // title.setText(s);
+                // }
             }
 
             public void itemExited(VisualItem item, MouseEvent e) {
@@ -319,7 +362,7 @@ public class DeployVizPanel extends JPanel {
 
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(createControlPanels(), BorderLayout.NORTH);
-        panel.add(graphDisplay, BorderLayout.CENTER);
+        panel.add(radialGraphDisplay, BorderLayout.CENTER);
         panel.add(box, BorderLayout.SOUTH);
 
         return panel;

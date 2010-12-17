@@ -5,8 +5,11 @@ import ibis.deploy.gui.GUI;
 import ibis.deploy.gui.deployViz.helpers.VizUtils;
 import ibis.deploy.gui.misc.Utils;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import prefuse.Visualization;
@@ -15,7 +18,9 @@ import prefuse.data.Graph;
 import prefuse.data.Node;
 import prefuse.data.Schema;
 import prefuse.util.ColorLib;
+import prefuse.visual.EdgeItem;
 import prefuse.visual.NodeItem;
+import prefuse.visual.VisualItem;
 
 public class GraphGenerator {
 
@@ -24,7 +29,12 @@ public class GraphGenerator {
     public final Schema TYPE_SCHEMA = new Schema();
     public final Schema WEIGHT_SCHEMA = new Schema();
 
+    public static final int UPDATE_REDO_LAYOUT = 2;
+    public static final int UPDATE_JUST_REPAINT = 1;
+    public static final int UPDATE_NONE = 0;
+
     private HashMap<String, Node> nodeMap = new HashMap<String, Node>();
+    private HashMap<String, HashMap<String, Edge>> edgeMap = new HashMap<String, HashMap<String, Edge>>();
     private Graph internalGraph;
     private Node root;
     private Grid grid;
@@ -33,7 +43,7 @@ public class GraphGenerator {
         // initialize the schemas
         NAME_SCHEMA.addColumn(VizUtils.NODE_NAME, String.class, "");
         TYPE_SCHEMA.addColumn(VizUtils.NODE_TYPE, String.class, "");
-        WEIGHT_SCHEMA.addColumn(VizUtils.WEIGHT, int.class, 0);
+        WEIGHT_SCHEMA.addColumn(VizUtils.WEIGHT, long.class, 0);
 
         internalGraph = new Graph();
         internalGraph.getNodeTable().addColumns(NAME_SCHEMA);
@@ -54,68 +64,19 @@ public class GraphGenerator {
         return internalGraph;
     }
 
-    public boolean updatePrefuseGraph(
-            HashMap<String, Set<String>> ibisesPerSite, Visualization vis) {
+    public int updatePrefuseGraph(HashMap<String, Set<String>> ibisesPerSite,
+            HashMap<String, HashMap<String, Long>> edgesPerIbis,
+            Visualization vis) {
 
-        Node tempNode, siteNode, ibisNode;
-        String siteName;
+        Node siteNode, ibisNode, startNode, stopNode;
 
-        boolean situationChanged = false;
+        int currentSituation = UPDATE_NONE;
 
         if (ibisesPerSite == null) {
-            situationChanged = true;
+            currentSituation = UPDATE_REDO_LAYOUT;
         } else {
 
-            // remove the sites which are no longer active from the nodeMap
-            Set<String> nodeKeys = nodeMap.keySet();
-            ArrayList<String> nodesToRemove = new ArrayList<String>();
-
-            // remove all the nodes which no longer exist
-            for (String nodeName : nodeKeys) {
-
-                tempNode = nodeMap.get(nodeName);
-
-                // remove all ibis nodes which are no longer up-to-date
-                if (tempNode.getString(VizUtils.NODE_TYPE).equals(
-                        VizUtils.NODE_TYPE_IBIS_NODE)) {
-
-                    // get the name of the location - that's the name of the
-                    // parent node
-                    if (tempNode.getParent() != null) {
-                        siteName = tempNode.getParent().getString(
-                                VizUtils.NODE_NAME);
-                        if (ibisesPerSite.get(siteName) == null
-                                || !ibisesPerSite.get(siteName).contains(
-                                        nodeName)) {
-                            nodesToRemove.add(nodeName);
-                            // System.out
-                            // .println("Ibis removed!! --->" + nodeName);
-                        }
-                    }
-                }
-
-                // remove all the site nodes which are no longer up-to-date
-                if (tempNode.getString(VizUtils.NODE_TYPE).equals(
-                        VizUtils.NODE_TYPE_SITE_NODE)) {
-                    if (!ibisesPerSite.containsKey(nodeName)) {
-                        nodesToRemove.add(nodeName);
-                        // System.out.println("Location removed!!----> "
-                        // + nodeName);
-                    }
-                }
-
-            }
-
-            // remove all the marked nodes from the map and from the actual
-            // graph
-            if (nodesToRemove.size() > 0) {
-                situationChanged = true;
-                for (String nodeName : nodesToRemove) {
-                    tempNode = nodeMap.remove(nodeName);
-                    internalGraph.removeNode(tempNode);
-                }
-                nodesToRemove.clear();
-            }
+            currentSituation = removeOldNodes(ibisesPerSite);
 
             // check the other way round too - if the new hash map contains new
             // sites or ibises, the situation has changed and we need to update
@@ -123,7 +84,7 @@ public class GraphGenerator {
             for (String site : ibisesPerSite.keySet()) {
                 if (!nodeMap.containsKey(site)) {
 
-                    situationChanged = true;
+                    currentSituation = UPDATE_REDO_LAYOUT;
                     // System.out.println("New location!! --> " + site);
 
                     siteNode = addNodeToGraph(site, root,
@@ -138,7 +99,7 @@ public class GraphGenerator {
                     for (String ibisName : ibisesPerSite.get(site)) {
                         if (!nodeMap.containsKey(ibisName)) {
 
-                            situationChanged = true;
+                            currentSituation = UPDATE_REDO_LAYOUT;
                             // System.out.println("New ibis!!--> " + ibisName);
 
                             ibisNode = addNodeToGraph(ibisName, siteNode,
@@ -150,7 +111,243 @@ public class GraphGenerator {
             }
         }
 
-        return situationChanged;
+        HashMap<String, Long> neighbours;
+        HashMap<String, Edge> tempHash;
+        Edge newEdge;
+        boolean edgesChanged = false;
+
+        if (edgesPerIbis != null) {
+            for (String startNodeName : edgesPerIbis.keySet()) {
+                startNode = nodeMap.get(startNodeName);
+                neighbours = edgesPerIbis.get(startNodeName);
+
+                // first remove the edges which are no longer in the graph
+                edgesChanged = removeOldEdges(startNodeName, neighbours);
+
+                // only continue if the node is still in the graph
+                if (startNode != null) {
+
+                    if (neighbours != null) {
+
+                        // now update the remaining edges or add new ones
+                        for (String stopNodeName : neighbours.keySet()) {
+                            stopNode = nodeMap.get(stopNodeName);
+
+                            newEdge = null;
+
+                            // only continue if the second node is also still in
+                            // the graph
+                            if (stopNode != null) {
+
+                                // first check if there is already an edge in
+                                // the graph between these nodes
+                                if (edgeMap.get(startNodeName) != null) {
+                                    newEdge = edgeMap.get(startNodeName).get(
+                                            stopNodeName);
+                                }
+
+                                // check in the other direction also
+                                if (newEdge == null
+                                        && edgeMap.get(stopNodeName) != null) {
+                                    newEdge = edgeMap.get(stopNodeName).get(
+                                            startNodeName);
+                                }
+
+                                // if there really isn't any edge, create a new
+                                // one
+                                if (newEdge == null) {
+                                    newEdge = internalGraph.addEdge(startNode,
+                                            stopNode);
+                                    // System.out.println("Added edge " +
+                                    // startNodeName
+                                    // + "-->" + stopNodeName);
+
+                                    // add the new edge to the hash map
+                                    if (edgeMap.get(startNodeName) == null) {
+                                        tempHash = new HashMap<String, Edge>();
+                                        edgeMap.put(startNodeName, tempHash);
+                                    } else {
+                                        tempHash = edgeMap.get(startNodeName);
+                                    }
+                                    tempHash.put(stopNodeName, newEdge);
+                                }
+
+                                if (newEdge != null
+                                        && internalGraph.containsTuple(newEdge)) {
+                                    newEdge.setLong(VizUtils.WEIGHT, neighbours
+                                            .get(stopNodeName).longValue());
+                                    VizUtils.updateMinMaxWeights(neighbours
+                                            .get(stopNodeName).longValue());
+                                    edgesChanged = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (edgesChanged && currentSituation == UPDATE_NONE) {
+                currentSituation = UPDATE_JUST_REPAINT;
+            }
+        }
+
+        return currentSituation;
+    }
+
+    @SuppressWarnings("unchecked")
+    private int removeOldNodes(HashMap<String, Set<String>> ibisesPerSite) {
+        Node tempNode, neighbourNode;
+        String siteName;
+        HashSet<String> nodesToRemove = new HashSet<String>();
+        int currentSituation = UPDATE_NONE;
+
+        // remove all the nodes which no longer exist in the graph
+        for (String nodeName : nodeMap.keySet()) {
+
+            tempNode = nodeMap.get(nodeName);
+
+            // when we're dealing with a site node
+            if (tempNode.getString(VizUtils.NODE_TYPE).equals(
+                    VizUtils.NODE_TYPE_SITE_NODE)) {
+                if (!ibisesPerSite.containsKey(nodeName)) {
+                    nodesToRemove.add(nodeName);
+
+                    Iterator<Node> nodeIter = tempNode.neighbors();
+                    while (nodeIter.hasNext()) {
+                        try {
+                            neighbourNode = nodeIter.next();
+                            if (neighbourNode.getString(VizUtils.NODE_TYPE)
+                                    .equals(VizUtils.NODE_TYPE_IBIS_NODE)) {
+                                nodesToRemove.add(neighbourNode
+                                        .getString(VizUtils.NODE_NAME));
+                            }
+                        } catch (IllegalArgumentException exc) {
+                            System.err.println(exc.getMessage());
+                        }
+                    }
+//                    System.out.println("Location removed!!----> " + nodeName);
+                }
+                
+            } else {
+                // when we're dealing with a Ibis node
+                if (tempNode.getString(VizUtils.NODE_TYPE).equals(
+                        VizUtils.NODE_TYPE_IBIS_NODE)) {
+                    
+                    // get the name of the location - that's the name of the
+                    // parent node
+                    if (tempNode.getParent() != null) {
+                        siteName = tempNode.getParent().getString(
+                                VizUtils.NODE_NAME);
+                        
+                        if (ibisesPerSite.get(siteName) == null
+                                || !ibisesPerSite.get(siteName).contains(
+                                        nodeName)) {
+                            nodesToRemove.add(nodeName);
+//                            System.out
+//                                    .println("Ibis removed!! --->" + nodeName);
+                        }
+                    }
+                }
+            }
+        }
+
+        // remove all the marked nodes from the map and from the actual
+        // graph
+        if (nodesToRemove.size() > 0) {
+            currentSituation = UPDATE_REDO_LAYOUT;
+            for (String nodeName : nodesToRemove) {
+                // remove the node from the map
+                tempNode = nodeMap.remove(nodeName);
+
+                // remove the edges that are connected to it, both from the
+                // graph and the map
+                removeAllAdjacentEdges(tempNode);
+
+                // remove the node from the graph
+                if (tempNode != null && internalGraph.containsTuple(tempNode)) {
+                    internalGraph.removeNode(tempNode);
+                }
+            }
+            nodesToRemove.clear();
+        }
+
+        return currentSituation;
+    }
+
+    // remove the edges that are adjacent to a node, both from the edgemap and
+    // from the internalgraph
+    private boolean removeAllAdjacentEdges(Node node) {
+        if (node != null) {
+            String nodeName = node.getString(VizUtils.NODE_NAME);
+            String neighbourName;
+            Edge reverseEdge;
+            if (edgeMap.get(nodeName) != null
+                    && edgeMap.get(nodeName).size() > 0) {
+                for (Edge edge : edgeMap.get(nodeName).values()) {
+
+                    if (internalGraph.containsTuple(edge)) {
+                        // check if the edge is also present in the map for the
+                        // adjacent node and remove it if it is
+                        neighbourName = edge.getAdjacentNode(node).getString(
+                                VizUtils.NODE_NAME);
+
+                        if (edgeMap.get(neighbourName) != null) {
+                            reverseEdge = edgeMap.get(neighbourName).remove(
+                                    nodeName);
+
+                            // remove reverse edge from the graph
+                            if (reverseEdge != null
+                                    && internalGraph.containsTuple(reverseEdge)) {
+                                internalGraph.removeEdge(reverseEdge);
+                            }
+
+                            // remove direct edge from the graph
+                            internalGraph.removeEdge(edge);
+                        }
+
+                    }
+                }
+                edgeMap.get(nodeName).clear();
+                edgeMap.remove(nodeName);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean removeOldEdges(String startNodeName,
+            HashMap<String, Long> neighbours) {
+        ArrayList<String> dataToRemove = new ArrayList<String>();
+        boolean edgesChanged = false;
+        Edge edgeToRemove;
+
+        if (edgeMap.get(startNodeName) != null) {
+            for (String stopNodeName : edgeMap.get(startNodeName).keySet()) {
+
+                // temporarily store the data to remove in an
+                // auxiliary array
+                if (neighbours == null || !neighbours.containsKey(stopNodeName)) {
+                    dataToRemove.add(stopNodeName);
+                }
+            }
+
+            // remove the marked data
+            for (String stopNodeName : dataToRemove) {
+                edgeToRemove = edgeMap.get(startNodeName).remove(stopNodeName);
+                // check if that edge is still in the graph
+                // before removing it
+                if (internalGraph.containsTuple(edgeToRemove)) {
+                    internalGraph.removeEdge(edgeToRemove);
+                    edgesChanged = true;
+                }
+
+                // System.out.println("Removed edge " +
+                // startNodeName
+                // + "-->" + stopNodeName);
+            }
+        }
+
+        return edgesChanged;
     }
 
     private Node addNodeToGraph(String name, Node parent, String type) {
@@ -162,7 +359,7 @@ public class GraphGenerator {
         newNode.set(VizUtils.NODE_TYPE, type);
         nodeMap.put(name, newNode);
         edge = internalGraph.addEdge(parent, newNode);
-        edge.setInt(VizUtils.WEIGHT, VizUtils.DEFAULT_WEIGHT);
+        edge.setLong(VizUtils.WEIGHT, VizUtils.DEFAULT_WEIGHT);
 
         return newNode;
     }
@@ -176,9 +373,15 @@ public class GraphGenerator {
 
         if (visualItem.getString(VizUtils.NODE_TYPE).equals(
                 VizUtils.NODE_TYPE_SITE_NODE)) {
-            colorCode = grid.getCluster(
-                    visualItem.getString(VizUtils.NODE_NAME)).getColorCode();
-            color = Utils.getColor(colorCode).getRGB();
+            if (grid.getCluster(visualItem.getString(VizUtils.NODE_NAME)) != null) {
+                colorCode = grid.getCluster(
+                        visualItem.getString(VizUtils.NODE_NAME))
+                        .getColorCode();
+                color = Utils.getColor(colorCode).getRGB();
+            } else {
+                color = Color.decode(VizUtils.getRandomColor()).getRGB();
+            }
+
             visualItem.setFillColor(color);
             visualItem.setStartFillColor(color);
             visualItem.setTextColor(VizUtils.DEFAULT_TEXT_COLOR);
@@ -188,9 +391,14 @@ public class GraphGenerator {
             // retrieve it again
             // parent = visualItem.getParent();
             if (parent != null) {
-                colorCode = grid.getCluster(
-                        parent.getString(VizUtils.NODE_NAME)).getColorCode();
-                color = Utils.getColor(colorCode).getRGB();
+                if (grid.getCluster(parent.getString(VizUtils.NODE_NAME)) != null) {
+                    colorCode = grid.getCluster(
+                            parent.getString(VizUtils.NODE_NAME))
+                            .getColorCode();
+                    color = Utils.getColor(colorCode).getRGB();
+                } else {
+                    color = Color.decode(VizUtils.getRandomColor()).getRGB();
+                }
                 visualItem.setFillColor(color);
                 visualItem.setStartFillColor(color);
                 visualItem.setTextColor(VizUtils.DEFAULT_TEXT_COLOR);
