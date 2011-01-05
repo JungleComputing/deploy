@@ -175,116 +175,6 @@ public class BundledEdgeRenderer extends EdgeRenderer {
         return shape;
     }
 
-    // // draw uniform cubic B-spline
-    // void drawCubicBSpline(Graphics g, EdgeItem item) {
-    // int nSteps = 10;
-    // double xA, yA, xB, yB, xC, yC, xD, yD;
-    // double a0, a1, a2, a3, b0, b1, b2, b3;
-    // double x = 0, y = 0, previousX, previousY;
-    // float step = 0, ratio = 0;
-    // Color color;
-    //
-    // BSplineEdgeItem bsplineEdge = (BSplineEdgeItem) item;
-    //
-    // ArrayList<Point2D.Double> controlPoints = bsplineEdge
-    // .getControlPoints();
-    //
-    // Graphics2D g2d = (Graphics2D) g;
-    // g2d.setRenderingHint(
-    // RenderingHints.KEY_ANTIALIASING,
-    // RenderingHints.VALUE_ANTIALIAS_ON);
-    //
-    // g2d.setColor(new Color(0.5f, 0.5f, 0.5f, ((BSplineEdgeItem) item)
-    // .getAlpha()));
-    // BasicStroke bs = new BasicStroke(1);
-    // g2d.setStroke(bs);
-    //
-    // if (!bsplineEdge.isSelected()) {
-    // if (colorEncodingWeight) {
-    // ratio = item.getInt("weight") * 1.0f / VizUtils.MAX_EDGE_WEIGHT;
-    // color = VizUtils.blend(startColor, stopColor, ratio,
-    // ((BSplineEdgeItem) item).getAlpha());
-    // g.setColor(color);
-    // } else {
-    // // color will be computed step by step
-    // step = 1.0f / (controlPoints.size() - 3);
-    // }
-    // } else {
-    // g.setColor(Color.blue);
-    // }
-    //
-    // for (int i = 1; i < controlPoints.size() - 2; i++) {
-    // xA = controlPoints.get(i - 1).getX();
-    // yA = controlPoints.get(i - 1).getY();
-    //
-    // xB = controlPoints.get(i).getX();
-    // yB = controlPoints.get(i).getY();
-    //
-    // xC = controlPoints.get(i + 1).getX();
-    // yC = controlPoints.get(i + 1).getY();
-    //
-    // xD = controlPoints.get(i + 2).getX();
-    // yD = controlPoints.get(i + 2).getY();
-    //
-    // /*
-    // * Apply this matrix to the three points and obtain line-matrix: |-1
-    // * 3 -3 1| | 3 -6 0 3| | -3 0 3 0| | 1 4 1 0| * 1/6
-    // */
-    //
-    // a3 = (-xA + 3 * (xB - xC) + xD) / 6;
-    // b3 = (-yA + 3 * (yB - yC) + yD) / 6;
-    //
-    // a2 = (xA - 2 * xB + xC) / 2;
-    // b2 = (yA - 2 * yB + yC) / 2;
-    //
-    // a1 = (-xA + xC) / 2;
-    // b1 = (-yA + yC) / 2;
-    //
-    // a0 = (xA + 4 * xB + xC) / 6;
-    // b0 = (yA + 4 * yB + yC) / 6;
-    //
-    // previousX = a0;
-    // previousY = b0;
-    //
-    // if (!colorEncodingWeight) {
-    // if (!bsplineEdge.isSelected()) {
-    // color = VizUtils.blend(startColor, stopColor, ratio,
-    // ((BSplineEdgeItem) item).getAlpha());
-    //
-    // g.setColor(color);
-    //
-    // ratio += step;
-    // } else {
-    // g.setColor(Color.blue);
-    // }
-    // }
-    //
-    // double t = 0;
-    //
-    // for (int j = 1; j <= nSteps; j++) {
-    //
-    // t = (double) j / (double) nSteps;
-    //
-    // x = (a3 * t * t + a2 * t + a1) * t + a0;
-    // y = (b3 * t * t + b2 * t + b1) * t + b0;
-    //
-    // g2d
-    // .drawLine((int) previousX, (int) previousY, (int) x,
-    // (int) y);
-    // // Color oldcolor = g2d.getColor();
-    // // g2d.setColor(Color.white);
-    // // g2d.drawLine((int)previousX, (int)previousY, (int)previousX,
-    // // (int)previousY);
-    // // g2d.setColor(oldcolor);
-    // // g2d.drawLine((int)previousX, (int)previousY, (int)previousX,
-    // // (int)previousY);
-    //
-    // previousX = x;
-    // previousY = y;
-    // }
-    // }
-    // }
-
     // draw uniform cubic B-spline
     void drawCubicBSpline(Graphics g, EdgeItem item) {
         int nSteps = 10, ncurves;
@@ -309,8 +199,8 @@ public class BundledEdgeRenderer extends EdgeRenderer {
                 stopColor.getBlue(), (int) (alpha * 255));
 
         g2d.setStroke(basicStroke);
-//        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-//                RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
 
         if (!bsplineEdge.isSelected()) {
             // if the encoding is by weight, then the entire edge has the same

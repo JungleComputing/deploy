@@ -1,6 +1,5 @@
 package ibis.deploy.gui.deployViz;
 
-import ibis.deploy.Application;
 import ibis.deploy.gui.GUI;
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
@@ -61,7 +60,6 @@ import prefuse.render.DefaultRendererFactory;
 import prefuse.render.LabelRenderer;
 import prefuse.util.ColorLib;
 import prefuse.util.ui.JFastLabel;
-import prefuse.visual.EdgeItem;
 import prefuse.visual.NodeItem;
 import prefuse.visual.VisualItem;
 import prefuse.visual.expression.InGroupPredicate;
@@ -70,8 +68,6 @@ import prefuse.visual.sort.TreeDepthItemSorter;
 public class DeployVizPanel extends JPanel {
 
     private static final long serialVersionUID = 1L;
-
-    public static final String DATA_FILE = "das3.xml";
 
     private static Visualization vis;
     private static Tree tree = null;
@@ -97,7 +93,7 @@ public class DeployVizPanel extends JPanel {
     private RegistryServiceInterface regInterface;
     private ManagementServiceInterface manInterface;
 
-    private DataCollector statman;
+    private DataCollector dataCollector;
     private GraphGenerator generator;
 
     public DeployVizPanel(GUI gui) {
@@ -151,20 +147,15 @@ public class DeployVizPanel extends JPanel {
             e.printStackTrace();
         }
 
-        // create the statistics manager
-        statman = new DataCollector(manInterface, regInterface, this);
+        // create the data collecting thread
+        dataCollector = new DataCollector(manInterface, regInterface, this);
+        dataCollector.start();
 
         add(vizPanel, BorderLayout.CENTER);
     }
 
     public void toggleCollectData(boolean collect) {
-        if (!collect) {
-            if (statman.isTimerRunning()) {
-                statman.stopTimer();
-            }
-        } else {
-            statman.startTimer();
-        }
+        dataCollector.setCollectingState(collect);
     }
 
     public void updateVisualization(HashMap<String, Set<String>> ibisesPerSite,
@@ -187,7 +178,7 @@ public class DeployVizPanel extends JPanel {
 
         private static final long serialVersionUID = 1L;
         private LabelRenderer m_nodeRenderer;
-        private DisplayControlAdaptor displayAdaptor;
+        private DisplayControlAdapter displayAdaptor;
 
         public RadialGraphDisplay() {
 
@@ -198,7 +189,7 @@ public class DeployVizPanel extends JPanel {
             m_nodeRenderer = new LabelRenderer(VizUtils.NODE_NAME);
             m_nodeRenderer
                     .setRenderType(AbstractShapeRenderer.RENDER_TYPE_DRAW_AND_FILL);
-            // m_nodeRenderer.setRoundedCorner(7, 7);
+            m_nodeRenderer.setRoundedCorner(7, 7);
 
             edgeRenderer = new BundledEdgeRenderer(VizUtils.BSPLINE_EDGE_TYPE);
 
@@ -234,11 +225,10 @@ public class DeployVizPanel extends JPanel {
 
             // create the tree layout action
             treeLayout = new NodeLinkTreeLayout(VizUtils.GRAPH,
-                    Constants.ORIENT_TOP_BOTTOM, 200, 3, 20);
+                    Constants.ORIENT_TOP_BOTTOM, 200, 3, 15);
             m_vis.putAction(TREE_LAYOUT, treeLayout);
 
             // initialize the display
-            // setSize(600, 600);
             setAlignmentX(SwingConstants.CENTER);
             setAlignmentY(SwingConstants.CENTER);
             setHighQuality(true);
@@ -249,12 +239,11 @@ public class DeployVizPanel extends JPanel {
             addControlListener(new PanControl());
             setDamageRedraw(false);
             addControlListener(new HoverActionControl("repaint"));
-            addControlListener(displayAdaptor = new DisplayControlAdaptor(m_vis));
+            addControlListener(displayAdaptor = new DisplayControlAdapter(m_vis));
 
             computeVisualParameters(edgeRenderer, true);
             // color the graph and perform layout
             m_vis.run("initialColor");
-            // m_vis.run(RADIAL_TREE_LAYOUT);
 
         }
 
@@ -292,9 +281,6 @@ public class DeployVizPanel extends JPanel {
                     // later use
                     edgeRenderer.setSpanningTree(tree);
                 }
-
-                // set the fillColor for the nodes
-                // assignNodeColours(tree);
 
                 // compute alphas for the edges, according to their length
                 VizUtils.computeEdgeAlphas(vis, tree);
@@ -336,18 +322,6 @@ public class DeployVizPanel extends JPanel {
                         title.setText(item.getString(VizUtils.NODE_NAME));
                     }
                 }
-                // else if (item instanceof EdgeItem) {
-                // EdgeItem edge = (EdgeItem) item;
-                // String s = edge.getSourceItem().getString(
-                // VizUtils.NODE_NAME)
-                // + " -> "
-                // + edge.getTargetItem()
-                // .getString(VizUtils.NODE_NAME)
-                // + " - "
-                // + edge.getLong(VizUtils.WEIGHT)
-                // + "";
-                // title.setText(s);
-                // }
             }
 
             public void itemExited(VisualItem item, MouseEvent e) {
@@ -367,46 +341,6 @@ public class DeployVizPanel extends JPanel {
 
         return panel;
     }
-
-    // assigns node colors based on the cluster they are in.
-    // TODO - do this more efficiently, so that I don't have to re-assign node
-    // colors every time a change occurs in the graph
-    // @SuppressWarnings("unchecked")
-    // private void assignNodeColours(Tree tree) {
-    // NodeItem item;
-    // Node parent;
-    // Grid grid = gui.getWorkSpace().getGrid();
-    // String colorCode;
-    // int color;
-    //
-    // Iterator<NodeItem> nodes = vis.visibleItems(VizUtils.NODES);
-    //
-    // while (nodes.hasNext()) {
-    // item = nodes.next();
-    // if (item.getString(VizUtils.NODE_TYPE).equals(
-    // VizUtils.NODE_TYPE_SITE_NODE)) {
-    // colorCode = grid.getCluster(item.getString(VizUtils.NODE_NAME))
-    // .getColorCode();
-    // color = Utils.getColor(colorCode).getRGB();
-    // item.setFillColor(color);
-    // item.setStartFillColor(color);
-    // } else if (item.getString(VizUtils.NODE_TYPE).equals(
-    // VizUtils.NODE_TYPE_IBIS_NODE)) {
-    // parent = item.getParent();
-    // if (parent != null) {
-    // colorCode = grid.getCluster(
-    // parent.getString(VizUtils.NODE_NAME))
-    // .getColorCode();
-    // color = Utils.getColor(colorCode).getRGB();
-    // item.setFillColor(color);
-    // item.setStartFillColor(color);
-    // }
-    // } else {
-    // item.setFillColor(ColorLib.gray(200));
-    // item.setStartFillColor(ColorLib.gray(200));
-    // }
-    // }
-    // }
 
     // creates the panels and the controls that are used to customize the
     // visualization
@@ -467,11 +401,11 @@ public class DeployVizPanel extends JPanel {
 
             @Override
             public void actionPerformed(ActionEvent arg0) {
-                if (statman.isTimerRunning()) {
-                    statman.stopTimer();
+                if (dataCollector.getCollectingState()) {
+                    dataCollector.setCollectingState(false);
                     refreshDataButton.setText("Start monitoring");
                 } else {
-                    statman.startTimer();
+                    dataCollector.setCollectingState(true);
                     refreshDataButton.setText("Stop monitoring");
                 }
             }

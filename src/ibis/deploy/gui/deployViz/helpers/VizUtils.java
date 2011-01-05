@@ -1,6 +1,7 @@
 package ibis.deploy.gui.deployViz.helpers;
 
 import java.awt.Color;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import prefuse.Visualization;
@@ -20,8 +21,8 @@ public class VizUtils {
     public static final int BSPLINE_EDGE_TYPE = 100;
     public static final double INITIAL_BUNDLING_FACTOR = 0.9;
 
-    public static final Color DEFAULT_START_COLOR = Color.green;
-    public static final Color DEFAULT_STOP_COLOR = Color.red;
+    public static final Color DEFAULT_START_COLOR = Color.red;
+    public static final Color DEFAULT_STOP_COLOR = Color.green;
 
     public static final int SELECTED_FILL_COLOR = ColorLib.rgb(0, 0, 255);
     public static final int SELECTED_TEXT_COLOR = ColorLib.rgb(255, 255, 255);
@@ -47,7 +48,7 @@ public class VizUtils {
 
     private static int colorIndex = 0;
 
-    private static double minAlpha = 0.4, maxAlpha = 0.85;
+    private static double minAlpha = 0.4, maxAlpha = 0.9;
 
     public static String getNextColor() {
         if (colorIndex == colors.length) {
@@ -57,12 +58,20 @@ public class VizUtils {
         return colors[colorIndex++];
     }
 
-    public static void updateMinMaxWeights(long value) {
-        if (value > MAX_EDGE_WEIGHT) {
-            MAX_EDGE_WEIGHT = value;
-        }
-        if(value < MIN_EDGE_WEIGHT) {
-            MIN_EDGE_WEIGHT = value;
+    public static void updateMinMaxWeights(
+            HashMap<String, HashMap<String, Long>> connectionsPerIbis) {
+        MAX_EDGE_WEIGHT = Long.MIN_VALUE;
+        MIN_EDGE_WEIGHT = Long.MAX_VALUE;
+        for (HashMap<String, Long> connections : connectionsPerIbis.values()) {
+            for (Long value : connections.values()) {
+                if (value > MAX_EDGE_WEIGHT) {
+                    MAX_EDGE_WEIGHT = value;
+                }
+
+                if (value < MIN_EDGE_WEIGHT) {
+                    MIN_EDGE_WEIGHT = value;
+                }
+            }
         }
     }
 
@@ -82,11 +91,23 @@ public class VizUtils {
         color1.getColorComponents(rgb1);
         color2.getColorComponents(rgb2);
 
-        Color color = new Color((rgb1[0] * r + rgb2[0] * ir) % 256, (rgb1[1]
-                * r + rgb2[1] * ir) % 256, (rgb1[2] * r + rgb2[2] * ir) % 256,
-                alpha);
+        rgb1[0] = rgb1[0] * r + rgb2[0] * ir;
+        rgb1[1] = rgb1[1] * r + rgb2[1] * ir;
+        rgb1[2] = rgb1[2] * r + rgb2[2] * ir;
 
-        return color;
+        if (rgb1[0] > 1) {
+            rgb1[0] = 1;
+        }
+
+        if (rgb1[1] > 1) {
+            rgb1[1] = 1;
+        }
+
+        if (rgb1[2] > 1) {
+            rgb1[2] = 1;
+        }
+
+        return new Color(rgb1[0], rgb1[1], rgb1[2], alpha);
     }
 
     @SuppressWarnings("unchecked")

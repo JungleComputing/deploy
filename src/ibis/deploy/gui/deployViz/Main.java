@@ -208,7 +208,7 @@ public class Main {
         display.addControlListener(new ZoomControl()); // zoom
         display.setHighQuality(true);
         display.setDamageRedraw(false);
-        display.addControlListener(new DisplayControlAdaptor(vis));
+        display.addControlListener(new DisplayControlAdapter(vis));
 
         // create a new window to hold the visualization
         frame = new JFrame("Edge bundles");

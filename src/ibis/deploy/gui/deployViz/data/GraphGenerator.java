@@ -18,9 +18,7 @@ import prefuse.data.Graph;
 import prefuse.data.Node;
 import prefuse.data.Schema;
 import prefuse.util.ColorLib;
-import prefuse.visual.EdgeItem;
 import prefuse.visual.NodeItem;
-import prefuse.visual.VisualItem;
 
 public class GraphGenerator {
 
@@ -85,7 +83,6 @@ public class GraphGenerator {
                 if (!nodeMap.containsKey(site)) {
 
                     currentSituation = UPDATE_REDO_LAYOUT;
-                    // System.out.println("New location!! --> " + site);
 
                     siteNode = addNodeToGraph(site, root,
                             VizUtils.NODE_TYPE_SITE_NODE);
@@ -100,7 +97,6 @@ public class GraphGenerator {
                         if (!nodeMap.containsKey(ibisName)) {
 
                             currentSituation = UPDATE_REDO_LAYOUT;
-                            // System.out.println("New ibis!!--> " + ibisName);
 
                             ibisNode = addNodeToGraph(ibisName, siteNode,
                                     VizUtils.NODE_TYPE_IBIS_NODE);
@@ -158,9 +154,6 @@ public class GraphGenerator {
                                 if (newEdge == null) {
                                     newEdge = internalGraph.addEdge(startNode,
                                             stopNode);
-                                    // System.out.println("Added edge " +
-                                    // startNodeName
-                                    // + "-->" + stopNodeName);
 
                                     // add the new edge to the hash map
                                     if (edgeMap.get(startNodeName) == null) {
@@ -176,8 +169,7 @@ public class GraphGenerator {
                                         && internalGraph.containsTuple(newEdge)) {
                                     newEdge.setLong(VizUtils.WEIGHT, neighbours
                                             .get(stopNodeName).longValue());
-                                    VizUtils.updateMinMaxWeights(neighbours
-                                            .get(stopNodeName).longValue());
+                                    
                                     edgesChanged = true;
                                 }
                             }
@@ -225,7 +217,6 @@ public class GraphGenerator {
                             System.err.println(exc.getMessage());
                         }
                     }
-//                    System.out.println("Location removed!!----> " + nodeName);
                 }
                 
             } else {
@@ -243,8 +234,6 @@ public class GraphGenerator {
                                 || !ibisesPerSite.get(siteName).contains(
                                         nodeName)) {
                             nodesToRemove.add(nodeName);
-//                            System.out
-//                                    .println("Ibis removed!! --->" + nodeName);
                         }
                     }
                 }
@@ -340,10 +329,6 @@ public class GraphGenerator {
                     internalGraph.removeEdge(edgeToRemove);
                     edgesChanged = true;
                 }
-
-                // System.out.println("Removed edge " +
-                // startNodeName
-                // + "-->" + stopNodeName);
             }
         }
 
@@ -389,7 +374,6 @@ public class GraphGenerator {
                 VizUtils.NODE_TYPE_IBIS_NODE)) {
             // we've already received the parent as a parameter, no need to
             // retrieve it again
-            // parent = visualItem.getParent();
             if (parent != null) {
                 if (grid.getCluster(parent.getString(VizUtils.NODE_NAME)) != null) {
                     colorCode = grid.getCluster(

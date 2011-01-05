@@ -1,44 +1,34 @@
 package ibis.deploy.gui.deployViz.data;
 
-import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import javax.swing.Timer;
-
-import javax.swing.AbstractAction;
-
+import javax.swing.SwingUtilities;
 import ibis.deploy.gui.deployViz.DeployVizPanel;
+import ibis.deploy.gui.deployViz.helpers.VizUtils;
 import ibis.ipl.support.management.AttributeDescription;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
 
-public class DataCollector {
+public class DataCollector extends Thread {
 
     private ManagementServiceInterface manInterface;
     private RegistryServiceInterface regInterface;
     private int refreshrate = 3000;
-    private Timer refreshTimer;
     private final DeployVizPanel vizPanel;
+    private boolean collectingState = true;
 
     private HashMap<String, Set<String>> ibisesPerSite = new HashMap<String, Set<String>>();
     private HashMap<String, HashMap<String, Long>> connectionsPerIbis = new HashMap<String, HashMap<String, Long>>();
 
-    private static final AttributeDescription connections = new AttributeDescription(
-            "ibis", "connections");
     private static final AttributeDescription sentBytesPerIbis = new AttributeDescription(
             "ibis", "sentBytesPerIbis");
 
     private static final AttributeDescription receivedBytesPerIbis = new AttributeDescription(
             "ibis", "receivedBytesPerIbis");
-
-    private static final AttributeDescription load = new AttributeDescription(
-            "java.lang:type=OperatingSystem", "SystemLoadAverage");
 
     public DataCollector(ManagementServiceInterface manInterface,
             RegistryServiceInterface regInterface, DeployVizPanel vPanel) {
@@ -46,34 +36,38 @@ public class DataCollector {
         this.manInterface = manInterface;
         this.regInterface = regInterface;
         this.vizPanel = vPanel;
+    }
 
-        AbstractAction updateVisualizationAction = new AbstractAction() {
-            private static final long serialVersionUID = 1L;
+    public void setCollectingState(boolean state) {
+        collectingState = state;
+    }
 
-            public void actionPerformed(ActionEvent arg0) {
+    public boolean getCollectingState() {
+        return collectingState;
+    }
+
+    @Override
+    public void run() {
+        while (true) {
+            if (collectingState) {
+
+                collectIbisData();
+
+                // update the UI
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        vizPanel.updateVisualization(ibisesPerSite,
+                                connectionsPerIbis);
+                    }
+                });
+
                 try {
-                    collectIbisData();
-                } catch (Exception exc) {
-                    exc.printStackTrace();
+                    Thread.sleep(refreshrate);
+                } catch (InterruptedException e) {
+                    break;
                 }
             }
-
-        };
-
-        refreshTimer = new Timer(refreshrate, updateVisualizationAction);
-        refreshTimer.start();
-    }
-
-    public void stopTimer() {
-        refreshTimer.stop();
-    }
-
-    public void startTimer() {
-        refreshTimer.start();
-    }
-
-    public boolean isTimerRunning() {
-        return refreshTimer.isRunning();
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -83,7 +77,8 @@ public class DataCollector {
         String poolName, ibisLocation;
         String[] locationList;
         Set<String> ibisList;
-        String ibisName, neighbourName, aux;
+        String ibisName, neighbourName;
+
         try {
             poolSizes = regInterface.getPoolSizes();
         } catch (IOException e) {
@@ -91,8 +86,7 @@ public class DataCollector {
             e.printStackTrace();
         }
 
-        // maybe at some later point do some better memory management,
-        // reallocating these resources all the time might be costly
+        // remove the old data completely
         ibisesPerSite.clear();
         connectionsPerIbis.clear();
 
@@ -160,7 +154,6 @@ public class DataCollector {
                     // retrieve the connection hashmap for this ibis
                     if (connectionsPerIbis.get(ibisName) == null) {
                         totalBytes = new HashMap<String, Long>();
-                        connectionsPerIbis.put(ibisName, totalBytes);
                     } else {
                         totalBytes = connectionsPerIbis.get(ibisName);
                         totalBytes.clear();
@@ -183,28 +176,27 @@ public class DataCollector {
                             neighbourName = neighbour.name() + "-"
                                     + neighbour.location();
 
-                            // the weight of the connection is the sum of the
-                            // number of sent and received bytes, if both values
-                            // are recorded
-                            if (receivedBytes.get(neighbour) != null) {
-                                sum = sentBytes.get(neighbour)
-                                        + receivedBytes.get(neighbour);
-                                receivedBytes.remove(neighbour);
+                            // if the reverse edge is already in the graph, just
+                            // add this value to the existing value - the weight
+                            // of the edge will simply be the number of sent
+                            // bytes from each direction
+                            if (connectionsPerIbis.get(neighbourName) != null
+                                    && connectionsPerIbis.get(neighbourName)
+                                            .get(ibisName) != null) {
+                                sum = connectionsPerIbis.get(neighbourName)
+                                        .get(ibisName)
+                                        + sentBytes.get(neighbour);
+                                connectionsPerIbis.get(neighbourName).put(
+                                        ibisName, sum);
                             } else {
-                                sum = sentBytes.get(neighbour);
+                                totalBytes.put(neighbourName, sentBytes
+                                        .get(neighbour));
+                                connectionsPerIbis.put(ibisName, totalBytes);
                             }
 
-                            totalBytes.put(neighbourName, sum);
                         }
 
-                        // if there are neighbours from which I received and did
-                        // not send to
-                        for (IbisIdentifier neighbour : receivedBytes.keySet()) {
-                            neighbourName = neighbour.name() + "-"
-                                    + neighbour.location();
-                            totalBytes.put(neighbourName, receivedBytes
-                                    .get(neighbour));
-                        }
+                        
 
                     } catch (Exception e1) {
                         System.err.println(e1.getMessage());
@@ -214,16 +206,14 @@ public class DataCollector {
                         // socket-related exception. Printing the stack clogs up
                         // the output...
                     }
-
                 }
             }
         }
 
-        //generateRandomData();
-
-        vizPanel.updateVisualization(ibisesPerSite, connectionsPerIbis);
+        VizUtils.updateMinMaxWeights(connectionsPerIbis);
     }
 
+    // this can be used for testing
     private void generateRandomData() {
         int random;
         int sites = 10, nibises = 15;
@@ -264,14 +254,5 @@ public class DataCollector {
                 }
             }
         }
-    }
-
-    private boolean ibisListContainsName(IbisIdentifier[] ibisList, String name) {
-        for (IbisIdentifier ibis : ibisList) {
-            if (ibis.name().equals(name)) {
-                return true;
-            }
-        }
-        return false;
     }
 }

@@ -12,23 +12,35 @@ import prefuse.visual.EdgeItem;
 import prefuse.visual.NodeItem;
 import prefuse.visual.VisualItem;
 
-public class DisplayControlAdaptor extends ControlAdapter {
+public class DisplayControlAdapter extends ControlAdapter {
 
     private NodeItem lastSelectedNode = null;
     private Visualization vis;
     private Graph graph;
 
-    public DisplayControlAdaptor(Visualization vis) {
+    public DisplayControlAdapter(Visualization vis) {
         this.vis = vis;
         graph = (Graph) vis.getGroup(VizUtils.GRAPH);
     }
 
     public void itemClicked(VisualItem item, MouseEvent e) {
-        highlightSelection(item);
+        if (item instanceof NodeItem) {
+            highlightSelection(item);
+        }
     }
 
     public void itemDragged(VisualItem item, MouseEvent e) {
-        highlightSelection(item);
+        if (item instanceof NodeItem) {
+            highlightSelection(item);
+        }
+    }
+
+    // if something other than a node is clicked, reset selection
+    public void mouseClicked(MouseEvent e) {
+        if (!(e.getSource() instanceof NodeItem)) {
+            resetPreviousSelection(null);
+            vis.repaint();
+        }
     }
 
     /**
@@ -51,11 +63,6 @@ public class DisplayControlAdaptor extends ControlAdapter {
 
             resetPreviousSelection(node);
 
-            // temporarily store old color, but only if the node wasn't already
-            // selected
-            // if (node.getFillColor() != VizUtils.SELECTED_FILL_COLOR) {
-            // node.setStartFillColor(node.getFillColor());
-            // }
             node.setFillColor(VizUtils.SELECTED_FILL_COLOR);
             node.setTextColor(VizUtils.SELECTED_TEXT_COLOR);
 
@@ -68,12 +75,6 @@ public class DisplayControlAdaptor extends ControlAdapter {
                     edge.setHighlighted(true);
 
                     NodeItem nitem = edge.getAdjacentItem(node);
-                    // temporarily store the old fill color in here until a new
-                    // selection happens
-                    // if (nitem.getFillColor() != VizUtils.SELECTED_FILL_COLOR)
-                    // {
-                    // nitem.setStartFillColor(nitem.getFillColor());
-                    // }
 
                     // change color of the adjacent nodes
                     nitem.setFillColor(VizUtils.SELECTED_FILL_COLOR);
@@ -127,29 +128,6 @@ public class DisplayControlAdaptor extends ControlAdapter {
                 System.err.println(exc.getMessage());
             }
         }
-
-        // check if there is a selection and that the selection is still present
-        // in the graph
-        // if (lastSelectedNode != null) {
-        // if (vis.getGroup(VizUtils.GRAPH).containsTuple(lastSelectedNode)) {
-        //
-        // Iterator<EdgeItem> edgeIter = lastSelectedNode.edges();
-        //
-        // lastSelectedNode.setFillColor(lastSelectedNode
-        // .getStartFillColor());
-        // lastSelectedNode.setTextColor(VizUtils.DEFAULT_TEXT_COLOR);
-        //
-        // while (edgeIter.hasNext()) {
-        // BSplineEdgeItem edge = (BSplineEdgeItem) edgeIter.next();
-        // edge.setSelected(false);
-        // edge.setHighlighted(false);
-        //
-        // NodeItem nitem = edge.getAdjacentItem(lastSelectedNode);
-        // nitem.setFillColor(nitem.getStartFillColor());
-        // nitem.setTextColor(VizUtils.DEFAULT_TEXT_COLOR);
-        // }
-        // }
-        // }
 
         lastSelectedNode = newNode;
     }
