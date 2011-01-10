@@ -16,6 +16,6 @@ goto setupArgs
 
 :doneStart
 
-java -classpath "%CLASSPATH%;%DEPLOY_HOME%;%DEPLOY_HOME%\lib\*;%DEPLOY_HOME%\lib\castor-1.1.1-xml.jar" -Dgat.adaptor.path="%DEPLOY_HOME%"\lib\adaptors -Dibis.deploy.home="%DEPLOY_HOME%" ibis.deploy.gui.GUI %DEPLOY_ARGS%
+java -classpath "%CLASSPATH%;%DEPLOY_HOME%;%DEPLOY_HOME%\lib\*;%DEPLOY_HOME%\lib\castor-1.1.1-xml.jar" -Dgat.adaptor.path="%DEPLOY_HOME%"\lib\adaptors -Djava.library.path="%DEPLOY_HOME%"\lib\native_libraries -Dibis.deploy.home="%DEPLOY_HOME%" ibis.deploy.gui.GUI %DEPLOY_ARGS%
 
 if "%OS%"=="Windows_NT" @endlocal
