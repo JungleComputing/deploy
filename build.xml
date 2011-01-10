@@ -32,6 +32,7 @@
 
         <copy todir="lib">
             <fileset dir="external" includes="*.jar" />
+            <fileset dir="external" includes="native_libraries/*" />
             <fileset dir="${javagat}" />
             <fileset dir="${ipl}" />
         </copy>

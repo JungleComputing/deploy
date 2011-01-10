@@ -8,6 +8,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ibis.deploy.gui.gridvision.MetricsList;
 import ibis.deploy.gui.gridvision.exceptions.StatNotRequestedException;
 import ibis.deploy.gui.gridvision.metrics.Metric;
@@ -19,6 +22,8 @@ import ibis.ipl.support.management.AttributeDescription;
 import ibis.smartsockets.virtual.NoSuitableModuleException;
 
 public class Node implements IbisConceptInterface {
+	private static final Logger logger = LoggerFactory.getLogger(Node.class);
+	
 	//Variables needed for the operation of this class	
 	private ManagementServiceInterface manInterface;
 
@@ -110,8 +115,17 @@ public class Node implements IbisConceptInterface {
 					}
 				}
 			}
-		} catch (Exception e) {			
-			e.printStackTrace();
+		} catch (Exception e) {	
+			logger.error("Could not get monitor info from node " + name + ": " + e.getMessage() + ". Did you enable monitoring in the application?");
+			logger.debug("Could not get monitor info", e.getMessage());
+			
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e2) {
+				//wait a bit
+			}
+			
+		
 		} 
 		
 		synchronized(this) {			

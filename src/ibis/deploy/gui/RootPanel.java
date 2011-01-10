@@ -89,9 +89,9 @@ public class RootPanel extends JPanel {
         if (!present) {         
                 tabs.add(deployVizPanel);
                 tabs.setTabComponentAt(tabs.indexOfComponent(deployVizPanel), deployVizTab);
-                deployVizPanel.toggleCollectData(true);
+                deployVizPanel.setCollectData(true);
         } else {
-            deployVizPanel.toggleCollectData(false);
+            deployVizPanel.setCollectData(false);
             int idx = tabs.indexOfComponent(deployVizPanel);
             tabs.remove(deployVizPanel);
             tabs.removeTabAt(idx);

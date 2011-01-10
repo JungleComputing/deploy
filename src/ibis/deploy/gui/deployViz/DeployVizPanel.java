@@ -31,6 +31,9 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ibis.deploy.gui.deployViz.data.DataCollector;
 import ibis.deploy.gui.deployViz.data.GraphGenerator;
 import ibis.deploy.gui.deployViz.edgeBundles.*;
@@ -66,6 +69,8 @@ import prefuse.visual.expression.InGroupPredicate;
 import prefuse.visual.sort.TreeDepthItemSorter;
 
 public class DeployVizPanel extends JPanel {
+	
+	private static final Logger logger = LoggerFactory.getLogger(DeployVizPanel.class);
 
     private static final long serialVersionUID = 1L;
 
@@ -150,11 +155,12 @@ public class DeployVizPanel extends JPanel {
         // create the data collecting thread
         dataCollector = new DataCollector(manInterface, regInterface, this);
         dataCollector.start();
+        dataCollector.setCollectingState(false);
 
         add(vizPanel, BorderLayout.CENTER);
     }
 
-    public void toggleCollectData(boolean collect) {
+    public void setCollectData(boolean collect) {
         dataCollector.setCollectingState(collect);
     }
 
@@ -401,7 +407,7 @@ public class DeployVizPanel extends JPanel {
 
             @Override
             public void actionPerformed(ActionEvent arg0) {
-                if (dataCollector.getCollectingState()) {
+                if (dataCollector.isCollecting()) {
                     dataCollector.setCollectingState(false);
                     refreshDataButton.setText("Start monitoring");
                 } else {
