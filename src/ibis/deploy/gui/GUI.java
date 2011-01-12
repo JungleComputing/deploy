@@ -72,6 +72,8 @@ public class GUI {
 
 	private RootPanel myRoot;
 
+	private final boolean readOnly;
+
 	// private Boolean sharedHubs;
 
 	private static class Shutdown extends Thread {
@@ -103,6 +105,19 @@ public class GUI {
 			}
 		});
 
+	}
+
+	private void close() {
+		int choice = JOptionPane.showConfirmDialog(frame,
+				"Really exit ibis-deploy?", "Exiting Ibis-Deploy",
+				JOptionPane.YES_NO_OPTION);
+
+		if (choice == JOptionPane.YES_OPTION) {
+			frame.dispose();
+			System.exit(0);
+		} else {
+			// no, do nothing :)
+		}
 	}
 
 	private void saveAndClose() {
@@ -142,23 +157,33 @@ public class GUI {
 
 		this.menuBar = new JMenuBar();
 		JMenu menu = new JMenu("File");
-
-		menu.add(new NewWorkSpaceAction("New Workspace", frame, this));
-		menu.add(new OpenWorkSpaceAction("Open Workspace", frame, this));
-		menu.addSeparator();
-		menu.add(new SaveWorkSpaceAction("Save Workspace", frame, this));
-		menu
-				.add(new SaveAsWorkSpaceAction("Save Workspace As...", frame,
-						this));
-		menu.addSeparator();
-		menuItem = new JMenuItem("Exit");
-		menu.add(menuItem);
-		menuItem.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent arg0) {
-				saveAndClose();
-			}
-		});
+		
+		if (readOnly) {
+			menuItem = new JMenuItem("Exit");
+			menuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					close();
+				}
+			});
+			menu.add(menuItem);
+		} else {
+			menu.add(new NewWorkSpaceAction("New Workspace", frame, this));
+			menu.add(new OpenWorkSpaceAction("Open Workspace", frame, this));
+			menu.addSeparator();
+			menu.add(new SaveWorkSpaceAction("Save Workspace", frame, this));
+			menu
+					.add(new SaveAsWorkSpaceAction("Save Workspace As...", frame,
+							this));
+			menu.addSeparator();
+			menuItem = new JMenuItem("Exit");
+			menu.add(menuItem);
+			
+			menuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					saveAndClose();
+				}
+			});
+		}
 
 		this.menuBar.add(menu);
 
@@ -199,11 +224,20 @@ public class GUI {
 		frame.setPreferredSize(new Dimension(DEFAULT_SCREEN_WIDTH,
 				DEFAULT_SCREEN_HEIGHT));
 
-		frame.addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent we) {
-				saveAndClose();
-			}
-		});
+		if (readOnly) {
+			frame.addWindowListener(new WindowAdapter() {
+				public void windowClosing(WindowEvent we) {
+					close();
+				}
+			});
+		} else {
+			frame.addWindowListener(new WindowAdapter() {
+				public void windowClosing(WindowEvent we) {
+					saveAndClose();
+				}
+			});
+
+		}
 
 		// Display the window.
 		frame.pack();
@@ -282,6 +316,8 @@ public class GUI {
 			System.err.println("Exception when loading setting files: " + e);
 			System.exit(1);
 		}
+
+		this.readOnly = readOnly;
 
 		if (verbose) {
 			System.err.println("DEPLOY: Workspace:");
@@ -440,6 +476,10 @@ public class GUI {
 
 	public void addExperimentWorkSpaceListener(WorkSpaceChangedListener listener) {
 		experimentListeners.add(listener);
+	}
+	
+	public boolean isReadOnly() {
+		return readOnly;
 	}
 
 	public JFrame getFrame() {

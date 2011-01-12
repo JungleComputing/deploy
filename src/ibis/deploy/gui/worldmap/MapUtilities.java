@@ -26,9 +26,6 @@ public class MapUtilities {
     public static final GeoPosition INITIAL_MAP_CENTER = new GeoPosition(
             52.332042, 4.866736);
 
-    public static final double localClusterLatitude = 52.332933;
-    public static final double localClusterLongitude = 4.866064;
-
     public static final Color selectedClusterFillColor = new Color(255, 100,
             100, 200);
     public static final Color selectedClusterBorderColor = new Color(255, 100,
@@ -42,27 +39,34 @@ public class MapUtilities {
     static {
 
         ButtonGroup group = new ButtonGroup();
-        JRadioButtonMenuItem mapMenuItem = new JRadioButtonMenuItem(
-                "Google Terrain");
-        mapMenuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                defaultTileFactory = GoogleMapTerrainTileProvider
-                        .getDefaultTileFactory();
-                updateMapTileFactory();
-            }
-        });
-        group.add(mapMenuItem);
-        mapMenu.add(mapMenuItem);
-        mapMenuItem = new JRadioButtonMenuItem("Google Street");
-        mapMenuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                defaultTileFactory = GoogleMapStreetTileProvider
-                        .getDefaultTileFactory();
-                updateMapTileFactory();
-            }
-        });
-        group.add(mapMenuItem);
-        mapMenu.add(mapMenuItem);
+        
+        JRadioButtonMenuItem mapMenuItem;
+        
+        
+        //FIXME: fix google map providers
+//        JRadioButtonMenuItem mapMenuItem = new JRadioButtonMenuItem(
+//                "Google Terrain");
+//        mapMenuItem.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent arg0) {
+//                defaultTileFactory = GoogleMapTerrainTileProvider
+//                        .getDefaultTileFactory();
+//                updateMapTileFactory();
+//            }
+//        });
+//        group.add(mapMenuItem);
+//        mapMenu.add(mapMenuItem);
+//        
+//        mapMenuItem = new JRadioButtonMenuItem("Google Street");
+//        mapMenuItem.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent arg0) {
+//                defaultTileFactory = GoogleMapStreetTileProvider
+//                        .getDefaultTileFactory();
+//                updateMapTileFactory();
+//            }
+//        });
+//        group.add(mapMenuItem);
+//        mapMenu.add(mapMenuItem);
+        
         mapMenuItem = new JRadioButtonMenuItem("Microsoft", true);
         mapMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
@@ -73,6 +77,7 @@ public class MapUtilities {
         });
         group.add(mapMenuItem);
         mapMenu.add(mapMenuItem);
+        
         mapMenuItem = new JRadioButtonMenuItem("Open Street Maps");
         mapMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {

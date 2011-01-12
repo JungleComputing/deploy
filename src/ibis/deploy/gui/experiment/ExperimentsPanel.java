@@ -21,7 +21,6 @@ public class ExperimentsPanel extends JPanel {
 
         SmartSocketsVizPanel smartSockets = new SmartSocketsVizPanel(gui,
                 jobTableModel);
-        smartSockets.setSize(100, 100);
 
         ExperimentEditorPanel editor = new ExperimentEditorPanel(gui,
                 jobTableModel);
@@ -33,8 +32,14 @@ public class ExperimentsPanel extends JPanel {
         JSplitPane horizontalSplitPane = new JSplitPane(
                 JSplitPane.HORIZONTAL_SPLIT, editor, smartSockets);
         horizontalSplitPane.setOneTouchExpandable(true);
-        horizontalSplitPane
-                .setDividerLocation((int) (GUI.DEFAULT_SCREEN_WIDTH * 0.65));
+        
+        if (gui.isReadOnly()) {
+            horizontalSplitPane
+            .setDividerLocation((int) (GUI.DEFAULT_SCREEN_WIDTH * 0.5));
+        } else {
+            horizontalSplitPane
+            .setDividerLocation((int) (GUI.DEFAULT_SCREEN_WIDTH * 0.65));
+        }
         // resize left and right evenly
         horizontalSplitPane.setResizeWeight(0.5);
 

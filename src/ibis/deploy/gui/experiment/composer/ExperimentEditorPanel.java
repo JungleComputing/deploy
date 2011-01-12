@@ -11,21 +11,25 @@ import javax.swing.JPanel;
 
 public class ExperimentEditorPanel extends JPanel {
 
-    /**
+	/**
      * 
      */
-    private static final long serialVersionUID = -8580838957929000835L;
+	private static final long serialVersionUID = -8580838957929000835L;
 
-    private final static int SPACER = 5;
+	private final static int SPACER = 5;
 
-    public ExperimentEditorPanel(GUI gui, JobTableModel model) {
-        setBorder(BorderFactory.createTitledBorder("Experiment Editor"));
-        setLayout(new BorderLayout(SPACER, SPACER));
-        WorldMapPanel worldMapPanel = new WorldMapPanel(gui, 16, true);
-        add(worldMapPanel, BorderLayout.CENTER);
-        add(new ExperimentEditorTextPanel(gui, model, worldMapPanel),
-                BorderLayout.EAST);
+	public ExperimentEditorPanel(GUI gui, JobTableModel model) {
+		setBorder(BorderFactory.createTitledBorder("Experiment Editor"));
+		setLayout(new BorderLayout(SPACER, SPACER));
+		WorldMapPanel worldMapPanel = new WorldMapPanel(gui, 16, true);
+		add(worldMapPanel, BorderLayout.CENTER);
 
-    }
+		ExperimentEditorTextPanel eetp = new ExperimentEditorTextPanel(gui,
+				model, worldMapPanel);
+		if (!gui.isReadOnly()) {
+			add(eetp, BorderLayout.EAST);
+		}
+
+	}
 
 }

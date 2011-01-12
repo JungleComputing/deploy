@@ -152,8 +152,8 @@ public class Cluster {
                 + File.separator + "java");
         setNodes(1);
         setCores(Runtime.getRuntime().availableProcessors());
-        setLatitude(MapUtilities.localClusterLatitude);
-        setLongitude(MapUtilities.localClusterLongitude);
+        setLatitude(0);
+        setLongitude(0);
 
         setVisibleOnMap(false);
     }
