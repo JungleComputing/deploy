@@ -10,94 +10,73 @@ import ibis.deploy.gui.misc.Utils;
 import java.awt.BorderLayout;
 import java.awt.Component;
 
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
 public class RootPanel extends JPanel {
-	JTabbedPane tabs;
-	TabTitlePanel gridVisionTab, deployVizTab;
+    JTabbedPane tabs;
+   
+    private static final long serialVersionUID = 2685960743908025422L;
 
-	private static class TabTitlePanel extends JPanel {
+    public RootPanel(GUI gui) {
+        setLayout(new BorderLayout());
+        tabs = new JTabbedPane();
 
-		private static final long serialVersionUID = -396708441003040950L;
+        tabs.addTab("Experiment", Utils.createImageIcon(
+                "images/utilities-system-monitor.png", "Experiment"),
+                new ExperimentsPanel(gui));
+        // tabs.setTabComponentAt(0, new TabTitlePanel("Experiment", Utils
+        // .createImageIcon("images/utilities-system-monitor.png",
+        // "Experiment Tab")));
+        if (!gui.isReadOnly()) {
+            tabs.addTab("Applications", Utils.createImageIcon(
+                    "images/applications-other.png", "Applications Tab"),
+                    new ApplicationEditorPanel(gui));
 
-		public TabTitlePanel(String name, ImageIcon icon) {
-			setOpaque(false);
-			add(new JLabel(icon));
-			add(new JLabel(name));
-		}
+            tabs.addTab("Clusters", Utils.createImageIcon(
+                    "images/network-transmit-receive.png", "Clusters Tab"),
+                    new ClusterEditorPanel(gui));
 
-	}
+        }
 
-	private static final long serialVersionUID = 2685960743908025422L;
+        add(tabs, BorderLayout.CENTER);
+    }
 
-	public RootPanel(GUI gui) {
-		setLayout(new BorderLayout());
-		tabs = new JTabbedPane();
-		gridVisionTab = new TabTitlePanel("GridVision", Utils.createImageIcon(
-				"images/gridvision.png", "GridVision Tab"));
+    public void toggleGridVisionPane(GUI gui, GridVisionPanel panel) {
+        Component[] comps = tabs.getComponents();
+        boolean present = false;
+        for (Component comp : comps) {
+            if (comp == panel) {
+                present = true;
+            }
+        }
 
-		deployVizTab = new TabTitlePanel("DeployViz", Utils // TODO change the
-															// icon
-				.createImageIcon("images/gridvision.png", "Clusters Tab"));
+        if (!present) {
+            tabs.addTab("GridVision", Utils.createImageIcon(
+                    "images/gridvision.png", "GridVision Tab"), panel);
+            panel.initialize(gui);
+        }
+    }
 
-		tabs.add(new ExperimentsPanel(gui));
-		tabs.setTabComponentAt(0, new TabTitlePanel("Experiment", Utils
-				.createImageIcon("images/utilities-system-monitor.png",
-						"Experiment Tab")));
-		if (!gui.isReadOnly()) {
-			tabs.add(new ApplicationEditorPanel(gui));
-			tabs.setTabComponentAt(1, new TabTitlePanel("Applications", Utils
-					.createImageIcon("images/applications-other.png",
-							"Applications Tab")));
-			tabs.add(new ClusterEditorPanel(gui));
-			tabs.setTabComponentAt(2, new TabTitlePanel("Clusters", Utils
-					.createImageIcon("images/network-transmit-receive.png",
-							"Clusters Tab")));
+    public void toggleDeployVizPane(GUI gui, DeployVizPanel deployVizPanel) {
+        Component[] comps = tabs.getComponents();
+        boolean present = false;
+        for (Component comp : comps) {
+            if (comp == deployVizPanel) {
+                present = true;
+            }
+        }
 
-		}
-
-		add(tabs, BorderLayout.CENTER);
-	}
-
-	public void toggleGridVisionPane(GUI gui, GridVisionPanel panel) {
-		Component[] comps = tabs.getComponents();
-		boolean present = false;
-		for (Component comp : comps) {
-			if (comp == panel) {
-				present = true;
-			}
-		}
-
-		if (!present) {
-			tabs.add(panel);
-			tabs.setTabComponentAt(tabs.indexOfComponent(panel), gridVisionTab);
-			panel.initialize(gui);
-		}
-	}
-
-	public void toggleDeployVizPane(GUI gui, DeployVizPanel deployVizPanel) {
-		Component[] comps = tabs.getComponents();
-		boolean present = false;
-		for (Component comp : comps) {
-			if (comp == deployVizPanel) {
-				present = true;
-			}
-		}
-
-		if (!present) {
-			tabs.add(deployVizPanel);
-			tabs.setTabComponentAt(tabs.indexOfComponent(deployVizPanel),
-					deployVizTab);
-			deployVizPanel.setCollectData(true);
-		} else {
-			deployVizPanel.setCollectData(false);
-			int idx = tabs.indexOfComponent(deployVizPanel);
-			tabs.remove(deployVizPanel);
-			tabs.removeTabAt(idx);
-		}
-	}
+        if (!present) {
+            tabs.addTab("DeployViz", Utils.createImageIcon(
+                    "images/gridvision.png", "Clusters Tab"), deployVizPanel);
+            deployVizPanel.setCollectData(true);
+        } else {
+            deployVizPanel.setCollectData(false);
+            int idx = tabs.indexOfComponent(deployVizPanel);
+            tabs.remove(deployVizPanel);
+            tabs.removeTabAt(idx);
+        }
+    }
 
 }
