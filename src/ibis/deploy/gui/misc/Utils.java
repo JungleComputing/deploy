@@ -45,7 +45,7 @@ public class Utils {
         JButton result = new JButton(action);
         result.setText(buttonText);
         result.setIcon(createImageIcon(path, description));
-        result.setHorizontalAlignment(SwingConstants.LEFT);
+        result.setHorizontalAlignment(SwingConstants.CENTER);
         result.setMargin(new Insets(2, 2, 2, 2));
         result.setVerticalTextPosition(AbstractButton.CENTER);
         result.setHorizontalTextPosition(AbstractButton.TRAILING);
@@ -62,7 +62,7 @@ public class Utils {
             String buttonText) {
         JButton result = new JButton(buttonText, createImageIcon(path,
                 description));
-        result.setHorizontalAlignment(SwingConstants.LEFT);
+        result.setHorizontalAlignment(SwingConstants.CENTER);
         result.setMargin(new Insets(2, 2, 2, 2));
         result.setVerticalTextPosition(AbstractButton.CENTER);
         result.setHorizontalTextPosition(AbstractButton.TRAILING);
