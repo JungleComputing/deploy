@@ -6,14 +6,23 @@ import ibis.deploy.gui.deployViz.DeployVizPanel;
 import ibis.deploy.gui.experiment.ExperimentsPanel;
 import ibis.deploy.gui.gridvision.GridVisionPanel;
 import ibis.deploy.gui.misc.Utils;
+import ibis.smartsockets.direct.DirectSocketAddress;
+import ibis.smartsockets.viz.SmartsocketsViz;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class RootPanel extends JPanel {
+    private static Logger logger = LoggerFactory.getLogger(RootPanel.class);
+
+    
     JTabbedPane tabs;
    
     private static final long serialVersionUID = 2685960743908025422L;
@@ -25,9 +34,7 @@ public class RootPanel extends JPanel {
         tabs.addTab("Experiment", Utils.createImageIcon(
                 "images/utilities-system-monitor.png", "Experiment"),
                 new ExperimentsPanel(gui));
-        // tabs.setTabComponentAt(0, new TabTitlePanel("Experiment", Utils
-        // .createImageIcon("images/utilities-system-monitor.png",
-        // "Experiment Tab")));
+       
         if (!gui.isReadOnly()) {
             tabs.addTab("Applications", Utils.createImageIcon(
                     "images/applications-other.png", "Applications Tab"),
@@ -38,7 +45,22 @@ public class RootPanel extends JPanel {
                     new ClusterEditorPanel(gui));
 
         }
+        
+        try {
+        
+        DirectSocketAddress rootHub = DirectSocketAddress.getByAddress(gui
+                .getDeploy().getRootHubAddress());
+        JPanel smartSocketsPanel = new SmartsocketsViz(Color.BLACK, Color.WHITE,false,
+                rootHub);
+        
+        tabs.addTab("Smartsockets", Utils.createImageIcon(
+                "images/gridvision.png", "GridVision Tab"),
+                smartSocketsPanel);
 
+        } catch (Exception e) {
+            logger.error("Failed to initialize smartsockets visualization");
+        }
+        
         add(tabs, BorderLayout.CENTER);
     }
 
