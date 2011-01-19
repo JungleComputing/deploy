@@ -17,6 +17,7 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.TableCellRenderer;
 
 class JobTableRenderer extends JLabel implements TableCellRenderer {
@@ -33,8 +34,10 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
     public Component getTableCellRendererComponent(final JTable table,
             final Object value, boolean isSelected, boolean hasFocus,
             final int row, int column) {
+        setBorder(new EmptyBorder(5,5,5,5));
         setText("");
         setOpaque(isSelected);
+        
         setBackground(UIManager.getColor("Table.selectionBackground"));
         setForeground(Color.BLACK);
 

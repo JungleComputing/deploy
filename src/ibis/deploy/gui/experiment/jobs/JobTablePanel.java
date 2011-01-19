@@ -4,6 +4,7 @@ import ibis.deploy.JobDescription;
 import ibis.deploy.gui.GUI;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -36,7 +37,8 @@ public class JobTablePanel extends JPanel {
         table.setRowSelectionAllowed(true);
         table.setRowHeight(30);
         table.setDragEnabled(false);
-        table.setIntercellSpacing(new Dimension(5, 5));
+        table.setGridColor(Color.LIGHT_GRAY);
+        //table.setIntercellSpacing(new Dimension(5, 5));
 
         JobTableRenderer renderer = new JobTableRenderer(model);
 
@@ -56,9 +58,9 @@ public class JobTablePanel extends JPanel {
                 column.setMinWidth(40);
             } else if (i == JobRow.OUTPUT_COLUMN) {
                 column.setCellEditor(new ButtonEditor());
-                column.setMaxWidth(80);// last column is fixed
-                column.setPreferredWidth(80);
-                column.setMinWidth(80);
+                column.setMaxWidth(70);// last column is fixed
+                column.setPreferredWidth(70);
+                column.setMinWidth(70);
             } else {
                 column.setPreferredWidth(80);
             }
