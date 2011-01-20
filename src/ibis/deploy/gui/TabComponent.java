@@ -55,7 +55,7 @@ public class TabComponent extends JPanel {
 		this.pane = pane;
 		setOpaque(false);
 
-//		add(new JLabel(icon));
+		add(new JLabel(icon));
 		add(new JLabel(title));
 		// tab button
 		JButton button = new TabButton();
