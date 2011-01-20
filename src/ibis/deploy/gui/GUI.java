@@ -102,7 +102,12 @@ public class GUI {
         // creating and showing this application's GUI.
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+            	try {
                 gui.createAndShowGUI();
+            	} catch (Exception e) {
+            		e.printStackTrace(System.err);
+            		System.exit(1);
+            	}
             }
         });
 
@@ -146,7 +151,7 @@ public class GUI {
         }
     }
 
-    private void createAndShowGUI() {
+    private void createAndShowGUI() throws Exception {
         JMenuItem menuItem;
 
         UIManager.put("swing.boldMetal", Boolean.FALSE);
@@ -255,8 +260,7 @@ public class GUI {
 
         frame.setVisible(true);
 
-        GridVisionPanel gridVisionPanel = new GridVisionPanel(this);
-        DeployVizPanel deployVizPanel = new DeployVizPanel(this);
+       
     }
 
     private static void printUsage() {

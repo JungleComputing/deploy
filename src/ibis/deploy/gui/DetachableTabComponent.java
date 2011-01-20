@@ -34,7 +34,6 @@ package ibis.deploy.gui;
 import ibis.deploy.gui.misc.Utils;
 
 import javax.swing.*;
-import javax.swing.*;
 import javax.swing.plaf.basic.BasicButtonUI;
 import java.awt.*;
 import java.awt.event.*;
@@ -43,10 +42,11 @@ import java.awt.event.*;
  * Component to be used as tabComponent; Contains a JLabel to show the text and
  * a JButton to close the tab it belongs to
  */
-public class TabComponent extends JPanel {
+public class DetachableTabComponent extends JPanel {
 	private final JTabbedPane pane;
 
-	public TabComponent(final JTabbedPane pane, Icon icon, String title) {
+	public DetachableTabComponent(final JTabbedPane pane, Icon icon,
+			String title) {
 		// unset default FlowLayout' gaps
 		super(new FlowLayout(FlowLayout.CENTER, 3, 3));
 		if (pane == null) {
@@ -61,16 +61,61 @@ public class TabComponent extends JPanel {
 		JButton button = new TabButton();
 		add(button);
 		// add more space to the top of the component
-		//setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+		// setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 	}
 
+	private class DetachedFrame extends JFrame {
+		DetachedFrame(Component content, GUI gui, int oldIndex, Component tabComponent) {
+		ImageIcon icon = Utils.createImageIcon("images/favicon.ico", null);
+		if (icon != null) {
+			setIconImage(icon.getImage());
+		}
+
+		getContentPane().setLayout(new BorderLayout());
+		getContentPane().add(content, BorderLayout.CENTER);
+
+		setPreferredSize(new Dimension(GUI.DEFAULT_SCREEN_WIDTH,
+				GUI.DEFAULT_SCREEN_HEIGHT));
+
+		addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent we) {
+				Component component = we.getComponent();
+				if (component instanceof DetachedFrame) {
+					DetachedFrame frame = (DetachedFrame) component;
+				
+					frame.reattach();
+				}
+				
+			}
+
+		});
+
+		// Display the window.
+		pack();
+
+		// center on screen
+		setLocationRelativeTo(gui.getFrame());
+
+		setVisible(true);
+		
+		
+	}
+		
+		private void reattach() {
+			
+			
+		}
+	}
+
+	
 	private class TabButton extends JButton implements ActionListener {
+
 		public TabButton() {
-//			int size = 17;
-//			setPreferredSize(new Dimension(size, size));
-			setIcon(Utils.createImageIcon(
-                    "images/go-up-right.png", null));
-			setToolTipText("close this tab");
+		
+			// int size = 17;
+			// setPreferredSize(new Dimension(size, size));
+			setIcon(Utils.createImageIcon("images/edit-redo.png", null));
+			setToolTipText("Detach this tab");
 			// Make the button looks the same for all Laf's
 			setUI(new BasicButtonUI());
 			// Make it transparent
@@ -79,7 +124,7 @@ public class TabComponent extends JPanel {
 			// No need to be focusable
 			setFocusable(false);
 			setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-			//setBorder(BorderFactory.createEtchedBorder());
+			// setBorder(BorderFactory.createEtchedBorder());
 			setBorderPainted(false);
 			// Making nice rollover effect
 			// we use the same listener for all buttons
@@ -90,43 +135,35 @@ public class TabComponent extends JPanel {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			int i = pane.indexOfTabComponent(TabComponent.this);
+			int i = pane.indexOfTabComponent(DetachableTabComponent.this);
 			Component component = pane.getComponentAt(i);
+			Component tab = pane.getTabComponentAt(i);
 			if (i != -1) {
 				pane.remove(i);
+			//	new DetachedFrame(component,  i, tab);
 			}
-			JFrame frame = new JFrame();
-			frame.getContentPane().setLayout(new BorderLayout());
-			frame.getContentPane().add(component, BorderLayout.CENTER);
-			// Display the window.
-			frame.pack();
-
-			// center on screen
-			frame.setLocationRelativeTo(null);
-
-			frame.setVisible(true);
 		}
 
 		// we don't want to update UI for this button
 		public void updateUI() {
 		}
 	}
-		private final static MouseListener buttonMouseListener = new MouseAdapter() {
-			public void mouseEntered(MouseEvent e) {
-				Component component = e.getComponent();
-				if (component instanceof AbstractButton) {
-					AbstractButton button = (AbstractButton) component;
-					button.setContentAreaFilled(true);
-				}
-			}
 
-			public void mouseExited(MouseEvent e) {
-				Component component = e.getComponent();
-				if (component instanceof AbstractButton) {
-					AbstractButton button = (AbstractButton) component;
-					button.setContentAreaFilled(false);
-				}
+	private final static MouseListener buttonMouseListener = new MouseAdapter() {
+		public void mouseEntered(MouseEvent e) {
+			Component component = e.getComponent();
+			if (component instanceof AbstractButton) {
+				AbstractButton button = (AbstractButton) component;
+				button.setContentAreaFilled(true);
 			}
-		};
-	}
+		}
 
+		public void mouseExited(MouseEvent e) {
+			Component component = e.getComponent();
+			if (component instanceof AbstractButton) {
+				AbstractButton button = (AbstractButton) component;
+				button.setContentAreaFilled(false);
+			}
+		}
+	};
+}

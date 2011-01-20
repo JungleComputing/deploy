@@ -49,7 +49,9 @@ public class GridVisionPanel extends JPanel {
             if (!found) {
                 menu.add(menuAction);
             }
-        }	
+        }
+        
+        initialize(gui);
 	}
 	
 	public void initialize(GUI gui) {
