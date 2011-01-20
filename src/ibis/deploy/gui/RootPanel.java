@@ -31,9 +31,9 @@ public class RootPanel extends JPanel {
         setLayout(new BorderLayout());
         tabs = new JTabbedPane();
 
-        tabs.addTab("Experiment", Utils.createImageIcon(
-                "images/utilities-system-monitor.png", "Experiment"),
-                new ExperimentsPanel(gui));
+        tabs.add(new ExperimentsPanel(gui));
+        tabs.setTabComponentAt(0, new TabComponent(tabs, Utils.createImageIcon(
+                "images/utilities-system-monitor.png", "Experiment"), "Experiment"));
        
         if (!gui.isReadOnly()) {
             tabs.addTab("Applications", Utils.createImageIcon(
@@ -43,7 +43,6 @@ public class RootPanel extends JPanel {
             tabs.addTab("Clusters", Utils.createImageIcon(
                     "images/network-transmit-receive.png", "Clusters Tab"),
                     new ClusterEditorPanel(gui));
-
         }
         
         try {

@@ -49,7 +49,7 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
             if (start) {
                 final JButton startButton = Utils.createImageButton(
 
-                "images/media-playback-start.png", null, null);
+                "images/media-playback-start.png", "Start job", null);
 
                 startButton.addActionListener(new ActionListener() {
 
@@ -62,7 +62,7 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
                 return startButton;
             } else {
                 final JButton stopButton = Utils.createImageButton(
-                        "images/media-playback-stop.png", null, null);
+                        "images/media-playback-stop.png", "Stop job", null);
                 stopButton.addActionListener(new ActionListener() {
 
                     public void actionPerformed(ActionEvent arg0) {
@@ -146,8 +146,12 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
 
             final Job job = model.getJob(table.convertRowIndexToModel(row));
 
-            JButton button = new JButton("output");
-            button.setMargin(new Insets(2, 2, 2, 2));
+            final JButton button = Utils.createImageButton(
+
+                    null, "Show output of job", "output");
+            
+            //JButton button = new JButton("output");
+            //button.setMargin(new Insets(2, 2, 2, 2));
             // button.setPreferredSize(new Dimension(10, 10));
             button.addActionListener(new ActionListener() {
 
