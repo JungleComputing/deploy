@@ -43,127 +43,106 @@ import java.awt.event.*;
  * a JButton to close the tab it belongs to
  */
 public class DetachableTabComponent extends JPanel {
-	private final JTabbedPane pane;
+    private final DetachableTab tab;
 
-	public DetachableTabComponent(final JTabbedPane pane, Icon icon,
-			String title) {
-		// unset default FlowLayout' gaps
-		super(new FlowLayout(FlowLayout.CENTER, 3, 3));
-		if (pane == null) {
-			throw new NullPointerException("TabbedPane is null");
-		}
-		this.pane = pane;
-		setOpaque(false);
+    private final JButton button;
+    
+        final MouseListener someMouseListener = new MouseAdapter() {
+            
+            
+        public void mouseEntered(MouseEvent e) {
+            button.setEnabled(true);
+        }
 
-		add(new JLabel(icon));
-		add(new JLabel(title));
-		// tab button
-		JButton button = new TabButton();
-		add(button);
-		// add more space to the top of the component
-		// setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-	}
+        public void mouseExited(MouseEvent e) {
+            button.setEnabled(false);
 
-	private class DetachedFrame extends JFrame {
-		DetachedFrame(Component content, GUI gui, int oldIndex, Component tabComponent) {
-		ImageIcon icon = Utils.createImageIcon("images/favicon.ico", null);
-		if (icon != null) {
-			setIconImage(icon.getImage());
-		}
+        }
+      
+    };
 
-		getContentPane().setLayout(new BorderLayout());
-		getContentPane().add(content, BorderLayout.CENTER);
+    public DetachableTabComponent(final DetachableTab tab, Icon icon,
+            String title) {
+        
+        // unset default FlowLayout' gaps
+        super(new FlowLayout(FlowLayout.CENTER, 0, 2));
+        this.tab = tab;
+        setOpaque(false);
 
-		setPreferredSize(new Dimension(GUI.DEFAULT_SCREEN_WIDTH,
-				GUI.DEFAULT_SCREEN_HEIGHT));
+        add(new JLabel(icon));
+        
+        JLabel label = new JLabel(title);
+        label.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
+        
+        add(label);
+        // tab button
+        button = new TabButton();
+        add(button);
+        // button.setVisible(false);
+        button.setEnabled(false);
 
-		addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent we) {
-				Component component = we.getComponent();
-				if (component instanceof DetachedFrame) {
-					DetachedFrame frame = (DetachedFrame) component;
-				
-					frame.reattach();
-				}
-				
-			}
+        //addMouseListener(someMouseListener);
 
-		});
+        // add more space to the top of the component
+        // setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+    }
 
-		// Display the window.
-		pack();
+    private class TabButton extends JButton implements ActionListener {
+        
+        private static final long serialVersionUID = 1L;
+        
+        private final Icon disabledIcon;
+        private final Icon activeIcon;
+        private final Icon rolloverIcon;
 
-		// center on screen
-		setLocationRelativeTo(gui.getFrame());
+        public TabButton() {
+            disabledIcon = Utils.createImageIcon("images/empty.png", null);
+            activeIcon = Utils.createImageIcon("images/edit-redo.png", null);
+            rolloverIcon = Utils.createImageIcon("images/red.png", null);
+            
+            setDisabledIcon(disabledIcon);
 
-		setVisible(true);
-		
-		
-	}
-		
-		private void reattach() {
-			
-			
-		}
-	}
+            setIcon(activeIcon);
+            setToolTipText("Detach this tab");
+            // Make the button looks the same for all Laf's
+            setUI(new BasicButtonUI());
+            // Make it transparent
+            setBackground(Color.LIGHT_GRAY);
+            setContentAreaFilled(false);
+            // No need to be focusable
+            setFocusable(false);
+            setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            // setBorder(BorderFactory.createEtchedBorder());
+            setBorderPainted(false);
+            // Making nice rollover effect
+            // we use the same listener for all buttons
+            // addMouseListener(buttonMouseListener);
+            setRolloverEnabled(true);
+            // Close the proper tab by clicking the button
+            addActionListener(this);
 
-	
-	private class TabButton extends JButton implements ActionListener {
+            addMouseListener(new MouseAdapter() {
+                public void mouseEntered(MouseEvent e) {
+                    button.setEnabled(true);
+                    button.setIcon(rolloverIcon);
+                }
 
-		public TabButton() {
-		
-			// int size = 17;
-			// setPreferredSize(new Dimension(size, size));
-			setIcon(Utils.createImageIcon("images/edit-redo.png", null));
-			setToolTipText("Detach this tab");
-			// Make the button looks the same for all Laf's
-			setUI(new BasicButtonUI());
-			// Make it transparent
-			setBackground(Color.LIGHT_GRAY);
-			setContentAreaFilled(false);
-			// No need to be focusable
-			setFocusable(false);
-			setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-			// setBorder(BorderFactory.createEtchedBorder());
-			setBorderPainted(false);
-			// Making nice rollover effect
-			// we use the same listener for all buttons
-			addMouseListener(buttonMouseListener);
-			setRolloverEnabled(true);
-			// Close the proper tab by clicking the button
-			addActionListener(this);
-		}
+                public void mouseExited(MouseEvent e) {
+                    button.setEnabled(false);
+                    button.setIcon(activeIcon);
+                }
+            });
+        }
 
-		public void actionPerformed(ActionEvent e) {
-			int i = pane.indexOfTabComponent(DetachableTabComponent.this);
-			Component component = pane.getComponentAt(i);
-			Component tab = pane.getTabComponentAt(i);
-			if (i != -1) {
-				pane.remove(i);
-			//	new DetachedFrame(component,  i, tab);
-			}
-		}
+        public void actionPerformed(ActionEvent e) {
+            button.setEnabled(false);
+            button.setIcon(activeIcon);
+            tab.detach();
+        }
 
-		// we don't want to update UI for this button
-		public void updateUI() {
-		}
-	}
+        // we don't want to update UI for this button
+        public void updateUI() {
+        }
+    }
 
-	private final static MouseListener buttonMouseListener = new MouseAdapter() {
-		public void mouseEntered(MouseEvent e) {
-			Component component = e.getComponent();
-			if (component instanceof AbstractButton) {
-				AbstractButton button = (AbstractButton) component;
-				button.setContentAreaFilled(true);
-			}
-		}
-
-		public void mouseExited(MouseEvent e) {
-			Component component = e.getComponent();
-			if (component instanceof AbstractButton) {
-				AbstractButton button = (AbstractButton) component;
-				button.setContentAreaFilled(false);
-			}
-		}
-	};
 }
