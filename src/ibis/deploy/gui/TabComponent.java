@@ -48,18 +48,18 @@ public class TabComponent extends JPanel {
 
 	public TabComponent(final JTabbedPane pane, Icon icon, String title) {
 		// unset default FlowLayout' gaps
-		super(new FlowLayout(FlowLayout.LEFT, 0, 0));
+		super(new FlowLayout(FlowLayout.CENTER, 0, 0));
 		if (pane == null) {
 			throw new NullPointerException("TabbedPane is null");
 		}
 		this.pane = pane;
 		setOpaque(false);
 
-		add(new JLabel(icon));
+//		add(new JLabel(icon));
 		add(new JLabel(title));
 		// tab button
 		JButton button = new TabButton();
-		add(button);
+//		add(button);
 		// add more space to the top of the component
 		setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 	}
