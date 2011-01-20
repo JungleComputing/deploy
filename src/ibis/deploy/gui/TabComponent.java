@@ -48,7 +48,7 @@ public class TabComponent extends JPanel {
 
 	public TabComponent(final JTabbedPane pane, Icon icon, String title) {
 		// unset default FlowLayout' gaps
-		super(new FlowLayout(FlowLayout.CENTER, 0, 0));
+		super(new FlowLayout(FlowLayout.CENTER, 3, 3));
 		if (pane == null) {
 			throw new NullPointerException("TabbedPane is null");
 		}
@@ -59,9 +59,9 @@ public class TabComponent extends JPanel {
 		add(new JLabel(title));
 		// tab button
 		JButton button = new TabButton();
-//		add(button);
+		add(button);
 		// add more space to the top of the component
-		setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+		//setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 	}
 
 	private class TabButton extends JButton implements ActionListener {
@@ -74,10 +74,12 @@ public class TabComponent extends JPanel {
 			// Make the button looks the same for all Laf's
 			setUI(new BasicButtonUI());
 			// Make it transparent
+			setBackground(Color.LIGHT_GRAY);
 			setContentAreaFilled(false);
 			// No need to be focusable
 			setFocusable(false);
-			setBorder(BorderFactory.createEtchedBorder());
+			setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+			//setBorder(BorderFactory.createEtchedBorder());
 			setBorderPainted(false);
 			// Making nice rollover effect
 			// we use the same listener for all buttons
@@ -114,7 +116,7 @@ public class TabComponent extends JPanel {
 				Component component = e.getComponent();
 				if (component instanceof AbstractButton) {
 					AbstractButton button = (AbstractButton) component;
-					button.setBorderPainted(true);
+					button.setContentAreaFilled(true);
 				}
 			}
 
@@ -122,7 +124,7 @@ public class TabComponent extends JPanel {
 				Component component = e.getComponent();
 				if (component instanceof AbstractButton) {
 					AbstractButton button = (AbstractButton) component;
-					button.setBorderPainted(false);
+					button.setContentAreaFilled(false);
 				}
 			}
 		};
