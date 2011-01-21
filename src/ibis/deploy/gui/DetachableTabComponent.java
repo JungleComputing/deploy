@@ -75,16 +75,10 @@ public class DetachableTabComponent extends JPanel {
 
         private static final long serialVersionUID = 1L;
 
-        private final Icon disabledIcon;
-        private final Icon activeIcon;
-        private final Icon rolloverIcon;
-
         public TabButton() {
-            disabledIcon = Utils.createImageIcon("images/empty.png", null);
-            activeIcon = Utils.createImageIcon("images/edit-redo.png", null);
-            rolloverIcon = Utils.createImageIcon("images/red.png", null);
+            Icon activeIcon = Utils.createImageIcon("images/detach-arrow.png", null);
+            Icon rolloverIcon = Utils.createImageIcon("images/detach-arrow-inverted.png", null);
 
-            setDisabledIcon(disabledIcon);
             setRolloverIcon(rolloverIcon);
 
             setIcon(activeIcon);
