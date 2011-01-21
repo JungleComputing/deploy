@@ -47,12 +47,12 @@ public class RootPanel extends JPanel {
                 "images/gridvision.png", new SmartsocketsViz(gui.getDeploy()
                         .getRootHubAddress()), tabs);
 
-        gridVisionTab = new DetachableTab("3D Visualization",
-                "images/gridvision.png", new GridVisionPanel(gui), tabs);
-
         deployVizTab = new DetachableTab("Connection Overview",
                 "images/gridvision.png", new DeployVizPanel(gui), tabs);
 
+        gridVisionTab = new DetachableTab("3D Visualization",
+                "images/gridvision.png", new GridVisionPanel(gui), tabs);
+        
         add(tabs, BorderLayout.CENTER);
     }
     
