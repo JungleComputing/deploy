@@ -9,17 +9,10 @@ import ibis.deploy.gui.misc.Utils;
 import ibis.smartsockets.viz.SmartsocketsViz;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class RootPanel extends JPanel {
-    private static Logger logger = LoggerFactory.getLogger(RootPanel.class);
-
     JTabbedPane tabs;
 
     DetachableTab applicationTab;
@@ -33,7 +26,7 @@ public class RootPanel extends JPanel {
     public RootPanel(GUI gui) throws Exception {
         setLayout(new BorderLayout());
         tabs = new JTabbedPane();
-
+        
         tabs.addTab("Experiments", Utils.createImageIcon("images/utilities-system-monitor.png", "Experiments Tab"), new ExperimentsPanel(gui));
         
 //        experimentTab = new DetachableTab("Experiments",

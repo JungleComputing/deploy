@@ -12,7 +12,6 @@ import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.Set;
 
-import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -22,17 +21,12 @@ import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
 import javax.swing.JRadioButton;
 import javax.swing.JSeparator;
 import javax.swing.JSlider;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import ibis.deploy.gui.deployViz.data.DataCollector;
 import ibis.deploy.gui.deployViz.data.GraphGenerator;
@@ -70,8 +64,6 @@ import prefuse.visual.sort.TreeDepthItemSorter;
 
 public class DeployVizPanel extends JPanel {
 	
-	private static final Logger logger = LoggerFactory.getLogger(DeployVizPanel.class);
-
     private static final long serialVersionUID = 1L;
 
     private static Visualization vis;

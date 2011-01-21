@@ -43,54 +43,38 @@ import java.awt.event.*;
  * a JButton to close the tab it belongs to
  */
 public class DetachableTabComponent extends JPanel {
+
+    private static final long serialVersionUID = 1L;
+
     private final DetachableTab tab;
-
     private final JButton button;
-    
-        final MouseListener someMouseListener = new MouseAdapter() {
-            
-            
-        public void mouseEntered(MouseEvent e) {
-            button.setEnabled(true);
-        }
-
-        public void mouseExited(MouseEvent e) {
-            button.setEnabled(false);
-
-        }
-      
-    };
 
     public DetachableTabComponent(final DetachableTab tab, Icon icon,
             String title) {
-        
+
         // unset default FlowLayout' gaps
         super(new FlowLayout(FlowLayout.CENTER, 0, 2));
         this.tab = tab;
         setOpaque(false);
 
         add(new JLabel(icon));
-        
+
         JLabel label = new JLabel(title);
         label.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
-        
+
         add(label);
         // tab button
         button = new TabButton();
         add(button);
-        // button.setVisible(false);
-        button.setEnabled(false);
-
-        //addMouseListener(someMouseListener);
 
         // add more space to the top of the component
         // setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
     }
 
     private class TabButton extends JButton implements ActionListener {
-        
+
         private static final long serialVersionUID = 1L;
-        
+
         private final Icon disabledIcon;
         private final Icon activeIcon;
         private final Icon rolloverIcon;
@@ -99,8 +83,9 @@ public class DetachableTabComponent extends JPanel {
             disabledIcon = Utils.createImageIcon("images/empty.png", null);
             activeIcon = Utils.createImageIcon("images/edit-redo.png", null);
             rolloverIcon = Utils.createImageIcon("images/red.png", null);
-            
+
             setDisabledIcon(disabledIcon);
+            setRolloverIcon(rolloverIcon);
 
             setIcon(activeIcon);
             setToolTipText("Detach this tab");
@@ -121,22 +106,21 @@ public class DetachableTabComponent extends JPanel {
             // Close the proper tab by clicking the button
             addActionListener(this);
 
-            addMouseListener(new MouseAdapter() {
-                public void mouseEntered(MouseEvent e) {
-                    button.setEnabled(true);
-                    button.setIcon(rolloverIcon);
-                }
-
-                public void mouseExited(MouseEvent e) {
-                    button.setEnabled(false);
-                    button.setIcon(activeIcon);
-                }
-            });
+            // addMouseListener(new MouseAdapter() {
+            // public void mouseEntered(MouseEvent e) {
+            // button.setIcon(rolloverIcon);
+            // }
+            //
+            // public void mouseExited(MouseEvent e) {
+            // button.setEnabled(false);
+            // button.setIcon(activeIcon);
+            // }
+            // });
         }
 
         public void actionPerformed(ActionEvent e) {
-            button.setEnabled(false);
-            button.setIcon(activeIcon);
+            // button.setEnabled(false);
+            // button.setIcon(activeIcon);
             tab.detach();
         }
 

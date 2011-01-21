@@ -8,16 +8,13 @@ import ibis.deploy.Grid;
 import ibis.deploy.JobDescription;
 import ibis.deploy.Workspace;
 import ibis.deploy.Deploy.HubPolicy;
-import ibis.deploy.gui.deployViz.DeployVizPanel;
 import ibis.deploy.gui.experiment.composer.SubmitJobListener;
-import ibis.deploy.gui.gridvision.GridVisionPanel;
 import ibis.deploy.gui.misc.AboutAction;
 import ibis.deploy.gui.misc.HubPolicyAction;
 import ibis.deploy.gui.misc.NewWorkSpaceAction;
 import ibis.deploy.gui.misc.OpenWorkSpaceAction;
 import ibis.deploy.gui.misc.SaveAsWorkSpaceAction;
 import ibis.deploy.gui.misc.SaveWorkSpaceAction;
-import ibis.deploy.gui.misc.SmartSocketsVizAction;
 import ibis.deploy.gui.misc.Utils;
 import ibis.deploy.gui.worldmap.MapUtilities;
 
@@ -192,10 +189,6 @@ public class GUI {
             });
         }
 
-        this.menuBar.add(menu);
-
-        menu = new JMenu("View");
-        menu.add(new SmartSocketsVizAction(frame, this));
         this.menuBar.add(menu);
 
         menu = new JMenu("Options");

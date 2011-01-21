@@ -16,8 +16,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.BoxLayout;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 
 import org.jdesktop.swingx.mapviewer.Waypoint;
@@ -44,29 +42,6 @@ public class WorldMapPanel extends JPanel {
 
     public WorldMapPanel(final GUI gui, final int zoom, boolean booleanSelect) {
         this.booleanSelect = booleanSelect;
-//        JMenuBar menuBar = gui.getMenuBar();
-//        JMenu menu = null;
-//        for (int i = 0; i < menuBar.getMenuCount(); i++) {
-//            if (menuBar.getMenu(i).getText().equals("View")) {
-//                menu = menuBar.getMenu(i);
-//            }
-//        }
-//        if (menu == null) {
-//            menu = new JMenu("View");
-//            menu.add(MapUtilities.getMapMenu());
-//            menuBar.add(menu, Math.max(0, menuBar.getMenuCount() - 1));
-//        } else {
-//            boolean found = false;
-//            for (int i = 0; i < menu.getComponentCount(); i++) {
-//                if (menu.getComponent(i) == MapUtilities.getMapMenu()) {
-//                    found = true;
-//                    break;
-//                }
-//            }
-//            if (!found) {
-//                menu.add(MapUtilities.getMapMenu());
-//            }
-//        }
 
         // create cluster waypoints
         for (Cluster cluster : gui.getGrid().getClusters()) {

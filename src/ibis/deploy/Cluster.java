@@ -1,7 +1,5 @@
 package ibis.deploy;
 
-import ibis.deploy.gui.worldmap.MapUtilities;
-
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;

@@ -7,7 +7,6 @@ import ibis.deploy.gui.misc.Utils;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
