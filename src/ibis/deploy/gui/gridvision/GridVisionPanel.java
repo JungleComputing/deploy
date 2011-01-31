@@ -4,10 +4,13 @@ import ibis.deploy.gui.GUI;
 import ibis.deploy.gui.gridvision.swing.*;
 
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.media.opengl.GLCanvas;
 import javax.media.opengl.GLCapabilities;
 import javax.swing.ButtonGroup;
+import javax.swing.JButton;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
@@ -22,7 +25,8 @@ public class GridVisionPanel extends JPanel {
     protected Animator animator;
     GridVision perfvis;
 
-    public GridVisionPanel(GUI gui) {
+    public GridVisionPanel(final GUI gui) {
+    	
         // //Add the option to enable this feature to the Ibis Deploy menu bar
         // JMenuBar menuBar = gui.getMenuBar();
         // JMenu menu = null;
@@ -51,6 +55,17 @@ public class GridVisionPanel extends JPanel {
         // }
 
     //    initialize(gui);
+    	JButton initButton = new JButton("initialize 3D visualization");
+    	add(initButton);
+    	initButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				removeAll();
+				initialize(gui);
+			}
+    		
+    	});
     }
 
     public void initialize(GUI gui) {
