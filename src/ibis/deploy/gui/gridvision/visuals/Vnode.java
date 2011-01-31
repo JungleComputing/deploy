@@ -22,7 +22,13 @@ import java.util.Map.Entry;
 import javax.media.opengl.GL;
 import javax.media.opengl.glu.GLU;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class Vnode implements VisualElementInterface {
+	
+	private static final Logger logger = LoggerFactory.getLogger(Vnode.class);
+	
 	GridVision perfvis;
 	VisualManager visman;
 	
@@ -101,7 +107,7 @@ public class Vnode implements VisualElementInterface {
 				visual.setValue(metricValue);
 				
 			} catch (ValueOutOfBoundsException e) {	
-				System.out.println("VALUE: "+entry.getValue()+" OUT OF BOUNDS!");
+				logger.warn("VALUE: "+entry.getValue()+" OUT OF BOUNDS!");
 			}
 		}		
 	}

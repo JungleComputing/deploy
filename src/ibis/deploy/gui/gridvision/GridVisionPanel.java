@@ -55,7 +55,7 @@ public class GridVisionPanel extends JPanel {
         // }
 
     //    initialize(gui);
-    	JButton initButton = new JButton("initialize 3D visualization");
+    	JButton initButton = new JButton("Initialize 3D Visualization");
     	add(initButton);
     	initButton.addActionListener(new ActionListener() {
 
