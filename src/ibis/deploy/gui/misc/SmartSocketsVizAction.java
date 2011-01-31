@@ -31,7 +31,7 @@ public class SmartSocketsVizAction extends AbstractAction {
     public void actionPerformed(ActionEvent event) {
         
         
-        JPanel smartSocketsPanel = new JPanel();
+        JPanel smartSocketsPanel;
 
         try {
             DirectSocketAddress rootHub = DirectSocketAddress.getByAddress(gui
