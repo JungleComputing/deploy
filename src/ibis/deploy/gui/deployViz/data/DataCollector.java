@@ -151,7 +151,8 @@ public class DataCollector extends Thread {
 				}
 
 				Object[] tempResult;
-				HashMap<IbisIdentifier, Long> sentBytes, receivedBytes;
+				HashMap<IbisIdentifier, Long> sentBytes;
+				// HashMap<IbisIdentifier, Long> receivedBytes;
 				HashMap<String, Long> totalBytes;
 				long sum = 0;
 
@@ -179,7 +180,7 @@ public class DataCollector extends Thread {
 						// ibis
 						tempResult = manInterface.getAttributes(ibis,
 								receivedBytesPerIbis);
-						receivedBytes = (HashMap<IbisIdentifier, Long>) tempResult[0];
+						// receivedBytes = (HashMap<IbisIdentifier, Long>) tempResult[0];
 
 						for (IbisIdentifier neighbour : sentBytes.keySet()) {
 							neighbourName = neighbour.name() + "-"
