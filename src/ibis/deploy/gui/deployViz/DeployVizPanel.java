@@ -394,7 +394,7 @@ public class DeployVizPanel extends JPanel {
 
         panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         // button for managing simulation
-        final JButton refreshDataButton = new JButton("Stop monitoring");
+        final JButton refreshDataButton = new JButton("Start monitoring");
         refreshDataButton.addActionListener(new ActionListener() {
 
             @Override
