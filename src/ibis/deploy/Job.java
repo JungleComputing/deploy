@@ -269,6 +269,10 @@ public class Job implements Runnable {
         // make ssh jobs stoppable, we lose the difference between stdout and
         // stderr
         context.addPreference("sshtrilead.stoppable", "true");
+        // make sshtrilead file adaptor cache some info
+        context.addPreference("sshtrilead.caching.exists", "true");
+        context.addPreference("sshtrilead.caching.isdirectory", "true");
+
         if (cluster.getJobAdaptor() == null) {
             throw new Exception("no job adaptor specified for cluster: "
                     + cluster);
