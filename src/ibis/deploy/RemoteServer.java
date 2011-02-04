@@ -122,6 +122,10 @@ public class RemoteServer implements Runnable, Server {
         context.addPreference("file.adaptor.name", Util.strings2CSS(cluster
                 .getFileAdaptors()));
 
+        // make sshtrilead file adaptor cache some info
+        context.addPreference("sshtrilead.caching.exists", "true");
+        context.addPreference("sshtrilead.caching.isdirectory", "true");
+
         return context;
 
     }
