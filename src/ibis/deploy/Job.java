@@ -296,14 +296,15 @@ public class Job implements Runnable {
         String user = cluster.getUserName();
         String keyFile = cluster.getKeyFile();
         File clusterCacheDir = cluster.getCacheDir();
-        org.gridlab.gat.io.File gatCwd = GAT.createFile(context, ".");
+        // org.gridlab.gat.io.File gatCwd = GAT.createFile(context, ".");
 
         if (clusterCacheDir == null
                 || cluster.getJobAdaptor().equalsIgnoreCase("zorilla")) {
             java.net.URI netURI = src.toURI();
             org.gridlab.gat.io.File gatFile = GAT.createFile(context,
                     netURI.toString());
-            sd.addPreStagedFile(gatFile, gatCwd);
+            // sd.addPreStagedFile(gatFile, gatCwd);
+            sd.addPreStagedFile(gatFile);
             return;
         }
 
@@ -323,7 +324,8 @@ public class Job implements Runnable {
         org.gridlab.gat.io.File gatFile = GAT.createFile(context, "any://"
                 + host + "/" + fileCacheDir + "/" + src.getName());
 
-        sd.addPreStagedFile(gatFile, gatCwd);
+        // sd.addPreStagedFile(gatFile, gatCwd);
+        sd.addPreStagedFile(gatFile);
         return;
     }
 
@@ -457,12 +459,13 @@ public class Job implements Runnable {
                 "file:" + log4jFile.getName());
 
         if (application.getOutputFiles() != null) {
-            org.gridlab.gat.io.File gatCwd = GAT.createFile(context, ".");
+            // org.gridlab.gat.io.File gatCwd = GAT.createFile(context, ".");
             for (File file : application.getOutputFiles()) {
                 org.gridlab.gat.io.File gatFile = GAT.createFile(context,
                         "file:///" + file.getPath());
 
-                sd.addPostStagedFile(gatFile, gatCwd);
+                // sd.addPostStagedFile(gatFile, gatCwd);
+                sd.addPostStagedFile(gatFile);
             }
         }
 
@@ -539,8 +542,9 @@ public class Job implements Runnable {
 
             // add wrapper to pre-stage files
             wrapperSd.addPreStagedFile(
-                    GAT.createFile(context, wrapperScript.toString()),
-                    GAT.createFile(context, "."));
+                    // GAT.createFile(context, wrapperScript.toString()),
+                    // GAT.createFile(context, "."));
+                    GAT.createFile(context, wrapperScript.toString()));
 
             // set /bin/sh as executable
             wrapperSd.setExecutable("/bin/sh");

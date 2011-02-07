@@ -137,12 +137,13 @@ public class RemoteServer implements Runnable, Server {
         String keyFile = cluster.getKeyFile();
         File cacheDir = cluster.getCacheDir();
 
-        org.gridlab.gat.io.File gatCwd = GAT.createFile(context, ".");
+        // org.gridlab.gat.io.File gatCwd = GAT.createFile(context, ".");
 
         if (cacheDir == null) {
             org.gridlab.gat.io.File gatFile = GAT.createFile(context, new URI(
                     src.getAbsoluteFile().toURI()));
-            sd.addPreStagedFile(gatFile, gatCwd);
+            // sd.addPreStagedFile(gatFile, gatCwd);
+            sd.addPreStagedFile(gatFile);
             return;
         }
 
@@ -158,7 +159,8 @@ public class RemoteServer implements Runnable, Server {
         // tell job to pre-stage from cache dir
         org.gridlab.gat.io.File gatFile = GAT.createFile(context, "any://"
                 + host + "/" + cacheDir + "/server/" + src.getName());
-        sd.addPreStagedFile(gatFile, gatCwd);
+        // sd.addPreStagedFile(gatFile, gatCwd);
+        sd.addPreStagedFile(gatFile);
         return;
     }
 
