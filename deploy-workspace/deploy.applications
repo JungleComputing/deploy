@@ -19,7 +19,7 @@
 # Application "RegistryUpcalls"
 RegistryUpcalls.main.class = ibis.ipl.examples.RegistryUpcalls
 #RegistryUpcalls.arguments =
-RegistryUpcalls.libs = lib-server,ipl-apps
+RegistryUpcalls.libs = lib-server,ipl-apps/ipl-examples-2.2.jar
 #RegistryUpcalls.input.files =
 #RegistryUpcalls.output.files =
 RegistryUpcalls.system.properties = ibis.managementclient=true,ibis.bytescount=true,
@@ -30,7 +30,7 @@ RegistryUpcalls.system.properties = ibis.managementclient=true,ibis.bytescount=t
 # Application "RegistryBenchmark"
 RegistryBenchmark.main.class = ibis.ipl.benchmarks.registry.Main
 RegistryBenchmark.arguments = --runtime,120
-RegistryBenchmark.libs = lib-server,ipl-apps
+RegistryBenchmark.libs = lib-server,ipl-apps/ipl-benchmarks-2.2.jar
 #RegistryBenchmark.input.files =
 #RegistryBenchmark.output.files =
 RegistryBenchmark.system.properties = ibis.managementclient=true,ibis.bytescount=true,
@@ -41,7 +41,7 @@ RegistryBenchmark.system.properties = ibis.managementclient=true,ibis.bytescount
 # Application "Go"
 Go.main.class = go.dac.Main
 Go.arguments = --size,4,--stones,3
-Go.libs = lib-server,ipl-apps
+Go.libs = lib-server,ipl-apps/go.jar
 #Go.input.files =
 #Go.output.files =
 Go.system.properties = ibis.managementclient=true,ibis.bytescount=true,
@@ -52,7 +52,7 @@ Go.system.properties = ibis.managementclient=true,ibis.bytescount=true,
 # Application "OneToMany"
 OneToMany.main.class = ibis.ipl.examples.OneToMany
 #OneToMany.arguments =
-OneToMany.libs = lib-server,ipl-apps
+OneToMany.libs = lib-server,ipl-apps/ipl-examples-2.2.jar
 #OneToMany.input.files =
 #OneToMany.output.files =
 OneToMany.system.properties = ibis.managementclient=true,ibis.bytescount=true,
@@ -63,7 +63,7 @@ OneToMany.system.properties = ibis.managementclient=true,ibis.bytescount=true,
 # Application "Hello"
 Hello.main.class = ibis.ipl.examples.Hello
 #Hello.arguments =
-Hello.libs = lib-server,ipl-apps
+Hello.libs = lib-server,ipl-apps/ipl-examples-2.2.jar
 #Hello.input.files =
 #Hello.output.files =
 Hello.system.properties = ibis.managementclient=true,ibis.bytescount=true,
