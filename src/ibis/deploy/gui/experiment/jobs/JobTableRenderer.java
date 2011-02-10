@@ -43,7 +43,11 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
         String columnName = table.getColumnName(column);
 
         if (columnName.equalsIgnoreCase(JobTableModel.CONTROL_COLUMN_NAME)) {
-            boolean start = (Boolean) value;
+            boolean start = false;
+                
+            if (value != null) {
+               start = (Boolean) value;
+            }
 
             if (start) {
                 final JButton startButton = Utils.createImageButton(
@@ -141,7 +145,10 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
             setText("" + value);
         } else if (columnName
                 .equalsIgnoreCase(JobTableModel.OUTPUT_COLUMN_NAME)) {
-            boolean enabled = (Boolean) value;
+            boolean enabled = false;
+            if (value != null) {
+                enabled = (Boolean) value;
+            }
 
             final Job job = model.getJob(table.convertRowIndexToModel(row));
 
