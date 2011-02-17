@@ -205,8 +205,8 @@ public class GridVision implements GLEventListener {
 
 		//gl.glOrtho(0.0, 8.0, 0.0, 8.0, -0.5, 2.5);
 		
-		this.width = (double) width;
-		this.height = (double) height;
+		this.width = width;
+		this.height = height;
 		
 		aspect = this.width / this.height;
 		
@@ -252,8 +252,8 @@ public class GridVision implements GLEventListener {
 	    gl.glLoadIdentity();
 	    
 	    // create 5x5 pixel picking region near cursor location
-	    glu.gluPickMatrix((double) pickPoint.x,
-	        (double) (viewport[3] - pickPoint.y), 
+	    glu.gluPickMatrix(pickPoint.x,
+	        (viewport[3] - pickPoint.y), 
 	        5.0, 5.0, viewport, 0);
 	    	    
 	    //Multiply by the perspective

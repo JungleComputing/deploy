@@ -489,7 +489,7 @@ public class Vsite implements VisualElementInterface {
 		} else if (currentCollectionForm == VisualElementInterface.COLLECTION_CIRCLE) {
 			
 		} else if (currentCollectionForm == VisualElementInterface.COLLECTION_SPHERE) {
-			radius = (float) 10*maxRadiusChildren;
+			radius = 10*maxRadiusChildren;
 		}
 		
 		return radius;

@@ -91,7 +91,7 @@ public class Site implements IbisConceptInterface {
 				String key = metric.getName();
 				List<Float> results = new ArrayList<Float>();
 				for (Node node : nodes) {
-					results.add((Float)node.getValue(key));
+					results.add(node.getValue(key));
 				}
 				float total = 0, average = 0, min = 1, max = 0;
 				for (Float entry : results) {

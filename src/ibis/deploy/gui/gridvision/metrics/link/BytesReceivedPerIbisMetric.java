@@ -37,7 +37,7 @@ public class BytesReceivedPerIbisMetric extends LinkMetricsMap implements Metric
 	public void update(Object[] results) {
 		long time_now = System.currentTimeMillis();
 		long time_elapsed = time_now - time_prev;	
-		float time_seconds = (float)time_elapsed / 1000.0f;
+		float time_seconds = time_elapsed / 1000.0f;
 		Float value = 1.0f;		
 		
 		if (results[0] == null) {
@@ -62,7 +62,7 @@ public class BytesReceivedPerIbisMetric extends LinkMetricsMap implements Metric
 			
 			if (bps_max.containsKey(ibis)) {
 				bps_max.put(ibis, Math.max(bytes_per_sec, bps_max.get(ibis)));
-				value = (float)bytes_per_sec/(float)bps_max.get(ibis);
+				value = bytes_per_sec/(float)bps_max.get(ibis);
 			} else {
 				bps_max.put(ibis, bytes_per_sec);
 			}
