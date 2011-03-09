@@ -375,7 +375,7 @@ public class GUI {
             	logger.info("Monitor using simulated data.");
             	
             	//Ibis/JMX variables
-            	regInterface = new FakeRegistryService();    	
+            	regInterface = new FakeRegistryService();
             	manInterface = new FakeManagementService(regInterface);
             } else {
             	logger.info("Monitor using real data.");

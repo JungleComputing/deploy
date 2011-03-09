@@ -15,7 +15,7 @@
 
     <property name="ipl" location="external/ipl" />
     <property name="javagat" location="external/javagat" />
-	<property name="monitoring" location="external/monitoring" />
+	<property name="jogl" location="external/jogl" />
 
     <target name="build" description="Build with included JavaGAT and IPL" depends="clean,copy-external,compile" />
 
@@ -35,7 +35,7 @@
         <copy todir="lib">
             <fileset dir="external" includes="*.jar" />
             <fileset dir="external" includes="native_libraries/*" />
-        	<fileset dir="${monitoring}" />
+        	<fileset dir="${jogl}" />
             <fileset dir="${javagat}" />
             <fileset dir="${ipl}" />
         </copy>
