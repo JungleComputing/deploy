@@ -39,6 +39,13 @@ import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.UIManager;
 
+import ibis.deploy.monitoring.collection.Collector;
+import ibis.deploy.monitoring.simulator.FakeManagementService;
+import ibis.deploy.monitoring.simulator.FakeRegistryService;
+import ibis.deploy.monitoring.visualization.gridvision.JungleGoggles;
+import ibis.ipl.server.ManagementServiceInterface;
+import ibis.ipl.server.RegistryServiceInterface;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,6 +78,8 @@ public class GUI {
     private RootPanel myRoot;
 
     private final boolean readOnly;
+    
+    private Collector collector;
 
     // private Boolean sharedHubs;
 
@@ -272,6 +281,7 @@ public class GUI {
     protected GUI(String[] arguments) {
         boolean verbose = false;
         boolean keepSandboxes = false;
+        boolean fakeData = false;
         String serverCluster = null;
         int port = 0;
         boolean readOnly = false;
@@ -294,6 +304,8 @@ public class GUI {
                     System.exit(0);
                 } else if (arguments[i].equals("-r")) {
                     readOnly = true;
+                } else if (arguments[i].equals("-f")) {
+                    fakeData = true;
                 } else {
                     File file = new File(arguments[i]);
                     if (file.isDirectory()) {
@@ -356,7 +368,27 @@ public class GUI {
                 initWindow.remove();
 
             }
-
+                        
+            RegistryServiceInterface regInterface;
+            ManagementServiceInterface manInterface;
+            if (fakeData) {
+            	logger.info("Monitor using simulated data.");
+            	
+            	//Ibis/JMX variables
+            	regInterface = new FakeRegistryService();    	
+            	manInterface = new FakeManagementService(regInterface);
+            } else {
+            	logger.info("Monitor using real data.");
+            	regInterface = deploy.getServer().getRegistryService();
+            	manInterface = deploy.getServer().getManagementService();
+            }
+            
+            //Data interface
+            collector = ibis.deploy.monitoring.collection.impl.Collector.getCollector(manInterface, regInterface);
+    		new Thread(collector).start();
+    		
+    		new JungleGoggles(collector);
+            
         } catch (Exception e) {
             System.err.println("Could not initialize ibis-deploy: " + e);
             e.printStackTrace(System.err);
@@ -491,5 +523,9 @@ public class GUI {
 
     public RootPanel getRootPanel() {
         return myRoot;
+    }
+    
+    public Collector getCollector() {
+    	return collector;
     }
 }
