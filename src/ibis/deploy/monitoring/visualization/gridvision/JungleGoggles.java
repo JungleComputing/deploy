@@ -273,7 +273,6 @@ public class JungleGoggles implements GLEventListener {
 		universe.setCoordinates(m.getCurrentCoordinates());
 		universe.init(gl);
 		
-		//TODO reinstate 
 		createLinks();	
 	}
 	
@@ -285,7 +284,6 @@ public class JungleGoggles implements GLEventListener {
 		
 		for (Entry<Element, JGVisual> entry : visualRegistry.entrySet()) {
 			Element data = entry.getKey();
-			JGVisual visual = entry.getValue();
 			
 			Link[] links = data.getLinks();
 			for (Link link : links) {

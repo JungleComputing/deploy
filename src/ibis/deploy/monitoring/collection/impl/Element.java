@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
  * @author Maarten van Meersbergen
  */
 public abstract class Element implements ibis.deploy.monitoring.collection.Element {
+	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.collection.impl.Element");
 	
 	HashMap<ibis.deploy.monitoring.collection.MetricDescription, ibis.deploy.monitoring.collection.Metric> metrics;

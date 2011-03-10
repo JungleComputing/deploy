@@ -14,33 +14,23 @@ import javax.swing.SwingUtilities;
 public class MouseHandler implements MouseListener, MouseMotionListener, MouseWheelListener{	
 	private JungleGoggles jv;
 		
-	private float viewDist = -6; 
-	private float dragCoefficient = 10.0f;
+	private float viewDist = -6;
 	
 	private Float[] rotation;
-	private Float[] translation;
 	
-	private float dragRightXorigin;
 	private float rotationXorigin = 0; 
 	private float rotationX;
 	
-	private float dragRightYorigin;
 	private float rotationYorigin = 0; 
 	private float rotationY;
 	
-	private float dragLeftXorigin;
-	private float translationXorigin = 0; 
-	private float translationX = 0;
-	
+	private float dragLeftXorigin;	
 	private float dragLeftYorigin;
-	private float translationYorigin = 0; 
-	private float translationY = 0;
 	
 	MouseHandler(JungleGoggles jv) {
 		this.jv = jv;
 		
 		rotation = new Float[3];
-		translation = new Float[3];	
 	}
 	
 	public void mouseClicked(MouseEvent e) {		
@@ -76,10 +66,7 @@ public class MouseHandler implements MouseListener, MouseMotionListener, MouseWh
 
 	public void mouseReleased(MouseEvent e) {
 		rotationXorigin = rotationX;
-		rotationYorigin = rotationY;	
-				
-		translationXorigin = translationX;
-		translationYorigin = -translationY;
+		rotationYorigin = rotationY;
 	}
 
 	public void mouseDragged(MouseEvent e) { 
@@ -101,8 +88,6 @@ public class MouseHandler implements MouseListener, MouseMotionListener, MouseWh
 	public void mouseWheelMoved(MouseWheelEvent e) {	
 		viewDist += e.getWheelRotation();
 		if (viewDist > 0) { viewDist = 0; }
-		
-		dragCoefficient = 100* 1/(100 - viewDist);
 		
 		//System.out.println("viewdist "+ viewDist + " dragCoefficient " + dragCoefficient);
 		jv.setViewDist(viewDist);
