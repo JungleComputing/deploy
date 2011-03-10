@@ -116,7 +116,6 @@ public class GUI {
             	}
             }
         });
-
     }
 
     private void close() {
@@ -387,8 +386,6 @@ public class GUI {
             collector = ibis.deploy.monitoring.collection.impl.Collector.getCollector(manInterface, regInterface);
     		new Thread(collector).start();
     		
-    		new JungleGoggles(collector);
-            
         } catch (Exception e) {
             System.err.println("Could not initialize ibis-deploy: " + e);
             e.printStackTrace(System.err);

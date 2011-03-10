@@ -73,7 +73,7 @@ public class Collector implements ibis.deploy.monitoring.collection.Collector, R
 		root = new Location("root", color);
 		
 		//Set the default refreshrate
-		refreshrate = 500;
+		refreshrate = 1000;
 		
 		//Set the default metrics
 		descriptions.add(new CPUUsage());

@@ -27,7 +27,7 @@ public class MouseHandler implements MouseListener, MouseMotionListener, MouseWh
 	private float dragLeftXorigin;	
 	private float dragLeftYorigin;
 	
-	MouseHandler(JungleGoggles jv) {
+	public MouseHandler(JungleGoggles jv) {
 		this.jv = jv;
 		
 		rotation = new Float[3];

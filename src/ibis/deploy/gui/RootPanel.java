@@ -5,6 +5,7 @@ import ibis.deploy.gui.clusters.ClusterEditorPanel;
 import ibis.deploy.gui.deployViz.DeployVizPanel;
 import ibis.deploy.gui.experiment.ExperimentsPanel;
 import ibis.deploy.gui.misc.Utils;
+import ibis.deploy.monitoring.visualization.gridvision.swing.GogglePanel;
 import ibis.smartsockets.viz.SmartsocketsViz;
 
 import java.awt.BorderLayout;
@@ -52,8 +53,8 @@ public class RootPanel extends JPanel {
 				"images/gridvision.png", new DeployVizPanel(gui), tabs);
 
 		if (!gui.isReadOnly()) {
-			//gridVisionTab = new DetachableTab("3D Visualization",
-			//		"images/gridvision.png", new GridVisionPanel(gui), tabs);
+			gridVisionTab = new DetachableTab("3D Visualization", 
+					"images/gridvision.png", new GogglePanel(gui.getCollector()), tabs);
 		}
 
 		add(tabs, BorderLayout.CENTER);

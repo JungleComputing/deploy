@@ -8,30 +8,24 @@ import java.util.Map.Entry;
 
 import javax.media.opengl.GL2;
 import javax.media.opengl.GLAutoDrawable;
-import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.awt.GLJPanel;
-import javax.media.opengl.GLProfile;
 import javax.media.opengl.glu.gl2.GLUgl2;
-import javax.swing.JFrame;
 
 import com.jogamp.common.nio.Buffers;
-import com.jogamp.opengl.util.FPSAnimator;
 import com.jogamp.opengl.util.gl2.GLUT;
 
 import ibis.deploy.monitoring.collection.Collector;
 import ibis.deploy.monitoring.collection.Element;
 import ibis.deploy.monitoring.collection.Link;
 
-public class JungleGoggles implements GLEventListener {	
-	private final boolean STEREO = false;
+public class JungleGoggles implements GLEventListener {
+	private static final long serialVersionUID = 1928258465842884618L;
 	
 	GL2 gl;
 	GLUgl2 glu = new GLUgl2();
     GLUT glut = new GLUT();
     GLJPanel gljpanel;
-    MouseHandler mouseHandler;
-    KeyHandler keyHandler;
     
     //Perspective variables 
     private double fovy, aspect, width, height, zNear, zFar;
@@ -69,53 +63,8 @@ public class JungleGoggles implements GLEventListener {
      * Constructor for Junglegoggles, this sets up the
      * window (Frame), creates a GLCanvas and starts the Animator
      */
-    public JungleGoggles(Collector collector) {
-    	//Standard GL2 capabilities
-    	GLProfile glp = GLProfile.get(GLProfile.GL2); 
-		GLCapabilities glCapabilities = new GLCapabilities(glp);
-		
-		//glCapabilities.setDoubleBuffered(true);
-		glCapabilities.setHardwareAccelerated(true);
-		
-		//Anti-Aliasing
-		glCapabilities.setSampleBuffers(true);
-		glCapabilities.setNumSamples(4);
-		
-		//3d ?
-		if (STEREO) {
-			glCapabilities.setStereo(true);
-		}
-    	
-    	gljpanel = new GLJPanel(glCapabilities);    	
-		gljpanel.addGLEventListener(this);
-		
-		//Add Mouse event listener
-		mouseHandler = new MouseHandler(this);
-		gljpanel.addMouseListener(mouseHandler);
-		gljpanel.addMouseMotionListener(mouseHandler);
-		gljpanel.addMouseWheelListener(mouseHandler);
-		
-		//Add key event listener
-		keyHandler = new KeyHandler(this);
-		gljpanel.addKeyListener(keyHandler);
-		
-		//Set up animator
-		final FPSAnimator animator = new FPSAnimator(gljpanel,60);
-		
-		//Set up the window
-		final JFrame jframe = new JFrame("JungleGoggles");
-		jframe.addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {
-				animator.stop();
-				jframe.dispose();
-				System.exit(0);
-			}
-		});
-		jframe.getContentPane().add( gljpanel, BorderLayout.CENTER );
-		jframe.setSize(1800, 1100);
-		jframe.setVisible(true);
-		
-		//Initial perspective
+    public JungleGoggles(Collector collector) { 
+    	//Initial perspective
 		fovy = 45.0f; 
 		aspect = (this.width / this.height); 
 		zNear = 0.1f;
@@ -148,11 +97,7 @@ public class JungleGoggles implements GLEventListener {
 		
 		//Visual updater definition
 		UpdateTimer updater = new UpdateTimer(this);
-		new Thread(updater).start();		
-		
-		//Start drawing
-		animator.start();
-		gljpanel.requestFocusInWindow(); 
+		new Thread(updater).start();			
     }
     
     /**
