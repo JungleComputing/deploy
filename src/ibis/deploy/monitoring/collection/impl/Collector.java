@@ -251,7 +251,7 @@ public class Collector implements ibis.deploy.monitoring.collection.Collector, R
 	}
 	
 	private void initLinks() {
-		//pre-make only the location-location links
+		//pre-make the location-location links
 		for (ibis.deploy.monitoring.collection.Location source : locations.values()) {
 			for (ibis.deploy.monitoring.collection.Location destination : locations.values()) {
 				try {
@@ -262,6 +262,17 @@ public class Collector implements ibis.deploy.monitoring.collection.Collector, R
 			}
 		}
 		
+		//pre-make the ibis-ibis links
+		for (ibis.deploy.monitoring.collection.Ibis source : ibises.values()) {
+			for (ibis.deploy.monitoring.collection.Ibis destination : ibises.values()) {
+				try {
+					source.getLink(destination);
+				} catch (SelfLinkeageException ignored) {
+					//ignored, because we do not want this link
+				}
+			}
+		}
+				
 		((Location)root).makeLinkHierarchy();
 	}
 		
@@ -315,6 +326,9 @@ public class Collector implements ibis.deploy.monitoring.collection.Collector, R
 		
 	public void run() {
 		int iterations = 0;
+		
+		
+		
 		while (true) {
 			//Clear the queue for a new round, and make sure every worker is waiting 
 			synchronized(jobQueue) {
@@ -328,8 +342,8 @@ public class Collector implements ibis.deploy.monitoring.collection.Collector, R
 			//Add stuff to the queue and notify
 			synchronized(jobQueue) {				
 				initUniverse();
-				jobQueue.addAll(ibises.values());					
-				jobQueue.add(root);			
+				jobQueue.addAll(ibises.values());
+				jobQueue.add(root);
 				waiting = 0;
 				jobQueue.notifyAll();
 			}
@@ -351,12 +365,10 @@ public class Collector implements ibis.deploy.monitoring.collection.Collector, R
 					}					
 					logger.debug("Succesfully finished queue.");
 				} else {
-					//If they have not, give warning, and try again next turn.				
-					
-					if (logger.isDebugEnabled()) {
-						logger.debug("Workers still working: "+(workercount-waiting));
-						logger.debug("Ibises left in queue: "+jobQueue.size()+" / "+ ibises.size());						
-					}
+					//If they have not, give warning, and try again next turn.	
+					logger.warn("Workers still working: "+(workercount-waiting));
+					logger.warn("Ibises left in queue: "+jobQueue.size()+" / "+ ibises.size());	
+					logger.warn("Consider increasing the refresh time.");
 				}
 			}
 			iterations++;
