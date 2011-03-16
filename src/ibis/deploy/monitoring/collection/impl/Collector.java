@@ -128,6 +128,7 @@ public class Collector implements ibis.deploy.monitoring.collection.Collector, R
 			
 			if (logger.isDebugEnabled()) {
 				logger.debug("world rebuilt");
+				System.out.println(((Location)root).debugPrint());
 				//logger.debug(((Location)root).debugPrint());
 			}
 			
@@ -273,7 +274,7 @@ public class Collector implements ibis.deploy.monitoring.collection.Collector, R
 			}
 		}
 				
-		((Location)root).makeLinkHierarchy();
+		//((Location)root).makeLinkHierarchy();
 	}
 		
 	//Getters	

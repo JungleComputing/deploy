@@ -9,16 +9,14 @@ public interface JGVisual {
 	
 	public void init(GL2 gl);
 	
-	public void setCoordinates(Float[] newCoordinates);
-	public void setRotation(Float[] newRotation);
-	public void setDimensions(Float[] newDimensions);
+	public void setCoordinates(float[] newCoordinates);
+	public void setRotation(float[] newRotation);
 	
 	public void setCollectionShape(CollectionShape newShape);
 	public void setFoldState(FoldState myState);
 	public void setMetricShape(MetricShape newShape);
 	
-	public Float[] getCoordinates();	
-	public Float[] getDimensions();
+	public float[] getCoordinates();
 	public float getRadius();
 		
 	public void update();

@@ -106,16 +106,23 @@ public class GUI {
 
         // Schedule a job for the event-dispatching thread:
         // creating and showing this application's GUI.
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
+        
+        /* Turned off the invokeLater stuff, because it was interfering 
+         * with jogl. At first glance, this does not seem to have any 
+         * impact on the rest of deploy anyway, but if that is a wrong 
+         * assessment, please contact me. 
+         * - Maarten
+        */
+        //javax.swing.SwingUtilities.invokeLater(new Runnable() {
+        //    public void run() {
             	try {
                 gui.createAndShowGUI();
             	} catch (Exception e) {
             		e.printStackTrace(System.err);
             		System.exit(1);
             	}
-            }
-        });
+        //    }
+        //});
     }
 
     private void close() {

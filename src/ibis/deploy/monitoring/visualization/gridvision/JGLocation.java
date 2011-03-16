@@ -12,7 +12,15 @@ import ibis.deploy.monitoring.collection.Metric;
 public class JGLocation extends JGVisualAbstract implements JGVisual {		
 	public JGLocation(JungleGoggles jv, GLUgl2 glu, Location dataLocation) {
 		super();
-		separation = 8.0f;
+
+		locationSeparation[0] = 8;
+		locationSeparation[1] = -4;
+		locationSeparation[2] = 8;
+				 
+		ibisSeparation[0] = 1;
+		ibisSeparation[1] = -4;
+		ibisSeparation[2] = 1;
+				
 		cShape = CollectionShape.CITYSCAPE;
 		
 		jv.registerVisual(dataLocation, this);
@@ -30,8 +38,6 @@ public class JGLocation extends JGVisualAbstract implements JGVisual {
 		Metric dataMetrics[] = dataLocation.getMetrics();
 		for (Metric dataMetric : dataMetrics) {			
 			metrics.add(new JGMetric(jv, glu, dataMetric));
-		}	
-						
-		constructDimensions();
+		}
 	}
 }

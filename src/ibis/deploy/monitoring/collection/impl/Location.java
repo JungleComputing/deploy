@@ -79,225 +79,7 @@ public class Location extends Element implements ibis.deploy.monitoring.collecti
 		return children;
 	}
 	
-	/*
-	public Number getReducedValue(Reducefunction function, ibis.deploy.monitoring.collection.MetricDescription metric, MetricOutput outputmethod) {
-		if (outputmethod == MetricOutput.N) {
-			int result = 0;
-			
-			if (function == Reducefunction.LOCATIONSPECIFIC_MINIMUM) {
-				result = 10000000;
-				for (ibis.deploy.monitoring.collection.Ibis ibis : ibises) {
-					int metricvalue;
-					try {
-						metricvalue = (Integer) ibis.getMetric(metric).getValue(MetricModifier.NORM, outputmethod);
-						if (metricvalue < result) {
-							result = metricvalue;
-						}
-					} catch (OutputUnavailableException e) {
-						logger.debug("OutputUnavailableException caught. Metric is probably undefined.");
-					}					
-				}
-			} else if (function == Reducefunction.LOCATIONSPECIFIC_MAXIMUM) {
-				result = 0;
-				for (ibis.deploy.monitoring.collection.Ibis ibis : ibises) {
-					int metricvalue;
-					try {
-						metricvalue = (Integer) ibis.getMetric(metric).getValue(MetricModifier.NORM, outputmethod);
-						if (metricvalue > result) {
-							result = metricvalue;
-						}
-					} catch (OutputUnavailableException e) {
-						logger.debug("OutputUnavailableException caught. Metric is probably undefined.");
-					}					
-				}
-			} else if (function == Reducefunction.LOCATIONSPECIFIC_AVERAGE) {
-				result = 0;
-				for (ibis.deploy.monitoring.collection.Ibis ibis : ibises) {
-					int metricvalue;
-					try {
-						metricvalue = (Integer) ibis.getMetric(metric).getValue(MetricModifier.NORM, outputmethod);
-						result += metricvalue;	
-					} catch (OutputUnavailableException e) {
-						logger.debug("OutputUnavailableException caught. Metric is probably undefined.");
-					}				
-				}
-				if (ibises.size() > 0) {
-					result = result / ibises.size();
-				}
-			} else if (function == Reducefunction.ALLDESCENDANTS_MINIMUM) {
-				result = 10000000;
-				for (ibis.deploy.monitoring.collection.Ibis ibis : ibises) {
-					int metricvalue;
-					try {
-						metricvalue = (Integer) ibis.getMetric(metric).getValue(MetricModifier.NORM, outputmethod);
-						if (metricvalue < result) {
-							result = metricvalue;
-						}
-					} catch (OutputUnavailableException e) {
-						logger.debug("OutputUnavailableException caught. Metric is probably undefined.");
-					}					
-				}
-				
-				for (ibis.deploy.monitoring.collection.Location child : children) {
-					int childvalue = (Integer) child.getReducedValue(function, metric, outputmethod);
-					if (childvalue < result) {
-						result = childvalue;
-					}
-				}
-			} else if (function == Reducefunction.ALLDESCENDANTS_MAXIMUM) {
-				result = 0;
-				for (ibis.deploy.monitoring.collection.Ibis ibis : ibises) {
-					int metricvalue;
-					try {
-						metricvalue = (Integer) ibis.getMetric(metric).getValue(MetricModifier.NORM, outputmethod);
-						if (metricvalue > result) {
-							result = metricvalue;
-						}
-					} catch (OutputUnavailableException e) {
-						logger.debug("OutputUnavailableException caught. Metric is probably undefined.");
-					}					
-				}
-				
-				for (ibis.deploy.monitoring.collection.Location child : children) {
-					int childvalue = (Integer) child.getReducedValue(function, metric, outputmethod);
-					if (childvalue > result) {
-						result = childvalue;
-					}
-				}
-			} else if (function == Reducefunction.ALLDESCENDANTS_AVERAGE) {
-				result = 0;
-				int numberOfIbises = ibises.size();
-				
-				for (ibis.deploy.monitoring.collection.Ibis ibis : ibises) {
-					int metricvalue;
-					try {
-						metricvalue = (Integer) ibis.getMetric(metric).getValue(MetricModifier.NORM, outputmethod);
-						result += metricvalue;	
-					} catch (OutputUnavailableException e) {
-						logger.debug("OutputUnavailableException caught. Metric is probably undefined.");
-					}				
-				}
-								
-				for (ibis.deploy.monitoring.collection.Location child : children) {
-					result += (Integer) child.getReducedValue(function, metric, outputmethod) * child.getNumberOfDescendants();
-					numberOfIbises += child.getNumberOfDescendants();
-				}
-				
-				if (ibises.size() > 0) {
-					result = result / numberOfIbises;
-				}
-			}
-			return result;
-		} else { //Any other metric is defined as a float
-			float result = 0f;
-			
-			if (function == Reducefunction.LOCATIONSPECIFIC_MINIMUM) {
-				result = 10000000f;
-				for (ibis.deploy.monitoring.collection.Ibis ibis : ibises) {
-					float metricvalue;
-					try {
-						metricvalue = (Float) ibis.getMetric(metric).getValue(MetricModifier.NORM, outputmethod);
-						if (metricvalue < result) {
-							result = metricvalue;
-						}
-					} catch (OutputUnavailableException e) {
-						logger.debug("OutputUnavailableException caught. Metric is probably undefined.");
-					}					
-				}
-			} else if (function == Reducefunction.LOCATIONSPECIFIC_MAXIMUM) {
-				result = 0f;
-				for (ibis.deploy.monitoring.collection.Ibis ibis : ibises) {
-					float metricvalue;
-					try {
-						metricvalue = (Float) ibis.getMetric(metric).getValue(MetricModifier.NORM, outputmethod);
-						if (metricvalue > result) {
-							result = metricvalue;
-						}
-					} catch (OutputUnavailableException e) {
-						logger.debug("OutputUnavailableException caught. Metric is probably undefined.");
-					}					
-				}
-			} else if (function == Reducefunction.LOCATIONSPECIFIC_AVERAGE) {
-				result = 0f;
-				for (ibis.deploy.monitoring.collection.Ibis ibis : ibises) {
-					float metricvalue;
-					try {
-						metricvalue = (Float) ibis.getMetric(metric).getValue(MetricModifier.NORM, outputmethod);
-						result += metricvalue;	
-					} catch (OutputUnavailableException e) {
-						logger.debug("OutputUnavailableException caught. Metric is probably undefined.");
-					}				
-				}
-				if (ibises.size() > 0) {
-					result = result / ibises.size();
-				}
-			} else if (function == Reducefunction.ALLDESCENDANTS_MINIMUM) {
-				result = 10000000f;
-				for (ibis.deploy.monitoring.collection.Ibis ibis : ibises) {
-					float metricvalue;
-					try {
-						metricvalue = (Float) ibis.getMetric(metric).getValue(MetricModifier.NORM, outputmethod);
-						if (metricvalue < result) {
-							result = metricvalue;
-						}
-					} catch (OutputUnavailableException e) {
-						logger.debug("OutputUnavailableException caught. Metric is probably undefined.");
-					}					
-				}
-				
-				for (ibis.deploy.monitoring.collection.Location child : children) {
-					float childvalue = (Float) child.getReducedValue(function, metric, outputmethod);
-					if (childvalue < result) {
-						result = childvalue;
-					}
-				}
-			} else if (function == Reducefunction.ALLDESCENDANTS_MAXIMUM) {
-				result = 0f;
-				for (ibis.deploy.monitoring.collection.Ibis ibis : ibises) {
-					float metricvalue;
-					try {
-						metricvalue = (Float) ibis.getMetric(metric).getValue(MetricModifier.NORM, outputmethod);
-						if (metricvalue > result) {
-							result = metricvalue;
-						}
-					} catch (OutputUnavailableException e) {
-						logger.debug("OutputUnavailableException caught. Metric is probably undefined.");
-					}					
-				}
-				
-				for (ibis.deploy.monitoring.collection.Location child : children) {
-					float childvalue = (Float) child.getReducedValue(function, metric, outputmethod);
-					if (childvalue > result) {
-						result = childvalue;
-					}
-				}
-			} else if (function == Reducefunction.ALLDESCENDANTS_AVERAGE) {
-				result = 0f;
-				int numberOfIbises = ibises.size();
-				
-				for (ibis.deploy.monitoring.collection.Ibis ibis : ibises) {
-					float metricvalue;
-					try {
-						metricvalue = (Float) ibis.getMetric(metric).getValue(MetricModifier.NORM, outputmethod);
-						result += metricvalue;	
-					} catch (OutputUnavailableException e) {
-						logger.debug("OutputUnavailableException caught. Metric is probably undefined.");
-					}				
-				}
-								
-				for (ibis.deploy.monitoring.collection.Location child : children) {
-					result += (Float) child.getReducedValue(function, metric, outputmethod) * child.getNumberOfDescendants();
-					numberOfIbises += child.getNumberOfDescendants();
-				}
-				
-				if (ibises.size() > 0) {
-					result = result / numberOfIbises;
-				}
-			}
-			return result;
-		}
-	}
-	*/
+	
 	public ArrayList<ibis.deploy.monitoring.collection.Link> getLinks(ibis.deploy.monitoring.collection.MetricDescription metric, MetricOutput outputmethod, float minimumValue, float maximumValue) {
 		ArrayList<ibis.deploy.monitoring.collection.Link> result = new ArrayList<ibis.deploy.monitoring.collection.Link>();
 		
@@ -397,12 +179,12 @@ public class Location extends Element implements ibis.deploy.monitoring.collecti
 	
 	public void makeLinkHierarchy() {
 		for (ibis.deploy.monitoring.collection.Link link : links.values()) {
-			ibis.deploy.monitoring.collection.Location source = (ibis.deploy.monitoring.collection.Location) link.getSource();
-			ibis.deploy.monitoring.collection.Location destination = (ibis.deploy.monitoring.collection.Location) link.getDestination();
+			Location source = (Location) link.getSource();
+			Location destination = (Location) link.getDestination();
 			
 			for (ibis.deploy.monitoring.collection.Location sourceChild : source.getChildren()) {
 				for (ibis.deploy.monitoring.collection.Location destinationChild : destination.getChildren()) {
-					ibis.deploy.monitoring.collection.Link childLink;					
+					ibis.deploy.monitoring.collection.Link childLink;
 					try {
 						childLink = sourceChild.getLink(destinationChild);
 						((Link)link).addChild(childLink);
@@ -517,7 +299,7 @@ public class Location extends Element implements ibis.deploy.monitoring.collecti
 	}
 	
 	public String debugPrint() {
-		String result = "";
+		String result = "----------------------------------------------\n";
 		result += name + " has "+children.size()+" children. \n" ;
 		result += name + " has "+links.size()+" links. \n" ;
 		result += name + " has "+ibises.size()+" ibises. \n" ;
@@ -545,6 +327,9 @@ public class Location extends Element implements ibis.deploy.monitoring.collecti
 		for (ibis.deploy.monitoring.collection.Location child : children) {
 			result += ((Location)child).debugPrint();
 		}
+		
+		result += "----------------------------------------------\n" ;
+		
 		return result;
 	}
 		

@@ -26,7 +26,10 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 	//On-demand generated displaylists
 	private int[] onDemandList;
 	private boolean[] onDemandListsBuilt;
-	int whichList;
+	private boolean listsInitialized;
+	private int whichList;
+	
+	private float[] dimensions = {WIDTH,HEIGHT,WIDTH};
 	
 	JGLinkMetric(JungleGoggles jv, GLUgl2 glu, Metric metric) {
 		super();
@@ -42,38 +45,56 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 			e.printStackTrace();
 		}
 		
-		dimensions[0] = WIDTH;
-		dimensions[1] = HEIGHT;
-		dimensions[2] = WIDTH;
-		
 		onDemandList 		= new int[ACCURACY+1];
-		onDemandListsBuilt 	= new boolean[ACCURACY+1];
-		whichList = 0;
+		onDemandListsBuilt 	= new boolean[ACCURACY+1];		
+		listsInitialized = false;
+		whichList = 0;		
 		
 		glName = jv.registerGLName(this);
 	}
 	
 	public void init(GL2 gl) {
-		gl.glDeleteLists(onDemandList[0], ACCURACY+1);
+		if (listsInitialized) {
+			gl.glDeleteLists(onDemandList[0], ACCURACY+1);
+		}
 		onDemandList[0] = gl.glGenLists(ACCURACY+1);
 		
 		for (int i=0; i<ACCURACY+1; i++) {
 			onDemandListsBuilt[i] = false;
 			onDemandList[i] = onDemandList[0]+i;
 		}
+		listsInitialized = true;
 	}
 	
-	public void setCoordinates(Float[] newLocation) {
+	public void setCoordinates(float[] newCoords) {	
+		coordinates[0] = newCoords[0];
+		coordinates[1] = newCoords[1];
+		coordinates[2] = newCoords[2];
 		
 		for (int i=0; i<ACCURACY+1; i++) {
 			onDemandListsBuilt[i] = false;
 		}
-		
-		super.setCoordinates(newLocation);
+	}
+	
+	public void setDimensions(float[] newDims) {
+		for (int i=0;i<3;i++) {
+			dimensions[i] = newDims[i];
+		}
+	}
+	
+	public float[] getDimensions() {
+		float[] result = new float[3];
+		for (int i=0; i<3; i++) {
+			result[i] = dimensions[i];
+		}
+		return result;
 	}
 	
 	public void drawThis(GL2 gl, int renderMode) {
-		if (renderMode == GL2.GL_SELECT) { gl.glLoadName(glName); }
+		if (renderMode == GL2.GL_SELECT) { gl.glLoadName(glName); }		
+		
+		whichList = (int)(ACCURACY*currentValue);
+		
 		if (mShape == MetricShape.BAR) {
 			drawBar(gl, currentValue, dimensions[1]);
 		} else if (mShape == MetricShape.TUBE) {
@@ -307,9 +328,9 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 					gl.glVertex3f( Xp, Yf, Zn);
 					gl.glVertex3f( Xp, Yp, Zn);
 				gl.glEnd();
-			}	
-
-		gl.glEndList();
+				
+			gl.glEndList();
+		}		
 		
 		//Restore the old modelview matrix
 		gl.glPopMatrix();

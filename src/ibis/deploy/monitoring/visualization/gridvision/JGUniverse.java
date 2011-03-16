@@ -10,7 +10,11 @@ import ibis.deploy.monitoring.collection.Location;
 public class JGUniverse extends JGVisualAbstract implements JGVisual {	
 	public JGUniverse(JungleGoggles jv, GLUgl2 glu, Location root) {
 		super();
-		separation = 16.0f;
+		
+		locationSeparation[0] = 16;
+		locationSeparation[1] = 8;
+		locationSeparation[2] = 16;
+		
 		cShape = CollectionShape.CITYSCAPE;
 		
 		jv.registerVisual(root, this);
@@ -20,7 +24,5 @@ public class JGUniverse extends JGVisualAbstract implements JGVisual {
 		for (Location datachild : dataChildren) {
 			locations.add(new JGLocation(jv,glu,datachild));
 		}
-		
-		constructDimensions();
 	}	
 }

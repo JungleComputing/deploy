@@ -48,19 +48,17 @@ public class JGMetric extends JGVisualAbstract implements JGVisual {
 		barPointer = jv.getDisplayListPointer(DisplayListBuilder.DisplayList.BAR);
 		currentDL = DisplayListBuilder.DisplayList.BAR_AND_OUTLINE;
 		
-		dimensions[0] = WIDTH;
-		dimensions[1] = HEIGHT;
-		dimensions[2] = WIDTH;
-				
+		radius = WIDTH;
+						
 		glName = jv.registerGLName(this);
 	}
 	
 	public void drawThis(GL2 gl, int renderMode) {
 		if (renderMode == GL2.GL_SELECT) { gl.glLoadName(glName); }
 		if (mShape == MetricShape.BAR) {
-			drawBar(gl, currentValue, dimensions[1]);
+			drawBar(gl, currentValue, HEIGHT);
 		} else if (mShape == MetricShape.TUBE) {
-			drawTube(gl, currentValue, dimensions[1]);
+			drawTube(gl, currentValue, HEIGHT);
 		}		
 	}
 	
@@ -135,7 +133,7 @@ public class JGMetric extends JGVisualAbstract implements JGVisual {
 		float quad_color_g = color[1];
 		float quad_color_b = color[2];
 		
-		float radius = dimensions[0] / 2;
+		float radius = WIDTH / 2;
 							
 		//Make a new quadratic object
 		GLUquadric qobj = glu.gluNewQuadric();

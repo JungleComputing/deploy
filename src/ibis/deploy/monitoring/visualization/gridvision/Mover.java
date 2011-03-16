@@ -1,23 +1,23 @@
 package ibis.deploy.monitoring.visualization.gridvision;
 
 public class Mover {
-	private Float[] oldLocation, currentLocation, newLocation;
+	private float[] oldLocation, currentLocation, newLocation;
 	private Timer timer;
 	
 	private boolean locationChanged;
 	
 	public Mover() {
-		oldLocation = new Float[3];
+		oldLocation = new float[3];
 		oldLocation[0] = 0.0f;
 		oldLocation[1] = 0.0f;
 		oldLocation[2] = 0.0f;
 		
-		currentLocation = new Float[3];
+		currentLocation = new float[3];
 		currentLocation[0] = 0.0f;
 		currentLocation[1] = 0.0f;
 		currentLocation[2] = 0.0f;
 		
-		newLocation = new Float[3];
+		newLocation = new float[3];
 		newLocation[0] = 0.0f;
 		newLocation[1] = 0.0f;
 		newLocation[2] = 0.0f;
@@ -28,15 +28,15 @@ public class Mover {
 		locationChanged = false;
 	}
 	
-	public Float[] getCurrentCoordinates() {
-		Float[] tempLocation = new Float[3];
+	public float[] getCurrentCoordinates() {
+		float[] tempLocation = new float[3];
 		tempLocation[0] = currentLocation[0];
 		tempLocation[1] = currentLocation[1];
 		tempLocation[2] = currentLocation[2];
 		return tempLocation;	
 	}
 	
-	public void moveTo(Float[] newCenter) {		
+	public void moveTo(float[] newCenter) {		
 		this.oldLocation[0] = this.currentLocation[0];
 		this.oldLocation[1] = this.currentLocation[1];
 		this.oldLocation[2] = this.currentLocation[2];
