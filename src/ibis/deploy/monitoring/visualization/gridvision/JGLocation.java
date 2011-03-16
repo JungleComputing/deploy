@@ -13,9 +13,9 @@ public class JGLocation extends JGVisualAbstract implements JGVisual {
 	public JGLocation(JungleGoggles jv, GLUgl2 glu, Location dataLocation) {
 		super();
 
-		locationSeparation[0] = 8;
-		locationSeparation[1] = -4;
-		locationSeparation[2] = 8;
+		locationSeparation[0] = 12;
+		locationSeparation[1] = -8;
+		locationSeparation[2] = 12;
 				 
 		ibisSeparation[0] = 1;
 		ibisSeparation[1] = -4;

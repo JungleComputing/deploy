@@ -128,7 +128,9 @@ public class Collector implements ibis.deploy.monitoring.collection.Collector, R
 			
 			if (logger.isDebugEnabled()) {
 				logger.debug("world rebuilt");
-				System.out.println(((Location)root).debugPrint());
+				//System.out.println("--------------------------");
+				//System.out.println(((Location)root).debugPrint());
+				//System.out.println("--------------------------");
 				//logger.debug(((Location)root).debugPrint());
 			}
 			
@@ -156,7 +158,9 @@ public class Collector implements ibis.deploy.monitoring.collection.Collector, R
 
 	        if (!poolSizes.containsKey(poolName) || newSize != poolSizes.get(poolName)) {
 	         	pools.clear();
-	         	change = true;	         	
+	         	change = true;	 
+	         	
+	         	poolSizes = newSizes;
 	        }
 		}
 		
@@ -165,15 +169,11 @@ public class Collector implements ibis.deploy.monitoring.collection.Collector, R
 			for (Map.Entry<String, Integer> entry : newSizes.entrySet()) {
 				String poolName = entry.getKey();
 		        int newSize = entry.getValue();
-	
-		        if (!poolSizes.containsKey(poolName) || newSize != poolSizes.get(poolName)) {
-		        	if (newSize > 0) {
-			          	pools.put(poolName, new Pool(poolName));
-			        }
-		        }
-			}
-			
-			poolSizes = newSizes;
+			        
+		        if (newSize > 0) {
+			       	pools.put(poolName, new Pool(poolName));
+			    }		        
+			}			
 		}
 		
 		return change;
@@ -198,14 +198,14 @@ public class Collector implements ibis.deploy.monitoring.collection.Collector, R
 				for (IbisIdentifier ibisid : poolIbises) {									
 					//Get the lowest location, skip the lowest (ibis) location
 					ibis.ipl.Location ibisLocation = ibisid.location().getParent();
-					String ibisName = ibisLocation.getLevel(0);
-										
+					String locationName = ibisLocation.toString();
+															
 					ibis.deploy.monitoring.collection.Location current;
-					if (locations.containsKey(ibisName)) {
-						current = locations.get(ibisName);
+					if (locations.containsKey(locationName)) {
+						current = locations.get(locationName);
 					} else {
-						current = new Location(ibisName, color);
-						locations.put(ibisName, current);
+						current = new Location(locationName, color);
+						locations.put(locationName, current);
 					}
 					
 					//And add the ibis to that location
@@ -216,7 +216,7 @@ public class Collector implements ibis.deploy.monitoring.collection.Collector, R
 					//for all location levels, get parent
 					ibis.ipl.Location parentIPLLocation = ibisLocation.getParent();
 					while (!parentIPLLocation.equals(universe)) {
-						String name = parentIPLLocation.getLevel(0);
+						String name = parentIPLLocation.toString();
 						
 						//Make a new location if we have not encountered the parent
 						ibis.deploy.monitoring.collection.Location parent;
@@ -274,7 +274,7 @@ public class Collector implements ibis.deploy.monitoring.collection.Collector, R
 			}
 		}
 				
-		//((Location)root).makeLinkHierarchy();
+		((Location)root).makeLinkHierarchy();
 	}
 		
 	//Getters	

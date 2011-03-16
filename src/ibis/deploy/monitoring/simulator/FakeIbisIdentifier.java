@@ -18,6 +18,9 @@ public class FakeIbisIdentifier implements ibis.ipl.IbisIdentifier {
 		return location;
 	}
 	
+	public String poolName() {		
+		return poolName;
+	}
 	
 	/* ------------------------------------------------------------------------------------------------ 
 	 *  The rest is unneeded by the Collector 
@@ -31,10 +34,6 @@ public class FakeIbisIdentifier implements ibis.ipl.IbisIdentifier {
 	public String name() {
 		//Not needed by the collector
 		return null;
-	}
-
-	public String poolName() {		
-		return poolName;
 	}
 
 	public byte[] tag() {

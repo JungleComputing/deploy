@@ -200,13 +200,10 @@ public class Link extends Element implements ibis.deploy.monitoring.collection.L
 	public String debugPrint() {
 		String result = "";
 		
-		result += "link: "+((ibis.deploy.monitoring.collection.Location)origin).getName()+"->"+((ibis.deploy.monitoring.collection.Location)destination).getName()+ "\n";
 		
+		result += "link: bla"+"->"+ " ";
+				
 		result += "has "+metrics.size()+" metrics: ";
-		
-		for (Entry<ibis.deploy.monitoring.collection.MetricDescription, ibis.deploy.monitoring.collection.Metric> entry : metrics.entrySet()) {
-			result += "  " + entry.getValue().getDescription().getName();
-		}
 		
 		result += "\n";
 		

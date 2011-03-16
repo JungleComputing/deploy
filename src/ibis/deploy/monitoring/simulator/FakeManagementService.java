@@ -27,6 +27,8 @@ public class FakeManagementService implements ManagementServiceInterface, FakeSe
 	
 	FakeRegistryService reg;
 	HashMap<IbisIdentifier, State> ibises;
+	
+	int currentIteration = 0;
 		
 	public FakeManagementService(RegistryServiceInterface reg) {
 		this.reg = (FakeRegistryService)reg;
@@ -149,33 +151,38 @@ public class FakeManagementService implements ManagementServiceInterface, FakeSe
 				} else if (	desc[i].getBeanName().compareTo("ibis") == 0 &&
 							desc[i].getAttribute().compareTo("receivedBytesPerIbis") == 0) {
 					
-					IbisIdentifier iArray[] = ibises.keySet().toArray(new IbisIdentifier[0]);
+					String myPool = id.poolName();					
+					IbisIdentifier iArray[] = reg.getMembers(myPool);					                                             
+					
 					Map<IbisIdentifier, Long> resultMap = new HashMap<IbisIdentifier, Long>();
-					int destinations = (int) (Math.random()*ibises.size());
+					int destinations = (int) (Math.random()*iArray.length);
 					int j = 0;
 					while (j<destinations) {
 						
-						IbisIdentifier randomIbis = iArray[(int)(Math.random()*ibises.size())];
+						IbisIdentifier randomIbis = iArray[(int)(Math.random()*iArray.length)];
 						while (resultMap.containsKey(randomIbis)) {
-							randomIbis = iArray[(int)(Math.random()*ibises.size())];
+							randomIbis = iArray[(int)(Math.random()*iArray.length)];
 						}
-						resultMap.put(randomIbis, (long) (Math.random()*5000));
+						resultMap.put(randomIbis, (long) (Math.random()*5000+currentIteration*5000));
 						j++;
 					}
 					result[i] = resultMap;
 				} else if (	desc[i].getBeanName().compareTo("ibis") == 0 &&
 							desc[i].getAttribute().compareTo("sentBytesPerIbis") == 0) {
 					
-					IbisIdentifier iArray[] = ibises.keySet().toArray(new IbisIdentifier[0]);
+					String myPool = id.poolName();					
+					IbisIdentifier iArray[] = reg.getMembers(myPool);					                                             
+					
 					Map<IbisIdentifier, Long> resultMap = new HashMap<IbisIdentifier, Long>();
-					int destinations = (int) (Math.random()*ibises.size());
+					int destinations = (int) (Math.random()*iArray.length);
 					int j = 0;
-					while (j<destinations) {						
-						IbisIdentifier randomIbis = iArray[(int)(Math.random()*ibises.size())];
+					while (j<destinations) {
+						
+						IbisIdentifier randomIbis = iArray[(int)(Math.random()*iArray.length)];
 						while (resultMap.containsKey(randomIbis)) {
-							randomIbis = iArray[(int)(Math.random()*ibises.size())];
+							randomIbis = iArray[(int)(Math.random()*iArray.length)];
 						}
-						resultMap.put(randomIbis, (long) (Math.random()*5000));
+						resultMap.put(randomIbis, (long) (Math.random()*5000+currentIteration*5000));
 						j++;
 					}
 					result[i] = resultMap;
@@ -195,6 +202,7 @@ public class FakeManagementService implements ManagementServiceInterface, FakeSe
 	public void doUpdate() {
 		synchronized(ibises) {
 			ibises = reg.getIbises();
+			currentIteration++;
 		}
 	}
 

@@ -17,10 +17,10 @@ public class FakeRegistryService implements ibis.ipl.server.RegistryServiceInter
 	public enum State { ALIVE, FAILING, DEAD };	
 
 	final int POOLS = 2;
-	final int COUNTRIES = 2;
+	final int COUNTRIES = 1;
 	final int UNIVERSITIES = 5;
-	final int CLUSTERS = 1;
-	final int IBISES = 1;
+	final int CLUSTERS = 2;
+	final int IBISES = 2;
 	
 	private HashMap<String, IbisIdentifier[]> pools;
 	private HashMap<IbisIdentifier, State> ibises;
@@ -45,7 +45,7 @@ public class FakeRegistryService implements ibis.ipl.server.RegistryServiceInter
 						String clusterName = "cluster"+s;
 
 						for (int i=0; i<IBISES; i++) {
-							IbisIdentifier fakeibis = new FakeIbisIdentifier(i+"_"+poolName+"@"+universityName+"@"+clusterName+"@"+countryName, poolName);
+							IbisIdentifier fakeibis = new FakeIbisIdentifier(i+"_"+poolName+"@"+clusterName+"@"+universityName+"@"+countryName, poolName);
 							poolIbises.add(fakeibis);
 							ibises.put(fakeibis, State.ALIVE);
 						}
@@ -59,6 +59,7 @@ public class FakeRegistryService implements ibis.ipl.server.RegistryServiceInter
 		}
 		
 		if (logger.isInfoEnabled()) {
+			System.out.println("FakeRegistry has created "+ibises.size()+" ibises.");
 			logger.info("FakeRegistry has created "+ibises.size()+" ibises.");			
 			logger.info("in "+COUNTRIES+" countries, "+UNIVERSITIES+" universities and "+CLUSTERS+" clusters" );
 			logger.info("and divided among "+pools.size()+" pools.");
@@ -69,8 +70,10 @@ public class FakeRegistryService implements ibis.ipl.server.RegistryServiceInter
 		new Thread(timer).start();
 	}
 
-	public IbisIdentifier[] getMembers(String poolName) throws IOException {		
-		return pools.get(poolName);
+	public IbisIdentifier[] getMembers(String poolName) throws IOException {
+		synchronized(ibises) {
+			return pools.get(poolName);
+		}
 	}
 
 	public Map<String, Integer> getPoolSizes() throws IOException {

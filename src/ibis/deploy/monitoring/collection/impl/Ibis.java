@@ -2,6 +2,8 @@ package ibis.deploy.monitoring.collection.impl;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeoutException;
 
@@ -54,6 +56,31 @@ public class Ibis extends Element implements ibis.deploy.monitoring.collection.I
 		return pool;
 	}
 	
+	public void setMetrics(Set<ibis.deploy.monitoring.collection.MetricDescription> descriptions) {
+		for (ibis.deploy.monitoring.collection.Link link : links.values()) {
+			((Link)link).setMetrics(descriptions);
+		}
+		
+		//add new metrics
+		for (ibis.deploy.monitoring.collection.MetricDescription md : descriptions) {
+			if(!metrics.containsKey(md)) {
+				Metric newMetric = (Metric) ((MetricDescription)md).getMetric(this); 
+				metrics.put(md, newMetric);
+			}
+		}
+		
+		//make a snapshot of our current metrics.
+		Set<ibis.deploy.monitoring.collection.MetricDescription> temp = new HashSet<ibis.deploy.monitoring.collection.MetricDescription>();		
+		temp.addAll(metrics.keySet());
+		
+		//and loop through the snapshot to remove unwanted metrics that don't appear in the new set
+		for (ibis.deploy.monitoring.collection.MetricDescription entry : temp) {
+			if(!descriptions.contains(entry)) {
+				metrics.remove(entry);
+			}
+		}
+	}
+	
 	public void update() throws TimeoutException {
 		//Make an array of all the AttributeDescriptions needed to update this Ibis' metrics.
 		ArrayList<AttributeDescription> requestList = new ArrayList<AttributeDescription>();
@@ -96,10 +123,20 @@ public class Ibis extends Element implements ibis.deploy.monitoring.collection.I
 	}
 	
 	public String debugPrint() {
-		String result = ibisid+"metrics: ";
+		String result = ibisid+" metrics: ";
 				
 		for (Entry<ibis.deploy.monitoring.collection.MetricDescription, ibis.deploy.monitoring.collection.Metric> entry : metrics.entrySet()) {
-			result += "  " + entry.getValue().getDescription().getName();
+			if (entry.getValue().getDescription().getType() == MetricType.NODE) {
+				result += " " + entry.getValue().getDescription().getName();
+			} else {
+				result += " !" + entry.getValue().getDescription().getName();
+			}
+		}
+		
+		result += "\n";
+		
+		for (ibis.deploy.monitoring.collection.Link link : links.values()) {
+			result += ibisid + " "+((Link)link).debugPrint();
 		}
 
 		result += "\n";

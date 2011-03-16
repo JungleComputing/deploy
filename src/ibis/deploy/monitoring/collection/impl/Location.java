@@ -299,7 +299,7 @@ public class Location extends Element implements ibis.deploy.monitoring.collecti
 	}
 	
 	public String debugPrint() {
-		String result = "----------------------------------------------\n";
+		String result = "";
 		result += name + " has "+children.size()+" children. \n" ;
 		result += name + " has "+links.size()+" links. \n" ;
 		result += name + " has "+ibises.size()+" ibises. \n" ;
@@ -307,7 +307,11 @@ public class Location extends Element implements ibis.deploy.monitoring.collecti
 		result += name + " has "+metrics.size()+" metrics: ";
 		
 		for (Entry<ibis.deploy.monitoring.collection.MetricDescription, ibis.deploy.monitoring.collection.Metric> entry : metrics.entrySet()) {
-			result += "  " + entry.getValue().getDescription().getName();
+			if (entry.getValue().getDescription().getType() == MetricType.NODE) {
+				result += " " + entry.getValue().getDescription().getName();
+			} else {
+				result += " !" + entry.getValue().getDescription().getName();
+			}
 		}
 		
 		result += "\n";
@@ -327,9 +331,7 @@ public class Location extends Element implements ibis.deploy.monitoring.collecti
 		for (ibis.deploy.monitoring.collection.Location child : children) {
 			result += ((Location)child).debugPrint();
 		}
-		
-		result += "----------------------------------------------\n" ;
-		
+				
 		return result;
 	}
 		
