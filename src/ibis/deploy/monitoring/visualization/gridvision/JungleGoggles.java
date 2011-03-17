@@ -232,7 +232,7 @@ public class JungleGoggles implements GLEventListener {
 		for (Entry<Element, JGVisual> entry : visualRegistry.entrySet()) {
 			Element data = entry.getKey();
 
-			Link[] links = data.getLinks();			
+			Link[] links = data.getLinks();
 			for (Link link : links) {
 				JGVisual v_source = visualRegistry.get(link.getSource());
 				JGVisual v_dest = visualRegistry.get(link.getDestination());

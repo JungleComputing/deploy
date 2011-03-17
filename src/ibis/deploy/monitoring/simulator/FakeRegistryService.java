@@ -15,12 +15,16 @@ public class FakeRegistryService implements ibis.ipl.server.RegistryServiceInter
 	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.simulator.FakeRegistryService");
 
 	public enum State { ALIVE, FAILING, DEAD };	
+	double	CHANCE_OF_IBIS_FAILURE  = 0.001;
+	double 	CHANCE_OF_IBIS_JOIN  	= 0.001;
+	double 	CHANCE_OF_IBIS_RECOVERY = 0.01;
+	int 	MAX_FAILRATE 			= 10;
 
 	final int POOLS = 2;
 	final int COUNTRIES = 1;
 	final int UNIVERSITIES = 5;
 	final int CLUSTERS = 2;
-	final int IBISES = 2;
+	final int IBISES = 10;
 	
 	private HashMap<String, IbisIdentifier[]> pools;
 	private HashMap<IbisIdentifier, State> ibises;
@@ -96,12 +100,7 @@ public class FakeRegistryService implements ibis.ipl.server.RegistryServiceInter
 	 *  Functions needed by the timer 
 	 * */
 	public void doUpdate() {
-		synchronized(ibises) {
-			double CHANCE_OF_IBIS_FAILURE  	= 0.01;
-			double CHANCE_OF_IBIS_JOIN  	= 0.01;
-			double CHANCE_OF_IBIS_RECOVERY = 0.01;
-			int MAX_FAILRATE = 10;
-					
+		synchronized(ibises) {				
 			//Add new ibises to the pools
 			if (Math.random() < CHANCE_OF_IBIS_JOIN) {
 				//Select a random ibis to clone

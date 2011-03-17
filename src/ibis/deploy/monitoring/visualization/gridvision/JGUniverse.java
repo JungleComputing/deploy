@@ -15,7 +15,7 @@ public class JGUniverse extends JGVisualAbstract implements JGVisual {
 		locationSeparation[1] = 8;
 		locationSeparation[2] = 16;
 		
-		cShape = CollectionShape.CITYSCAPE;
+		locationColShape = CollectionShape.CITYSCAPE;
 		
 		jv.registerVisual(root, this);
 		

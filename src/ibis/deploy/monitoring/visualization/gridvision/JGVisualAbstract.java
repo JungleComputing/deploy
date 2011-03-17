@@ -15,7 +15,7 @@ public abstract class JGVisualAbstract implements JGVisual {
 	protected float[] coordinates;
 	protected float[] rotation;
 
-	protected CollectionShape cShape;
+	protected CollectionShape locationColShape, ibisColShape, metricColShape;
 	protected FoldState foldState;
 	protected MetricShape mShape;
 
@@ -39,7 +39,10 @@ public abstract class JGVisualAbstract implements JGVisual {
 		rotation[0] = 0.0f;
 		rotation[1] = 0.0f;
 		rotation[2] = 0.0f;
-		cShape = CollectionShape.CITYSCAPE;
+		
+		locationColShape = CollectionShape.CITYSCAPE;
+		ibisColShape = CollectionShape.CITYSCAPE;
+		metricColShape = CollectionShape.CITYSCAPE;
 		foldState = FoldState.UNFOLDED;
 		mShape = MetricShape.BAR;
 	}
@@ -63,11 +66,11 @@ public abstract class JGVisualAbstract implements JGVisual {
 
 		// First, give our location children a new home
 		if (locations.size() > 0) {
-			if (cShape == CollectionShape.CITYSCAPE) {
+			if (locationColShape == CollectionShape.CITYSCAPE) {
 				setCityScape(locations, locationSeparation);
-			} else if (cShape == CollectionShape.SPHERE) {
+			} else if (locationColShape == CollectionShape.SPHERE) {
 				setSphere(locations, locationSeparation);
-			} else if (cShape == CollectionShape.CUBE) {
+			} else if (locationColShape == CollectionShape.CUBE) {
 				setCube(locations, locationSeparation);
 			} else {
 				System.err
@@ -77,11 +80,11 @@ public abstract class JGVisualAbstract implements JGVisual {
 		}
 
 		if (ibises.size() > 0) {
-			if (cShape == CollectionShape.CITYSCAPE) {
+			if (ibisColShape == CollectionShape.CITYSCAPE) {
 				setCityScape(ibises, ibisSeparation);
-			} else if (cShape == CollectionShape.SPHERE) {
+			} else if (ibisColShape == CollectionShape.SPHERE) {
 				setSphere(ibises, ibisSeparation);
-			} else if (cShape == CollectionShape.CUBE) {
+			} else if (ibisColShape == CollectionShape.CUBE) {
 				setCube(ibises, ibisSeparation);
 			} else {
 				System.err
@@ -91,11 +94,11 @@ public abstract class JGVisualAbstract implements JGVisual {
 		}
 
 		if (metrics.size() > 0) {
-			if (cShape == CollectionShape.CITYSCAPE) {
+			if (metricColShape == CollectionShape.CITYSCAPE) {
 				setCityScape(metrics, metricSeparation);
-			} else if (cShape == CollectionShape.SPHERE) {
+			} else if (metricColShape == CollectionShape.SPHERE) {
 				setSphere(metrics, metricSeparation);
-			} else if (cShape == CollectionShape.CUBE) {
+			} else if (metricColShape == CollectionShape.CUBE) {
 				setCube(metrics, metricSeparation);
 			} else {
 				System.err
@@ -239,7 +242,7 @@ public abstract class JGVisualAbstract implements JGVisual {
 	}
 
 	public void setCollectionShape(CollectionShape newShape) {
-		cShape = newShape;
+		locationColShape = newShape;
 	}
 
 	public void setFoldState(FoldState newFoldState) {
@@ -280,8 +283,8 @@ public abstract class JGVisualAbstract implements JGVisual {
 
 	public void drawThis(GL2 gl, int renderMode) {
 		if (foldState == FoldState.UNFOLDED) {
-			for (JGVisual ibis : locations) {
-				ibis.drawThis(gl, renderMode);
+			for (JGVisual location : locations) {
+				location.drawThis(gl, renderMode);
 			}
 			for (JGVisual ibis : ibises) {
 				ibis.drawThis(gl, renderMode);

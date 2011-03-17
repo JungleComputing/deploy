@@ -24,6 +24,7 @@ public class JGMetric extends JGVisualAbstract implements JGVisual {
 	private Metric metric;
 	private float currentValue;
 	private MetricOutput currentOutputMethod = MetricOutput.PERCENT;
+	private MetricModifier myMod;
 	
 	private int glName;
 	private int[] barPointer;
@@ -31,18 +32,15 @@ public class JGMetric extends JGVisualAbstract implements JGVisual {
 	
 	private DisplayListBuilder.DisplayList currentDL;	
 	
-	JGMetric(JungleGoggles jv, GLUgl2 glu, Metric metric) {		
+	JGMetric(JungleGoggles jv, GLUgl2 glu, Metric metric, MetricModifier mod) {		
 		super();
 			
 		this.glu = glu;
 		this.metric = metric;
+		this.myMod = mod;
 		this.color = metric.getDescription().getColor();
 		
-		try {
-			currentValue = (Float) metric.getValue(MetricModifier.NORM, currentOutputMethod);
-		} catch (OutputUnavailableException e) {
-			logger.debug("OutputUnavailableException caught by visual metric for "+metric.getDescription().getName());
-		}		
+		update();
 		
 		barAndOutlinePointer = jv.getDisplayListPointer(DisplayListBuilder.DisplayList.BAR_AND_OUTLINE);
 		barPointer = jv.getDisplayListPointer(DisplayListBuilder.DisplayList.BAR);
@@ -63,11 +61,10 @@ public class JGMetric extends JGVisualAbstract implements JGVisual {
 	}
 	
 	public void update() {
-		try {
-			currentValue = (Float) metric.getValue(MetricModifier.NORM, currentOutputMethod);
+		try {			
+			currentValue = (Float) metric.getValue(myMod, currentOutputMethod);
 		} catch (OutputUnavailableException e) {
-			//This shouldn't happen if the metric is defined properly
-			e.printStackTrace();
+			logger.debug("OutputUnavailableException caught by visual metric for "+metric.getDescription().getName());
 		}
 	}
 
