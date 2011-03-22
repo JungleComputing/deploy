@@ -15,8 +15,11 @@ import ibis.deploy.monitoring.collection.exceptions.OutputUnavailableException;
 public class JGMetric extends JGVisualAbstract implements JGVisual {
 	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.gui.junglevision.visuals.Metric");
 	
+	private enum MetricDisplay { TRANSPARANCY, SOLIDS_ONLY }
+	
 	private static final float WIDTH = 0.25f;
 	private static final float HEIGHT = 1.00f;
+	
 	private GLUgl2 glu;
 	
 	private Float[] color;
@@ -27,14 +30,13 @@ public class JGMetric extends JGVisualAbstract implements JGVisual {
 	private MetricModifier myMod;
 	
 	private int glName;
-	private int[] barPointer;
-	private int[] barAndOutlinePointer;
+	private int[] barPointer, transparencyPointer, selectedTransparencyPointer, selectedBarPointer;
+	private MetricDisplay currentDisplay;
 	
-	private DisplayListBuilder.DisplayList currentDL;	
-	
-	JGMetric(JungleGoggles jv, GLUgl2 glu, Metric metric, MetricModifier mod) {		
-		super();
-			
+	JGMetric(JungleGoggles goggles, GLUgl2 glu, JGVisual parent, Metric metric, MetricModifier mod) {		
+		super(goggles);
+		
+		this.goggles = goggles;	
 		this.glu = glu;
 		this.metric = metric;
 		this.myMod = mod;
@@ -42,22 +44,36 @@ public class JGMetric extends JGVisualAbstract implements JGVisual {
 		
 		update();
 		
-		barAndOutlinePointer = jv.getDisplayListPointer(DisplayListBuilder.DisplayList.BAR_AND_OUTLINE);
-		barPointer = jv.getDisplayListPointer(DisplayListBuilder.DisplayList.BAR);
-		currentDL = DisplayListBuilder.DisplayList.BAR_AND_OUTLINE;
+		transparencyPointer = goggles.getDisplayListPointer(DisplayListBuilder.DisplayList.BAR_TRANSPARENCY);
+		barPointer = goggles.getDisplayListPointer(DisplayListBuilder.DisplayList.BAR);
+		selectedTransparencyPointer = goggles.getDisplayListPointer(DisplayListBuilder.DisplayList.SELECTED_BAR_TRANSPARENCY);
+		selectedBarPointer = goggles.getDisplayListPointer(DisplayListBuilder.DisplayList.SELECTED_BAR);
+		
+		currentDisplay = MetricDisplay.TRANSPARANCY;
 		
 		radius = WIDTH;
-						
-		glName = jv.registerGLName(this);
+		
+		glName = goggles.registerGLName(parent, this);
 	}
 	
-	public void drawThis(GL2 gl, int renderMode) {
+	public void drawSolids(GL2 gl, int renderMode) {
 		if (renderMode == GL2.GL_SELECT) { gl.glLoadName(glName); }
 		if (mShape == MetricShape.BAR) {
-			drawBar(gl, currentValue, HEIGHT);
+			drawSolidBar(gl, currentValue);
 		} else if (mShape == MetricShape.TUBE) {
-			drawTube(gl, currentValue, HEIGHT);
+			drawSolidTube(gl, currentValue);
 		}		
+	}
+	
+	public void drawTransparents(GL2 gl, int renderMode) {
+		if (currentDisplay == MetricDisplay.TRANSPARANCY) {
+			if (renderMode == GL2.GL_SELECT) { gl.glLoadName(glName); }
+			if (mShape == MetricShape.BAR) {
+				drawTransparentBar(gl, currentValue);
+			} else if (mShape == MetricShape.TUBE) {
+				drawTransparentTube(gl, currentValue);
+			}		
+		}
 	}
 	
 	public void update() {
@@ -68,7 +84,7 @@ public class JGMetric extends JGVisualAbstract implements JGVisual {
 		}
 	}
 
-	protected void drawBar(GL2 gl, float length, float maxLength) {
+	protected void drawSolidBar(GL2 gl, float length) {
 		//Save the current modelview matrix
 		gl.glPushMatrix();
 		
@@ -77,24 +93,17 @@ public class JGMetric extends JGVisualAbstract implements JGVisual {
 		gl.glRotatef(rotation[0], 1.0f, 0.0f, 0.0f);
 		gl.glRotatef(rotation[1], 0.0f, 1.0f, 0.0f);
 		gl.glRotatef(rotation[2], 0.0f, 0.0f, 1.0f);		
+				
+		int whichBar = (int) Math.floor(length*barPointer.length);
+		if (length >= 0.95f) {
+			whichBar = (barPointer.length)-1;
+		}
+
+		gl.glColor4f(color[0], color[1], color[2], 1.0f);
 		
-		if (currentDL == DisplayListBuilder.DisplayList.BAR_AND_OUTLINE && maxLength == HEIGHT) {	//BAR AND OUTLINE
-			int whichBar = (int) Math.floor(length*barAndOutlinePointer.length)/2;
-			if (length >= 0.95f) {
-				whichBar = (barAndOutlinePointer.length/2)-1;
-			}
-	
-			gl.glColor4f(color[0], color[1], color[2], 1.0f);
-			gl.glCallList(barAndOutlinePointer[(whichBar*2)]); 
-			gl.glColor4f(color[0], color[1], color[2], 0.4f);
-			gl.glCallList(barAndOutlinePointer[(whichBar*2)+1]);
-		} else if (currentDL == DisplayListBuilder.DisplayList.BAR && maxLength == HEIGHT) {	//BAR
-			int whichBar = (int) Math.floor(length*barPointer.length);
-			if (length >= 0.95f) {
-				whichBar = (barPointer.length)-1;
-			}
-	
-			gl.glColor4f(color[0], color[1], color[2], 1.0f);
+		if (goggles.currentlySelected(glName)) {
+			gl.glCallList(selectedBarPointer[whichBar]);
+		} else {
 			gl.glCallList(barPointer[whichBar]);
 		}
 		
@@ -102,7 +111,33 @@ public class JGMetric extends JGVisualAbstract implements JGVisual {
 		gl.glPopMatrix();
 	}
 	
-	protected void drawTube(GL2 gl, float length, float maxLength) {
+	protected void drawTransparentBar(GL2 gl, float length) {
+		//Save the current modelview matrix
+		gl.glPushMatrix();
+		
+		//Translate to the desired coordinates and rotate if desired
+		gl.glTranslatef(coordinates[0], coordinates[1], coordinates[2]);
+		gl.glRotatef(rotation[0], 1.0f, 0.0f, 0.0f);
+		gl.glRotatef(rotation[1], 0.0f, 1.0f, 0.0f);
+		gl.glRotatef(rotation[2], 0.0f, 0.0f, 1.0f);		
+				
+		int whichBar = (int) Math.floor(length*barPointer.length);
+		if (length >= 0.95f) {
+			whichBar = (barPointer.length)-1;
+		}
+		
+		gl.glColor4f(color[0], color[1], color[2], 0.4f);
+		if (goggles.currentlySelected(glName)) {
+			gl.glCallList(selectedTransparencyPointer[whichBar]);
+		} else {
+			gl.glCallList(transparencyPointer[whichBar]);
+		}	
+		
+		//Restore the old modelview matrix
+		gl.glPopMatrix();
+	}
+	
+	protected void drawSolidTube(GL2 gl, float length) {
 		//Save the current modelview matrix
 		gl.glPushMatrix();
 		
@@ -115,16 +150,14 @@ public class JGMetric extends JGVisualAbstract implements JGVisual {
 		gl.glRotatef(-90f, 1.0f, 0.0f, 0.0f);		
 				
 		final int SIDES = 12;
-		final float EDGE_SIZE = 0.01f;			
-		
-		float alpha = 0.4f;
+		final float EDGE_SIZE = 0.01f;
 		 			
-		float 	Yn = -0.5f*maxLength,
-				Yp =  0.5f*maxLength;
+		float 	Yn = -0.5f*HEIGHT;
+				//Yp =  0.5f*HEIGHT;
 
 		float Yf = 0.0f;
 					
-		Yf = (length*maxLength)-(0.5f*maxLength);
+		Yf = (length*HEIGHT)-(0.5f*HEIGHT);
 		
 		float quad_color_r = color[0];
 		float quad_color_g = color[1];
@@ -157,7 +190,51 @@ public class JGMetric extends JGVisualAbstract implements JGVisual {
 			
 			//Edge of top disk
 			gl.glColor3f(0.8f,0.8f,0.8f);
-			glu.gluCylinder(qobj, radius, radius, EDGE_SIZE, SIDES, 1);
+			glu.gluCylinder(qobj, radius, radius, EDGE_SIZE, SIDES, 1);		
+		
+		//Cleanup
+		glu.gluDeleteQuadric(qobj);
+		
+		//Restore the old modelview matrix
+		gl.glPopMatrix();
+	}
+	
+	protected void drawTransparentTube(GL2 gl, float length) {
+		//Save the current modelview matrix
+		gl.glPushMatrix();
+		
+		//Translate to the desired coordinates and rotate if desired
+		gl.glTranslatef(coordinates[0], coordinates[1], coordinates[2]);
+		gl.glRotatef(rotation[0], 1.0f, 0.0f, 0.0f);
+		gl.glRotatef(rotation[1], 0.0f, 1.0f, 0.0f);
+		gl.glRotatef(rotation[2], 0.0f, 0.0f, 1.0f);
+		
+		gl.glRotatef(-90f, 1.0f, 0.0f, 0.0f);		
+				
+		final int SIDES = 12;
+		final float EDGE_SIZE = 0.01f;			
+		
+		float alpha = 0.4f;
+		 			
+		float 	Yn = -0.5f*HEIGHT,
+				Yp =  0.5f*HEIGHT;
+
+		float Yf = 0.0f;
+					
+		Yf = (length*HEIGHT)-(0.5f*HEIGHT);
+		
+		float quad_color_r = color[0];
+		float quad_color_g = color[1];
+		float quad_color_b = color[2];
+		
+		float radius = WIDTH / 2;
+							
+		//Make a new quadratic object
+		GLUquadric qobj = glu.gluNewQuadric();
+				
+		//The Solid Element
+			gl.glTranslatef(0.0f, Yn, 0.0f);			
+			gl.glTranslatef(0.0f, Yf, 0.0f);
 		
 		//The shadow Element				
 			//Bottom disk left out, since it's the top disk of the solid

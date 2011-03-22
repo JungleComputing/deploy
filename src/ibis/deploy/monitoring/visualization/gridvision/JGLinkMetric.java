@@ -31,8 +31,8 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 	
 	private float[] dimensions = {WIDTH,HEIGHT,WIDTH};
 	
-	JGLinkMetric(JungleGoggles jv, GLUgl2 glu, Metric metric) {
-		super();
+	JGLinkMetric(JungleGoggles goggles, GLUgl2 glu, JGVisual parent, Metric metric) {
+		super(goggles);
 		
 		this.glu = glu;
 		this.metric = metric;
@@ -50,7 +50,7 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 		listsInitialized = false;
 		whichList = 0;		
 		
-		glName = jv.registerGLName(this);
+		glName = goggles.registerGLName(parent, this);
 	}
 	
 	public void init(GL2 gl) {
@@ -90,7 +90,7 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 		return result;
 	}
 	
-	public void drawThis(GL2 gl, int renderMode) {
+	public void drawSolids(GL2 gl, int renderMode) {
 		if (renderMode == GL2.GL_SELECT) { gl.glLoadName(glName); }		
 		
 		whichList = (int)(ACCURACY*currentValue);

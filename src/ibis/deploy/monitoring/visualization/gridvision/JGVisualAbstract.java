@@ -7,6 +7,8 @@ import javax.media.opengl.GL2;
 
 public abstract class JGVisualAbstract implements JGVisual {
 	private final static float SPHERE_RADIUS_MULTIPLIER = 0.075f;
+	
+	protected JungleGoggles goggles;
 
 	protected List<JGVisual> locations;
 	protected List<JGVisual> ibises;
@@ -25,7 +27,9 @@ public abstract class JGVisualAbstract implements JGVisual {
 	protected float[] ibisSeparation = { 0, 0, 0 };
 	protected float[] metricSeparation = { 0.05f, 0.05f, 0.05f };
 
-	public JGVisualAbstract() {
+	public JGVisualAbstract(JungleGoggles goggles) {
+		this.goggles = goggles;
+		
 		locations = new ArrayList<JGVisual>();
 		ibises = new ArrayList<JGVisual>();
 		metrics = new ArrayList<JGVisual>();
@@ -94,6 +98,8 @@ public abstract class JGVisualAbstract implements JGVisual {
 		}
 
 		if (metrics.size() > 0) {
+			//For now we will assume that all metric collections are in cityscape format.
+			
 			if (metricColShape == CollectionShape.CITYSCAPE) {
 				setCityScape(metrics, metricSeparation);
 			} else if (metricColShape == CollectionShape.SPHERE) {
@@ -244,9 +250,8 @@ public abstract class JGVisualAbstract implements JGVisual {
 	public void setCollectionShape(CollectionShape newShape) {
 		locationColShape = newShape;
 	}
-
-	public void setFoldState(FoldState newFoldState) {
-		foldState = newFoldState;
+	public CollectionShape getCollectionShape() {
+		return locationColShape;
 	}
 
 	public void setMetricShape(MetricShape newShape) {
@@ -280,21 +285,173 @@ public abstract class JGVisualAbstract implements JGVisual {
 			metric.update();
 		}
 	}
+	
+	public void setFoldState(FoldState newFoldState) {
+		foldState = newFoldState;
+	}
+	
+	public FoldState getFoldState() {
+		return foldState;
+	}
 
-	public void drawThis(GL2 gl, int renderMode) {
+	public void drawSolids(GL2 gl, int renderMode) {
 		if (foldState == FoldState.UNFOLDED) {
 			for (JGVisual location : locations) {
-				location.drawThis(gl, renderMode);
+				location.drawSolids(gl, renderMode);
 			}
 			for (JGVisual ibis : ibises) {
-				ibis.drawThis(gl, renderMode);
+				ibis.drawSolids(gl, renderMode);
 			}
 			for (JGVisual metric : metrics) {
-				metric.drawThis(gl, renderMode);
+				metric.drawSolids(gl, renderMode);
 			}
 		} else {
 
 		}
+	}
+	
+	public void drawTransparents(GL2 gl, int renderMode) {
+		if (foldState == FoldState.UNFOLDED) {
+			for (JGVisual location : locations) {
+				location.drawTransparents(gl, renderMode);
+			}
+			for (JGVisual ibis : ibises) {
+				ibis.drawTransparents(gl, renderMode);
+			}			
+			for (JGVisual metric : metrics) {
+				metric.drawTransparents(gl, renderMode);
+			}
+			if (goggles.currentlySelected(this)) {
+				drawSelectionCube(gl); 
+			}
+		} else {
+
+		}
+	}
+	
+	private void drawSelectionCube(GL2 gl) {
+		//Save the current modelview matrix
+		gl.glPushMatrix();
+		
+		//Translate to the desired coordinates and rotate if desired
+		gl.glTranslatef(coordinates[0], coordinates[1], coordinates[2]);
+		gl.glRotatef(rotation[0], 1.0f, 0.0f, 0.0f);
+		gl.glRotatef(rotation[1], 0.0f, 1.0f, 0.0f);
+		gl.glRotatef(rotation[2], 0.0f, 0.0f, 1.0f);
+		
+		gl.glColor4f(0.1f, 0.1f, 0.1f, 0.1f);
+		
+		
+		float HEIGHT = 1.5f, WIDTH = 1.5f;
+		
+		
+		
+		gl.glLineWidth(1.0f);
+		
+		float 	Xn = -0.5f*HEIGHT,
+				Xp =  0.5f*WIDTH,
+				Yn = -0.5f*HEIGHT,
+				Yp =  0.5f*HEIGHT,
+				Zn = -0.5f*WIDTH,
+				Zp =  0.5f*WIDTH;
+		
+		float Yf = 0.0f;
+						
+		gl.glBegin(GL2.GL_QUADS);					
+			//TOP
+			gl.glVertex3f( Xn, Yp, Zn);
+			gl.glVertex3f( Xn, Yp, Zp);
+			gl.glVertex3f( Xp, Yp, Zp);
+			gl.glVertex3f( Xp, Yp, Zn);
+			
+			//BOTTOM LEFT OUT
+			//gl.glVertex3f( Xn, Yn, Zn);
+			//gl.glVertex3f( Xp, Yn, Zn);
+			//gl.glVertex3f( Xp, Yn, Zp);
+			//gl.glVertex3f( Xn, Yn, Zp);
+			
+			//FRONT
+			gl.glVertex3f( Xn, Yp, Zp);
+			gl.glVertex3f( Xn, Yn, Zp);
+			gl.glVertex3f( Xp, Yn, Zp);
+			gl.glVertex3f( Xp, Yp, Zp);
+			
+			//BACK
+			gl.glVertex3f( Xp, Yp, Zn);
+			gl.glVertex3f( Xp, Yn, Zn);
+			gl.glVertex3f( Xn, Yn, Zn);
+			gl.glVertex3f( Xn, Yp, Zn);
+			
+			//LEFT
+			gl.glVertex3f( Xn, Yp, Zn);
+			gl.glVertex3f( Xn, Yn, Zn);
+			gl.glVertex3f( Xn, Yn, Zp);
+			gl.glVertex3f( Xn, Yp, Zp);
+			
+			//RIGHT
+			gl.glVertex3f( Xp, Yp, Zp);
+			gl.glVertex3f( Xp, Yn, Zp);
+			gl.glVertex3f( Xp, Yn, Zn);
+			gl.glVertex3f( Xp, Yp, Zn);
+		gl.glEnd();
+		
+		gl.glBegin(GL2.GL_LINE_LOOP);
+			gl.glColor3f(1f,1f,1f);
+			//TOP
+			gl.glVertex3f( Xn, Yp, Zn);
+			gl.glVertex3f( Xn, Yp, Zp);
+			gl.glVertex3f( Xp, Yp, Zp);
+			gl.glVertex3f( Xp, Yp, Zn);
+		gl.glEnd();
+		
+		//gl.glBegin(GL2.GL_LINE_LOOP);
+			//gl.glColor3f(0.8f,0.8f,0.8f);
+			//BOTTOM LEFT OUT
+			//gl.glVertex3f( Xn, Yn, Zn);
+			//gl.glVertex3f( Xp, Yn, Zn);
+			//gl.glVertex3f( Xp, Yn, Zp);
+			//gl.glVertex3f( Xn, Yn, Zp);
+		//gl.glEnd();
+		
+		gl.glBegin(GL2.GL_LINE_LOOP);
+			gl.glColor3f(1f,1f,1f);
+			//FRONT
+			gl.glVertex3f( Xn, Yp, Zp);
+			gl.glVertex3f( Xn, Yn, Zp);
+			gl.glVertex3f( Xp, Yn, Zp);
+			gl.glVertex3f( Xp, Yp, Zp);
+		gl.glEnd();
+		
+		gl.glBegin(GL2.GL_LINE_LOOP);
+			gl.glColor3f(1f,1f,1f);
+			//BACK
+			gl.glVertex3f( Xp, Yp, Zn);
+			gl.glVertex3f( Xp, Yn, Zn);
+			gl.glVertex3f( Xn, Yn, Zn);
+			gl.glVertex3f( Xn, Yp, Zn);
+		gl.glEnd();
+		
+		gl.glBegin(GL2.GL_LINE_LOOP);
+			gl.glColor3f(1f,1f,1f);
+			//LEFT
+			gl.glVertex3f( Xn, Yp, Zn);
+			gl.glVertex3f( Xn, Yn, Zn);
+			gl.glVertex3f( Xn, Yn, Zp);
+			gl.glVertex3f( Xn, Yp, Zp);
+		gl.glEnd();
+		
+		gl.glBegin(GL2.GL_LINE_LOOP);
+			gl.glColor3f(1f,1f,1f);
+			//RIGHT
+			gl.glVertex3f( Xp, Yp, Zp);
+			gl.glVertex3f( Xp, Yn, Zp);
+			gl.glVertex3f( Xp, Yn, Zn);
+			gl.glVertex3f( Xp, Yp, Zn);
+		gl.glEnd();		
+		
+		
+		//Restore the old modelview matrix
+		gl.glPopMatrix();
 	}
 
 	private float maxRadius(List<JGVisual> children) {

@@ -8,8 +8,8 @@ import ibis.deploy.monitoring.collection.Location;
 
 
 public class JGUniverse extends JGVisualAbstract implements JGVisual {	
-	public JGUniverse(JungleGoggles jv, GLUgl2 glu, Location root) {
-		super();
+	public JGUniverse(JungleGoggles goggles, GLUgl2 glu, Location root) {
+		super(goggles);
 		
 		locationSeparation[0] = 16;
 		locationSeparation[1] = 8;
@@ -17,12 +17,12 @@ public class JGUniverse extends JGVisualAbstract implements JGVisual {
 		
 		locationColShape = CollectionShape.CITYSCAPE;
 		
-		jv.registerVisual(root, this);
+		//goggles.registerVisual(root, this);
 		
 		ArrayList<Location> dataChildren = root.getChildren();
 		
 		for (Location datachild : dataChildren) {
-			locations.add(new JGLocation(jv,glu,datachild));
+			locations.add(new JGLocation(goggles, glu, datachild));
 		}
 	}	
 }

@@ -18,6 +18,8 @@ import com.jogamp.opengl.util.gl2.GLUT;
 import ibis.deploy.monitoring.collection.Collector;
 import ibis.deploy.monitoring.collection.Element;
 import ibis.deploy.monitoring.collection.Link;
+import ibis.deploy.monitoring.visualization.gridvision.swing.ContextSensitiveMenu;
+import ibis.deploy.monitoring.visualization.gridvision.swing.GogglePanel;
 
 public class JungleGoggles implements GLEventListener {
 	private static final long serialVersionUID = 1928258465842884618L;
@@ -25,7 +27,7 @@ public class JungleGoggles implements GLEventListener {
 	GL2 gl;
 	GLUgl2 glu = new GLUgl2();
 	GLUT glut = new GLUT();
-	GLJPanel gljpanel;
+	GogglePanel panel;
 
 	// Perspective variables
 	private double fovy, aspect, width, height, zNear, zFar;
@@ -35,10 +37,11 @@ public class JungleGoggles implements GLEventListener {
 	private Float[] viewTranslation, viewRotation;
 
 	// picking
-	private boolean pickRequest, updateRequest, recenterRequest, resetRequest;
+	private boolean pickRequest, updateRequest, recenterRequest, resetRequest, menuRequest;
 	private Point pickPoint;
-	private int selectedItem;
+	private int selectedItem, menuCoordX, menuCoordY;
 	private HashMap<Integer, JGVisual> namesToVisuals;
+	private HashMap<Integer, JGVisual> namesToParents;
 
 	// Universe
 	DisplayListBuilder listBuilder;
@@ -64,7 +67,9 @@ public class JungleGoggles implements GLEventListener {
 	 * Constructor for Junglegoggles, this sets up the window (Frame), creates a
 	 * GLCanvas and starts the Animator
 	 */
-	public JungleGoggles(Collector collector) {
+	public JungleGoggles(Collector collector, GogglePanel panel) {
+		this.panel = panel;
+		
 		// Initial perspective
 		fovy = 45.0f;
 		aspect = (this.width / this.height);
@@ -84,6 +89,7 @@ public class JungleGoggles implements GLEventListener {
 		pickRequest = false;
 		updateRequest = true;
 		recenterRequest = false;
+		menuRequest = false;
 		pickPoint = new Point();
 		new javax.swing.Timer(1000, fpsRecorder).start();
 		this.m = new Mover();
@@ -95,7 +101,8 @@ public class JungleGoggles implements GLEventListener {
 		visualRegistry = new HashMap<Element, JGVisual>();
 		linkRegistry = new HashMap<Element, JGVisual>();
 		namesToVisuals = new HashMap<Integer, JGVisual>();
-
+		namesToParents = new HashMap<Integer, JGVisual>();
+		
 		// Visual updater definition
 		UpdateTimer updater = new UpdateTimer(this);
 		new Thread(updater).start();
@@ -141,8 +148,6 @@ public class JungleGoggles implements GLEventListener {
 
 		// Set black as background color
 		gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-
-		// 3d ?
 
 		// Initialize display lists
 		listBuilder = new DisplayListBuilder(gl);
@@ -200,9 +205,10 @@ public class JungleGoggles implements GLEventListener {
 		visualRegistry.put(element, newVisual);
 	}
 
-	public int registerGLName(JGVisual metric) {
+	public int registerGLName(JGVisual parent, JGVisual metric) {
 		int key = namesToVisuals.size();
 		namesToVisuals.put(key, metric);
+		namesToParents.put(key, parent);
 		return key;
 	}
 
@@ -221,6 +227,8 @@ public class JungleGoggles implements GLEventListener {
 	public void initializeUniverse() {
 		//Clear the slate
 		visualRegistry.clear();
+		namesToVisuals.clear();
+		namesToParents.clear();
 
 		//Fill the visualRegistry again with new objects
 		universe = new JGUniverse(this, glu, collector.getRoot());
@@ -294,6 +302,15 @@ public class JungleGoggles implements GLEventListener {
 			selectedItem = pick(gl, pickPoint);
 			pickRequest = false;
 		}
+		
+		if (menuRequest) {
+			ContextSensitiveMenu popup = new ContextSensitiveMenu(namesToVisuals.get(selectedItem));
+			GLJPanel canvas = panel.getPanel();
+			canvas.add(popup);
+			popup.show(canvas, menuCoordX, menuCoordY);
+			
+			menuRequest = false;
+		}
 
 		// And recenter (move) to that location
 		if (recenterRequest) {
@@ -335,11 +352,12 @@ public class JungleGoggles implements GLEventListener {
 		gl.glRotatef(viewRotation[1], 0, 1, 0);
 
 		// Draw the universe (locations tree)
-		universe.drawThis(gl, renderMode);
+		universe.drawSolids(gl, renderMode);
+		universe.drawTransparents(gl, renderMode);
 
 		// Draw all the links
 		for (JGVisual link : linkRegistry.values()) {
-			link.drawThis(gl, renderMode);
+			link.drawSolids(gl, renderMode);
 		}
 	}
 
@@ -387,13 +405,32 @@ public class JungleGoggles implements GLEventListener {
 		pickRequest = true;
 		pickPoint = p;
 	}
-
-	public PopupMenu menuRequest() {
-		return new PopupMenu();
+	
+	public boolean currentlySelected(int glName) {
+		JGVisual selectedParent = namesToParents.get(selectedItem);
+		JGVisual myParent = namesToParents.get(glName);
+		
+		if (selectedParent == myParent) {
+			return true;
+		} else {		
+			return false;
+		}
+	}
+	
+	public boolean currentlySelected(JGVisual me) {
+		JGVisual selectedParent = namesToParents.get(selectedItem);
+		
+		if (selectedParent == me) {
+			return true;
+		} else {		
+			return false;
+		}
 	}
 
-	public GLJPanel getPanel() {
-		return gljpanel;
+	public void doMenuRequest(int x, int y) {
+		menuCoordX = x;
+		menuCoordY = y;
+		menuRequest = true;
 	}
 
 	/**

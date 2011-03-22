@@ -23,7 +23,7 @@ public class GogglePanel extends JPanel {
 		setLayout(new BorderLayout(0, 0));
 
 		// Make the GLEventListener
-		JungleGoggles gog = new JungleGoggles(collector);
+		JungleGoggles gog = new JungleGoggles(collector, this);
 
 		// Standard GL2 capabilities
 		GLProfile glp = GLProfile.get(GLProfile.GL2);
@@ -60,5 +60,9 @@ public class GogglePanel extends JPanel {
 		add(gljpanel);
 
 		gljpanel.requestFocusInWindow();
+	}
+	
+	public GLJPanel getPanel() {
+		return gljpanel;
 	}
 }

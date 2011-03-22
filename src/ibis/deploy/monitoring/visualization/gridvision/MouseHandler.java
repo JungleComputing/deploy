@@ -1,18 +1,15 @@
 package ibis.deploy.monitoring.visualization.gridvision;
 
-import java.awt.PopupMenu;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 
-
-import javax.media.opengl.awt.GLJPanel;
 import javax.swing.SwingUtilities;
 
 public class MouseHandler implements MouseListener, MouseMotionListener, MouseWheelListener{	
-	private JungleGoggles jv;
+	private JungleGoggles goggles;
 		
 	private float viewDist = -6;
 	
@@ -28,24 +25,21 @@ public class MouseHandler implements MouseListener, MouseMotionListener, MouseWh
 	private float dragLeftYorigin;
 	
 	public MouseHandler(JungleGoggles jv) {
-		this.jv = jv;
+		this.goggles = jv;
 		
 		rotation = new Float[3];
 	}
 	
 	public void mouseClicked(MouseEvent e) {		
 		if (SwingUtilities.isLeftMouseButton(e)) {
-			jv.doPickRequest(e.getPoint());
+			goggles.doPickRequest(e.getPoint());
 			if (e.getClickCount() != 1) {
-				jv.doRecenterRequest();
+				goggles.doRecenterRequest();
 			}			
 		} else if (SwingUtilities.isMiddleMouseButton(e)) {
 			//Nothing yet
 		} else if (SwingUtilities.isRightMouseButton(e)) {
-			PopupMenu popup = jv.menuRequest();
-			GLJPanel canvas = jv.getPanel();
-			canvas.add(popup);
-			popup.show(canvas, e.getX(), e.getY());
+			goggles.doMenuRequest(e.getX(), e.getY());
 		}		
 	}
 
@@ -77,7 +71,7 @@ public class MouseHandler implements MouseListener, MouseMotionListener, MouseWh
 			rotation[0] = rotationX;
 			rotation[1] = rotationY;
 			rotation[2] = 0.0f;
-			jv.setRotation(rotation);
+			goggles.setRotation(rotation);
 		}
 	}
 
@@ -90,6 +84,6 @@ public class MouseHandler implements MouseListener, MouseMotionListener, MouseWh
 		if (viewDist > 0) { viewDist = 0; }
 		
 		//System.out.println("viewdist "+ viewDist + " dragCoefficient " + dragCoefficient);
-		jv.setViewDist(viewDist);
+		goggles.setViewDist(viewDist);
 	}
 }

@@ -6,25 +6,36 @@ import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 
 import ibis.deploy.monitoring.visualization.gridvision.JGVisual;
+import ibis.deploy.monitoring.visualization.gridvision.JGVisual.CollectionShape;
+import ibis.deploy.monitoring.visualization.gridvision.JGVisual.FoldState;
 
-public class ContextSensitiveMenu {	
-	private JPopupMenu myMenu;
-	private final ButtonGroup shapeGroup = new ButtonGroup();
-	private final ButtonGroup collapseGroup = new ButtonGroup();
-	
-	public ContextSensitiveMenu(JGVisual caller) {		
-		myMenu = new JPopupMenu();
+public class ContextSensitiveMenu extends JPopupMenu {
+	private static final long serialVersionUID = -2817492958876235518L;
+		
+	public ContextSensitiveMenu(JGVisual caller) {
+		String currentSelection = "";
+								
 			String[] collectionItems = {"Sphere","Cube","Cityscape"};
-			GoggleAction al1 = new SetCollectionFormAction(caller, "");
-		myMenu.add(makeRadioMenu("Collection Form", shapeGroup, collectionItems, al1));
+			CollectionShape cShape = caller.getCollectionShape();
+			if (cShape == CollectionShape.CITYSCAPE) 	currentSelection = "Cityscape";
+			else if (cShape == CollectionShape.SPHERE) 	currentSelection = "Sphere";
+			else if (cShape == CollectionShape.CUBE) 	currentSelection = "Cube";
+			
+			ButtonGroup shapeGroup = new ButtonGroup();
+			GoggleAction al1 = new SetCollectionFormAction(caller, currentSelection);
+		add(makeRadioMenu("Collection Form", shapeGroup, collectionItems, currentSelection, al1));
+		
 			String[] collapseItems = {"Collapse","Unfold"};
-			GoggleAction al2 = new SetCollapseAction(caller, "");
-		myMenu.add(makeRadioMenu("Fold/unfold", collapseGroup, collapseItems, al2));
-		
-		
+			FoldState fstate = caller.getFoldState();
+			if (fstate == FoldState.COLLAPSED) 		currentSelection = "Collapse";
+			else if (fstate == FoldState.UNFOLDED) 	currentSelection = "Unfold";
+			
+			ButtonGroup collapseGroup = new ButtonGroup();
+			GoggleAction al2 = new SetCollapseAction(caller, currentSelection);
+		add(makeRadioMenu("Fold/unfold", collapseGroup, collapseItems, currentSelection, al2));
 	}
 	
-	private JMenu makeRadioMenu(String name, ButtonGroup group, String[] labels, GoggleAction al) {
+	private JMenu makeRadioMenu(String name, ButtonGroup group, String[] labels, String currentSelection, GoggleAction al) {
 		JMenu result = new JMenu(name);
 		
 		for (String label : labels) {
@@ -32,12 +43,13 @@ public class ContextSensitiveMenu {
 			current.addActionListener(al.clone(label));
 			result.add(current);
 			group.add(current);
+			if (currentSelection.compareTo(label) == 0) {
+				group.setSelected(current.getModel(), true);
+			} else {
+				group.setSelected(current.getModel(), false);
+			}
 		}
 		
 		return result;
-	}
-	
-	public JPopupMenu getMenu(JGVisual caller) {		
-		return myMenu;
 	}
 }

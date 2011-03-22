@@ -11,9 +11,9 @@ import ibis.deploy.monitoring.collection.Metric;
 public class JGLink extends JGVisualAbstract implements JGVisual {
 	private JGVisual source, destination;
 
-	public JGLink(JungleGoggles jv, GLUgl2 glu, JGVisual source,
+	public JGLink(JungleGoggles goggles, GLUgl2 glu, JGVisual source,
 			JGVisual destination, Link dataLink) {
-		super();
+		super(goggles);
 
 		this.source = source;
 		this.destination = destination;
@@ -21,7 +21,7 @@ public class JGLink extends JGVisualAbstract implements JGVisual {
 		//jv.registerVisual(dataLink, this);
 		
 		for (Metric dataMetric : dataLink.getMetrics()) {
-			metrics.add(new JGLinkMetric(jv, glu, dataMetric));
+			metrics.add(new JGLinkMetric(goggles, glu, this, dataMetric));
 		}
 	}
 	
