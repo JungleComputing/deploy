@@ -21,7 +21,7 @@ public abstract class JGVisualAbstract implements JGVisual {
 	protected FoldState foldState;
 	protected MetricShape mShape;
 
-	float radius;
+	protected float radius, width, height;
 
 	protected float[] locationSeparation = { 0, 0, 0 };
 	protected float[] ibisSeparation = { 0, 0, 0 };
@@ -49,6 +49,10 @@ public abstract class JGVisualAbstract implements JGVisual {
 		metricColShape = CollectionShape.CITYSCAPE;
 		foldState = FoldState.UNFOLDED;
 		mShape = MetricShape.BAR;
+		
+		radius = 0f;
+		width = 0f;
+		height = 0f;
 	}
 
 	public void init(GL2 gl) {
@@ -116,7 +120,7 @@ public abstract class JGVisualAbstract implements JGVisual {
 
 	private void setCityScape(List<JGVisual> children, float[] separation) {
 		int childCount = children.size();
-		float maxRad = maxRadius(children);
+		float maxWidth = maxWidth(children);
 
 		// get the breakoff point for rows, stacks and columns
 		int[] count = new int[3];
@@ -125,40 +129,43 @@ public abstract class JGVisualAbstract implements JGVisual {
 		count[2] = (int) Math.floor(Math.sqrt(childCount));
 
 		float[] shift = { 0, 0, 0 };
-		for (int i = 0; i < 3; i++) {
-			shift[i] = maxRad + separation[i];
-		}
+		shift[0] = maxWidth + separation[0];
+		//separation[1] ignored
+		shift[2] = maxWidth + separation[2];
 
-		// Center the drawing around the location
-		float[] shiftedLocation = { 0, 0, 0 };
+		// Center the drawing around the coordinates
+		float[] maxShift = { 0, 0, 0 };
 		for (int i = 0; i < 3; i++) {
-			shiftedLocation[i] = coordinates[i]
-					- ((shift[i] * count[i]) - separation[i]) * 0.5f;
-		}
+			maxShift[i] = (shift[i] * Math.max((count[i]-1),0) * 0.5f);
+		}		
+		float[] centeredCoordinates = FloatMatrixMath.sub(coordinates, maxShift);		
+		
+		//calculate my own new radius
+		radius = FloatMatrixMath.max(maxShift);
+		width = FloatMatrixMath.max(maxShift);
+		height = maxHeight(children);
 
 		// Propagate the movement to the children
 		float[] childLocation = { 0, 0, 0 };
 		int i = 0;
 		int[] position = { 0, 0, 0 };
 		for (JGVisual child : children) {
+			// cascade the new location
+			for (int j = 0; j < 3; j++) {
+				childLocation[j] = centeredCoordinates[j] + (shift[j] * position[j]);
+			}
+
+			child.setCoordinates(childLocation);
+
+			//Calculate next position
+			i++;			
 			position[0] = i % count[0];
 
 			// Move to next row (if applicable)
 			if (i != 0 && position[0] == 0) {
 				position[2]++;
 			}
-
-			// cascade the new location
-			for (int j = 0; j < 3; j++) {
-				childLocation[j] = shiftedLocation[j] + shift[j] * position[j];
-			}
-
-			child.setCoordinates(childLocation);
-
-			i++;
 		}
-
-		//radius = FloatMatrixMath.max(FloatMatrixMath.add(shiftedLocation, separation));
 	}
 
 	private void setSphere(List<JGVisual> children, float[] separation) {
@@ -171,15 +178,14 @@ public abstract class JGVisualAbstract implements JGVisual {
 		double z = 1 - (dz / 2);
 		float[][] pt = new float[childCount][3];
 		double r = 0;
-		float radius = SPHERE_RADIUS_MULTIPLIER * (maxRad + FloatMatrixMath.max(separation))
-				* childCount;
+		
+		float radius = SPHERE_RADIUS_MULTIPLIER * 
+				(maxRad + FloatMatrixMath.max(separation)) * childCount;
 
 		for (int k = 0; k < childCount; k++) {
 			r = Math.sqrt(1 - (z * z));
-			pt[k][0] = coordinates[0] + radius
-					* ((float) (Math.cos(olong) * r));
-			pt[k][1] = coordinates[1] + radius
-					* ((float) (Math.sin(olong) * r));
+			pt[k][0] = coordinates[0] + radius * ((float) (Math.cos(olong) * r));
+			pt[k][1] = coordinates[1] + radius * ((float) (Math.sin(olong) * r));
 			pt[k][2] = coordinates[2] + radius * ((float) z);
 			z = z - dz;
 			olong = olong + dlong;
@@ -197,30 +203,42 @@ public abstract class JGVisualAbstract implements JGVisual {
 
 	private void setCube(List<JGVisual> children, float[] separation) {
 		int childCount = children.size();
-		float maxRad = maxRadius(children);
+		float[] maxDims = { maxWidth(children), maxHeight(children), maxWidth(children), };
 
 		// get the breakoff point for rows, stacks and columns
 		int[] count = new int[3];
 		count[0] = (int) Math.ceil(Math.pow(childCount, (1.0 / 3.0)));
-		count[1] = (int) Math.ceil(Math.pow(childCount, (1.0 / 3.0)));
-		count[2] = (int) Math.floor(Math.pow(childCount, (1.0 / 3.0)));
+		count[1] = (int) Math.floor(Math.pow(childCount, (1.0 / 3.0)));
+		count[2] = (int) Math.ceil(Math.pow(childCount, (1.0 / 3.0)));
 
-		float[] shift = { 0, 0, 0 };
-		for (int i = 0; i < 3; i++) {
-			shift[i] = maxRad + separation[i];
-		}
+		float[] shift = FloatMatrixMath.add(maxDims, separation);
 
-		// Center the drawing around the location
-		float[] shiftedLocation = { 0, 0, 0 };
+		// Center the drawing around the coordinates
+		float[] maxShift = { 0, 0, 0 };
 		for (int i = 0; i < 3; i++) {
-			shiftedLocation[i] = coordinates[i]
-					- ((shift[i] * count[i]) - separation[i]) * 0.5f;
-		}
+			maxShift[i] = (shift[i] * Math.max((count[i]-1),0) * 0.5f);
+		}		
+		float[] centeredCoordinates = FloatMatrixMath.sub(coordinates, maxShift);		
+		
+		//calculate my own new radius
+		radius = FloatMatrixMath.max(maxShift);		
+		width  = maxShift[0];
+		height = maxShift[1];
 
 		// Propagate the movement to the children
 		float[] childLocation = { 0, 0, 0 };
 		int[] position = { 0, 0, 0 };
 		for (JGVisual child : children) {
+			// cascade the new location
+			for (int j = 0; j < 3; j++) {
+				childLocation[j] = centeredCoordinates[j] + shift[j] * position[j];
+			}
+
+			child.setCoordinates(childLocation);
+			
+			//Calculate next position
+			position[0]++;
+			
 			if (position[0] == count[0]) {
 				position[0] = 0;
 				position[2]++;
@@ -229,16 +247,7 @@ public abstract class JGVisualAbstract implements JGVisual {
 				position[2] = 0;
 				position[1]++;
 			}
-
-			// cascade the new location
-			for (int j = 0; j < 3; j++) {
-				childLocation[j] = shiftedLocation[j] + shift[j] * position[j];
-			}
-
-			child.setCoordinates(childLocation);
 		}
-		
-		radius = FloatMatrixMath.max(FloatMatrixMath.add(shiftedLocation, separation));
 	}
 
 	public void setRotation(float[] newRotation) {
@@ -272,6 +281,14 @@ public abstract class JGVisualAbstract implements JGVisual {
 
 	public float getRadius() {
 		return radius;
+	}
+	
+	public float getWidth() {
+		return width;
+	}
+	
+	public float getHeight() {
+		return height;
 	}
 
 	public void update() {
@@ -321,15 +338,15 @@ public abstract class JGVisualAbstract implements JGVisual {
 			for (JGVisual metric : metrics) {
 				metric.drawTransparents(gl, renderMode);
 			}
-			if (goggles.currentlySelected(this)) {
-				drawSelectionCube(gl); 
-			}
 		} else {
 
 		}
 	}
 	
-	private void drawSelectionCube(GL2 gl) {
+	public void drawSelectionCube(GL2 gl) {
+		if (!(this instanceof JGIbis || this instanceof JGLocation)) {
+			return;
+		}
 		//Save the current modelview matrix
 		gl.glPushMatrix();
 		
@@ -354,8 +371,6 @@ public abstract class JGVisualAbstract implements JGVisual {
 				Yp =  0.5f*HEIGHT,
 				Zn = -0.5f*WIDTH,
 				Zp =  0.5f*WIDTH;
-		
-		float Yf = 0.0f;
 						
 		gl.glBegin(GL2.GL_QUADS);					
 			//TOP
@@ -364,11 +379,11 @@ public abstract class JGVisualAbstract implements JGVisual {
 			gl.glVertex3f( Xp, Yp, Zp);
 			gl.glVertex3f( Xp, Yp, Zn);
 			
-			//BOTTOM LEFT OUT
-			//gl.glVertex3f( Xn, Yn, Zn);
-			//gl.glVertex3f( Xp, Yn, Zn);
-			//gl.glVertex3f( Xp, Yn, Zp);
-			//gl.glVertex3f( Xn, Yn, Zp);
+			
+			gl.glVertex3f( Xn, Yn, Zn);
+			gl.glVertex3f( Xp, Yn, Zn);
+			gl.glVertex3f( Xp, Yn, Zp);
+			gl.glVertex3f( Xn, Yn, Zp);
 			
 			//FRONT
 			gl.glVertex3f( Xn, Yp, Zp);
@@ -403,15 +418,15 @@ public abstract class JGVisualAbstract implements JGVisual {
 			gl.glVertex3f( Xp, Yp, Zp);
 			gl.glVertex3f( Xp, Yp, Zn);
 		gl.glEnd();
-		
-		//gl.glBegin(GL2.GL_LINE_LOOP);
-			//gl.glColor3f(0.8f,0.8f,0.8f);
-			//BOTTOM LEFT OUT
-			//gl.glVertex3f( Xn, Yn, Zn);
-			//gl.glVertex3f( Xp, Yn, Zn);
-			//gl.glVertex3f( Xp, Yn, Zp);
-			//gl.glVertex3f( Xn, Yn, Zp);
-		//gl.glEnd();
+				
+		gl.glBegin(GL2.GL_LINE_LOOP);
+			gl.glColor3f(1f,1f,1f);
+			//BOTTOM
+			gl.glVertex3f( Xn, Yn, Zn);
+			gl.glVertex3f( Xp, Yn, Zn);
+			gl.glVertex3f( Xp, Yn, Zp);
+			gl.glVertex3f( Xn, Yn, Zp);
+		gl.glEnd();
 		
 		gl.glBegin(GL2.GL_LINE_LOOP);
 			gl.glColor3f(1f,1f,1f);
@@ -458,6 +473,26 @@ public abstract class JGVisualAbstract implements JGVisual {
 		float result = -Float.MAX_VALUE;
 		for (JGVisual child : children) {
 			float in = child.getRadius();
+			if (in > result)
+				result = in;
+		}
+		return result;
+	}
+	
+	private float maxWidth(List<JGVisual> children) {
+		float result = -Float.MAX_VALUE;
+		for (JGVisual child : children) {
+			float in = child.getWidth();
+			if (in > result)
+				result = in;
+		}
+		return result;
+	}
+	
+	private float maxHeight(List<JGVisual> children) {
+		float result = -Float.MAX_VALUE;
+		for (JGVisual child : children) {
+			float in = child.getHeight();
 			if (in > result)
 				result = in;
 		}

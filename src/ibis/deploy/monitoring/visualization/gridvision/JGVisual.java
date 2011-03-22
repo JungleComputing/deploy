@@ -19,12 +19,15 @@ public interface JGVisual {
 	public void setMetricShape(MetricShape newShape);
 	
 	public float[] getCoordinates();
+	
 	public float getRadius();
-		
+	public float getWidth();
+	public float getHeight();
+	
 	public void update();
 	
 	public void drawSolids(GL2 gl, int renderMode);
 	public void drawTransparents(GL2 gl, int renderMode);
-	
+	public void drawSelectionCube(GL2 gl);
 
 }

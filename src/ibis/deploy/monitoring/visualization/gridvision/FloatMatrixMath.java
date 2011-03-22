@@ -20,21 +20,7 @@ public class FloatMatrixMath {
 		
 		return result;	
 	}
-	
-	public static float[] mul(Number[] m1, Number[] m2) {		
-		if (m1.length != m2.length) {
-			System.out.println("tried to multiply 2 matrices of different lengths.");
-			System.exit(0);
-		}
 		
-		float[] result = new float[m1.length];
-		for (int i=0;i<m1.length;i++) {
-			result[i] = (Float)m1[i]*(Float)m2[i];
-		}
-		
-		return result;	
-	}
-	
 	public static float[] mul(float[] m1, float[] m2) {		
 		if (m1.length != m2.length) {
 			System.out.println("tried to multiply 2 matrices of different lengths.");

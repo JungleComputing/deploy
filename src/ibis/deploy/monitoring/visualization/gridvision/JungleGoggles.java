@@ -281,6 +281,9 @@ public class JungleGoggles implements GLEventListener {
 
 		// Draw the current state of the universe
 		drawUniverse(gl, GL2.GL_RENDER);
+		
+		//Draw a selection indicator around the currently selected item
+		namesToParents.get(selectedItem).drawSelectionCube(gl);
 
 		// Draw the Heads Up Display
 		drawHud(gl);
@@ -289,6 +292,7 @@ public class JungleGoggles implements GLEventListener {
 		// computations we need to do for the NEXT frame
 		gl.glFinish();
 
+		
 		// While we are rendering, update visuals for the next display cycle:
 
 		// First, reset the universe if requested to do so
@@ -299,9 +303,9 @@ public class JungleGoggles implements GLEventListener {
 
 		// Then handle input, first determine where the user has clicked
 		if (pickRequest) {
-			selectedItem = pick(gl, pickPoint);
+			selectedItem = pick(gl, pickPoint);			
 			pickRequest = false;
-		}
+		}		
 		
 		if (menuRequest) {
 			ContextSensitiveMenu popup = new ContextSensitiveMenu(namesToVisuals.get(selectedItem));

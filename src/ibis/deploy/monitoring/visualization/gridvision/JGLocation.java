@@ -19,11 +19,11 @@ public class JGLocation extends JGVisualAbstract implements JGVisual {
 		locationSeparation[2] = 12;
 		
 		ibisSeparation[0] = 1;
-		ibisSeparation[1] = -4;
+		ibisSeparation[1] = 1.25f;
 		ibisSeparation[2] = 1;
 				
 		locationColShape = CollectionShape.CITYSCAPE;
-		ibisColShape = CollectionShape.CITYSCAPE;
+		ibisColShape = CollectionShape.CUBE;
 		
 		goggles.registerVisual(dataLocation, this);
 				

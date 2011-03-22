@@ -16,10 +16,7 @@ public class JGMetric extends JGVisualAbstract implements JGVisual {
 	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.gui.junglevision.visuals.Metric");
 	
 	private enum MetricDisplay { TRANSPARANCY, SOLIDS_ONLY }
-	
-	private static final float WIDTH = 0.25f;
-	private static final float HEIGHT = 1.00f;
-	
+		
 	private GLUgl2 glu;
 	
 	private Float[] color;
@@ -51,7 +48,11 @@ public class JGMetric extends JGVisualAbstract implements JGVisual {
 		
 		currentDisplay = MetricDisplay.TRANSPARANCY;
 		
-		radius = WIDTH;
+		width = 0.25f;
+		height = 1f;
+		
+		radius = height;
+		
 		
 		glName = goggles.registerGLName(parent, this);
 	}
@@ -152,18 +153,18 @@ public class JGMetric extends JGVisualAbstract implements JGVisual {
 		final int SIDES = 12;
 		final float EDGE_SIZE = 0.01f;
 		 			
-		float 	Yn = -0.5f*HEIGHT;
+		float 	Yn = -0.5f*height;
 				//Yp =  0.5f*HEIGHT;
 
 		float Yf = 0.0f;
 					
-		Yf = (length*HEIGHT)-(0.5f*HEIGHT);
+		Yf = (length*height)-(0.5f*height);
 		
 		float quad_color_r = color[0];
 		float quad_color_g = color[1];
 		float quad_color_b = color[2];
 		
-		float radius = WIDTH / 2;
+		float radius = width / 2;
 							
 		//Make a new quadratic object
 		GLUquadric qobj = glu.gluNewQuadric();
@@ -216,18 +217,18 @@ public class JGMetric extends JGVisualAbstract implements JGVisual {
 		
 		float alpha = 0.4f;
 		 			
-		float 	Yn = -0.5f*HEIGHT,
-				Yp =  0.5f*HEIGHT;
+		float 	Yn = -0.5f*height,
+				Yp =  0.5f*height;
 
 		float Yf = 0.0f;
 					
-		Yf = (length*HEIGHT)-(0.5f*HEIGHT);
+		Yf = (length*height)-(0.5f*height);
 		
 		float quad_color_r = color[0];
 		float quad_color_g = color[1];
 		float quad_color_b = color[2];
 		
-		float radius = WIDTH / 2;
+		float radius = width / 2;
 							
 		//Make a new quadratic object
 		GLUquadric qobj = glu.gluNewQuadric();
