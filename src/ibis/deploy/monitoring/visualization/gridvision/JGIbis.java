@@ -9,15 +9,15 @@ import ibis.deploy.monitoring.collection.Metric.MetricModifier;
 
 public class JGIbis extends JGVisualAbstract implements JGVisual  {	
 	
-	public JGIbis(JungleGoggles goggles, GLUgl2 glu, Ibis dataIbis) {
-		super(goggles);
+	public JGIbis(JungleGoggles goggles, JGVisual parent, GLUgl2 glu, Ibis dataIbis) {
+		super(goggles, parent);
 				
 		//jv.registerVisual(dataIbis, this);
 		
 		Metric dataMetrics[] = dataIbis.getMetrics();
 		
 		for (Metric dataMetric : dataMetrics) {			
-			metrics.add(new JGMetric(goggles, glu, this, dataMetric, MetricModifier.NORM));
+			metrics.add(new JGMetric(goggles, this, dataMetric, MetricModifier.NORM));
 		}
 	}
 }

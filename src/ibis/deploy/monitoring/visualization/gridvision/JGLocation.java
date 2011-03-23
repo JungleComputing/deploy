@@ -11,8 +11,8 @@ import ibis.deploy.monitoring.collection.Metric.MetricModifier;
 
 
 public class JGLocation extends JGVisualAbstract implements JGVisual {		
-	public JGLocation(JungleGoggles goggles, GLUgl2 glu, Location dataLocation) {
-		super(goggles);
+	public JGLocation(JungleGoggles goggles, JGVisual parent, GLUgl2 glu, Location dataLocation) {
+		super(goggles, parent);
 
 		locationSeparation[0] = 12;
 		locationSeparation[1] =-12;
@@ -29,19 +29,19 @@ public class JGLocation extends JGVisualAbstract implements JGVisual {
 				
 		ArrayList<Location> dataChildren = dataLocation.getChildren();		
 		for (Location datachild : dataChildren) {
-			locations.add(new JGLocation(goggles, glu, datachild));
+			locations.add(new JGLocation(goggles, this, glu, datachild));
 		}
 		
 		ArrayList<Ibis> dataIbises = dataLocation.getIbises();		
 		for (Ibis dataIbis : dataIbises) {
-			ibises.add(new JGIbis(goggles, glu, dataIbis));
+			ibises.add(new JGIbis(goggles, this, glu, dataIbis));
 		}
 		
 		Metric dataMetrics[] = dataLocation.getMetrics();
 		for (Metric dataMetric : dataMetrics) {			
-			metrics.add(new JGMetric(goggles, glu, this, dataMetric, MetricModifier.MIN));
-			metrics.add(new JGMetric(goggles, glu, this, dataMetric, MetricModifier.NORM));
-			metrics.add(new JGMetric(goggles, glu, this, dataMetric, MetricModifier.MAX));
+			metrics.add(new JGMetric(goggles, this, dataMetric, MetricModifier.MIN));
+			metrics.add(new JGMetric(goggles, this, dataMetric, MetricModifier.NORM));
+			metrics.add(new JGMetric(goggles, this, dataMetric, MetricModifier.MAX));
 		}
 	}	
 }

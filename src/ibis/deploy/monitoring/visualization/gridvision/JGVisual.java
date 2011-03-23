@@ -14,8 +14,12 @@ public interface JGVisual {
 	
 	public void setCollectionShape(CollectionShape newShape);
 	public CollectionShape getCollectionShape();
+		
 	public void setFoldState(FoldState myState);
 	public FoldState getFoldState();
+	
+	public JGVisual getParent();
+	
 	public void setMetricShape(MetricShape newShape);
 	
 	public float[] getCoordinates();

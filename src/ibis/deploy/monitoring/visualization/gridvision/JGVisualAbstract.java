@@ -9,6 +9,7 @@ public abstract class JGVisualAbstract implements JGVisual {
 	private final static float SPHERE_RADIUS_MULTIPLIER = 0.075f;
 	
 	protected JungleGoggles goggles;
+	protected JGVisual parent;
 
 	protected List<JGVisual> locations;
 	protected List<JGVisual> ibises;
@@ -27,8 +28,9 @@ public abstract class JGVisualAbstract implements JGVisual {
 	protected float[] ibisSeparation = { 0, 0, 0 };
 	protected float[] metricSeparation = { 0.05f, 0.05f, 0.05f };
 
-	public JGVisualAbstract(JungleGoggles goggles) {
+	public JGVisualAbstract(JungleGoggles goggles, JGVisual parent) {
 		this.goggles = goggles;
+		this.parent = parent;
 		
 		locations = new ArrayList<JGVisual>();
 		ibises = new ArrayList<JGVisual>();
@@ -47,7 +49,7 @@ public abstract class JGVisualAbstract implements JGVisual {
 		locationColShape = CollectionShape.CITYSCAPE;
 		ibisColShape = CollectionShape.CITYSCAPE;
 		metricColShape = CollectionShape.CITYSCAPE;
-		foldState = FoldState.UNFOLDED;
+		foldState = FoldState.COLLAPSED;
 		mShape = MetricShape.BAR;
 		
 		radius = 0f;
@@ -148,12 +150,10 @@ public abstract class JGVisualAbstract implements JGVisual {
 		// Propagate the movement to the children
 		float[] childLocation = { 0, 0, 0 };
 		int i = 0;
-		int[] position = { 0, 0, 0 };
+		float[] position = { 0, 0, 0 };
 		for (JGVisual child : children) {
 			// cascade the new location
-			for (int j = 0; j < 3; j++) {
-				childLocation[j] = centeredCoordinates[j] + (shift[j] * position[j]);
-			}
+			childLocation = FloatMatrixMath.add(centeredCoordinates, FloatMatrixMath.mul(shift, position));
 
 			child.setCoordinates(childLocation);
 
@@ -221,19 +221,17 @@ public abstract class JGVisualAbstract implements JGVisual {
 		float[] centeredCoordinates = FloatMatrixMath.sub(coordinates, maxShift);		
 		
 		//calculate my own new radius
-		radius = FloatMatrixMath.max(maxShift);		
-		width  = maxShift[0];
+		radius = FloatMatrixMath.max(maxShift);
+		width  = Math.max(maxShift[0], maxShift[2]);
 		height = maxShift[1];
 
 		// Propagate the movement to the children
 		float[] childLocation = { 0, 0, 0 };
-		int[] position = { 0, 0, 0 };
+		float[] position = { 0, 0, 0 };
 		for (JGVisual child : children) {
 			// cascade the new location
-			for (int j = 0; j < 3; j++) {
-				childLocation[j] = centeredCoordinates[j] + shift[j] * position[j];
-			}
-
+			childLocation = FloatMatrixMath.add(centeredCoordinates, FloatMatrixMath.mul(shift, position));
+			
 			child.setCoordinates(childLocation);
 			
 			//Calculate next position
@@ -258,7 +256,11 @@ public abstract class JGVisualAbstract implements JGVisual {
 
 	public void setCollectionShape(CollectionShape newShape) {
 		locationColShape = newShape;
+		ibisColShape = newShape;
+		
+		goggles.doRepositioning();
 	}
+	
 	public CollectionShape getCollectionShape() {
 		return locationColShape;
 	}
@@ -303,8 +305,19 @@ public abstract class JGVisualAbstract implements JGVisual {
 		}
 	}
 	
+	public JGVisual getParent() {
+		return parent;
+	}
+	
 	public void setFoldState(FoldState newFoldState) {
+		//If collapsing while we are already collapsed, collapse our parent instead.
+		if (foldState == FoldState.COLLAPSED && newFoldState == FoldState.COLLAPSED) {
+			if (parent != null && !(parent instanceof JGUniverse)) { //If this is not the root/universe
+				parent.setFoldState(FoldState.COLLAPSED);
+			}
+		}
 		foldState = newFoldState;
+		goggles.unselect();
 	}
 	
 	public FoldState getFoldState() {
@@ -312,34 +325,44 @@ public abstract class JGVisualAbstract implements JGVisual {
 	}
 
 	public void drawSolids(GL2 gl, int renderMode) {
-		if (foldState == FoldState.UNFOLDED) {
-			for (JGVisual location : locations) {
-				location.drawSolids(gl, renderMode);
+		if (this instanceof JGLocation || this instanceof JGUniverse) {
+			if (foldState == FoldState.UNFOLDED) {
+				for (JGVisual location : locations) {
+					location.drawSolids(gl, renderMode);
+				}
+				for (JGVisual ibis : ibises) {
+					ibis.drawSolids(gl, renderMode);
+				}
+			} else {
+				for (JGVisual metric : metrics) {
+					metric.drawSolids(gl, renderMode);
+				}
 			}
-			for (JGVisual ibis : ibises) {
-				ibis.drawSolids(gl, renderMode);
-			}
+		} else {
 			for (JGVisual metric : metrics) {
 				metric.drawSolids(gl, renderMode);
 			}
-		} else {
-
 		}
 	}
 	
 	public void drawTransparents(GL2 gl, int renderMode) {
-		if (foldState == FoldState.UNFOLDED) {
-			for (JGVisual location : locations) {
-				location.drawTransparents(gl, renderMode);
+		if (this instanceof JGLocation || this instanceof JGUniverse) {
+			if (foldState == FoldState.UNFOLDED) {
+				for (JGVisual location : locations) {
+					location.drawTransparents(gl, renderMode);
+				}
+				for (JGVisual ibis : ibises) {
+					ibis.drawTransparents(gl, renderMode);
+				}	
+			} else {
+				for (JGVisual metric : metrics) {
+					metric.drawTransparents(gl, renderMode);
+				}
 			}
-			for (JGVisual ibis : ibises) {
-				ibis.drawTransparents(gl, renderMode);
-			}			
+		} else {
 			for (JGVisual metric : metrics) {
 				metric.drawTransparents(gl, renderMode);
 			}
-		} else {
-
 		}
 	}
 	

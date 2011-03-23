@@ -37,7 +37,7 @@ public class JungleGoggles implements GLEventListener {
 	private Float[] viewTranslation, viewRotation;
 
 	// picking
-	private boolean pickRequest, updateRequest, recenterRequest, resetRequest, menuRequest;
+	private boolean pickRequest, updateRequest, recenterRequest, resetRequest, menuRequest, repositionRequest;
 	private Point pickPoint;
 	private int selectedItem, menuCoordX, menuCoordY;
 	private HashMap<Integer, JGVisual> namesToVisuals;
@@ -90,7 +90,9 @@ public class JungleGoggles implements GLEventListener {
 		updateRequest = true;
 		recenterRequest = false;
 		menuRequest = false;
+		repositionRequest = false;
 		pickPoint = new Point();
+		selectedItem = -1;
 		new javax.swing.Timer(1000, fpsRecorder).start();
 		this.m = new Mover();
 
@@ -150,7 +152,7 @@ public class JungleGoggles implements GLEventListener {
 		gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 		// Initialize display lists
-		listBuilder = new DisplayListBuilder(gl);
+		listBuilder = new DisplayListBuilder(gl, glu);
 
 		// Universe initializers
 		initializeUniverse();
@@ -231,8 +233,8 @@ public class JungleGoggles implements GLEventListener {
 		namesToParents.clear();
 
 		//Fill the visualRegistry again with new objects
-		universe = new JGUniverse(this, glu, collector.getRoot());
-		universe.setCoordinates(m.getCurrentCoordinates());
+		universe = new JGUniverse(this, null, glu, collector.getRoot());
+		//universe.setCoordinates(m.getCurrentCoordinates());
 		universe.init(gl);
 
 		//And create links between them
@@ -245,12 +247,21 @@ public class JungleGoggles implements GLEventListener {
 				JGVisual v_source = visualRegistry.get(link.getSource());
 				JGVisual v_dest = visualRegistry.get(link.getDestination());
 
-				JGLink jglink = new JGLink(this, glu, v_source, v_dest, link);
+				JGLink jglink = new JGLink(this, v_source, glu, v_source, v_dest, link);
 				jglink.init(gl);
-				jglink.setCoordinates(m.getCurrentCoordinates());
+				//jglink.setCoordinates(m.getCurrentCoordinates());
 
 				linkRegistry.put(link, jglink);
 			}
+		}
+		
+		rePositionUniverse();
+	}
+	
+	private void rePositionUniverse() {
+		universe.setCoordinates(m.getCurrentCoordinates());
+		for (JGVisual jglink : linkRegistry.values()) {
+			jglink.setCoordinates(m.getCurrentCoordinates());
 		}
 	}
 
@@ -283,7 +294,10 @@ public class JungleGoggles implements GLEventListener {
 		drawUniverse(gl, GL2.GL_RENDER);
 		
 		//Draw a selection indicator around the currently selected item
-		namesToParents.get(selectedItem).drawSelectionCube(gl);
+		JGVisual selectedVisual = namesToParents.get(selectedItem);
+		if (selectedVisual != null) {
+			selectedVisual.drawSelectionCube(gl);
+		}
 
 		// Draw the Heads Up Display
 		drawHud(gl);
@@ -299,6 +313,11 @@ public class JungleGoggles implements GLEventListener {
 		if (resetRequest || collector.change()) {
 			initializeUniverse();
 			resetRequest = false;
+		} 
+		
+		if (repositionRequest) {
+			rePositionUniverse();
+			repositionRequest = false;
 		}
 
 		// Then handle input, first determine where the user has clicked
@@ -308,7 +327,7 @@ public class JungleGoggles implements GLEventListener {
 		}		
 		
 		if (menuRequest) {
-			ContextSensitiveMenu popup = new ContextSensitiveMenu(namesToVisuals.get(selectedItem));
+			ContextSensitiveMenu popup = new ContextSensitiveMenu(namesToParents.get(selectedItem));
 			GLJPanel canvas = panel.getPanel();
 			canvas.add(popup);
 			popup.show(canvas, menuCoordX, menuCoordY);
@@ -412,6 +431,9 @@ public class JungleGoggles implements GLEventListener {
 	
 	public boolean currentlySelected(int glName) {
 		JGVisual selectedParent = namesToParents.get(selectedItem);
+		if (selectedParent == null) {
+			return false;
+		}
 		JGVisual myParent = namesToParents.get(glName);
 		
 		if (selectedParent == myParent) {
@@ -423,12 +445,19 @@ public class JungleGoggles implements GLEventListener {
 	
 	public boolean currentlySelected(JGVisual me) {
 		JGVisual selectedParent = namesToParents.get(selectedItem);
+		if (selectedParent == null) {
+			return false;
+		}
 		
 		if (selectedParent == me) {
 			return true;
 		} else {		
 			return false;
 		}
+	}
+	
+	public void unselect() {
+		selectedItem = -1;
 	}
 
 	public void doMenuRequest(int x, int y) {
@@ -446,6 +475,10 @@ public class JungleGoggles implements GLEventListener {
 
 	public void doReset() {
 		resetRequest = true;
+	}
+	
+	public void doRepositioning() {
+		repositionRequest = true;
 	}
 
 	/**

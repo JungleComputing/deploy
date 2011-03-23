@@ -22,7 +22,7 @@ public class ContextSensitiveMenu extends JPopupMenu {
 			else if (cShape == CollectionShape.CUBE) 	currentSelection = "Cube";
 			
 			ButtonGroup shapeGroup = new ButtonGroup();
-			GoggleAction al1 = new SetCollectionFormAction(caller, currentSelection);
+			GoggleAction al1 = new SetCollectionFormAction(caller.getParent(), currentSelection);
 		add(makeRadioMenu("Collection Form", shapeGroup, collectionItems, currentSelection, al1));
 		
 			String[] collapseItems = {"Collapse","Unfold"};

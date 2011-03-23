@@ -31,8 +31,8 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 	
 	private float[] dimensions = {WIDTH,HEIGHT,WIDTH};
 	
-	JGLinkMetric(JungleGoggles goggles, GLUgl2 glu, JGVisual parent, Metric metric) {
-		super(goggles);
+	JGLinkMetric(JungleGoggles goggles, JGVisual parent, GLUgl2 glu, Metric metric) {
+		super(goggles, parent);
 		
 		this.glu = glu;
 		this.metric = metric;
