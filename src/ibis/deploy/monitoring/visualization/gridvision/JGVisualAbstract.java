@@ -73,7 +73,7 @@ public abstract class JGVisualAbstract implements JGVisual {
 		coordinates[0] = newCoordinates[0];
 		coordinates[1] = newCoordinates[1];
 		coordinates[2] = newCoordinates[2];
-
+		
 		// First, give our location children a new home
 		if (locations.size() > 0) {
 			if (locationColShape == CollectionShape.CITYSCAPE) {

@@ -18,11 +18,16 @@ import com.jogamp.opengl.util.gl2.GLUT;
 import ibis.deploy.monitoring.collection.Collector;
 import ibis.deploy.monitoring.collection.Element;
 import ibis.deploy.monitoring.collection.Link;
+import ibis.deploy.monitoring.visualization.gridvision.JGVisual.FoldState;
 import ibis.deploy.monitoring.visualization.gridvision.swing.ContextSensitiveMenu;
 import ibis.deploy.monitoring.visualization.gridvision.swing.GogglePanel;
 
 public class JungleGoggles implements GLEventListener {
 	private static final long serialVersionUID = 1928258465842884618L;
+	
+	private static final float STANDARD_VIEWDIST = -10f;
+	private static final float ZOOM_IN_THRESHOLD = -5f;
+	private static final float ZOOM_OUT_THRESHOLD = -30f;
 
 	GL2 gl;
 	GLUgl2 glu = new GLUgl2();
@@ -77,7 +82,7 @@ public class JungleGoggles implements GLEventListener {
 		zFar = 1500.0f;
 
 		// Initial view
-		viewDist = -6;
+		viewDist = STANDARD_VIEWDIST;
 		viewRotation = new Float[3];
 		viewTranslation = new Float[3];
 		for (int i = 0; i < 3; i++) {
@@ -422,6 +427,21 @@ public class JungleGoggles implements GLEventListener {
 
 	public void setViewDist(float newViewDist) {
 		viewDist = newViewDist;
+		
+		JGVisual selectedParent = namesToParents.get(selectedItem);
+		if (selectedParent != null) {
+			if (viewDist > ZOOM_IN_THRESHOLD) {
+				selectedParent.setFoldState(FoldState.UNFOLDED);
+				viewDist = STANDARD_VIEWDIST;
+			} else if (viewDist < ZOOM_OUT_THRESHOLD) {
+				selectedParent.setFoldState(FoldState.COLLAPSED);
+				viewDist = STANDARD_VIEWDIST;			
+			}		
+		}
+	}
+	
+	public float getViewDist() {
+		return viewDist;
 	}
 
 	public void doPickRequest(Point p) {
