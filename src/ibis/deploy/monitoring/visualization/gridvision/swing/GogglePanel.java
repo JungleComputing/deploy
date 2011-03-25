@@ -27,7 +27,6 @@ public class GogglePanel extends JPanel {
 
 		// Standard GL2 capabilities
 		GLProfile glp = GLProfile.get(GLProfile.GL2);
-		glp = GLProfile.get(GLProfile.GL2);
 		GLCapabilities glCapabilities = new GLCapabilities(glp);
 
 		// glCapabilities.setDoubleBuffered(true);
