@@ -1,5 +1,7 @@
 package ibis.deploy;
 
+import ibis.util.TypedProperties;
+
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -29,53 +31,33 @@ public class Cluster {
     public static void printTableOfKeys(PrintWriter out) {
         out.println("# Mandatory parameters for clusters:");
         out.println("# KEY                 COMMENT");
-        out
-                .println("# server.adaptor      JavaGAT adaptor used to deploy server");
-        out
-                .println("# server.uri          Contact URI used when deploying server");
-        out
-                .println("# job.adaptor         JavaGAT adaptor used to deploy jobs");
-        out
-                .println("# job.uri             Contact URI used when deploying job");
-        out
-                .println("# file.adaptors       Comma separated list of JavaGAT file adaptors used to");
-        out
-                .println("#                     copy files to and from this cluster(*)");
+        out.println("# server.adaptor      JavaGAT adaptor used to deploy server");
+        out.println("# server.uri          Contact URI used when deploying server");
+        out.println("# job.adaptor         JavaGAT adaptor used to deploy jobs");
+        out.println("# job.uri             Contact URI used when deploying job");
+        out.println("# file.adaptors       Comma separated list of JavaGAT file adaptors used to");
+        out.println("#                     copy files to and from this cluster(*)");
         out.println("#");
         out.println("# Optional parameters: ");
         out.println("# KEY                 COMMENT");
-        out
-                .println("# java.path           Path to java executable on this cluster.");
+        out.println("# java.path           Path to java executable on this cluster.");
         out.println("#                     If unspecified, \"java\" is used");
-        out
-                .println("# job.wrapper.script  If specified, the given script is copied to the cluster");
+        out.println("# job.wrapper.script  If specified, the given script is copied to the cluster");
         out.println("#                     and run instead of java");
-        out
-                .println("# user.name           User name used for authentication at cluster");
-        out
-                .println("# user.key            User keyfile used for authentication at cluster (only when user.name is set)");
-        out
-                .println("# cache.dir           Directory on cluster used to cache pre-stage files");
+        out.println("# user.name           User name used for authentication at cluster");
+        out.println("# user.key            User keyfile used for authentication at cluster (only when user.name is set)");
+        out.println("# cache.dir           Directory on cluster used to cache pre-stage files");
         out.println("#                     (updated using rsync)");
-        out
-                .println("# server.output.files Output files copied when server exits (e.g. statistics)");
+        out.println("# server.output.files Output files copied when server exits (e.g. statistics)");
 
-        out
-                .println("# server.system.properties system properties for the server (e.g. smartsocekts settings)");
+        out.println("# server.system.properties system properties for the server (e.g. smartsocekts settings)");
 
-        out
-                .println("# nodes               Number of nodes(machines) of this cluster (integer)");
-        out
-                .println("# cores               Total number of cores of this cluster (integer)");
-        out
-                .println("# memory               Amount of memory per node in Megabytes (integer)");
-        out
-                .println("# latitude            Latitude position of this cluster (double)");
-        out
-                .println("# longitude           Longitude position of this cluster (double)");
+        out.println("# nodes               Number of nodes(machines) of this cluster (integer)");
+        out.println("# cores               Total number of cores of this cluster (integer)");
+        out.println("# memory               Amount of memory per node in Megabytes (integer)");
+        out.println("# latitude            Latitude position of this cluster (double)");
+        out.println("# longitude           Longitude position of this cluster (double)");
     }
-
-    private final Grid parent;
 
     // name of this cluster
     private String name;
@@ -103,7 +85,7 @@ public class Cluster {
 
     // user name to authenticate user with
     private String userName;
-    
+
     // Key file for user authentication
     private String keyFile;
 
@@ -135,6 +117,8 @@ public class Cluster {
 
     private boolean visibleOnMap;
 
+    private final TypedProperties properties;
+
     /**
      * Applies to the current cluster a set of properties that are specific for
      * the local cluster
@@ -157,40 +141,40 @@ public class Cluster {
     }
 
     /**
-     * Creates a new cluster with a given name. Clusters cannot be created
-     * directly, but are constructed by a parent Grid object.
+     * ê * Creates a new cluster with a given name.
      * 
      * @param name
      *            the name of the cluster
      * @throws Exception
      *             if name is null or contains periods and/or spaces
      */
-    public Cluster(String name, Grid parent) throws Exception {
-        this.parent = parent;
+    public Cluster(String name) throws Exception {
         setName(name);
+
+        properties = new DeployProperties();
+        
+        serverAdaptor = null;
+        serverURI = null;
+        jobAdaptor = null;
+        jobURI = null;
+        fileAdaptors = null;
+        javaPath = null;
+        jobWrapperScript = null;
+        userName = null;
+        keyFile = null;
+        cacheDir = null;
+        serverOutputFiles = null;
+        serverSystemProperties = null;
+        nodes = 0;
+        cores = 0;
+        memory = 0;
+        latitude = 0;
+        longitude = 0;
+        color = null;
+        visibleOnMap = true;
 
         if (name == "local") {
             applyLocalClusterSettings();
-        } else {
-            serverAdaptor = null;
-            serverURI = null;
-            jobAdaptor = null;
-            jobURI = null;
-            fileAdaptors = null;
-            javaPath = null;
-            jobWrapperScript = null;
-            userName = null;
-            keyFile = null;
-            cacheDir = null;
-            serverOutputFiles = null;
-            serverSystemProperties = null;
-            nodes = 0;
-            cores = 0;
-            memory = 0;
-            latitude = 0;
-            longitude = 0;
-            color = null;
-            visibleOnMap = true;
         }
     }
 
@@ -199,8 +183,9 @@ public class Cluster {
      * 
      */
     public Cluster() {
+        properties = new DeployProperties();
+
         name = "anonymous";
-        parent = null;
         serverAdaptor = null;
         serverURI = null;
         serverOutputFiles = null;
@@ -238,16 +223,15 @@ public class Cluster {
      * @throws Exception
      *             if cluster cannot be read properly, or its name is invalid
      */
-    Cluster(DeployProperties properties, String name, String prefix, Grid parent)
+    public Cluster(DeployProperties properties, String name, String prefix)
             throws Exception {
-        this.parent = parent;
         setName(name);
-
+        
         // add separator to prefix
         prefix = prefix + ".";
 
         String defaultPrefix = "default.";
-
+        
         // first load all the default properties
         if (name == "local") {
             applyLocalClusterSettings(); // the default settings for the local
@@ -348,6 +332,9 @@ public class Cluster {
             longitude = properties.getDoubleProperty(prefix + "longitude", 0);
         }
 
+        //copy all properties with right prefix to properties map
+        this.properties = properties.filter(prefix, true, false);
+
         this.color = null;
     }
 
@@ -356,10 +343,10 @@ public class Cluster {
                 && serverOutputFiles == null && jobAdaptor == null
                 && jobURI == null && fileAdaptors == null && javaPath == null
                 && jobWrapperScript == null && userName == null
-                && keyFile == null
-                && cacheDir == null && serverOutputFiles == null
-                && serverSystemProperties == null && nodes == 0 && cores == 0
-                && memory == 0 && latitude == 0 && longitude == 0;
+                && keyFile == null && cacheDir == null
+                && serverOutputFiles == null && serverSystemProperties == null
+                && nodes == 0 && cores == 0 && memory == 0 && latitude == 0
+                && longitude == 0;
     }
 
     /**
@@ -409,7 +396,7 @@ public class Cluster {
         if (other.userName != null) {
             userName = other.userName;
         }
-        
+
         if (other.keyFile != null) {
             keyFile = other.keyFile;
         }
@@ -458,15 +445,6 @@ public class Cluster {
     }
 
     /**
-     * Returns grid of this cluster.
-     * 
-     * @return parent grid of this cluster.
-     */
-    public Grid getGrid() {
-        return parent;
-    }
-
-    /**
      * Returns the name of this cluster
      * 
      * @return the name of this cluster
@@ -495,10 +473,6 @@ public class Cluster {
             return;
         }
 
-        if (this.name != null && this.name.equals("local")) {
-            throw new Exception("cannot rename local cluster");
-        }
-
         if (name.contains(".")) {
             throw new Exception("cluster name cannot contain periods : \""
                     + name + "\"");
@@ -506,14 +480,6 @@ public class Cluster {
         if (name.contains(" ")) {
             throw new Exception("cluster name cannot contain spaces : \""
                     + name + "\"");
-        }
-
-        if (parent != null) {
-            if (parent.hasCluster(name)) {
-                throw new Exception("cannot set Cluster name to \"" + name
-                        + "\", parent Grid already contains "
-                        + "a Cluster with that name");
-            }
         }
 
         this.name = name;
@@ -717,22 +683,22 @@ public class Cluster {
     public void setUserName(String userName) {
         this.userName = userName;
     }
-    
+
     /**
      * Returns keyfile used to authenticate at this cluster
      * 
      * @return keyfile used to authenticate at this cluster
-     */    
+     */
     public String getKeyFile() {
         return keyFile;
     }
-    
+
     /**
      * Sets keyfile used to authenticate at this cluster
      * 
      * @param keyFile
      *            keyfile used to authenticate at this cluster
-     */   
+     */
     public void setKeyFile(String keyFile) {
         this.keyFile = keyFile;
     }
@@ -935,7 +901,7 @@ public class Cluster {
     //
     // public Color getLightColor() {
     // Color color = getColor();
-    //        
+    //
     // if (color == null) {
     // return null;
     // }
@@ -944,6 +910,15 @@ public class Cluster {
 
     public void setColor(String color) {
         this.color = color;
+    }
+    
+    /**
+     * Get the raw properties this cluster was created from. Useful for supporting
+     * custom properties in deploy based applications
+     * @return the raw properties this cluster was created from.
+     */
+    public TypedProperties getProperties() {
+        return properties;
     }
 
     /**
@@ -1047,9 +1022,7 @@ public class Cluster {
         }
 
         if (serverURI != null) {
-            out
-                    .println(dotPrefix + "server.uri = "
-                            + serverURI.toASCIIString());
+            out.println(dotPrefix + "server.uri = " + serverURI.toASCIIString());
             empty = false;
         } else if (printComments) {
             out.println("#" + dotPrefix + "server.uri = ");
@@ -1097,7 +1070,7 @@ public class Cluster {
         } else if (printComments) {
             out.println("#" + dotPrefix + "user.name = ");
         }
-        
+
         if (keyFile != null) {
             out.println(dotPrefix + "user.key = " + keyFile);
             empty = false;
@@ -1164,8 +1137,7 @@ public class Cluster {
         }
 
         if (empty && printComments) {
-            out
-                    .println("#Dummy property to make sure cluster is actually defined");
+            out.println("#Dummy property to make sure cluster is actually defined");
             out.println(prefix);
         }
     }

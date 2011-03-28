@@ -193,5 +193,4 @@ public class DeployProperties extends TypedProperties {
 
         return Arrays.asList(getStringList(key));
     }
-
 }

@@ -103,7 +103,7 @@ public class JobDescription {
         processCount = 0;
         clusterName = null;
         try {
-            clusterOverrides = new Cluster("overrides", null);
+            clusterOverrides = new Cluster("overrides");
         } catch (Exception e) {
             // should not happen
             throw new RuntimeException(e);
@@ -144,7 +144,7 @@ public class JobDescription {
         clusterName = properties.getProperty(prefix + "cluster.name");
 
         clusterOverrides = new Cluster(properties, "overrides", prefix
-                + "cluster", null);
+                + "cluster");
 
         resourceCount = properties.getIntProperty(prefix + "resource.count", 0);
 
