@@ -21,7 +21,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 
-public class OutputPanel extends JPanel {
+public class JobMonitorOutputPanel extends JPanel {
 
     private final class ShowFileListener extends MouseAdapter {
         private final File file;
@@ -37,13 +37,13 @@ public class OutputPanel extends JPanel {
                     java.awt.Desktop.getDesktop().browse(file.toURI());
                 } catch (IOException e) {
 
-                    JOptionPane.showMessageDialog(OutputPanel.this, e
+                    JOptionPane.showMessageDialog(JobMonitorOutputPanel.this, e
                             .getMessage(), "Failed to open '" + file.getName()
                             + "'", JOptionPane.PLAIN_MESSAGE);
                     e.printStackTrace(System.err);
                 }
             } else {
-                JOptionPane.showMessageDialog(OutputPanel.this,
+                JOptionPane.showMessageDialog(JobMonitorOutputPanel.this,
                         "File not Found", "file \"" + file
                                 + "\" does not exist",
                         JOptionPane.PLAIN_MESSAGE);
@@ -56,7 +56,7 @@ public class OutputPanel extends JPanel {
      */
     private static final long serialVersionUID = 2448246780577566271L;
 
-    public OutputPanel(Job job) {
+    public JobMonitorOutputPanel(Job job) {
         setLayout(new FlowLayout(FlowLayout.LEFT));
         if (job == null) {
             add(new JLabel("Error: no output available"));

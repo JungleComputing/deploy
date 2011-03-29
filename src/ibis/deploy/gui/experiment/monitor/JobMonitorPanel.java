@@ -26,7 +26,7 @@ public class JobMonitorPanel extends JPanel {
 
     public JobMonitorPanel(GUI gui) {
         setLayout(new BorderLayout());
-        JobTableModel model = new JobTableModel(gui);
+        JobMonitorTableModel model = new JobMonitorTableModel(gui);
         JTable table = new JTable(model);
 
         table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -36,9 +36,9 @@ public class JobMonitorPanel extends JPanel {
         table.setGridColor(Color.LIGHT_GRAY);
         // table.setIntercellSpacing(new Dimension(5, 5));
 
-        JobTableRenderer renderer = new JobTableRenderer(model);
+        JobMonitorTableRenderer renderer = new JobMonitorTableRenderer(model);
 
-        TableRowSorter<JobTableModel> sorter = new TableRowSorter<JobTableModel>(
+        TableRowSorter<JobMonitorTableModel> sorter = new TableRowSorter<JobMonitorTableModel>(
                 model);
         sorter.setSortsOnUpdates(true);
         table.setRowSorter(sorter);
@@ -48,7 +48,7 @@ public class JobMonitorPanel extends JPanel {
             column = table.getColumnModel().getColumn(i);
             column.setCellRenderer(renderer);
 
-            if (i == JobRow.OUTPUT_COLUMN) {
+            if (i == JobMonitorRow.OUTPUT_COLUMN) {
                 column.setCellEditor(new ButtonEditor());
                 column.setMaxWidth(70);// last column is fixed
                 column.setPreferredWidth(70);

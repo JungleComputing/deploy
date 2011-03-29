@@ -1,7 +1,5 @@
 package ibis.deploy.gui.experiment.monitor;
 
-import javax.swing.JOptionPane;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,11 +7,10 @@ import ibis.deploy.Job;
 import ibis.deploy.JobDescription;
 import ibis.deploy.State;
 import ibis.deploy.StateListener;
-import ibis.deploy.gui.GUI;
 
-public class JobRow {
+public class JobMonitorRow {
 
-    private static final Logger logger = LoggerFactory.getLogger(JobRow.class);
+    private static final Logger logger = LoggerFactory.getLogger(JobMonitorRow.class);
 
     public static final int POOL_COLUMN = 0;
     public static final int NAME_COLUMN = 1;
@@ -36,14 +33,12 @@ public class JobRow {
 
     private State jobState;
 
-    private final JobTableModel model;
-    private final GUI gui;
+    private final JobMonitorTableModel model;
 
-    public JobRow(Job job, JobTableModel model, GUI gui) throws Exception {
+    public JobMonitorRow(Job job, JobMonitorTableModel model) throws Exception {
         this.job = job;
         this.model = model;
-        this.gui = gui;
-
+ 
         jobDescription = job.getDescription();
 
         jobState = State.UNKNOWN;

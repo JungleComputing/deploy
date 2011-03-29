@@ -13,10 +13,10 @@ import javax.swing.table.AbstractTableModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JobTableModel extends AbstractTableModel implements Runnable {
+public class JobMonitorTableModel extends AbstractTableModel implements Runnable {
 
     private static final Logger logger = LoggerFactory
-            .getLogger(JobTableModel.class);
+            .getLogger(JobMonitorTableModel.class);
 
     private static final long serialVersionUID = -2478479107636581568L;
 
@@ -40,11 +40,11 @@ public class JobTableModel extends AbstractTableModel implements Runnable {
 
     private final GUI gui;
 
-    private final List<JobRow> rows;
+    private final List<JobMonitorRow> rows;
 
-    public JobTableModel(GUI gui) {
+    public JobMonitorTableModel(GUI gui) {
         this.gui = gui;
-        rows = new ArrayList<JobRow>();
+        rows = new ArrayList<JobMonitorRow>();
 
         ThreadPool.createNew(this, "job monitor");
     }
@@ -71,12 +71,12 @@ public class JobTableModel extends AbstractTableModel implements Runnable {
 
     @Override
     public boolean isCellEditable(int row, int col) {
-        return col == JobRow.OUTPUT_COLUMN;
+        return col == JobMonitorRow.OUTPUT_COLUMN;
     }
 
     @Override
     public Class<?> getColumnClass(int column) {
-        return JobRow.getColumnClass(column);
+        return JobMonitorRow.getColumnClass(column);
     }
 
     @Override
@@ -101,7 +101,7 @@ public class JobTableModel extends AbstractTableModel implements Runnable {
         return rows.get(row).getJob();
     }
 
-    public void fireTableCellUpdated(JobRow jobRow, int... columns) {
+    public void fireTableCellUpdated(JobMonitorRow jobRow, int... columns) {
         for (int row = 0; row < rows.size(); row++) {
             if (rows.get(row).equals(jobRow)) {
                 for (int column : columns) {
@@ -111,7 +111,7 @@ public class JobTableModel extends AbstractTableModel implements Runnable {
         }
     }
 
-    public void fireTableRowUpdated(JobRow jobRow) {
+    public void fireTableRowUpdated(JobMonitorRow jobRow) {
         for (int row = 0; row < rows.size(); row++) {
             if (rows.get(row).equals(jobRow)) {
                 fireTableRowsUpdated(row, row);
@@ -137,13 +137,13 @@ public class JobTableModel extends AbstractTableModel implements Runnable {
 
     private void addJob(Job job) throws Exception {
         boolean present = false;
-        for (JobRow row : rows) {
+        for (JobMonitorRow row : rows) {
             if (job.equals(row.getJob())) {
                 present = true;
             }
         }
         if (!present) {
-            JobRow row = new JobRow(job, this, gui);
+            JobMonitorRow row = new JobMonitorRow(job, this);
             int index = rows.size();
 
             rows.add(row);

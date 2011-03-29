@@ -19,13 +19,13 @@ import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.TableCellRenderer;
 
-class JobTableRenderer extends JLabel implements TableCellRenderer {
+class JobMonitorTableRenderer extends JLabel implements TableCellRenderer {
 
     private static final long serialVersionUID = -1269380843774208099L;
 
-    private final JobTableModel model;
+    private final JobMonitorTableModel model;
 
-    public JobTableRenderer(JobTableModel model) {
+    public JobMonitorTableRenderer(JobMonitorTableModel model) {
         super();
         this.model = model;
     }
@@ -42,12 +42,12 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
 
         String columnName = table.getColumnName(column);
 
-        if (columnName.equalsIgnoreCase(JobTableModel.POOL_COLUMN_NAME)) {
+        if (columnName.equalsIgnoreCase(JobMonitorTableModel.POOL_COLUMN_NAME)) {
             setText("" + value);
-        } else if (columnName.equalsIgnoreCase(JobTableModel.NAME_COLUMN_NAME)) {
+        } else if (columnName.equalsIgnoreCase(JobMonitorTableModel.NAME_COLUMN_NAME)) {
             setText("" + value);
         } else if (columnName
-                .equalsIgnoreCase(JobTableModel.JOB_STATUS_COLUMN_NAME)) {
+                .equalsIgnoreCase(JobMonitorTableModel.JOB_STATUS_COLUMN_NAME)) {
             State state = (State) value;
 
             if (state != null && state != State.UNKNOWN) {
@@ -63,7 +63,7 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
                 setText(state.toString());
             }
         } else if (columnName
-                .equalsIgnoreCase(JobTableModel.HUB_STATUS_COLUMN_NAME)) {
+                .equalsIgnoreCase(JobMonitorTableModel.HUB_STATUS_COLUMN_NAME)) {
             State state = (State) value;
 
             if (state != null && state != State.UNKNOWN) {
@@ -79,7 +79,7 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
                 setText(state.toString());
             }
         } else if (columnName
-                .equalsIgnoreCase(JobTableModel.CLUSTER_COLUMN_NAME)) {
+                .equalsIgnoreCase(JobMonitorTableModel.CLUSTER_COLUMN_NAME)) {
             setOpaque(true);
 
             JobDescription jobDescription = model.getJobDescription(table
@@ -95,23 +95,23 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
 
             setText(jobDescription.getClusterName());
         } else if (columnName
-                .equalsIgnoreCase(JobTableModel.MIDDLEWARE_COLUMN_NAME)) {
+                .equalsIgnoreCase(JobMonitorTableModel.MIDDLEWARE_COLUMN_NAME)) {
             String adaptor = (String) value;
             if (adaptor != null && adaptor.equalsIgnoreCase("sshTrilead")) {
                 adaptor = "ssh";
             }
             setText(adaptor);
         } else if (columnName
-                .equalsIgnoreCase(JobTableModel.APPLICATION_COLUMN_NAME)) {
+                .equalsIgnoreCase(JobMonitorTableModel.APPLICATION_COLUMN_NAME)) {
             setText("" + value);
         } else if (columnName
-                .equalsIgnoreCase(JobTableModel.PROCESS_COUNT_COLUMN_NAME)) {
+                .equalsIgnoreCase(JobMonitorTableModel.PROCESS_COUNT_COLUMN_NAME)) {
             setText("" + value);
         } else if (columnName
-                .equalsIgnoreCase(JobTableModel.RESOURCE_COUNT_COLUMN_NAME)) {
+                .equalsIgnoreCase(JobMonitorTableModel.RESOURCE_COUNT_COLUMN_NAME)) {
             setText("" + value);
         } else if (columnName
-                .equalsIgnoreCase(JobTableModel.OUTPUT_COLUMN_NAME)) {
+                .equalsIgnoreCase(JobMonitorTableModel.OUTPUT_COLUMN_NAME)) {
             boolean enabled = false;
             if (value != null) {
                 enabled = (Boolean) value;
@@ -133,7 +133,7 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
                     JDialog dialog = new JDialog(SwingUtilities
                             .getWindowAncestor(table), "Output Files for "
                             + job.getDescription().getName());
-                    dialog.setContentPane(new OutputPanel(job));
+                    dialog.setContentPane(new JobMonitorOutputPanel(job));
                     dialog.pack();
                     dialog.setLocationRelativeTo(SwingUtilities
                             .getWindowAncestor(table));
