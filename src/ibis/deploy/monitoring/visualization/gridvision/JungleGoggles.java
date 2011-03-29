@@ -290,30 +290,45 @@ public class JungleGoggles implements GLEventListener {
 	 * it will swap buffers and update the display.
 	 */
 	public void display(GLAutoDrawable drawable) {
+		//Determine, if any, the selected item and it's parent
+		JGVisual selectedVisual = namesToParents.get(selectedItem);
+		JGVisual selectedParent = namesToParents.get(selectedItem);	
+		
+		/** Draw all desireables
+		 */
+		
+		// Get the current opengl instance, and clear the depth and color buffers		
 		GL2 gl = drawable.getGL().getGL2();
-
-		// Added GL2.GL_DEPTH_BUFFER_BIT
 		gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
 
 		// Draw the current state of the universe
 		drawUniverse(gl, GL2.GL_RENDER);
 		
-		//Draw a selection indicator around the currently selected item
-		JGVisual selectedVisual = namesToParents.get(selectedItem);
-		if (selectedVisual != null) {
-			selectedVisual.drawSelectionCube(gl);
+		//Draw a selection indicator around the currently selected item			
+		if (selectedParent != null) {
+			selectedParent.drawSelectionCube(gl);
 		}
 
 		// Draw the Heads Up Display
 		drawHud(gl);
-
+		
+		if (menuRequest) {
+			if (selectedParent != null) {
+				ContextSensitiveMenu popup = new ContextSensitiveMenu(namesToParents.get(selectedItem));
+				GLJPanel canvas = panel.getPanel();
+				canvas.add(popup);
+				popup.show(canvas, menuCoordX, menuCoordY);
+			}
+			menuRequest = false;
+		}
+		
 		// Start the rendering process so that it runs in parallel with the
 		// computations we need to do for the NEXT frame
 		gl.glFinish();
 
 		
-		// While we are rendering, update visuals for the next display cycle:
-
+		/** While we are rendering, update visuals for the next display cycle:
+		 */
 		// First, reset the universe if requested to do so
 		if (resetRequest || collector.change()) {
 			initializeUniverse();
@@ -329,22 +344,12 @@ public class JungleGoggles implements GLEventListener {
 		if (pickRequest) {
 			selectedItem = pick(gl, pickPoint);			
 			pickRequest = false;
-		}		
-		
-		if (menuRequest) {
-			ContextSensitiveMenu popup = new ContextSensitiveMenu(namesToParents.get(selectedItem));
-			GLJPanel canvas = panel.getPanel();
-			canvas.add(popup);
-			popup.show(canvas, menuCoordX, menuCoordY);
-			
-			menuRequest = false;
-		}
+		}			
 
 		// And recenter (move) to that location
 		if (recenterRequest) {
-			if (namesToVisuals.get(selectedItem) != null) {
-				float[] newCenter = namesToVisuals.get(selectedItem)
-						.getCoordinates();
+			if (selectedVisual != null) {
+				float[] newCenter = selectedVisual.getCoordinates();
 				m.moveTo(newCenter);
 			}
 

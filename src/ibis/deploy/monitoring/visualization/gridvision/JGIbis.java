@@ -12,7 +12,7 @@ public class JGIbis extends JGVisualAbstract implements JGVisual  {
 	public JGIbis(JungleGoggles goggles, JGVisual parent, GLUgl2 glu, Ibis dataIbis) {
 		super(goggles, parent);
 				
-		//jv.registerVisual(dataIbis, this);
+		goggles.registerVisual(dataIbis, this);
 		
 		Metric dataMetrics[] = dataIbis.getMetrics();
 		

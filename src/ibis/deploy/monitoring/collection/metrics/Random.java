@@ -9,7 +9,7 @@ import ibis.deploy.monitoring.collection.exceptions.BeyondAllowedRangeException;
 import ibis.deploy.monitoring.collection.exceptions.IncorrectParametersException;
 import ibis.deploy.monitoring.collection.exceptions.OutputUnavailableException;
 
-public class Random extends ibis.deploy.monitoring.collection.impl.MetricDescription implements ibis.deploy.monitoring.collection.MetricDescription {
+public class Random extends ibis.deploy.monitoring.collection.impl.MetricDescriptionImpl implements ibis.deploy.monitoring.collection.MetricDescription {
 	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.collection.metrics.Random");
 
 	public Random() {
@@ -26,7 +26,7 @@ public class Random extends ibis.deploy.monitoring.collection.impl.MetricDescrip
 	}
 
 	public void update(Object[] results, Metric metric) throws IncorrectParametersException {
-		ibis.deploy.monitoring.collection.impl.Metric castMetric = ((ibis.deploy.monitoring.collection.impl.Metric)metric);
+		ibis.deploy.monitoring.collection.impl.MetricImpl castMetric = ((ibis.deploy.monitoring.collection.impl.MetricImpl)metric);
 		if (results[0] == null) {
 			float currentValue;
 			try {

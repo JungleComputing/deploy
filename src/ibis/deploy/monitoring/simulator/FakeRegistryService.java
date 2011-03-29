@@ -20,11 +20,11 @@ public class FakeRegistryService implements ibis.ipl.server.RegistryServiceInter
 	double 	CHANCE_OF_IBIS_RECOVERY = 0.01;
 	int 	MAX_FAILRATE 			= 10;
 
-	final int POOLS = 2;
+	final int POOLS = 1;
 	final int COUNTRIES = 1;
-	final int UNIVERSITIES = 5;
-	final int CLUSTERS = 2;
-	final int IBISES = 10;
+	final int UNIVERSITIES = 1;
+	final int CLUSTERS = 1;
+	final int IBISES = 4;
 	
 	private HashMap<String, IbisIdentifier[]> pools;
 	private HashMap<IbisIdentifier, State> ibises;

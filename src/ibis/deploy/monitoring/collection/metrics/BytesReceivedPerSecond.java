@@ -15,7 +15,7 @@ import ibis.deploy.monitoring.collection.Metric.MetricModifier;
 import ibis.deploy.monitoring.collection.exceptions.BeyondAllowedRangeException;
 import ibis.deploy.monitoring.collection.exceptions.IncorrectParametersException;
 
-public class BytesReceivedPerSecond extends ibis.deploy.monitoring.collection.impl.MetricDescription implements ibis.deploy.monitoring.collection.MetricDescription {
+public class BytesReceivedPerSecond extends ibis.deploy.monitoring.collection.impl.MetricDescriptionImpl implements ibis.deploy.monitoring.collection.MetricDescription {
 	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.collection.metrics.BytesReceivedPerSecond");
 		
 	public BytesReceivedPerSecond() {
@@ -30,13 +30,16 @@ public class BytesReceivedPerSecond extends ibis.deploy.monitoring.collection.im
 				
 		necessaryAttributes.add(new AttributeDescription("ibis", "receivedBytesPerIbis"));
 		
+		//outputTypes.add(MetricOutput.N);
+		outputTypes.add(MetricOutput.RPOS);
 		outputTypes.add(MetricOutput.PERCENT);
 	}
 		
 	public void update(Object[] results, Metric metric)  throws IncorrectParametersException {
-		ibis.deploy.monitoring.collection.impl.Metric castMetric = ((ibis.deploy.monitoring.collection.impl.Metric)metric);
+		ibis.deploy.monitoring.collection.impl.MetricImpl castMetric = ((ibis.deploy.monitoring.collection.impl.MetricImpl)metric);
 		HashMap<IbisIdentifier, Number> result = new HashMap<IbisIdentifier, Number>();
-		long total = 0;
+		HashMap<IbisIdentifier, Number> percentResult = new HashMap<IbisIdentifier, Number>();
+		long total = 0L;
 		
 		if (results[0] instanceof Map<?, ?>) {
 			for (Map.Entry<?,?> incoming : ((Map<?, ?>) results[0]).entrySet()) {
@@ -45,14 +48,26 @@ public class BytesReceivedPerSecond extends ibis.deploy.monitoring.collection.im
 					Map.Entry<IbisIdentifier, Long> received = (Entry<IbisIdentifier, Long>) incoming;				
 				
 					long time_now = System.currentTimeMillis();
-					long time_elapsed = time_now - (Long)castMetric.getHelperVariable("time_prev");
-					castMetric.setHelperVariable("time_prev", time_now);
+					long time_elapsed = time_now - (Long)castMetric.getHelperVariable(this.name+"_time_prev");
+					castMetric.setHelperVariable(this.name+"_time_prev", time_now);
 					
 					float time_seconds = (float)time_elapsed / 1000.0f;
 		
 					long value = received.getValue();
-					result.put(received.getKey(), (value / time_seconds));
 					total += value;
+					
+					long perSec = (long) (value / time_seconds);
+					result.put(received.getKey(), perSec);
+					
+					long max_prev = (Long)castMetric.getHelperVariable(this.name+"_max_prev");
+					long max = Math.max(max_prev, perSec);
+					if (max > max_prev) {
+						castMetric.setHelperVariable(this.name+"_max_prev", max);
+					} else {
+						max = max_prev;
+					}
+					percentResult.put(received.getKey(), perSec/max);
+					
 				} else {
 					logger.error("Wrong types for map in parameter.");
 					throw new IncorrectParametersException();
@@ -66,6 +81,7 @@ public class BytesReceivedPerSecond extends ibis.deploy.monitoring.collection.im
 		try {
 			castMetric.setValue(MetricModifier.NORM, MetricOutput.N, total);
 			castMetric.setValue(MetricModifier.NORM, MetricOutput.RPOS, result);
+			castMetric.setValue(MetricModifier.NORM, MetricOutput.PERCENT, percentResult);
 		} catch (BeyondAllowedRangeException e) {
 			logger.debug(name +" metric failed trying to set value out of bounds.");
 		}

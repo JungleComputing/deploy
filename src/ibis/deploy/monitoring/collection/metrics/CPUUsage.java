@@ -9,7 +9,7 @@ import ibis.deploy.monitoring.collection.exceptions.BeyondAllowedRangeException;
 import ibis.deploy.monitoring.collection.exceptions.IncorrectParametersException;
 import ibis.ipl.support.management.AttributeDescription;
 
-public class CPUUsage extends ibis.deploy.monitoring.collection.impl.MetricDescription implements ibis.deploy.monitoring.collection.MetricDescription {
+public class CPUUsage extends ibis.deploy.monitoring.collection.impl.MetricDescriptionImpl implements ibis.deploy.monitoring.collection.MetricDescription {
 	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.collection.metrics.CPUUsage");
 		
 	public CPUUsage() {
@@ -30,7 +30,7 @@ public class CPUUsage extends ibis.deploy.monitoring.collection.impl.MetricDescr
 	}
 	
 	public void update(Object[] results, Metric metric) throws IncorrectParametersException {
-		ibis.deploy.monitoring.collection.impl.Metric castMetric = ((ibis.deploy.monitoring.collection.impl.Metric)metric);
+		ibis.deploy.monitoring.collection.impl.MetricImpl castMetric = ((ibis.deploy.monitoring.collection.impl.MetricImpl)metric);
 		if (results[0] instanceof Long && results[1] instanceof Long &&	results[2] instanceof Integer) {
 			long cpu_elapsed 	= (Long)	results[0] - (Long) castMetric.getHelperVariable("cpu_prev");
 			long upt_elapsed	= (Long)	results[1] - (Long) castMetric.getHelperVariable("upt_prev");

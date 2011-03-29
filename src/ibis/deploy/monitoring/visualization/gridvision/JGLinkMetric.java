@@ -95,6 +95,9 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 		
 		whichList = (int)(ACCURACY*currentValue);
 		
+		//Do not draw links that have no value
+		if (whichList == 0) return;
+		
 		if (mShape == MetricShape.BAR) {
 			drawBar(gl, currentValue, dimensions[1]);
 		} else if (mShape == MetricShape.TUBE) {
@@ -105,6 +108,9 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 	public void update() {				
 		try {
 			currentValue = (Float) metric.getValue(MetricModifier.NORM, currentOutputMethod);
+			
+			//TODO DEBUG
+			System.out.println("JGLinkMetric update(): " + currentValue);
 		} catch (OutputUnavailableException e) {
 			//This shouldn't happen if the metric is defined properly
 			e.printStackTrace();
