@@ -3,6 +3,7 @@ package ibis.deploy;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -42,6 +43,22 @@ public class Workspace {
     public Workspace() throws Exception {
         this(null);
     }
+    
+    /**
+     * Constructs a workspace from the given grid, application, and experiments
+     * 
+     * @param grid the grid of the new workspace
+     * @param applications the Applications of the workspace
+     * @param experiments the experiments of the new workspace
+     */
+    public Workspace(Grid grid, ApplicationSet applications, Experiment... experiments) {
+       this.grid = grid;
+       this.applications = applications;
+       this.experiments = new ArrayList<Experiment>();
+       this.experiments.addAll(Arrays.asList(experiments));
+    }
+    
+    
 
     /**
      * Constructs a workspace from all properties files stored in the given

@@ -140,6 +140,20 @@ public class Job implements Runnable {
     }
 
     /**
+     * Add a listener to the hub of this server which reports the state of the
+     * Hub. Also causes a new event for this listener with the current state of
+     * the hub. Only works if a hub is started per cluster
+     * 
+     * @param listener
+     *            the listener to attach
+     */
+    public void addHubStateListener(StateListener listener) {
+        if (sharedHub != null) {
+            sharedHub.addListener(listener);
+        }
+    }
+
+    /**
      * Returns the state of this job
      * 
      * @return the state of this job
@@ -542,8 +556,8 @@ public class Job implements Runnable {
 
             // add wrapper to pre-stage files
             wrapperSd.addPreStagedFile(
-                    // GAT.createFile(context, wrapperScript.toString()),
-                    // GAT.createFile(context, "."));
+            // GAT.createFile(context, wrapperScript.toString()),
+            // GAT.createFile(context, "."));
                     GAT.createFile(context, wrapperScript.toString()));
 
             // set /bin/sh as executable
