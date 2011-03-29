@@ -335,13 +335,13 @@ public class LocationImpl extends ElementImpl implements Location {
 				logger.error("The impossible BeyondAllowedRangeException just happened anyway.");
 			} catch (MetricNotAvailableException e) {
 				logger.error("The impossible MetricNotAvailableException just happened anyway.");
-			}
+			}		
 		}
 
 		for (Link link : links.values()) {
 			((LinkImpl) link).update();
 		}
-	}
+	}	
 
 	public String debugPrint() {
 		String result = "";

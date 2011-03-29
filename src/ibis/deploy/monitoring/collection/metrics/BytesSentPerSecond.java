@@ -81,7 +81,7 @@ public class BytesSentPerSecond extends ibis.deploy.monitoring.collection.impl.M
 		}
 		
 		try {
-			castMetric.setValue(MetricModifier.NORM, MetricOutput.N, total);
+			//castMetric.setValue(MetricModifier.NORM, MetricOutput.N, total);
 			castMetric.setValue(MetricModifier.NORM, MetricOutput.RPOS, result);
 			castMetric.setValue(MetricModifier.NORM, MetricOutput.PERCENT, percentResult);
 		} catch (BeyondAllowedRangeException e) {

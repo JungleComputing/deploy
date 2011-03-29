@@ -54,6 +54,7 @@ public class CollectorImpl implements Collector, Runnable {
 
 	// Internal lists
 	private HashMap<String, Location> locations;
+	private HashMap<Element, Location> parents;
 	private HashMap<String, Pool> pools;
 	private HashMap<IbisIdentifier, Ibis> ibises;
 
@@ -70,6 +71,7 @@ public class CollectorImpl implements Collector, Runnable {
 		// Initialize all of the lists and hashmaps needed
 		poolSizes = new HashMap<String, Integer>();
 		locations = new HashMap<String, Location>();
+		parents = new HashMap<Element, Location>();
 		pools = new HashMap<String, Pool>();
 		descriptions = new HashSet<MetricDescription>();
 		ibises = new HashMap<IbisIdentifier, Ibis>();
@@ -197,8 +199,11 @@ public class CollectorImpl implements Collector, Runnable {
 	private void initLocations() {
 		ibises.clear();
 		locations.clear();
+		parents.clear();
+		
 		Float[] color = { 0f, 0f, 0f };
 		root = new LocationImpl("root", color);
+		parents.put(root, null);
 
 		// For all pools
 		for (Entry<String, Pool> entry : pools.entrySet()) {
@@ -212,8 +217,7 @@ public class CollectorImpl implements Collector, Runnable {
 				// for all ibises
 				for (IbisIdentifier ibisid : poolIbises) {
 					// Get the lowest location, skip the lowest (ibis) location
-					ibis.ipl.Location ibisLocation = ibisid.location()
-							.getParent();
+					ibis.ipl.Location ibisLocation = ibisid.location().getParent();
 					String locationName = ibisLocation.toString();
 
 					Location current;
@@ -225,14 +229,13 @@ public class CollectorImpl implements Collector, Runnable {
 					}
 
 					// And add the ibis to that location
-					IbisImpl ibis = new IbisImpl(manInterface, ibisid,
-							entry.getValue(), current);
+					IbisImpl ibis = new IbisImpl(manInterface, ibisid, entry.getValue(), current);
 					((LocationImpl) current).addIbis(ibis);
+					parents.put(ibis, current);
 					ibises.put(ibisid, ibis);
 
 					// for all location levels, get parent
-					ibis.ipl.Location parentIPLLocation = ibisLocation
-							.getParent();
+					ibis.ipl.Location parentIPLLocation = ibisLocation.getParent();
 					while (!parentIPLLocation.equals(universe)) {
 						String name = parentIPLLocation.toString();
 
@@ -244,11 +247,12 @@ public class CollectorImpl implements Collector, Runnable {
 						} else {
 							parent = new LocationImpl(name, color);
 							locations.put(name, parent);
-						}
+						}						
 
 						// And add the current location as a child of the parent
 						((LocationImpl) parent).addChild(current);
-
+						parents.put(current, parent);
+						
 						current = parent;
 
 						parentIPLLocation = parentIPLLocation.getParent();
@@ -257,6 +261,7 @@ public class CollectorImpl implements Collector, Runnable {
 					// Finally, add the top-level location to the root location,
 					// it will only add if it is not already there
 					((LocationImpl) root).addChild(current);
+					parents.put(current, root);
 				}
 			} catch (IOException e1) {
 				if (logger.isErrorEnabled()) {
@@ -342,6 +347,10 @@ public class CollectorImpl implements Collector, Runnable {
 
 	public Ibis getIbis(IbisIdentifier ibisid) {
 		return ibises.get(ibisid);
+	}
+	
+	public Element getParent(Element child) {
+		return parents.get(child);
 	}
 
 	public void run() {

@@ -79,7 +79,7 @@ public class BytesReceivedPerSecond extends ibis.deploy.monitoring.collection.im
 		}
 		
 		try {
-			castMetric.setValue(MetricModifier.NORM, MetricOutput.N, total);
+			//castMetric.setValue(MetricModifier.NORM, MetricOutput.N, total);
 			castMetric.setValue(MetricModifier.NORM, MetricOutput.RPOS, result);
 			castMetric.setValue(MetricModifier.NORM, MetricOutput.PERCENT, percentResult);
 		} catch (BeyondAllowedRangeException e) {

@@ -49,6 +49,7 @@ public class MetricImpl implements Metric {
 		values = new HashMap<MetricOutput, Number>();
 		maxValues = new HashMap<MetricOutput, Number>();
 		minValues = new HashMap<MetricOutput, Number>();
+		
 		for (MetricOutput current : desc.getOutputTypes()) {
 			if (current == MetricOutput.PERCENT) {
 				values.put(current, 0.0f);
@@ -107,19 +108,28 @@ public class MetricImpl implements Metric {
 		}
 	}
 
-	public HashMap<Element, Number> getLinkValue(MetricModifier mod,
-			MetricOutput outputmethod) throws OutputUnavailableException {
+	public Number getValue(MetricModifier mod, MetricOutput outputmethod, Element destination) throws OutputUnavailableException {
+		HashMap<Element, Number> resultMap = null;
 		if (values.containsKey(outputmethod)) {
 			if (mod == MetricModifier.NORM) {
-				return linkValues.get(outputmethod);
+				resultMap = linkValues.get(outputmethod);
 			} else if (mod == MetricModifier.MAX) {
-				return maxLinkValues.get(outputmethod);
+				resultMap = maxLinkValues.get(outputmethod);
 			} else {
-				return minLinkValues.get(outputmethod);
+				resultMap = minLinkValues.get(outputmethod);
 			}
 		} else {
 			throw new OutputUnavailableException();
 		}
+		
+		Number result = (Number) 0;
+		if (resultMap != null) {
+			Number intermediate = resultMap.get(destination);
+			if (intermediate != null) {
+				result = intermediate;
+			}
+		}
+		return result;
 	}
 
 	public void setValue(MetricModifier mod, MetricOutput outputmethod,
@@ -141,7 +151,7 @@ public class MetricImpl implements Metric {
 			values.put(outputmethod, value);
 		} else if (mod == MetricModifier.MAX) {
 			maxValues.put(outputmethod, value);
-		} else if (mod == MetricModifier.MAX) {
+		} else if (mod == MetricModifier.MIN) {
 			minValues.put(outputmethod, value);
 		}
 	}
@@ -150,7 +160,7 @@ public class MetricImpl implements Metric {
 			HashMap<IbisIdentifier, Number> values)
 			throws BeyondAllowedRangeException {
 		HashMap<Element, Number> result = new HashMap<Element, Number>();
-
+		
 		for (Map.Entry<IbisIdentifier, Number> entry : values.entrySet()) {
 			Element ibis = c.getIbis(entry.getKey());
 			Number value = 0;
@@ -179,7 +189,7 @@ public class MetricImpl implements Metric {
 			linkValues.put(outputmethod, result);
 		} else if (mod == MetricModifier.MAX) {
 			maxLinkValues.put(outputmethod, result);
-		} else if (mod == MetricModifier.MAX) {
+		} else if (mod == MetricModifier.MIN) {
 			minLinkValues.put(outputmethod, result);
 		}
 	}

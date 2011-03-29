@@ -24,6 +24,7 @@ public abstract class ElementImpl implements Element {
 	private static final Logger logger = LoggerFactory
 			.getLogger("impl.Element");
 
+	Element parent;
 	HashMap<MetricDescription, Metric> metrics;
 	HashMap<ElementImpl, Link> links;
 
@@ -67,6 +68,10 @@ public abstract class ElementImpl implements Element {
 	public Link[] getLinks() {
 		return links.values().toArray(new Link[0]);
 	}
+	
+	public Element getParent() {
+		return parent;
+	} 
 
 	// Setters
 	public void setMetrics(Set<MetricDescription> descriptions) {
