@@ -25,7 +25,7 @@ import ibis.deploy.monitoring.collection.exceptions.SingletonObjectNotInstantiat
  * 
  */
 public class MetricImpl implements Metric {
-	private static final Logger logger = LoggerFactory.getLogger("impl.Metric");
+	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.collection.impl.Metric");
 
 	protected ibis.deploy.monitoring.collection.impl.CollectorImpl c;
 	protected Element element;
@@ -135,15 +135,15 @@ public class MetricImpl implements Metric {
 	public void setValue(MetricModifier mod, MetricOutput outputmethod,
 			Number value) throws BeyondAllowedRangeException {
 		if (outputmethod == MetricOutput.PERCENT) {
-			if (((Float) value) < 0f || ((Float) value) > 1f) {
+			if (value.floatValue() < 0f || value.floatValue() > 1f) {
 				throw new BeyondAllowedRangeException();
 			}
 		} else if (outputmethod == MetricOutput.N) {
-			if (((Long) value) < 0) {
+			if (value.longValue() < 0) {
 				throw new BeyondAllowedRangeException();
 			}
 		} else if (outputmethod == MetricOutput.RPOS) {
-			if (((Float) value) < 0f) {
+			if (value.floatValue() < 0f) {
 				throw new BeyondAllowedRangeException();
 			}
 		}
@@ -166,18 +166,18 @@ public class MetricImpl implements Metric {
 			Number value = 0;
 
 			if (outputmethod == MetricOutput.PERCENT) {
-				value = (Float) entry.getValue();
-				if (((Float) value) < 0f || ((Float) value) > 1f) {
+				value = entry.getValue();
+				if (value.floatValue() < 0f || value.floatValue() > 1f) {
 					throw new BeyondAllowedRangeException();
 				}
 			} else if (outputmethod == MetricOutput.N) {
-				value = (Long) entry.getValue();
-				if (((Long) value) < 0) {
+				value = entry.getValue();
+				if (value.longValue() < 0) {
 					throw new BeyondAllowedRangeException();
 				}
 			} else if (outputmethod == MetricOutput.RPOS) {
-				value = (Float) entry.getValue();
-				if (((Float) value) < 0f) {
+				value = entry.getValue();
+				if (value.floatValue() < 0f) {
 					throw new BeyondAllowedRangeException();
 				}
 			}

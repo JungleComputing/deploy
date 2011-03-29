@@ -109,8 +109,6 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 		try {
 			currentValue = (Float) metric.getValue(MetricModifier.NORM, currentOutputMethod);
 			
-			//TODO DEBUG
-			System.out.println("JGLinkMetric update(): " + currentValue);
 		} catch (OutputUnavailableException e) {
 			//This shouldn't happen if the metric is defined properly
 			e.printStackTrace();

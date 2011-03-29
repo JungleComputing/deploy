@@ -29,8 +29,7 @@ import org.slf4j.LoggerFactory;
  * Serves as the main class for the data collecting module.
  */
 public class CollectorImpl implements Collector, Runnable {
-	private static final Logger logger = LoggerFactory
-			.getLogger("impl.Collector");
+	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.collection.impl.Collector");
 	private static final ibis.ipl.Location universe = new ibis.ipl.impl.Location(
 			new String[0]);
 	private static final int workercount = 8;
@@ -280,7 +279,9 @@ public class CollectorImpl implements Collector, Runnable {
 		for (Location source : locations.values()) {
 			for (Location destination : locations.values()) {
 				try {
-					source.getLink(destination);
+					if (!isAncestorOf(source, destination) && !isAncestorOf(destination, source)) {
+						source.getLink(destination);
+					}
 				} catch (SelfLinkeageException ignored) {
 					// ignored, because we do not want this link
 				}
@@ -351,6 +352,15 @@ public class CollectorImpl implements Collector, Runnable {
 	
 	public Element getParent(Element child) {
 		return parents.get(child);
+	}
+	
+	private boolean isAncestorOf(Element child, Element ancestor) {		
+		Element current = parents.get(child);
+		while (current != null) {
+			if (current == ancestor) return true;
+			current = parents.get(current);
+		}
+		return false;
 	}
 
 	public void run() {

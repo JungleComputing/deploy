@@ -66,8 +66,8 @@ public class BytesReceivedPerSecond extends ibis.deploy.monitoring.collection.im
 					} else {
 						max = max_prev;
 					}
-					percentResult.put(received.getKey(), perSec/max);
-					
+					float percent = (float)perSec/(float)max;
+					percentResult.put(received.getKey(), percent);					
 				} else {
 					logger.error("Wrong types for map in parameter.");
 					throw new IncorrectParametersException();

@@ -27,8 +27,7 @@ import ibis.deploy.monitoring.collection.exceptions.SelfLinkeageException;
  * @author Maarten van Meersbergen
  */
 public class LocationImpl extends ElementImpl implements Location {
-	private static final Logger logger = LoggerFactory
-			.getLogger("impl.Location");
+	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.collection.impl.Location");
 
 	private String name;
 	private Float[] color;

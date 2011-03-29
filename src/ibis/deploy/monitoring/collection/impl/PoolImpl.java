@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
  */
 public class PoolImpl implements Pool {
 	@SuppressWarnings("unused")
-	private static final Logger logger = LoggerFactory.getLogger("impl.Pool");
+	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.collection.impl.Pool");
 
 	private String name;
 	private ArrayList<Ibis> ibises;

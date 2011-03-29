@@ -8,18 +8,10 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ibis.deploy.monitoring.collection.Element;
-import ibis.deploy.monitoring.collection.Ibis;
-import ibis.deploy.monitoring.collection.Link;
-import ibis.deploy.monitoring.collection.Location;
-import ibis.deploy.monitoring.collection.Metric;
-import ibis.deploy.monitoring.collection.Metric.MetricModifier;
-import ibis.deploy.monitoring.collection.MetricDescription;
-import ibis.deploy.monitoring.collection.MetricDescription.MetricOutput;
-import ibis.deploy.monitoring.collection.MetricDescription.MetricType;
-import ibis.deploy.monitoring.collection.exceptions.BeyondAllowedRangeException;
-import ibis.deploy.monitoring.collection.exceptions.MetricNotAvailableException;
-import ibis.deploy.monitoring.collection.exceptions.OutputUnavailableException;
+import ibis.deploy.monitoring.collection.*;
+import ibis.deploy.monitoring.collection.Metric.*;
+import ibis.deploy.monitoring.collection.MetricDescription.*;
+import ibis.deploy.monitoring.collection.exceptions.*;
 
 /**
  * An interface for a link between two elements that exist within the managed
@@ -28,7 +20,7 @@ import ibis.deploy.monitoring.collection.exceptions.OutputUnavailableException;
  * @author Maarten van Meersbergen
  */
 public class LinkImpl extends ElementImpl implements Link {
-	private static final Logger logger = LoggerFactory.getLogger("impl.Link");
+	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.collection.impl.Link");
 
 	private ArrayList<Link> children;
 	private ElementImpl source;
@@ -86,12 +78,14 @@ public class LinkImpl extends ElementImpl implements Link {
 			updateIbisIbisLink();
 		} else if (source instanceof LocationImpl && destination instanceof LocationImpl) {
 			updateLocationLocationLink();
-		}
-		
+		} else {
+			System.out.println("Ibis-location links not supported, so why did you make them?.");
+			System.exit(0);
+		}		
 	}
 
 	private void updateIbisIbisLink() {
-		//Transform the Link value maps into 'normal' metrics
+		//Transform the Link value maps into 'normal' metrics that apply to this link
 		for (Entry<MetricDescription, Metric> data : metrics.entrySet()) {
 			MetricDescription desc = data.getKey();
 			MetricImpl metric = (MetricImpl) data.getValue();
@@ -107,49 +101,24 @@ public class LinkImpl extends ElementImpl implements Link {
 					Number dstLinkValue = dstMetric.getValue(MetricModifier.NORM, outputtype, source);
 					
 					if (outputtype == MetricOutput.PERCENT || outputtype == MetricOutput.R || outputtype == MetricOutput.RPOS) {
-						float total = 0f, max = -10000000f, min = 10000000f;
+						float total = 0;
 
 						float srcValue = srcLinkValue.floatValue();
 						float dstValue = dstLinkValue.floatValue();
 						
 						// TODO find a new function for this
-						total += srcValue + dstValue;
-
-						if (srcValue > max)
-							max = srcValue;
-						if (srcValue < min)
-							min = srcValue;
-
-						if (dstValue > max)
-							max = dstValue;
-						if (dstValue < min)
-							min = dstValue;
+						total += (srcValue + dstValue) / 2;
 						
-						metric.setValue(MetricModifier.NORM, outputtype, total);
-						metric.setValue(MetricModifier.MAX, outputtype, max);
-						metric.setValue(MetricModifier.MIN, outputtype, min);						
+						metric.setValue(MetricModifier.NORM, outputtype, total);				
 					} else { // We are MetricOutput.N
-						long total = 0, max = 0, min = 1000000;
-
+						long total = 0;
 						long srcValue = srcLinkValue.longValue();
 						long dstValue = dstLinkValue.longValue();
 
 						// TODO find a new function for this
-						total += srcValue + dstValue;
-
-						if (srcValue > max)
-							max = srcValue;
-						if (srcValue < min)
-							min = srcValue;
-
-						if (dstValue > max)
-							max = dstValue;
-						if (dstValue < min)
-							min = dstValue;		
+						total += (srcValue + dstValue) / 2;
 						
 						metric.setValue(MetricModifier.NORM, outputtype, total);
-						metric.setValue(MetricModifier.MAX, outputtype, max);
-						metric.setValue(MetricModifier.MIN, outputtype, min);
 					}					
 				} catch (OutputUnavailableException impossible) {
 					// Impossible since we tested if it was available first.
@@ -166,6 +135,7 @@ public class LinkImpl extends ElementImpl implements Link {
 	}
 
 	private void updateLocationLocationLink() {
+		//Aggregate 'Normal' Metrics from the children of this link, made during the linkHierarchy process
 		for (Entry<MetricDescription, Metric> data : metrics.entrySet()) {
 			MetricDescription desc = data.getKey();
 			MetricImpl metric = (MetricImpl) data.getValue();
@@ -182,7 +152,7 @@ public class LinkImpl extends ElementImpl implements Link {
 							// multiplied by their weight.
 							int childLinks = 0;
 							for (Link child : children) {
-								float childValue = (Float) child.getMetric(desc).getValue(MetricModifier.NORM, outputtype);
+								float childValue = child.getMetric(desc).getValue(MetricModifier.NORM, outputtype).floatValue();
 	
 								childLinks += ((LinkImpl) child).getNumberOfDescendants();
 	
@@ -193,18 +163,13 @@ public class LinkImpl extends ElementImpl implements Link {
 								if (childValue < min)
 									min = childValue;
 							}
-							metric.setValue(MetricModifier.NORM, outputtype,
-									total / (ibises.size() + childIbises));
+							metric.setValue(MetricModifier.NORM, outputtype, total / childLinks);
 							metric.setValue(MetricModifier.MAX, outputtype, max);
 							metric.setValue(MetricModifier.MIN, outputtype, min);
 						} else {
-							// Then we add the metric values of our child
-							// locations
-							for (Location child : children) {
-								float childValue = (Float) child
-										.getMetric(desc)
-										.getValue(MetricModifier.NORM,
-												outputtype);
+							// We add up the metric values of our child locations
+							for (Link child : children) {
+								float childValue = child.getMetric(desc).getValue(MetricModifier.NORM, outputtype).floatValue();
 	
 								total += childValue;
 	
@@ -221,23 +186,9 @@ public class LinkImpl extends ElementImpl implements Link {
 					} else { // We are MetricOutput.N
 						long total = 0, max = 0, min = 1000000;
 	
-						// First, we gather our own metrics
-						for (Ibis ibis : ibises) {
-							long ibisValue = (Long) ibis.getMetric(desc)
-									.getValue(MetricModifier.NORM, outputtype);
-	
-							total += ibisValue;
-	
-							if (ibisValue > max)
-								max = ibisValue;
-							if (ibisValue < min)
-								min = ibisValue;
-						}
-	
-						// Then we add the metric values of our child locations
-						for (Location child : children) {
-							long childValue = (Long) child.getMetric(desc)
-									.getValue(MetricModifier.NORM, outputtype);
+						// We add up the metric values of our child locations
+						for (Link child : children) {
+							long childValue = child.getMetric(desc).getValue(MetricModifier.NORM, outputtype).longValue();
 	
 							total += childValue;
 	

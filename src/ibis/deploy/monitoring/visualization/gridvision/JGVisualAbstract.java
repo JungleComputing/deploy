@@ -49,7 +49,7 @@ public abstract class JGVisualAbstract implements JGVisual {
 		locationColShape = CollectionShape.CITYSCAPE;
 		ibisColShape = CollectionShape.CITYSCAPE;
 		metricColShape = CollectionShape.CITYSCAPE;
-		foldState = FoldState.COLLAPSED;
+		foldState = FoldState.UNFOLDED;
 		mShape = MetricShape.BAR;
 		
 		radius = 0f;

@@ -29,7 +29,7 @@ import ibis.deploy.monitoring.collection.Pool;
  * @author Maarten van Meersbergen
  */
 public class IbisImpl extends ElementImpl implements Ibis {
-	private static final Logger logger = LoggerFactory.getLogger("impl.Ibis");
+	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.collection.impl.Ibis");
 
 	ManagementServiceInterface manInterface;
 	IbisIdentifier ibisid;
@@ -132,8 +132,8 @@ public class IbisImpl extends ElementImpl implements Ibis {
 					+ e.getMessage());
 		} catch (Exception e) {
 			logger.error("Ibis " + ibisid
-					+ " got exception while updating metrics: "
-					+ e.getMessage());
+					+ " got exception while updating metrics: ");
+			e.printStackTrace();
 		}
 
 		for (Link link : links.values()) {
