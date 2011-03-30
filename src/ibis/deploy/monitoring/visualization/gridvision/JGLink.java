@@ -32,6 +32,28 @@ public class JGLink extends JGVisualAbstract implements JGVisual {
 		}
 	}
 	
+	public void drawSolids(GL2 gl, int renderMode) {
+		State srcState = source.getState();
+		State dstState = destination.getState();
+		
+		if (srcState == State.COLLAPSED && dstState == State.COLLAPSED) {
+			for (JGVisual metric : metrics)	{
+				metric.drawSolids(gl, renderMode);
+			}	
+		}				
+	}
+	
+	public void drawTransparents(GL2 gl, int renderMode) {
+		State srcState = source.getState();
+		State dstState = destination.getState();
+		
+		if (srcState == State.COLLAPSED && dstState == State.COLLAPSED) {
+			for (JGVisual metric : metrics)	{
+				metric.drawTransparents(gl, renderMode);
+			}	
+		}
+	}
+	
 
 	public void setCoordinates(float[] newCoords) {
 		// Calculate the angles we need to turn towards the destination

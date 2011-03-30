@@ -105,6 +105,10 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 		}		
 	}
 	
+	public void drawTransparents(GL2 gl, int renderMode) {
+		//TODO	
+	}
+	
 	public void update() {				
 		try {
 			currentValue = (Float) metric.getValue(MetricModifier.NORM, currentOutputMethod);

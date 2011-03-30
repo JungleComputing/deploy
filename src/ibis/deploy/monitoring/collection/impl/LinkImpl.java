@@ -53,13 +53,16 @@ public class LinkImpl extends ElementImpl implements Link {
 	}
 
 	public int getNumberOfDescendants() {
-		int result = 1;
+		if (source instanceof IbisImpl && destination instanceof IbisImpl) {
+			return 1;
+		} else {
+			int result = 0;
+			for (Link child : children) {
+				result += ((LinkImpl) child).getNumberOfDescendants();
+			}
 
-		for (Link child : children) {
-			result += ((LinkImpl) child).getNumberOfDescendants();
+			return result;
 		}
-
-		return result;
 	}
 
 	public void addChild(Link newChild) {
@@ -76,11 +79,10 @@ public class LinkImpl extends ElementImpl implements Link {
 		
 		if (source instanceof IbisImpl && destination instanceof IbisImpl) {
 			updateIbisIbisLink();
-		} else if (source instanceof LocationImpl && destination instanceof LocationImpl) {
-			updateLocationLocationLink();
+		} else if (source instanceof LocationImpl || destination instanceof LocationImpl) {
+			updateElementElementLink();
 		} else {
-			System.out.println("Ibis-location links not supported, so why did you make them?.");
-			System.exit(0);
+			logger.error("Tried to update a Link between weird elements.");
 		}		
 	}
 
@@ -134,7 +136,7 @@ public class LinkImpl extends ElementImpl implements Link {
 		}
 	}
 
-	private void updateLocationLocationLink() {
+	private void updateElementElementLink() {		
 		//Aggregate 'Normal' Metrics from the children of this link, made during the linkHierarchy process
 		for (Entry<MetricDescription, Metric> data : metrics.entrySet()) {
 			MetricDescription desc = data.getKey();
@@ -163,7 +165,12 @@ public class LinkImpl extends ElementImpl implements Link {
 								if (childValue < min)
 									min = childValue;
 							}
-							metric.setValue(MetricModifier.NORM, outputtype, total / childLinks);
+							float value = 0f;
+							if (childLinks > 0) {
+								System.out.println(childLinks);
+								value = total / childLinks;
+							}
+							metric.setValue(MetricModifier.NORM, outputtype, value);
 							metric.setValue(MetricModifier.MAX, outputtype, max);
 							metric.setValue(MetricModifier.MIN, outputtype, min);
 						} else {

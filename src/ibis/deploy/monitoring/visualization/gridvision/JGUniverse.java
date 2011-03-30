@@ -16,7 +16,7 @@ public class JGUniverse extends JGVisualAbstract implements JGVisual {
 		locationSeparation[2] = 16;
 		
 		locationColShape = CollectionShape.CITYSCAPE;
-		foldState = FoldState.UNFOLDED;
+		state = State.UNFOLDED;
 		
 		//goggles.registerVisual(root, this);
 		

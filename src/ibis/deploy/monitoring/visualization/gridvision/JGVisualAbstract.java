@@ -19,7 +19,7 @@ public abstract class JGVisualAbstract implements JGVisual {
 	protected float[] rotation;
 
 	protected CollectionShape locationColShape, ibisColShape, metricColShape;
-	protected FoldState foldState;
+	protected State state;
 	protected MetricShape mShape;
 
 	protected float radius, width, height;
@@ -49,7 +49,7 @@ public abstract class JGVisualAbstract implements JGVisual {
 		locationColShape = CollectionShape.CITYSCAPE;
 		ibisColShape = CollectionShape.CITYSCAPE;
 		metricColShape = CollectionShape.CITYSCAPE;
-		foldState = FoldState.UNFOLDED;
+		state = State.UNFOLDED;
 		mShape = MetricShape.BAR;
 		
 		radius = 0f;
@@ -309,59 +309,86 @@ public abstract class JGVisualAbstract implements JGVisual {
 		return parent;
 	}
 	
-	public void setFoldState(FoldState newFoldState) {
+	public void setState(State newState) {		
 		//If collapsing while we are already collapsed, collapse our parent instead.
-		if (foldState == FoldState.COLLAPSED && newFoldState == FoldState.COLLAPSED) {
+		if (state == State.COLLAPSED && newState == State.COLLAPSED) {
 			if (parent != null && !(parent instanceof JGUniverse)) { //If this is not the root/universe
-				parent.setFoldState(FoldState.COLLAPSED);
+				parent.setState(State.COLLAPSED);
+				newState = State.NOT_SHOWN;
+			}
+		} else if (newState == State.COLLAPSED) { 
+			for (JGVisual child : locations) {
+				child.setState(State.NOT_SHOWN);
+			}
+			for (JGVisual child : ibises) {
+				child.setState(State.NOT_SHOWN);
+			}
+		} else if (newState == State.UNFOLDED) {			
+			for (JGVisual child : locations) {
+				child.setState(State.COLLAPSED);
+			}
+			for (JGVisual child : ibises) {
+				child.setState(State.COLLAPSED);
+			}
+		} else if (newState == State.NOT_SHOWN) {
+			for (JGVisual child : locations) {
+				child.setState(State.NOT_SHOWN);
+			}
+			for (JGVisual child : ibises) {
+				child.setState(State.NOT_SHOWN);
 			}
 		}
-		foldState = newFoldState;
+		
+		state = newState;
 		goggles.unselect();
 	}
 	
-	public FoldState getFoldState() {
-		return foldState;
+	public State getState() {
+		return state;
 	}
 
 	public void drawSolids(GL2 gl, int renderMode) {
 		if (this instanceof JGLocation || this instanceof JGUniverse) {
-			if (foldState == FoldState.UNFOLDED) {
+			if (state == State.UNFOLDED) {
 				for (JGVisual location : locations) {
 					location.drawSolids(gl, renderMode);
 				}
 				for (JGVisual ibis : ibises) {
 					ibis.drawSolids(gl, renderMode);
 				}
-			} else {
+			} else if (state == State.COLLAPSED) {
 				for (JGVisual metric : metrics) {
 					metric.drawSolids(gl, renderMode);
 				}
 			}
 		} else {
-			for (JGVisual metric : metrics) {
-				metric.drawSolids(gl, renderMode);
+			if (state == State.COLLAPSED || state == State.UNFOLDED) {
+				for (JGVisual metric : metrics) {
+					metric.drawSolids(gl, renderMode);
+				}
 			}
 		}
 	}
 	
 	public void drawTransparents(GL2 gl, int renderMode) {
 		if (this instanceof JGLocation || this instanceof JGUniverse) {
-			if (foldState == FoldState.UNFOLDED) {
+			if (state == State.UNFOLDED) {
 				for (JGVisual location : locations) {
 					location.drawTransparents(gl, renderMode);
 				}
 				for (JGVisual ibis : ibises) {
 					ibis.drawTransparents(gl, renderMode);
 				}	
-			} else {
+			} else if (state == State.COLLAPSED) {
 				for (JGVisual metric : metrics) {
 					metric.drawTransparents(gl, renderMode);
 				}
 			}
 		} else {
-			for (JGVisual metric : metrics) {
-				metric.drawTransparents(gl, renderMode);
+			if (state == State.COLLAPSED || state == State.UNFOLDED) {
+				for (JGVisual metric : metrics) {
+					metric.drawTransparents(gl, renderMode);
+				}
 			}
 		}
 	}

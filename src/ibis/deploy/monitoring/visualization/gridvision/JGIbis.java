@@ -11,6 +11,8 @@ public class JGIbis extends JGVisualAbstract implements JGVisual  {
 	
 	public JGIbis(JungleGoggles goggles, JGVisual parent, GLUgl2 glu, Ibis dataIbis) {
 		super(goggles, parent);
+		
+		state = State.COLLAPSED;
 				
 		goggles.registerVisual(dataIbis, this);
 		

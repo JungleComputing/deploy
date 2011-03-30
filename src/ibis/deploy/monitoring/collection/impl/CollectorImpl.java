@@ -287,6 +287,19 @@ public class CollectorImpl implements Collector, Runnable {
 				}
 			}
 		}
+		
+		// pre-make the ibis-location links
+		for (Ibis source : ibises.values()) {
+			for (Location destination : locations.values()) {
+				try {
+					if (!isAncestorOf(source, destination) && !isAncestorOf(destination, source)) {
+						source.getLink(destination);
+					}
+				} catch (SelfLinkeageException ignored) {
+					// ignored, because we do not want this link
+				}
+			}
+		}
 
 		// pre-make the ibis-ibis links
 		for (Ibis source : ibises.values()) {

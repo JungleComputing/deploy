@@ -5,7 +5,7 @@ import javax.media.opengl.GL2;
 public interface JGVisual {
 	public enum CollectionShape { CITYSCAPE, CUBE, SPHERE }
 	public enum MetricShape { BAR, TUBE, SPHERE }
-	public enum FoldState { COLLAPSED, UNFOLDED }
+	public enum State { COLLAPSED, UNFOLDED, NOT_SHOWN }
 	
 	public void init(GL2 gl);
 	
@@ -15,8 +15,8 @@ public interface JGVisual {
 	public void setCollectionShape(CollectionShape newShape);
 	public CollectionShape getCollectionShape();
 		
-	public void setFoldState(FoldState myState);
-	public FoldState getFoldState();
+	public void setState(State myState);
+	public State getState();
 	
 	public JGVisual getParent();
 	

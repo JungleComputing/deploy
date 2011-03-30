@@ -188,25 +188,52 @@ public class LocationImpl extends ElementImpl implements Location {
 	}
 
 	public void makeLinkHierarchy() {
-		for (Link link : links.values()) {
-			LocationImpl source = (LocationImpl) link.getSource();
-			LocationImpl destination = (LocationImpl) link.getDestination();
+		//We make the hierarchy bottom-up, so we start with the children
+		for (Location child : children) {
+			((LocationImpl) child).makeLinkHierarchy();
+		}
 
-			for (Location sourceChild : source.getChildren()) {
-				for (Location destinationChild : destination.getChildren()) {
+		for (Link link : links.values()) {			
+			ElementImpl src = (ElementImpl) link.getSource();
+			ElementImpl dst = (ElementImpl) link.getDestination();
+
+			if (src instanceof Location && dst instanceof Location) {				
+				for (Location sourceChild : ((Location)src).getChildren()) {
+					for (Location destinationChild : ((Location)dst).getChildren()) {
+						Link childLink;
+						try {
+							childLink = sourceChild.getLink(destinationChild);
+							((LinkImpl) link).addChild(childLink);
+						} catch (SelfLinkeageException ignored) {
+							// ignored, because we do not want this link
+						}
+					}
+				}
+			} else if (src instanceof Ibis && dst instanceof Location) {
+				for (Location destinationChild : ((Location)dst).getChildren()) {
 					Link childLink;
 					try {
-						childLink = sourceChild.getLink(destinationChild);
+						childLink = src.getLink(destinationChild);
 						((LinkImpl) link).addChild(childLink);
 					} catch (SelfLinkeageException ignored) {
 						// ignored, because we do not want this link
 					}
 				}
+			} else if (src instanceof Location && dst instanceof Ibis) {
+				for (Location sourceChild : ((Location)src).getChildren()) {
+					Link childLink;
+					try {
+						childLink = dst.getLink(sourceChild);
+						((LinkImpl) link).addChild(childLink);
+					} catch (SelfLinkeageException ignored) {
+						// ignored, because we do not want this link
+					}
+				}
+			} else {
+				
 			}
 		}
-		for (Location child : children) {
-			((LocationImpl) child).makeLinkHierarchy();
-		}
+		
 	}
 
 	public void update() {
