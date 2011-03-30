@@ -217,8 +217,6 @@ public class Cluster {
      *            name of this cluster
      * @param prefix
      *            prefix used for all keys
-     * @param defaults
-     *            cluster containing default values for this cluster
      * 
      * @throws Exception
      *             if cluster cannot be read properly, or its name is invalid
