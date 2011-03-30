@@ -112,7 +112,7 @@ public class GUI {
 
     private void close() {
         int choice = JOptionPane.showConfirmDialog(frame,
-                "Really exit ibis-deploy?", "Exiting Ibis-Deploy",
+                "Really exit?", "Exiting Ibis-Deploy",
                 JOptionPane.YES_NO_OPTION);
 
         if (choice == JOptionPane.YES_OPTION) {
