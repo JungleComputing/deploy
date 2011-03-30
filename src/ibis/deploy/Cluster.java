@@ -141,7 +141,7 @@ public class Cluster {
     }
 
     /**
-     * ê * Creates a new cluster with a given name.
+     * Creates a new cluster with a given name.
      * 
      * @param name
      *            the name of the cluster
