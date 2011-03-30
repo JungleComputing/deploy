@@ -46,4 +46,6 @@ public interface Collector extends Runnable {
 	 * @param newInterval
 	 */
 	public void setRefreshrate(int newInterval);
+	
+	public int getRefreshRate();
 }

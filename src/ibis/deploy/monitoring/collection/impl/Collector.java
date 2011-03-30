@@ -305,6 +305,10 @@ public class Collector implements ibis.deploy.monitoring.collection.Collector, R
 		refreshrate = newInterval;
 	}	
 	
+	public int getRefreshRate() {
+		return refreshrate;
+	}
+	
 	//Getters for the worker threads
 	public ibis.deploy.monitoring.collection.Element getWork(Worker w) throws InterruptedException {
 		ibis.deploy.monitoring.collection.Element result = null;
