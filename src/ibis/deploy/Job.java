@@ -314,9 +314,11 @@ public class Job implements Runnable {
 
         if (clusterCacheDir == null
                 || cluster.getJobAdaptor().equalsIgnoreCase("zorilla")) {
-            java.net.URI netURI = src.toURI();
-            org.gridlab.gat.io.File gatFile = GAT.createFile(context,
-                    netURI.toString());
+            org.gridlab.gat.io.File gatFile = GAT.createFile(context, new URI(src.toURI()));
+            // Don't use netURI.toString()! The JavaGAT URI constructor is quite
+            // different from the java.net.URI one. Any %-escape in netURI.toString() is
+            // handled wrong! --Ceriel
+            
             // sd.addPreStagedFile(gatFile, gatCwd);
             sd.addPreStagedFile(gatFile);
             return;
