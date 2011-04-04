@@ -197,43 +197,56 @@ public class LocationImpl extends ElementImpl implements Location {
 			ElementImpl src = (ElementImpl) link.getSource();
 			ElementImpl dst = (ElementImpl) link.getDestination();
 
-			if (src instanceof Location && dst instanceof Location) {				
-				for (Location sourceChild : ((Location)src).getChildren()) {
-					for (Location destinationChild : ((Location)dst).getChildren()) {
-						Link childLink;
+			ElementImpl other;
+			
+			
+			if (src == this) {
+				other = dst;
+			} else {
+				other = src;
+			}
+			
+			//First, incorporate the links between my ibises and his ibises.
+			
+			ArrayList<Ibis> myIbises = getIbises();			
+			
+			if (other instanceof Location) {
+				ArrayList<Ibis> hisIbises = ((Location) other).getIbises();
+								
+				for (Ibis myIbis : myIbises) {
+					for (Ibis hisIbis : hisIbises) {
 						try {
-							childLink = sourceChild.getLink(destinationChild);
+							Link childLink = myIbis.getLink(hisIbis);
 							((LinkImpl) link).addChild(childLink);
 						} catch (SelfLinkeageException ignored) {
 							// ignored, because we do not want this link
 						}
 					}
 				}
-			} else if (src instanceof Ibis && dst instanceof Location) {
-				for (Location destinationChild : ((Location)dst).getChildren()) {
-					Link childLink;
+			} else if (other instanceof Ibis) {
+				for (Ibis myIbis : myIbises) {
 					try {
-						childLink = src.getLink(destinationChild);
+						Link childLink = myIbis.getLink(other);
 						((LinkImpl) link).addChild(childLink);
 					} catch (SelfLinkeageException ignored) {
 						// ignored, because we do not want this link
 					}
 				}
-			} else if (src instanceof Location && dst instanceof Ibis) {
-				for (Location sourceChild : ((Location)src).getChildren()) {
-					Link childLink;
-					try {
-						childLink = dst.getLink(sourceChild);
-						((LinkImpl) link).addChild(childLink);
-					} catch (SelfLinkeageException ignored) {
-						// ignored, because we do not want this link
-					}
-				}
-			} else {
-				
 			}
-		}
-		
+			
+			//Then, include the links between his child locations and me
+			
+			if (other instanceof Location) {				
+				for (Location hisChild : ((Location) other).getChildren()) {
+					try {
+						Link childLink = getLink(hisChild);
+						((LinkImpl) link).addChild(childLink);
+					} catch (SelfLinkeageException ignored) {
+						// ignored, because we do not want this link
+					}
+				}				
+			}
+		}		
 	}
 
 	public void update() {

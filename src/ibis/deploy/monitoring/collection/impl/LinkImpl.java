@@ -167,7 +167,6 @@ public class LinkImpl extends ElementImpl implements Link {
 							}
 							float value = 0f;
 							if (childLinks > 0) {
-								System.out.println(childLinks);
 								value = total / childLinks;
 							}
 							metric.setValue(MetricModifier.NORM, outputtype, value);
