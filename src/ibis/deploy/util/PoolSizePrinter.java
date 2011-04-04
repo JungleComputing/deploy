@@ -1,14 +1,15 @@
-package ibis.deploy;
+package ibis.deploy.util;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import ibis.deploy.Deploy;
 import ibis.util.ThreadPool;
 
 /**
  * Prints pool statistics when they change.
  */
-class PoolSizePrinter implements Runnable {
+public class PoolSizePrinter implements Runnable {
 
     private final Deploy deploy;
 

@@ -58,7 +58,7 @@ public class DeployProperties extends TypedProperties {
      * Finds a list of clusters, jobs or application in a list of properties
      * 
      * Each unique string in the set of keys(cut on the first ".") starting with
-     * the given prefix is returned, except for "default"
+     * the given prefix is returned, except for "default". Result is also sorted.
      * 
      * @param prefix
      *            prefix to filter on
@@ -66,7 +66,7 @@ public class DeployProperties extends TypedProperties {
      * @return the set of elements
      */
     public String[] getElementList(String prefix) {
-        Set<String> result = new HashSet<String>();
+        Set<String> result = new TreeSet<String>();
 
         for (Object key : keySet()) {
             if (key.toString().startsWith(prefix)) {

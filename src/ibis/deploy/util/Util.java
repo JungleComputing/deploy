@@ -1,4 +1,4 @@
-package ibis.deploy;
+package ibis.deploy.util;
 
 import java.io.File;
 import java.util.List;

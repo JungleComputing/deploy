@@ -48,8 +48,9 @@ public class ApplicationListTopPanel extends JPanel {
                         ID_COUNTER++;
                     }
 
-                    Application newApplication = gui.getApplicationSet()
-                            .createNewApplication(appName);
+                    Application newApplication = new Application(appName);
+                    gui.getApplicationSet().addApplication(newApplication);
+                    
                     ((DefaultListModel) applicationList.getModel())
                             .addElement(newApplication);
                     editApplicationPanels.put(newApplication,

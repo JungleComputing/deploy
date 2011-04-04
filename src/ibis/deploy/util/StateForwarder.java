@@ -1,5 +1,7 @@
-package ibis.deploy;
+package ibis.deploy.util;
 
+import ibis.deploy.State;
+import ibis.deploy.StateListener;
 import ibis.util.ThreadPool;
 
 import java.util.ArrayList;
@@ -16,7 +18,7 @@ import org.slf4j.LoggerFactory;
  * @author Niels Drost
  * 
  */
-class StateForwarder implements MetricListener, Runnable {
+public class StateForwarder implements MetricListener, Runnable {
 
     private static final Logger logger = LoggerFactory
             .getLogger(StateForwarder.class);
@@ -30,7 +32,7 @@ class StateForwarder implements MetricListener, Runnable {
 
     private Exception exception = null;
 
-    StateForwarder(String name) {
+    public StateForwarder(String name) {
         this.name = name;
 
         listeners = new ArrayList<StateListener>();
@@ -38,7 +40,7 @@ class StateForwarder implements MetricListener, Runnable {
         ThreadPool.createNew(this, "State forwarder");
     }
 
-    synchronized void addListener(StateListener listener) {
+    public synchronized void addListener(StateListener listener) {
         if (listener == null) {
             return;
         }
@@ -53,7 +55,7 @@ class StateForwarder implements MetricListener, Runnable {
 
     }
 
-    synchronized void setState(State state) {
+    public synchronized void setState(State state) {
         if (this.currentState == state
                 || (currentState == State.DEPLOYED && state == State.INITIALIZING)) {
             // The latter condition can occur if ibis-deploy detects that the
@@ -74,7 +76,7 @@ class StateForwarder implements MetricListener, Runnable {
         notifyAll();
     }
 
-    synchronized void setErrorState(Exception exception) {
+    public synchronized void setErrorState(Exception exception) {
         setState(State.ERROR);
 
         if (this.exception == null) {

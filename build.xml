@@ -62,7 +62,7 @@
         </javac>
 
         <!-- Create jar file -->
-        <jar destfile="lib/${lib-jar}" basedir="tmp" includes="ibis/deploy/*.class">
+        <jar destfile="lib/${lib-jar}" basedir="tmp" includes="ibis/deploy/*.class,ibis/deploy/util/*.class">
         </jar>
 
         <!-- Create jar file -->

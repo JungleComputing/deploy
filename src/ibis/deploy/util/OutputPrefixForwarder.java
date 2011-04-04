@@ -1,4 +1,4 @@
-package ibis.deploy;
+package ibis.deploy.util;
 
 import ibis.util.ThreadPool;
 

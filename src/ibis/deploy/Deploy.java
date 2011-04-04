@@ -1,5 +1,6 @@
 package ibis.deploy;
 
+import ibis.deploy.util.PoolSizePrinter;
 import ibis.ipl.server.RegistryServiceInterface;
 
 import java.io.File;
@@ -249,6 +250,17 @@ public class Deploy {
             return remoteServer.getAddress();
         }
     }
+    
+    public synchronized Job submitJob(JobDescription description,
+            ApplicationSet applicationSet, Grid grid,
+            StateListener jobListener, StateListener hubListener)
+            throws Exception {
+    	
+    	Application application = applicationSet.getApplication(description.getApplication().getName());
+    	Cluster cluster = grid.getCluster(description.getCluster().getName());
+    	
+    	return submitJob(description, application, cluster, jobListener, hubListener);
+    }
 
     /**
      * Submit a new job.
@@ -271,7 +283,7 @@ public class Deploy {
      * @throws Exception
      */
     public synchronized Job submitJob(JobDescription description,
-            ApplicationSet applicationSet, Grid grid,
+            Application application, Cluster cluster,
             StateListener jobListener, StateListener hubListener)
             throws Exception {
         if (remoteServer != null && !remoteServer.isRunning()) {
@@ -281,7 +293,7 @@ public class Deploy {
 
         // resolve given description into single "independent" description
         JobDescription resolvedDescription = description.resolve(
-                applicationSet, grid);
+                application, cluster);
 
         if (verbose) {
             logger.info("Submitting new job:\n"
@@ -295,7 +307,7 @@ public class Deploy {
 
         Server hub = null;
         if (hubPolicy == HubPolicy.PER_CLUSTER) {
-            hub = getClusterHub(resolvedDescription.getClusterOverrides(),
+            hub = getClusterHub(resolvedDescription.getCluster(),
                     false, hubListener);
         }
 

@@ -120,13 +120,13 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
 
             if (isSelected) {
                 setBackground(Utils.getColor(jobDescription
-                        .getClusterOverrides().getColorCode()));
+                        .getCluster().getColorCode()));
             } else {
                 setBackground(Utils.getLightColor(jobDescription
-                        .getClusterOverrides().getColorCode()));
+                        .getCluster().getColorCode()));
             }
 
-            setText(jobDescription.getClusterName());
+            setText(jobDescription.getCluster().getName());
         } else if (columnName
                 .equalsIgnoreCase(JobTableModel.MIDDLEWARE_COLUMN_NAME)) {
             String adaptor = (String) value;

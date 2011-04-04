@@ -1,8 +1,5 @@
-package ibis.deploy;
+package ibis.deploy.util;
 
-import ibis.smartsockets.viz.UniqueColor;
-
-import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,6 +13,9 @@ public class Colors {
 			"#FF80BF", "#800000", "#804000", "#808000", "#00FF00", "#408000",
 			"#008000", "#008040", "#008080", "#004080", "#000080", "#400080",
 			"#00FF80", "#800080", "#800040" };
+	
+	//red, reserved for local
+	public static final String LOCAL_COLOR = "#FF0000";
 
 	private static Map<String, String> colorMap = new HashMap<String, String>();
 
@@ -28,17 +28,6 @@ public class Colors {
 		next = next % colors.length;
 
 		return result;
-	}
-
-	public static void main(String[] arguments) {
-		UniqueColor uniqueColor = new UniqueColor();
-
-		for (int i = 0; i < (3 * 12); i++) {
-			Color color = uniqueColor.getUniqueColor();
-
-			System.err.printf("\"#%02X%02X%02X\",", color.getRed(), color
-					.getGreen(), color.getBlue());
-		}
 	}
 
 	/**
@@ -61,5 +50,4 @@ public class Colors {
 
 		return result;
 	}
-
 }

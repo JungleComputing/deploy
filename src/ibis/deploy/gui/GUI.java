@@ -5,7 +5,9 @@ import ibis.deploy.Cluster;
 import ibis.deploy.Deploy;
 import ibis.deploy.Experiment;
 import ibis.deploy.Grid;
+import ibis.deploy.Job;
 import ibis.deploy.JobDescription;
+import ibis.deploy.StateListener;
 import ibis.deploy.Workspace;
 import ibis.deploy.Deploy.HubPolicy;
 import ibis.deploy.gui.experiment.composer.SubmitJobListener;
@@ -325,6 +327,7 @@ public class GUI {
 
         } catch (Exception e) {
             System.err.println("Exception when loading setting files: " + e);
+            e.printStackTrace(System.err);
             System.exit(1);
         }
 
@@ -440,7 +443,7 @@ public class GUI {
     // this.sharedHubs = sharedHubs;
     // }
 
-    public void fireSubmitJob(JobDescription jobDescription) {
+    public void fireSubmitJob(JobDescription jobDescription) throws Exception {
         for (SubmitJobListener listener : submitJobListeners) {
             listener.modify(jobDescription);
         }

@@ -82,11 +82,11 @@ public class JobMonitorRow {
         case HUB_STATUS_COLUMN:
             return hubState;
         case CLUSTER_COLUMN:
-            return jobDescription.getClusterName();
+            return jobDescription.getCluster().getName();
         case MIDDLEWARE_COLUMN:
-            return jobDescription.getClusterOverrides().getJobAdaptor();
+            return jobDescription.getCluster().getJobAdaptor();
         case APPLICATION_COLUMN:
-            return jobDescription.getApplicationName();
+            return jobDescription.getApplication().getName();
         case PROCESS_COUNT_COLUMN:
             return jobDescription.getProcessCount();
         case RESOURCE_COUNT_COLUMN:

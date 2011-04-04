@@ -40,8 +40,8 @@ public class ClusterSelectionPanel extends JPanel {
 
         gui.addSubmitJobListener(new SubmitJobListener() {
 
-            public void modify(JobDescription jobDescription) {
-                jobDescription.setClusterName(clusterComboBox.getSelectedItem()
+            public void modify(JobDescription jobDescription) throws Exception {
+                jobDescription.getCluster().setName(clusterComboBox.getSelectedItem()
                         .toString());
             }
 

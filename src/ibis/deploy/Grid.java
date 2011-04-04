@@ -9,27 +9,29 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Grid containing clusters. Also has a list of default values.
+ * Grid containing clusters. Basically just a HashMap with cluster objects, and some functions for loading and saving grids.S
  * 
  * @author Niels Drost
  * 
  */
 public class Grid {
 
-    public static final String LOCAL_COLOR = "#FF0000";
-
-    // colors used for clusters
-    private static final String[] COLORS = { "#FF8000", "#FFFF00", "#80FF00",
-            "#00FFFF", "#007FFF", "#0000FF", "#8000FF", "#FF00FF", "#FF0080",
-            "#FF8080", "#FFBF80", "#FFFF80", "#BFFF80", "#80FF80", "#80FFBF",
-            "#80FFFF", "#80BFFF", "#8080FF", "#BF80FF", "#FF80FF", "#FF80BF",
-            "#800000", "#804000", "#808000", "#00FF00", "#408000", "#008000",
-            "#008040", "#008080", "#004080", "#000080", "#400080", "#00FF80",
-            "#800080", "#800040" };
-
     private final List<Cluster> clusters;
-
-    private int nextColor = 0;
+    
+    
+    /**
+     * Constructs a new empty grid.
+     */
+    public Grid() {
+    	clusters = new ArrayList<Cluster>();
+    	
+        try {
+        	clusters.add(Cluster.getLocalCluster());
+		} catch (Exception e) {
+			//should not happen
+			throw new RuntimeException("exception while creating grid", e);
+		}
+    }
 
     /**
      * Constructs a grid object from properties stored in the given file. Also
@@ -54,93 +56,34 @@ public class Grid {
         if (!file.getName().endsWith(".grid")) {
             throw new Exception("grid files must have a \".grid\" extension");
         }
+        
+        
+        clusters.add(Cluster.getLocalCluster());
 
         DeployProperties properties = new DeployProperties();
         properties.loadFromFile(file.getAbsolutePath());
 
-        loadSettingsFromProperties(properties, null);
-    }
-
-    /**
-     * Constructs a grid object from the given properties. Also constructs the
-     * clusters inside this grid.
-     * 
-     * @param properties
-     *            properties of the grid
-     * @param prefix
-     *            prefix to use on all keys
-     * @throws Exception
-     *             if cluster cannot be read properly
-     * 
-     */
-    public Grid(DeployProperties properties, String prefix) throws Exception {
-        clusters = new ArrayList<Cluster>();
-        loadSettingsFromProperties(properties, prefix);
-    }
-
-    /**
-     * Initializes the grid using data from the given properties
-     * 
-     * @param properties
-     *            properties of the grid
-     * @param prefix
-     *            prefix to use on all keys
-     **/
-    private void loadSettingsFromProperties(DeployProperties properties,
-            String prefix) throws Exception {
-        if (prefix == null) {
-            prefix = "";
-        } else {
-            prefix = prefix + ".";
-        }
-
-        String[] clusterNames = properties.getElementList(prefix);
+        String[] clusterNames = properties.getElementList("");
         if (clusterNames != null) {
             for (String clusterName : clusterNames) {
-                Cluster cluster = new Cluster(properties, clusterName, prefix
-                        + clusterName);
-                if (!clusterName.equals("local")) {
-                    cluster.setColor(getNextColor());
-                } else {
-                    cluster.setColor(LOCAL_COLOR);
-                    cluster.setVisibleOnMap(false);
-                }
-                clusters.add(cluster);
+            	Cluster cluster = getCluster(clusterName);
+            	
+            	if (cluster == null) {
+            		cluster = new Cluster(clusterName);
+                    addCluster(cluster);
+            	}
+            	
+            	//add default properties (if any)
+            	cluster.loadFromProperties(properties, "default");
+
+            	//add normal properties
+            	cluster.loadFromProperties(properties, clusterName);
+            	
             }
         }
-
-        // add "local" cluster if it doesn't exist yet
-        if (!hasCluster("local")) {
-            Cluster local = new Cluster("local");
-            local.setColor(LOCAL_COLOR);
-            local.setVisibleOnMap(false);
-            clusters.add(local);
-        }
     }
 
-    /**
-     * Constructs a new empty grid.
-     */
-    public Grid() {
-        clusters = new ArrayList<Cluster>();
-        try {
-            Cluster local = new Cluster("local");
-            local.setColor(LOCAL_COLOR);
-            local.setVisibleOnMap(false);
-            clusters.add(local);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private synchronized String getNextColor() {
-        String result = COLORS[nextColor];
-
-        nextColor++;
-        nextColor = nextColor % COLORS.length;
-
-        return result;
-    }
+ 
 
     /**
      * Returns the Clusters in this Grid.
@@ -152,14 +95,20 @@ public class Grid {
     }
 
     /**
-     * Removes the given cluster from the grid (if it belongs to the grid at
+     * Removes the cluster with the given name from the grid (if it belongs to the grid at
      * all).
      * 
-     * @param cluster
-     *            the cluster to be removed from this group
+     * @param name
+     *            the name of the cluster to be removed from this group
      */
-    public void removeCluster(Cluster cluster) {
-        clusters.remove(cluster);
+    public void removeCluster(String name) {
+    	 for (int i = 0; i < clusters.size(); i++) {
+             if (clusters.get(i).getName().equals(name)) {
+            	 clusters.remove(i);
+            	 //go back one
+            	 i--;
+             }
+         }
     }
 
     /**
@@ -173,18 +122,13 @@ public class Grid {
      * @throws Exception
      *             if the name given is <code>null</code>
      */
-    public Cluster createNewCluster(String name) throws Exception {
-        if (hasCluster(name)) {
-            throw new AlreadyExistsException("Cannot add cluster, cluster \""
-                    + name + "\" already exists");
+    public void addCluster(Cluster cluster) throws Exception {
+        if (hasCluster(cluster.getName())) {
+            throw new AlreadyExistsException("Cannot add cluster, cluster with name \""
+                    + cluster.getName() + "\" already exists");
         }
-
-        Cluster result = new Cluster(name);
-        result.setColor(getNextColor());
-
-        clusters.add(result);
-
-        return result;
+        
+        clusters.add(cluster);
     }
 
     /**
@@ -219,6 +163,7 @@ public class Grid {
         }
         return null;
     }
+
 
     /**
      * Save this grid and all contained clusters to a property file

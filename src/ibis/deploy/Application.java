@@ -1,5 +1,7 @@
 package ibis.deploy;
 
+import ibis.deploy.util.Util;
+
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -7,6 +9,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.jdesktop.swingx.JXList.ListSearchable;
 
 /**
  * Ibis-based Java Application Description. Applications are usually part of
@@ -49,9 +53,6 @@ public class Application {
 
     }
 
-    // group this application belongs to
-    private final ApplicationSet parent;
-
     // name of application
     private String name;
 
@@ -85,7 +86,6 @@ public class Application {
      * Creates an empty application object, with no name or parent
      */
     Application() {
-        parent = null;
         name = "anonymous";
         libs = null;
         mainClass = null;
@@ -107,22 +107,49 @@ public class Application {
      * @throws Exception
      *             if name is null or contains periods and/or spaces
      */
-    Application(String name, ApplicationSet parent) throws Exception {
-        this.parent = parent;
+    public Application(String name) throws Exception {
+    	this();
+    	
         setName(name);
-
-        libs = null;
-        mainClass = null;
-        arguments = null;
-        inputFiles = null;
-        outputFiles = null;
-        systemProperties = null;
-        jvmOptions = null;
-        log4jFile = null;
-        memorySize = 0;
     }
 
-    /**
+    public Application(Application original) {
+    	this();
+    	
+    	this.name = original.name;
+
+    	if (original.libs != null) {
+    	this.libs = new ArrayList<File>(original.libs);
+    	}
+    	
+    	this.mainClass = original.mainClass;
+    	
+    	if (original.arguments != null) {
+    		this.arguments = new ArrayList<String>(original.arguments);
+    	}
+    	
+    	if (original.inputFiles != null) {
+    		this.inputFiles = new ArrayList<File>(original.inputFiles);
+    	}
+    	
+    	if (original.outputFiles != null) {
+    		this.outputFiles = new ArrayList<File>(original.outputFiles);
+    	}
+
+    	if (original.systemProperties != null) {
+    		this.systemProperties = new HashMap<String, String>(original.systemProperties);
+    	}
+    	
+    	if (original.jvmOptions != null) {
+    		this.jvmOptions = new ArrayList<String>(original.jvmOptions);
+    	}
+    	
+    	log4jFile = original.log4jFile;
+    	
+    	memorySize = original.memorySize;
+	}
+
+	/**
      * Load application from the given properties (usually loaded from an
      * application-group file)
      * 
@@ -136,34 +163,8 @@ public class Application {
      *             if application cannot be read properly, or its name is
      *             invalid
      */
-    Application(DeployProperties properties, String name, String prefix,
-            ApplicationSet parent) throws Exception {
-        this.parent = parent;
-        setName(name);
-
-        // load default settings first
-        String defaultPrefix = "default.";
-        libs = properties.getFileListProperty(defaultPrefix + "libs");
-        mainClass = properties.getProperty(defaultPrefix + "main.class");
-        arguments = properties.getStringListProperty(defaultPrefix
-                + "arguments");
-        inputFiles = properties.getFileListProperty(defaultPrefix
-                + "input.files");
-        outputFiles = properties.getFileListProperty(defaultPrefix
-                + "output.files");
-        systemProperties = properties.getStringMapProperty(defaultPrefix
-                + "system.properties");
-        jvmOptions = properties.getStringListProperty(defaultPrefix
-                + "jvm.options");
-        log4jFile = properties.getFileProperty(defaultPrefix + "log4j.file");
-        memorySize = properties
-                .getIntProperty(defaultPrefix + "memory.size", 0);
-
-        // load the properties corresponding to this application, but only if
-        // they are set
-
-        // add separator to prefix
-        prefix = prefix + ".";
+    public void setFromProperties(DeployProperties properties, String prefix) {
+    	prefix = prefix + ".";
 
         if (properties.getFileListProperty(prefix + "libs") != null) {
             libs = properties.getFileListProperty(prefix + "libs");
@@ -198,72 +199,63 @@ public class Application {
     }
 
     /**
-     * Put all non-null values of given application into this application
+     * Set any unset settings from the given other object
      * 
      * @param other
      *            source application object
      */
-    void overwrite(Application other) {
+    void append(Application other) {
         if (other == null) {
             return;
         }
 
-        if (other.name != null) {
+        if (other.name != null && name == null) {
             name = other.name;
         }
 
-        if (other.mainClass != null) {
+        if (other.mainClass != null && mainClass == null) {
             this.mainClass = other.mainClass;
         }
 
-        if (other.arguments != null) {
+        if (other.arguments != null && arguments == null) {
             arguments = new ArrayList<String>();
             arguments.addAll(other.arguments);
         }
 
-        if (other.libs != null) {
+        if (other.libs != null && libs == null) {
             libs = new ArrayList<File>();
             libs.addAll(other.libs);
         }
 
-        if (other.inputFiles != null) {
+        if (other.inputFiles != null && inputFiles == null) {
             inputFiles = new ArrayList<File>();
             inputFiles.addAll(other.inputFiles);
         }
 
-        if (other.outputFiles != null) {
+        if (other.outputFiles != null && outputFiles == null) {
             outputFiles = new ArrayList<File>();
             outputFiles.addAll(other.outputFiles);
         }
 
-        if (other.systemProperties != null) {
+        if (other.systemProperties != null && systemProperties == null) {
             for (Map.Entry<String, String> entry : other.systemProperties
                     .entrySet()) {
                 setSystemProperty(entry.getKey(), entry.getValue());
             }
         }
 
-        if (other.jvmOptions != null) {
+        if (other.jvmOptions != null && jvmOptions == null) {
             jvmOptions = new ArrayList<String>();
             jvmOptions.addAll(other.jvmOptions);
         }
 
-        if (other.log4jFile != null) {
+        if (other.log4jFile != null && log4jFile == null) {
             this.log4jFile = other.log4jFile;
         }
 
-        if (other.memorySize != 0) {
+        if (other.memorySize != 0 && memorySize == 0) {
             this.memorySize = other.memorySize;
         }
-    }
-
-    /**
-     * Returns application group this application belongs to.
-     * 
-     * @return group this application belongs to (possibly null).
-     */
-    public ApplicationSet getApplicationSet() {
-        return parent;
     }
 
     /**
@@ -285,10 +277,11 @@ public class Application {
      *             with the given name already exists in the applicationSet
      */
     public void setName(String name) throws Exception {
-        if (name == null) {
-            throw new Exception("application name cannot be null");
-        }
-
+    	if(name == null) {
+    		return;
+    	}
+    
+    	
         if (name.equals(this.name)) {
             // name unchanged
             return;
@@ -303,15 +296,7 @@ public class Application {
             throw new Exception("application name cannot contain spaces : \""
                     + name + "\"");
         }
-
-        if (parent != null) {
-            if (parent.hasApplication(name)) {
-                throw new Exception("cannot set application name to \"" + name
-                        + "\", parent ApplicationSet already contains "
-                        + "an application with that name");
-            }
-        }
-
+       
         this.name = name;
     }
 
@@ -794,5 +779,6 @@ public class Application {
     public String toString() {
         return name;
     }
+
 
 }

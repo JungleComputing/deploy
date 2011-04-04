@@ -1,5 +1,9 @@
 package ibis.deploy;
 
+import ibis.deploy.util.OutputPrefixForwarder;
+import ibis.deploy.util.Rsync;
+import ibis.deploy.util.StateForwarder;
+import ibis.deploy.util.Util;
 import ibis.ipl.IbisProperties;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
@@ -77,7 +81,7 @@ public class RemoteServer implements Runnable, Server {
         gatJob = null;
         serverConnection = null;
 
-        this.cluster = cluster.resolve();
+        this.cluster = new Cluster(cluster);
 
         this.cluster.checkSettings("Server", true);
 

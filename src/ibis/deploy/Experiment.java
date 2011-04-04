@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * An experiment. Each experiment consists of multiple jobs, usually running in
@@ -17,317 +18,266 @@ import java.util.List;
  */
 public class Experiment {
 
-    // name of the experiment (and default pool)
-    private String name;
+	// name of the experiment (and default pool)
+	private String name;
 
-    // job representing defaults
-    private JobDescription defaults;
+	// jobs in this experiment
+	private List<JobDescription> jobs;
 
-    // jobs in this experiment
-    private List<JobDescription> jobs;
+	/**
+	 * Constructs a experiment with the given name.
+	 * 
+	 * @param name
+	 *            the name of the experiment
+	 * @throws Exception
+	 *             if the name is <code>null</code>, or contains periods or
+	 *             spaces
+	 */
+	public Experiment(String name) throws Exception {
+		jobs = new ArrayList<JobDescription>();
 
-    /**
-     * Constructs a experiment object from properties stored in the given file.
-     * Also constructs the jobs inside this experiments.
-     * 
-     * @param file
-     *            the file containing the properties
-     * @throws FileNotFoundException
-     *             if the given file cannot be found
-     * @throws IOException
-     *             if reading from the given file fails
-     * @throws Exception
-     *             if the properties don't contain a 'name' property with the
-     *             name of the experiment
-     */
-    public Experiment(File file) throws FileNotFoundException, IOException,
-            Exception {
-        jobs = new ArrayList<JobDescription>();
+		if (name == null) {
+			throw new NullPointerException("no name specified for experiment");
+		}
 
-        if (!file.exists()) {
-            throw new FileNotFoundException("file \"" + file
-                    + "\" does not exist");
-        }
+		this.name = name;
+	}
 
-        String fileName = file.getName();
+	/**
+	 * Constructs a experiment object from properties stored in the given file.
+	 * Also constructs the jobs inside this experiments.
+	 * 
+	 * @param file
+	 *            the file containing the properties
+	 * @throws FileNotFoundException
+	 *             if the given file cannot be found
+	 * @throws IOException
+	 *             if reading from the given file fails
+	 * @throws Exception
+	 *             if the properties do not contain a valid experiment
+	 */
+	public Experiment(File file) throws FileNotFoundException, IOException,
+			Exception {
+		jobs = new ArrayList<JobDescription>();
 
-        if (!fileName.endsWith(".experiment")) {
-            throw new Exception(
-                    "experiment files must have a \".experiment\" extension");
-        }
+		if (!file.exists()) {
+			throw new FileNotFoundException("file \"" + file
+					+ "\" does not exist");
+		}
 
-        // cut of ".experiment", use the rest as name
-        name = fileName.substring(0, fileName.length() - 11);
+		String fileName = file.getName();
 
-        if (name.length() == 0) {
-            throw new Exception(
-                    "no experiment name specified in experiment file name: "
-                            + file);
-        }
+		if (!fileName.endsWith(".experiment")) {
+			throw new Exception(
+					"experiment files must have a \".experiment\" extension");
+		}
 
-        DeployProperties properties = new DeployProperties();
-        properties.loadFromFile(file.getAbsolutePath());
+		// cut of ".experiment", use the rest as name
+		name = fileName.substring(0, fileName.length() - 11);
 
-        defaults = new JobDescription(properties, "default", "default", this);
+		if (name.length() == 0) {
+			throw new Exception(
+					"no experiment name specified in experiment file name: "
+							+ file);
+		}
 
-        String[] jobNames = properties.getElementList();
-        for (String jobName : jobNames) {
-            if (!jobName.equals("name")) {
-                JobDescription job = new JobDescription(properties, jobName,
-                        jobName, this);
-                jobs.add(job);
-            }
-        }
-    }
+		DeployProperties properties = new DeployProperties();
 
-    /**
-     * Constructs an experiment object from the given properties. Also
-     * constructs the jobs inside this experiment.
-     * 
-     * @param properties
-     *            properties of the experiment
-     * @param name
-     *            name of the experiment
-     * @param prefix
-     *            prefix to use on all keys
-     * @throws Exception
-     *             if job cannot be read properly
-     * 
-     */
-    public Experiment(DeployProperties properties, String name, String prefix)
-            throws Exception {
-        jobs = new ArrayList<JobDescription>();
+		properties.loadFromFile(file.getAbsolutePath());
 
-        this.name = name;
+		String[] jobNames = properties.getElementList("");
 
-        if (prefix != null) {
-            prefix = prefix + ".";
-        }
+		for (String jobName : jobNames) {
+			JobDescription job = getJob(jobName);
 
-        defaults = new JobDescription(properties, "default",
-                prefix + "default", this);
+			if (job == null) {
+				job = new JobDescription(jobName);
+				addJob(job);
+			}
 
-        String[] jobNames = properties.getElementList(prefix);
-        for (String jobName : jobNames) {
-            JobDescription job = new JobDescription(properties, jobName, prefix
-                    + jobName, this);
-            jobs.add(job);
-        }
+			job.loadFromProperties(properties, "default");
 
-    }
+			job.loadFromProperties(properties, jobName);
+		}
 
-    /**
-     * Constructs a experiment with the given name.
-     * 
-     * @param name
-     *            the name of the experiment
-     * @throws Exception
-     *             if the name is <code>null</code>, or contains periods or
-     *             spaces
-     */
-    public Experiment(String name) throws Exception {
-        jobs = new ArrayList<JobDescription>();
+	}
 
-        if (name == null) {
-            throw new NullPointerException("no name specified for experiment");
-        }
+	/**
+	 * Returns the name of this experiment
+	 * 
+	 * @return the name of this experiment.
+	 */
+	public String getName() {
+		return name;
+	}
 
-        this.name = name;
-        defaults = new JobDescription("defaults", null);
-    }
+	/**
+	 * Sets the name of this experiment
+	 * 
+	 * @param name
+	 *            the new name of this experiment.
+	 */
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    /**
-     * Returns the name of this experiment
-     * 
-     * @return the name of this experiment.
-     */
-    public String getName() {
-        return name;
-    }
+	/**
+	 * Returns the Jobs in this Experiment.
+	 * 
+	 * @return the jobs in this Experiment
+	 */
+	public JobDescription[] getJobs() {
+		return jobs.toArray(new JobDescription[0]);
+	}
 
-    /**
-     * Sets the name of this experiment
-     * 
-     * @param name
-     *            the new name of this experiment.
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
+	/**
+	 * Removes the given job from the experiment (if it belongs to the
+	 * experiment at all).
+	 * 
+	 * @param job
+	 *            the job to be removed from this experiment
+	 */
+	public void removeJob(JobDescription job) {
+		JobDescription toBeRemoved = null;
+		for (JobDescription jd : jobs) {
+			if (jd.getName().equals(job.getName())) {
+				toBeRemoved = jd;
+				break;
+			}
+		}
+		if (toBeRemoved != null) {
+			jobs.remove(toBeRemoved);
+		} else {
+			// TODO: complain?
+		}
+	}
 
-    /**
-     * Returns the Jobs in this Experiment.
-     * 
-     * @return the jobs in this Experiment
-     */
-    public JobDescription[] getJobs() {
-        return jobs.toArray(new JobDescription[0]);
-    }
+	/**
+	 * Creates a new job in this experiment, with a given name.
+	 * 
+	 * @param job
+	 *            the job.
+	 * @throws Exception
+	 *             if the job already exists.
+	 */
+	public void addJob(JobDescription job) throws Exception {
+		if (hasJob(job.getName())) {
+			throw new AlreadyExistsException("Cannot add job, job \"" + name
+					+ "\" already exists");
+		}
 
-    /**
-     * Removes the given job from the experiment (if it belongs to the
-     * experiment at all).
-     * 
-     * @param job
-     *            the job to be removed from this experiment
-     */
-    public void removeJob(JobDescription job) {
-        JobDescription toBeRemoved = null;
-        for (JobDescription jd : jobs) {
-            if (jd.getName().equals(job.getName())) {
-                toBeRemoved = jd;
-                break;
-            }
-        }
-        if (toBeRemoved != null) {
-            jobs.remove(toBeRemoved);
-        } else {
-            // TODO: complain?
-        }
-    }
+		jobs.add(job);
+	}
 
-    /**
-     * Creates a new job in this experiment, with a given name.
-     * 
-     * @param name
-     *            the name of the job.
-     * @return the new job.
-     * @throws Exception
-     *             if the name given is <code>null</code>, or the job already
-     *             exists.
-     */
-    public JobDescription createNewJob(String name) throws Exception {
-        if (hasJob(name)) {
-            throw new AlreadyExistsException("Cannot add job, job \"" + name
-                    + "\" already exists");
-        }
+	/**
+	 * Returns if a Job with the given name exists.
+	 * 
+	 * @param name
+	 *            name of the Job.
+	 * @return if a Job with the given name exists.
+	 */
+	public boolean hasJob(String name) {
+		for (JobDescription job : jobs) {
+			if (job.getName().equals(name)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
-        JobDescription result = new JobDescription(name, this);
+	/**
+	 * Get an job with a given name from this Experiment
+	 * 
+	 * @param jobName
+	 *            the name of the job to search for
+	 * @return the job with the given name, or <code>null</code> if no jobs with
+	 *         the given name exist in this Experiment.
+	 */
+	public JobDescription getJob(String jobName) {
+		for (JobDescription job : jobs) {
+			if (job.getName().equals(jobName)) {
+				return job;
+			}
+		}
+		return null;
+	}
 
-        jobs.add(result);
 
-        return result;
-    }
+	/**
+	 * Save this experiment to the given file
+	 * 
+	 * @param file
+	 *            file to save experiment to
+	 * @throws Exception
+	 *             in case file cannot be written
+	 */
+	public void save(File file) throws Exception {
+		if (!file.exists()) {
+			if (!file.createNewFile()) {
+				throw new IOException("failed to create a new file '" + file
+						+ "'.");
+			}
+		}
+		PrintWriter out = new PrintWriter(file);
+		// write defaults
+		out.println("# Experiment file, " + "generated by Ibis Deploy on "
+				+ new Date(System.currentTimeMillis()));
+		out.println();
 
-    /**
-     * Returns if a Job with the given name exists.
-     * 
-     * @param name
-     *            name of the Job.
-     * @return if a Job with the given name exists.
-     */
-    public boolean hasJob(String name) {
-        for (JobDescription job : jobs) {
-            if (job.getName().equals(name)) {
-                return true;
-            }
-        }
-        return false;
-    }
+		save(out, null);
 
-    /**
-     * Get an job with a given name from this Experiment
-     * 
-     * @param jobName
-     *            the name of the job to search for
-     * @return the job with the given name, or <code>null</code> if no jobs with
-     *         the given name exist in this Experiment.
-     */
-    public JobDescription getJob(String jobName) {
-        for (JobDescription job : jobs) {
-            if (job.getName().equals(jobName)) {
-                return job;
-            }
-        }
-        return null;
-    }
+		out.flush();
+		out.close();
+	}
 
-    /**
-     * Returns job representing defaults of this experiment.
-     * 
-     * @return job representing defaults of this experiment.
-     */
-    public JobDescription getDefaults() {
-        return defaults;
-    }
+	/**
+	 * Save this experiment to the given stream
+	 * 
+	 * @param out
+	 *            stream to write experiment to
+	 * @param prefix
+	 *            prefix for all keys written
+	 * @throws Exception
+	 *             in case data cannot be written
+	 */
+	public void save(PrintWriter out, String prefix) throws Exception {
+		if (prefix != null) {
+			prefix = prefix + ".";
+		} else {
+			prefix = "";
+		}
 
-    /**
-     * Save this experiment to the given file
-     * 
-     * @param file
-     *            file to save experiment to
-     * @throws Exception
-     *             in case file cannot be written
-     */
-    public void save(File file) throws Exception {
-        if (!file.exists()) {
-            if (!file.createNewFile()) {
-                throw new IOException("failed to create a new file '" + file
-                        + "'.");
-            }
-        }
-        PrintWriter out = new PrintWriter(file);
-        // write defaults
-        out.println("# Experiment file, " + "generated by Ibis Deploy on "
-                + new Date(System.currentTimeMillis()));
-        out.println();
+		JobDescription.printTableOfKeys(out);
+		out.println();
 
-        save(out, null);
+		// write jobs
+		for (JobDescription job : jobs) {
+			out.println();
+			out.println("# Details of job \"" + job.getName() + "\"");
+			job.save(out, prefix + job.getName(), true);
+		}
+	}
 
-        out.flush();
-        out.close();
-    }
+	/**
+	 * Returns an info string suitable for printing (with newlines)
+	 * 
+	 * @return an info string suitable for printing (with newlines)
+	 */
+	public String toPrintString() {
+		String result = "Experiment \"" + getName() + "\" containing "
+				+ jobs.size() + " jobs:\n\n";
 
-    /**
-     * Save this experiment to the given stream
-     * 
-     * @param out
-     *            stream to write experiment to
-     * @param prefix
-     *            prefix for all keys written
-     * @throws Exception
-     *             in case data cannot be written
-     */
-    public void save(PrintWriter out, String prefix) throws Exception {
-        if (prefix != null) {
-            prefix = prefix + ".";
-        } else {
-            prefix = "";
-        }
+		for (JobDescription job : jobs) {
+			result += job.toPrintString() + "\n";
+		}
 
-        JobDescription.printTableOfKeys(out);
-        out.println();
-        out.println("# Default settings:");
-        defaults.save(out, prefix + "default", false);
+		return result;
+	}
 
-        // write jobs
-        for (JobDescription job : jobs) {
-            out.println();
-            out.println("# Details of job \"" + job.getName() + "\"");
-            job.save(out, prefix + job.getName(), true);
-        }
-    }
-
-    /**
-     * Returns an info string suitable for printing (with newlines)
-     * 
-     * @return an info string suitable for printing (with newlines)
-     */
-    public String toPrintString() {
-        String result = "Experiment \"" + getName() + "\" containing "
-                + jobs.size() + " jobs:\n\n";
-
-        for (JobDescription job : jobs) {
-            result += job.toPrintString() + "\n";
-        }
-
-        return result;
-    }
-
-    /**
-     * @see java.lang.Object#toString()
-     */
-    public String toString() {
-        return name;
-    }
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		return name;
+	}
 }

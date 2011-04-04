@@ -1,5 +1,6 @@
 package ibis.deploy;
 
+import ibis.deploy.util.Colors;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
 import ibis.ipl.server.ServerProperties;
@@ -40,7 +41,7 @@ public class LocalServer implements Server {
             properties.put(ServerProperties.HUB_ONLY, !isServer + "");
             properties.put(ServerProperties.PRINT_ERRORS, "true");
             properties.put(ServerProperties.VIZ_INFO, "D^Ibis Deploy @ local^"
-                    + Grid.LOCAL_COLOR + "^0");
+                    + Colors.LOCAL_COLOR + "^0");
             properties.put(ServerProperties.PORT, "" + port);
 
             if (verbose) {

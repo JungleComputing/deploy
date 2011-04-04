@@ -1,6 +1,9 @@
 package ibis.deploy;
 
 import ibis.deploy.Deploy.HubPolicy;
+import ibis.deploy.util.Rsync;
+import ibis.deploy.util.StateForwarder;
+import ibis.deploy.util.Util;
 import ibis.ipl.IbisProperties;
 import ibis.ipl.registry.central.RegistryProperties;
 import ibis.util.ThreadPool;
@@ -93,8 +96,8 @@ public class Job implements Runnable {
 
             Deploy deploy) throws Exception {
         this.description = description;
-        this.cluster = description.getClusterOverrides();
-        this.application = description.getApplicationOverrides();
+        this.cluster = description.getCluster();
+        this.application = description.getApplication();
         this.hubPolicy = hubPolicy;
         this.sharedHub = hub;
         this.keepSandbox = keepSandbox;
@@ -117,15 +120,10 @@ public class Job implements Runnable {
     /**
      * Returns the description used to start this job.
      * 
-     * @return the description used to start this job.
+     * @return a copy of the description used to start this job.
      */
     public JobDescription getDescription() {
-        // cheat and simply resolve it again.
-        try {
-            return description.resolve(null, null);
-        } catch (Exception e) {
-            throw new Error("could not resolve job", e);
-        }
+            return new JobDescription(description);
     }
 
     /**
@@ -520,7 +518,7 @@ public class Job implements Runnable {
             JavaSoftwareDescription sd) throws Exception {
         org.gridlab.gat.resources.JobDescription result;
 
-        File wrapperScript = description.getClusterOverrides()
+        File wrapperScript = description.getCluster()
                 .getJobWrapperScript();
 
         if (wrapperScript == null) {
@@ -603,7 +601,7 @@ public class Job implements Runnable {
                 forwarder.setState(State.WAITING);
 
                 // start a hub especially for this job
-                localHub = new RemoteServer(description.getClusterOverrides(),
+                localHub = new RemoteServer(description.getCluster(),
                         true, rootHub, deployHome, verbose, hubListener,
                         keepSandbox);
 
@@ -661,7 +659,7 @@ public class Job implements Runnable {
 
             // use address provided by user
             jobBroker = GAT.createResourceBroker(context, description
-                    .getClusterOverrides().getJobURI());
+                    .getCluster().getJobURI());
 
             org.gridlab.gat.resources.Job gatJob = jobBroker.submitJob(
                     jobDescription, forwarder, "job.status");
@@ -709,7 +707,7 @@ public class Job implements Runnable {
     public String toString() {
         return "Job: " + description.getName() + "/"
                 + description.getPoolName() + "@"
-                + description.getClusterName();
+                + description.getCluster().getName();
     }
 
     /**
@@ -733,5 +731,6 @@ public class Job implements Runnable {
     public Application getApplication() {
         return application;
     }
+
 
 }

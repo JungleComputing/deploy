@@ -1,4 +1,4 @@
-package ibis.deploy;
+package ibis.deploy.util;
 
 import java.io.File;
 import java.util.List;
@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  * @author Niels Drost
  * 
  */
-class Rsync {
+public class Rsync {
 
     private static final Logger logger = LoggerFactory.getLogger(Rsync.class);
 
@@ -72,7 +72,7 @@ class Rsync {
         return builder.start();
     }
 
-    static void rsync(File src, File dst, String host,
+    public static void rsync(File src, File dst, String host,
             String userName, String keyFile) throws Exception {
         Process process = createProcess(src, dst, userName, host, keyFile);
 

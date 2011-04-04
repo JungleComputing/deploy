@@ -1,5 +1,7 @@
 package ibis.deploy;
 
+import ibis.deploy.util.Colors;
+import ibis.deploy.util.Util;
 import ibis.util.TypedProperties;
 
 import java.io.File;
@@ -21,6 +23,7 @@ import org.gridlab.gat.URI;
  * 
  */
 public class Cluster {
+	
 
     /**
      * Print a table of valid keys and some explanations to the given stream
@@ -57,6 +60,8 @@ public class Cluster {
         out.println("# memory               Amount of memory per node in Megabytes (integer)");
         out.println("# latitude            Latitude position of this cluster (double)");
         out.println("# longitude           Longitude position of this cluster (double)");
+        out.println("# color               Color (as a HTML color string) used to represent this cluster");
+
     }
 
     // name of this cluster
@@ -117,27 +122,62 @@ public class Cluster {
 
     private boolean visibleOnMap;
 
-    private final TypedProperties properties;
+    private final DeployProperties properties;
 
     /**
      * Applies to the current cluster a set of properties that are specific for
      * the local cluster
      */
-    private void applyLocalClusterSettings() throws Exception {
-        setName("local");
-        setServerAdaptor("local");
-        setServerURI(new URI("any://localhost"));
-        setJobAdaptor("local");
-        setJobURI(new URI("any://localhost"));
-        setFileAdaptors("local");
-        setJavaPath(System.getProperty("java.home") + File.separator + "bin"
+    public static Cluster getLocalCluster() throws Exception {
+    	Cluster result = new Cluster("local");
+    	
+        result.setServerAdaptor("local");
+        result.setServerURI(new URI("any://localhost"));
+        result.setJobAdaptor("local");
+        result.setJobURI(new URI("any://localhost"));
+        result.setFileAdaptors("local");
+        result.setJavaPath(System.getProperty("java.home") + File.separator + "bin"
                 + File.separator + "java");
-        setNodes(1);
-        setCores(Runtime.getRuntime().availableProcessors());
-        setLatitude(0);
-        setLongitude(0);
+        result.setNodes(1);
+        result.setCores(Runtime.getRuntime().availableProcessors());
+        result.setLatitude(0);
+        result.setLongitude(0);
 
-        setVisibleOnMap(false);
+        result.setVisibleOnMap(false);
+        
+        result.setColor(Colors.LOCAL_COLOR);
+        
+        return result;
+    }
+    
+    /**
+     * Creates a new "anonymous" cluster with no name.
+     * 
+     */
+    public Cluster() {
+        this.name = "anonymous";
+
+        properties = new DeployProperties();
+        
+        serverAdaptor = null;
+        serverURI = null;
+        jobAdaptor = null;
+        jobURI = null;
+        fileAdaptors = null;
+        javaPath = null;
+        jobWrapperScript = null;
+        userName = null;
+        keyFile = null;
+        cacheDir = null;
+        serverOutputFiles = null;
+        serverSystemProperties = null;
+        nodes = 0;
+        cores = 0;
+        memory = 0;
+        latitude = 0;
+        longitude = 0;
+        visibleOnMap = true;
+        color = null;
     }
 
     /**
@@ -151,6 +191,9 @@ public class Cluster {
     public Cluster(String name) throws Exception {
         setName(name);
 
+        //set color from name
+        color = Colors.locationToColorString(name);
+
         properties = new DeployProperties();
         
         serverAdaptor = null;
@@ -170,104 +213,69 @@ public class Cluster {
         memory = 0;
         latitude = 0;
         longitude = 0;
-        color = null;
         visibleOnMap = true;
-
-        if (name == "local") {
-            applyLocalClusterSettings();
-        }
     }
 
     /**
-     * Creates a cluster with no parent or name.
-     * 
+     * Copy constructor 
+     * @param original the original cluster
      */
-    public Cluster() {
-        properties = new DeployProperties();
+    public Cluster(Cluster original) {
+    	this();
+    	
+    	name = original.name;
+    	color = original.color;
 
-        name = "anonymous";
-        serverAdaptor = null;
-        serverURI = null;
-        serverOutputFiles = null;
-        jobAdaptor = null;
-        jobURI = null;
-        fileAdaptors = null;
-        javaPath = null;
-        jobWrapperScript = null;
-        userName = null;
-        keyFile = null;
-        cacheDir = null;
-        serverOutputFiles = null;
-        serverSystemProperties = null;
-        nodes = 0;
-        cores = 0;
-        memory = 0;
-        latitude = 0;
-        longitude = 0;
-        color = null;
-        visibleOnMap = true;
-    }
+    	properties.addProperties(original.properties);
+    	
+        serverAdaptor = original.serverAdaptor;
+        serverURI = original.serverURI;
+        jobAdaptor = original.jobAdaptor;
+        jobURI = original.jobURI;
+        
+        if (original.fileAdaptors != null) {
+        	fileAdaptors = new ArrayList<String>(original.fileAdaptors);
+        }
+        	
+        javaPath = original.javaPath;
+        
+        jobWrapperScript = original.jobWrapperScript;
+        userName = original.userName;
+        keyFile = original.keyFile;
+        
+        cacheDir = original.cacheDir;
+        
+        if (original.serverOutputFiles != null) {
+        	serverOutputFiles = new ArrayList<File>(original.serverOutputFiles);
+        }
+        
+        if (original.serverSystemProperties != null) {
+        	serverSystemProperties = new HashMap<String, String>(original.serverSystemProperties);
+        }
+        
+        nodes = original.nodes;
+        cores = original.cores;
+        memory = original.memory;
+        latitude = original.latitude;
+        longitude = original.longitude;
+        visibleOnMap = original.visibleOnMap;
+	}
 
-    /**
+	/**
      * Load cluster from the given properties (usually loaded from a grid file)
      * 
      * @param properties
      *            properties to load cluster from
-     * @param name
-     *            name of this cluster
      * @param prefix
      *            prefix used for all keys
      * 
      * @throws Exception
      *             if cluster cannot be read properly, or its name is invalid
      */
-    public Cluster(DeployProperties properties, String name, String prefix)
+    public void loadFromProperties(DeployProperties properties, String prefix)
             throws Exception {
-        setName(name);
-        
         // add separator to prefix
         prefix = prefix + ".";
-
-        String defaultPrefix = "default.";
-        
-        // first load all the default properties
-        if (name == "local") {
-            applyLocalClusterSettings(); // the default settings for the local
-            // cluster
-        } else { // apply the default settings from the file
-            serverAdaptor = properties.getProperty(defaultPrefix
-                    + "server.adaptor");
-            serverURI = properties.getURIProperty(defaultPrefix + "server.uri");
-            jobAdaptor = properties.getProperty(defaultPrefix + "job.adaptor");
-            jobURI = properties.getURIProperty(defaultPrefix + "job.uri");
-
-            // get adaptors as list of string, defaults to "null"
-            fileAdaptors = properties.getStringListProperty(defaultPrefix
-                    + "file.adaptors");
-
-            javaPath = properties.getProperty(defaultPrefix + "java.path");
-            jobWrapperScript = properties.getFileProperty(defaultPrefix
-                    + "job.wrapper.script");
-
-            userName = properties.getProperty(defaultPrefix + "user.name");
-            keyFile = properties.getProperty(defaultPrefix + "user.key");
-            cacheDir = properties.getFileProperty(defaultPrefix + "cache.dir");
-            serverOutputFiles = properties.getFileListProperty(defaultPrefix
-                    + "server.output.files");
-            serverSystemProperties = properties
-                    .getStringMapProperty(defaultPrefix
-                            + "server.system.properties");
-
-            nodes = properties.getIntProperty(defaultPrefix + "nodes", 0);
-            cores = properties.getIntProperty(defaultPrefix + "cores", 0);
-            memory = properties.getIntProperty(defaultPrefix + "memory", 0);
-            latitude = properties.getDoubleProperty(defaultPrefix + "latitude",
-                    0);
-            longitude = properties.getDoubleProperty(defaultPrefix
-                    + "longitude", 0);
-
-            visibleOnMap = true;
-        }
 
         // load all the properties corresponding to this cluster,
         // but only if they are set
@@ -329,11 +337,16 @@ public class Cluster {
         if (properties.getDoubleProperty(prefix + "longitude", 0) != 0) {
             longitude = properties.getDoubleProperty(prefix + "longitude", 0);
         }
+        
+        if (properties.getProperty(prefix + "color") != null) {
+            color = properties.getProperty(prefix + "color");
+        } else {
+        	color = Colors.locationToColorString(getName());
+        }
 
         //copy all properties with right prefix to properties map
-        this.properties = properties.filter(prefix, true, false);
+        properties.addProperties(properties.filter(prefix, true, false));
 
-        this.color = null;
     }
 
     public boolean isEmpty() {
@@ -347,99 +360,97 @@ public class Cluster {
                 && longitude == 0;
     }
 
+
     /**
-     * Write all non-null values of given cluster into this cluster.
+     * Set any unset settings from the given other object
      * 
      * @param other
-     *            source application object
+     *            source cluster object
      */
-    void overwrite(Cluster other) {
+    void append(Cluster other) {
         if (other == null) {
             return;
         }
-
-        if (other.name != null) {
-            name = other.name;
-        }
-
-        if (other.serverAdaptor != null) {
+        
+        if (other.serverAdaptor != null && serverAdaptor == null) {
             serverAdaptor = other.serverAdaptor;
         }
 
-        if (other.serverURI != null) {
+        if (other.serverURI != null && serverURI == null) {
             serverURI = other.serverURI;
         }
 
-        if (other.jobAdaptor != null) {
+        if (other.jobAdaptor != null && jobAdaptor == null) {
             jobAdaptor = other.jobAdaptor;
         }
 
-        if (other.jobURI != null) {
+        if (other.jobURI != null && jobURI == null) {
             jobURI = other.jobURI;
         }
 
-        if (other.fileAdaptors != null) {
+        if (other.fileAdaptors != null && fileAdaptors == null) {
             fileAdaptors = new ArrayList<String>();
             fileAdaptors.addAll(other.fileAdaptors);
         }
 
-        if (other.javaPath != null) {
+        if (other.javaPath != null && javaPath == null) {
             javaPath = other.javaPath;
         }
 
-        if (other.jobWrapperScript != null) {
+        if (other.jobWrapperScript != null && jobWrapperScript == null) {
             jobWrapperScript = other.jobWrapperScript;
         }
 
-        if (other.userName != null) {
+        if (other.userName != null && userName == null) {
             userName = other.userName;
         }
 
-        if (other.keyFile != null) {
+        if (other.keyFile != null && keyFile == null) {
             keyFile = other.keyFile;
         }
 
-        if (other.cacheDir != null) {
+        if (other.cacheDir != null && cacheDir == null) {
             cacheDir = other.cacheDir;
         }
 
-        if (other.serverOutputFiles != null) {
+        if (other.serverOutputFiles != null && serverOutputFiles == null) {
             serverOutputFiles = new ArrayList<File>();
             serverOutputFiles.addAll(other.serverOutputFiles);
         }
 
-        if (other.serverSystemProperties != null) {
+        if (other.serverSystemProperties != null && serverSystemProperties == null) {
             for (Map.Entry<String, String> entry : other.serverSystemProperties
                     .entrySet()) {
                 setServerSystemProperty(entry.getKey(), entry.getValue());
             }
         }
 
-        if (other.nodes != 0) {
+        if (other.nodes != 0 && nodes == 0) {
             nodes = other.nodes;
         }
 
-        if (other.cores != 0) {
+        if (other.cores != 0 && cores == 0) {
             cores = other.cores;
         }
 
-        if (other.memory != 0) {
+        if (other.memory != 0 && memory == 0) {
             memory = other.memory;
         }
 
-        if (other.latitude != 0) {
+        if (other.latitude != 0 && latitude == 0) {
             latitude = other.latitude;
         }
 
-        if (other.longitude != 0) {
+        if (other.longitude != 0 && longitude == 0) {
             longitude = other.longitude;
         }
 
-        if (other.color != null) {
+        if (other.color != null && color == null) {
             color = other.color;
         }
 
-        visibleOnMap = other.visibleOnMap;
+        //if any is set, show
+        visibleOnMap = visibleOnMap || other.visibleOnMap;
     }
 
     /**
@@ -463,7 +474,8 @@ public class Cluster {
      */
     public void setName(String name) throws Exception {
         if (name == null) {
-            throw new Exception("no name specified for cluster");
+            //throw new Exception("no name specified for cluster");
+        	return;
         }
 
         if (name.equals(this.name)) {
@@ -975,18 +987,6 @@ public class Cluster {
         if (nodes < 0) {
             throw new Exception(prefix + "number of nodes negative");
         }
-    }
-
-    /**
-     * Resolves cluster and its defaults into a single new cluster object
-     * recursively.
-     * 
-     * @return a resolved cluster
-     */
-    Cluster resolve() {
-        Cluster result = new Cluster();
-        result.overwrite(this);
-        return result;
     }
 
     /**
