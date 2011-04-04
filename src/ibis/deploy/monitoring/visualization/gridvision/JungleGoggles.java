@@ -384,14 +384,19 @@ public class JungleGoggles implements GLEventListener {
 		gl.glRotatef(viewRotation[0], 1, 0, 0);
 		gl.glRotatef(viewRotation[1], 0, 1, 0);
 
-		// Draw the universe (locations tree)
-		universe.drawSolids(gl, renderMode);
-		universe.drawTransparents(gl, renderMode);
-
-		// Draw all the links
+		// Draw the solid elements (location tree and links)
 		for (JGVisual link : linkRegistry.values()) {
 			link.drawSolids(gl, renderMode);
 		}
+		
+		universe.drawSolids(gl, renderMode);
+
+		//Then, draw the transparent elements of both.		
+		for (JGVisual link : linkRegistry.values()) {
+			link.drawTransparents(gl, renderMode);
+		}
+		
+		universe.drawTransparents(gl, renderMode);
 	}
 
 	private void drawHud(GL2 gl) {

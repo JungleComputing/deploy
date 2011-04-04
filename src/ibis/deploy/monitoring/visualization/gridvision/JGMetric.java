@@ -50,7 +50,7 @@ public class JGMetric extends JGVisualAbstract implements JGVisual {
 		selectedTubeTransparencyPointer = goggles.getDisplayListPointer(DisplayListBuilder.DisplayList.SELECTED_TUBE_TRANSPARENCY);
 		
 		currentDisplay = MetricDisplay.TRANSPARANCY_ENABLED;
-		mShape = MetricShape.TUBE;
+		mShape = MetricShape.BAR;
 		
 		width = 0.25f;
 		height = 1f;

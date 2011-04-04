@@ -18,9 +18,9 @@ public class CPUUsage extends ibis.deploy.monitoring.collection.impl.MetricDescr
 		name = "CPU";
 		type = MetricType.NODE;
 				
-		color[0] = 1.0f;
-		color[1] = 0.0f;
-		color[2] = 0.0f;
+		color[0] = 255f/255f;
+		color[1] =   0f/255f;
+		color[2] =   0f/255f;
 				
 		necessaryAttributes.add(new AttributeDescription("java.lang:type=OperatingSystem", "ProcessCpuTime"));
 		necessaryAttributes.add(new AttributeDescription("java.lang:type=Runtime", "Uptime"));

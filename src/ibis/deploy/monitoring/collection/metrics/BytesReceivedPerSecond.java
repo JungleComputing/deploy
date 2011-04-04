@@ -24,9 +24,9 @@ public class BytesReceivedPerSecond extends ibis.deploy.monitoring.collection.im
 		name = "Bytes_Received";
 		type = MetricType.LINK;
 				
-		color[0] = 0.0f;
-		color[1] = 0.5f;
-		color[2] = 0.5f;
+		color[0] = 201f/255f;
+		color[1] = 226f/255f;
+		color[2] = 1f;
 				
 		necessaryAttributes.add(new AttributeDescription("ibis", "receivedBytesPerIbis"));
 		

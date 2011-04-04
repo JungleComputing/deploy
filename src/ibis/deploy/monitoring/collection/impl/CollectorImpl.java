@@ -89,7 +89,7 @@ public class CollectorImpl implements Collector, Runnable {
 		descriptions.add(new HeapMemory());
 		descriptions.add(new NonHeapMemory());
 		// descriptions.add(new ThreadsMetric());
-		descriptions.add(new BytesReceivedPerSecond());
+		//descriptions.add(new BytesReceivedPerSecond());
 		descriptions.add(new BytesSentPerSecond());
 		// descriptions.add(new BytesReceived());
 		// descriptions.add(new BytesSent());

@@ -20,9 +20,9 @@ public class NonHeapMemory extends ibis.deploy.monitoring.collection.impl.Metric
 		name = "MEM_NONHEAP";	
 		type = MetricType.NODE;
 
-		color[0] = 0.5f;
-		color[1] = 0.5f;
-		color[2] = 0.0f;
+		color[0] =   0f/255f;
+		color[1] = 255f/255f;
+		color[2] =   0f/255f;
 
 		necessaryAttributes.add(new AttributeDescription("java.lang:type=Memory", "NonHeapMemoryUsage"));
 

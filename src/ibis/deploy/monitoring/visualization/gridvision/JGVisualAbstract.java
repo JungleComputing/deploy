@@ -47,10 +47,9 @@ public abstract class JGVisualAbstract implements JGVisual {
 		rotation[2] = 0.0f;
 		
 		locationColShape = CollectionShape.CITYSCAPE;
-		ibisColShape = CollectionShape.CITYSCAPE;
+		ibisColShape = CollectionShape.SPHERE;
 		metricColShape = CollectionShape.CITYSCAPE;
 		state = State.UNFOLDED;
-		mShape = MetricShape.BAR;
 		
 		radius = 0f;
 		width = 0f;
@@ -529,7 +528,7 @@ public abstract class JGVisualAbstract implements JGVisual {
 		return result;
 	}
 	
-	private float maxWidth(List<JGVisual> children) {
+	protected float maxWidth(List<JGVisual> children) {
 		float result = -Float.MAX_VALUE;
 		for (JGVisual child : children) {
 			float in = child.getWidth();
@@ -539,7 +538,7 @@ public abstract class JGVisualAbstract implements JGVisual {
 		return result;
 	}
 	
-	private float maxHeight(List<JGVisual> children) {
+	protected float maxHeight(List<JGVisual> children) {
 		float result = -Float.MAX_VALUE;
 		for (JGVisual child : children) {
 			float in = child.getHeight();

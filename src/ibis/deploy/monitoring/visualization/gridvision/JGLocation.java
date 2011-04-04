@@ -11,25 +11,26 @@ import ibis.deploy.monitoring.collection.Metric.MetricModifier;
 
 
 public class JGLocation extends JGVisualAbstract implements JGVisual {		
-	public JGLocation(JungleGoggles goggles, JGVisual parent, GLUgl2 glu, Location dataLocation) {
+	public JGLocation(JungleGoggles goggles, JGVisual parent, GLUgl2 glu, Location dataLocation, float[] newSeparation) {
 		super(goggles, parent);
 
-		locationSeparation[0] = 9;
-		locationSeparation[1] = 9;
-		locationSeparation[2] = 9;
+		locationSeparation[0] = newSeparation[0];
+		locationSeparation[1] = newSeparation[1];
+		locationSeparation[2] = newSeparation[2];
 		
 		ibisSeparation[0] = 1;
 		ibisSeparation[1] = 1.25f;
 		ibisSeparation[2] = 1;
 				
-		locationColShape = CollectionShape.CITYSCAPE;
-		ibisColShape = CollectionShape.CUBE;
+		locationColShape = CollectionShape.SPHERE;
+		ibisColShape = CollectionShape.SPHERE;
 		
 		goggles.registerVisual(dataLocation, this);
 				
 		ArrayList<Location> dataChildren = dataLocation.getChildren();		
 		for (Location datachild : dataChildren) {
-			locations.add(new JGLocation(goggles, this, glu, datachild));
+			JGLocation newLocation = new JGLocation(goggles, this, glu, datachild, FloatMatrixMath.div(locationSeparation, 2));			
+			locations.add(newLocation);			
 		}
 		
 		ArrayList<Ibis> dataIbises = dataLocation.getIbises();		

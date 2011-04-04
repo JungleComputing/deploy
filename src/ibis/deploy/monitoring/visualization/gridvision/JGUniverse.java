@@ -12,7 +12,7 @@ public class JGUniverse extends JGVisualAbstract implements JGVisual {
 		super(goggles, parent);
 		
 		locationSeparation[0] = 16;
-		locationSeparation[1] = 8;
+		locationSeparation[1] = 16;
 		locationSeparation[2] = 16;
 		
 		locationColShape = CollectionShape.CITYSCAPE;
@@ -23,7 +23,7 @@ public class JGUniverse extends JGVisualAbstract implements JGVisual {
 		ArrayList<Location> dataChildren = root.getChildren();
 		
 		for (Location datachild : dataChildren) {
-			locations.add(new JGLocation(goggles, this, glu, datachild));
+			locations.add(new JGLocation(goggles, this, glu, datachild, locationSeparation));
 		}
 	}	
 }

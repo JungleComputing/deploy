@@ -107,71 +107,68 @@ public class JGLink extends JGVisualAbstract implements JGVisual {
 		newRotation[1] = yAngle;
 		newRotation[2] = zAngle - 90.0f;
 
-		// TODO
-		setCityScape(metrics, length, new float[] { 0, 0, 0 }, newRotation);		
+		setCityScape(metrics, metricSeparation, length, newRotation);		
 	}
 
-	private void setCityScape(List<JGVisual> children, float length,
-			float[] separation, float[] rotation) {
+	private void setCityScape(List<JGVisual> children, float[] separation, float length, float[] newRotation) {
 		int childCount = children.size();
-		// TODO
-		float maxRad = 0f;
+		float maxWidth = maxWidth(children);
 
-		// get the breakoff point for rows, stacks and columns
+		// get the breakoff point for rows and columns
 		int[] count = new int[3];
 		count[0] = (int) Math.ceil(Math.sqrt(childCount));
 		count[1] = 0;
 		count[2] = (int) Math.floor(Math.sqrt(childCount));
 
 		float[] shift = { 0, 0, 0 };
-		for (int i = 0; i < 3; i++) {
-			shift[i] = maxRad + separation[i];
-		}
+		shift[0] = maxWidth + separation[0];
+		//separation[1] ignored
+		shift[2] = maxWidth + separation[2];
 
-		// Center the drawing around the location
-		float[] shiftedLocation = { 0, 0, 0 };
+		// Center the drawing around the coordinates
+		float[] maxShift = { 0, 0, 0 };
 		for (int i = 0; i < 3; i++) {
-			shiftedLocation[i] = coordinates[i]
-					- ((shift[i] * count[i]) - separation[i]) * 0.5f;
-		}
+			maxShift[i] = (shift[i] * Math.max((count[i]-1),0) * 0.5f);
+		}		
+		float[] centeredCoordinates = FloatMatrixMath.sub(coordinates, maxShift);		
+		
+		//calculate my own new radius
+		radius = FloatMatrixMath.max(maxShift);
+		width = FloatMatrixMath.max(maxShift);
+		height = maxHeight(children);
 
 		// Propagate the movement to the children
 		float[] childLocation = { 0, 0, 0 };
 		int i = 0;
-		int[] position = { 0, 0, 0 };
+		float[] position = { 0, 0, 0 };
 		for (JGVisual child : children) {
-			JGLinkMetric linkmetric = (JGLinkMetric) child;
+			// cascade the new location
+			childLocation = FloatMatrixMath.add(centeredCoordinates, FloatMatrixMath.mul(shift, position));
 
+			child.setCoordinates(childLocation);
+
+			// reduce the length by the radii of the origin and destination
+			// objects
+			JGLinkMetric linkMetric = (JGLinkMetric) child;
+			float[] newDimensions = linkMetric.getDimensions();
+			newDimensions[1] = length
+					- (source.getRadius() + this.destination.getRadius());
+			linkMetric.setDimensions(newDimensions);
+
+			// and set to correct rotation
+			linkMetric.setRotation(newRotation);
+			
+			//Calculate next position
+			i++;			
 			position[0] = i % count[0];
 
 			// Move to next row (if applicable)
 			if (i != 0 && position[0] == 0) {
 				position[2]++;
 			}
-
-			// cascade the new location
-			for (int j = 0; j < 3; j++) {
-				childLocation[j] = shiftedLocation[j] + shift[j] * position[j];
-			}
-			linkmetric.setCoordinates(childLocation);
-
-			// reduce the length by the radii of the origin and destination
-			// objects
-			float[] newDimensions = linkmetric.getDimensions();
-			newDimensions[1] = length
-					- (source.getRadius() + this.destination.getRadius());
-			linkmetric.setDimensions(newDimensions);
-
-			// and set to correct rotation
-			linkmetric.setRotation(rotation);
-
-			i++;
 		}
-
-		radius = FloatMatrixMath.max(FloatMatrixMath.add(shiftedLocation,
-				separation));
 	}
-
+	
 	@Override
 	public boolean equals(Object other) {
 		if (other == null)

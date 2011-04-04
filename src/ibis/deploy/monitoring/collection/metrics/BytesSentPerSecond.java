@@ -24,9 +24,9 @@ public class BytesSentPerSecond extends ibis.deploy.monitoring.collection.impl.M
 		name = "Bytes_Sent";		
 		type = MetricType.LINK;
 		
-		color[0] = 0.0f;
-		color[1] = 0.5f;
-		color[2] = 0.5f;
+		color[0] =  64f/255f;
+		color[1] = 156f/255f;
+		color[2] = 255f/255f;
 				
 		necessaryAttributes.add(new AttributeDescription("ibis", "sentBytesPerIbis"));
 		

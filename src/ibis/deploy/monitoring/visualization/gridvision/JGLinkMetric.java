@@ -15,6 +15,8 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 	private static final float ALPHA = 0.4f;
 	private static final int ACCURACY = 20;
 	
+	private static boolean DONT_SHOW_EMPTY = true;
+	
 	private GLUgl2 glu;
 	
 	private Metric metric;
@@ -24,8 +26,8 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 	private int glName;
 		
 	//On-demand generated displaylists
-	private int[] onDemandList;
-	private boolean[] onDemandListsBuilt;
+	private int[] transparentsOnDemandList, solidsOnDemandList;
+	private boolean[] transparentsOnDemandListsBuilt, solidsOnDemandListsBuilt;
 	private boolean listsInitialized;
 	private int whichList;
 	
@@ -45,8 +47,15 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 			e.printStackTrace();
 		}
 		
-		onDemandList 		= new int[ACCURACY+1];
-		onDemandListsBuilt 	= new boolean[ACCURACY+1];		
+		mShape = MetricShape.TUBE;
+		width = Math.max(dimensions[0], dimensions[2]);
+		height = dimensions[1];		
+		
+		solidsOnDemandList 				= new int[ACCURACY+1];
+		transparentsOnDemandList 		= new int[ACCURACY+1];
+		solidsOnDemandListsBuilt 		= new boolean[ACCURACY+1];
+		transparentsOnDemandListsBuilt 	= new boolean[ACCURACY+1];		
+		
 		listsInitialized = false;
 		whichList = 0;		
 		
@@ -55,13 +64,18 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 	
 	public void init(GL2 gl) {
 		if (listsInitialized) {
-			gl.glDeleteLists(onDemandList[0], ACCURACY+1);
+			gl.glDeleteLists(solidsOnDemandList[0], ACCURACY+1);
+			gl.glDeleteLists(transparentsOnDemandList[0], ACCURACY+1);
 		}
-		onDemandList[0] = gl.glGenLists(ACCURACY+1);
+		solidsOnDemandList[0] = gl.glGenLists(ACCURACY+1);
+		transparentsOnDemandList[0] = gl.glGenLists(ACCURACY+1);
 		
 		for (int i=0; i<ACCURACY+1; i++) {
-			onDemandListsBuilt[i] = false;
-			onDemandList[i] = onDemandList[0]+i;
+			solidsOnDemandListsBuilt[i] = false;
+			transparentsOnDemandListsBuilt[i] = false;
+			
+			solidsOnDemandList[i] = solidsOnDemandList[0]+i;
+			transparentsOnDemandList[i] = transparentsOnDemandList[0]+i;
 		}
 		listsInitialized = true;
 	}
@@ -72,7 +86,8 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 		coordinates[2] = newCoords[2];
 		
 		for (int i=0; i<ACCURACY+1; i++) {
-			onDemandListsBuilt[i] = false;
+			solidsOnDemandListsBuilt[i] = false;
+			transparentsOnDemandListsBuilt[i] = false;
 		}
 	}
 	
@@ -96,17 +111,28 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 		whichList = (int)(ACCURACY*currentValue);
 		
 		//Do not draw links that have no value
-		if (whichList == 0) return;
+		if (DONT_SHOW_EMPTY && whichList == 0) return;
 		
 		if (mShape == MetricShape.BAR) {
-			drawBar(gl, currentValue, dimensions[1]);
+			drawSolidBar(gl, currentValue, dimensions[1]);
 		} else if (mShape == MetricShape.TUBE) {
-			drawTube(gl, currentValue, dimensions[1]);
+			drawSolidTube(gl, currentValue, dimensions[1]);
 		}		
 	}
 	
 	public void drawTransparents(GL2 gl, int renderMode) {
-		//TODO	
+		if (renderMode == GL2.GL_SELECT) { gl.glLoadName(glName); }		
+		
+		whichList = (int)(ACCURACY*currentValue);
+		
+		//Do not draw links that have no value
+		if (DONT_SHOW_EMPTY && whichList == 0) return;
+		
+		if (mShape == MetricShape.BAR) {
+			drawTransparentBar(gl, currentValue, dimensions[1]);
+		} else if (mShape == MetricShape.TUBE) {
+			drawTransparentTube(gl, currentValue, dimensions[1]);
+		}
 	}
 	
 	public void update() {				
@@ -118,8 +144,8 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 			e.printStackTrace();
 		}	
 	}
-
-	protected void drawBar(GL2 gl, float length, float maxLength) {
+	
+	protected void drawSolidBar(GL2 gl, float length, float maxLength) {
 		//Save the current modelview matrix
 		gl.glPushMatrix();
 		
@@ -129,17 +155,14 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 		gl.glRotatef(rotation[1], 0.0f, 1.0f, 0.0f);
 		gl.glRotatef(rotation[2], 0.0f, 0.0f, 1.0f);
 		
-		if (onDemandListsBuilt[whichList]) {
-			gl.glCallList(onDemandList[whichList]);
+		if (solidsOnDemandListsBuilt[whichList]) {
+			gl.glCallList(solidsOnDemandList[whichList]);
 		} else {
-			onDemandListsBuilt[whichList] = true;
-			
-			float alpha = ALPHA;
+			solidsOnDemandListsBuilt[whichList] = true;
 			
 			float 	Xn = -0.5f*dimensions[0],
 					Xp =  0.5f*dimensions[0],
 					Yn = -0.5f*maxLength,
-					Yp =  0.5f*maxLength,
 					Zn = -0.5f*dimensions[2],
 					Zp =  0.5f*dimensions[2];
 	
@@ -147,7 +170,7 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 						
 			Yf = (length*maxLength)-(0.5f*maxLength);
 			
-			gl.glNewList(onDemandList[whichList], GL2.GL_COMPILE_AND_EXECUTE);
+			gl.glNewList(solidsOnDemandList[whichList], GL2.GL_COMPILE_AND_EXECUTE);
 				
 				//The solid area
 				gl.glBegin(GL2.GL_QUADS);	
@@ -243,6 +266,41 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 					gl.glVertex3f( Xp, Yf, Zn);
 				gl.glEnd();
 				
+			gl.glEndList();
+		}		
+		
+		//Restore the old modelview matrix
+		gl.glPopMatrix();
+	}
+
+	protected void drawTransparentBar(GL2 gl, float length, float maxLength) {
+		//Save the current modelview matrix
+		gl.glPushMatrix();
+		
+		//Translate to the desired coordinates and rotate if desired
+		gl.glTranslatef(coordinates[0], coordinates[1], coordinates[2]);
+		gl.glRotatef(rotation[0], 1.0f, 0.0f, 0.0f);
+		gl.glRotatef(rotation[1], 0.0f, 1.0f, 0.0f);
+		gl.glRotatef(rotation[2], 0.0f, 0.0f, 1.0f);
+		
+		if (transparentsOnDemandListsBuilt[whichList]) {
+			gl.glCallList(transparentsOnDemandList[whichList]);
+		} else {
+			transparentsOnDemandListsBuilt[whichList] = true;
+			
+			float alpha = ALPHA;
+			
+			float 	Xn = -0.5f*dimensions[0],
+					Xp =  0.5f*dimensions[0],
+					Yp =  0.5f*maxLength,
+					Zn = -0.5f*dimensions[2],
+					Zp =  0.5f*dimensions[2];
+	
+			float Yf = 0.0f;
+						
+			Yf = (length*maxLength)-(0.5f*maxLength);
+			
+			gl.glNewList(transparentsOnDemandList[whichList], GL2.GL_COMPILE_AND_EXECUTE);				
 				//The transparent area			
 				gl.glBegin(GL2.GL_QUADS);
 				gl.glColor4f(color[0],color[1],color[2], alpha);
@@ -344,9 +402,9 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 		gl.glPopMatrix();
 	}
 	
-	protected void drawTube(GL2 gl, float length, float maxLength) {
+	protected void drawSolidTube(GL2 gl, float length, float maxLength) {
 		//Save the current modelview matrix
-		gl.glPushMatrix();
+		gl.glPushMatrix();	
 		
 		//Translate to the desired coordinates and rotate if desired
 		gl.glTranslatef(coordinates[0], coordinates[1], coordinates[2]);
@@ -356,75 +414,117 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 		
 		gl.glRotatef(-90f, 1.0f, 0.0f, 0.0f);
 		
-		if (onDemandListsBuilt[whichList]) {
-			gl.glCallList(onDemandList[whichList]);
+		if (solidsOnDemandListsBuilt[whichList]) {
+			gl.glCallList(solidsOnDemandList[whichList]);
 		} else {		
 			final int SIDES = 12;
-			final float EDGE_SIZE = 0.01f;			
-			
-			float alpha = ALPHA;
+			final float EDGE_SIZE = 0.01f;
 			 			
-			float 	Yn = -0.5f*maxLength,
-					Yp =  0.5f*maxLength;
-	
-			float Yf = (length*maxLength)-(0.5f*maxLength);
+			float Yn = -0.5f*maxLength;	
+			float Yf = length*maxLength;
 			
 			float radius = Math.max(dimensions[0], dimensions[2]) / 2;
 			
 			//On-demand generated list			
-			onDemandListsBuilt[whichList] = true;
-			gl.glNewList(onDemandList[whichList], GL2.GL_COMPILE_AND_EXECUTE);				
+			solidsOnDemandListsBuilt[whichList] = true;
+			gl.glNewList(solidsOnDemandList[whichList], GL2.GL_COMPILE_AND_EXECUTE);
+				
+				//Translate 'down' to center this object
+				gl.glTranslatef(0f, 0f, Yn);
+							
 				//Make a new quadratic object
 				GLUquadric qobj = glu.gluNewQuadric();
 						
-				//The Solid Element
-					gl.glTranslatef(0.0f, Yn, 0.0f);
-					
-					//Bottom disk
+				//The Solid Element, draw dynamically colored elements first
 					gl.glColor3f(color[0], color[1], color[2]);
+					//Bottom disk
 					glu.gluDisk(qobj, 0.0, radius, SIDES, 1);
-								
+					
 					//Sides
-					glu.gluCylinder(qobj, radius, radius, Yf, SIDES, 1);			
+					glu.gluCylinder(qobj, radius, radius, Yf, SIDES, 1);	
 					
-					//Edge of bottom disk
-					gl.glColor3f(0.8f,0.8f,0.8f);
-					glu.gluCylinder(qobj, radius, radius, EDGE_SIZE, SIDES, 1);
-					
-					gl.glTranslatef(0.0f, Yf, 0.0f);
+					//Translate 'up'
+					gl.glTranslatef(0f, 0f, Yf);
 					
 					//Top disk
-					gl.glColor3f(color[0], color[1], color[2]);
 					glu.gluDisk(qobj, 0.0, radius, SIDES, 1);
 					
-					//Edge of top disk
+				//Now, draw the fixed color elements.	
 					gl.glColor3f(0.8f,0.8f,0.8f);
+					
+					//Edge of top disk
+					glu.gluCylinder(qobj, radius, radius, EDGE_SIZE, SIDES, 1);	
+					
+					//Translate 'down'
+					gl.glTranslatef(0f, 0f, -Yf);
+					
+					//Edge of bottom disk
 					glu.gluCylinder(qobj, radius, radius, EDGE_SIZE, SIDES, 1);
+									
+				//Cleanup
+				glu.gluDeleteQuadric(qobj);
+			
+			gl.glEndList();
+		}
+		//Restore the old modelview matrix
+		gl.glPopMatrix();
+	}
+		
+		
+	protected void drawTransparentTube(GL2 gl, float length, float maxLength) {
+		//Save the current modelview matrix
+		gl.glPushMatrix();	
+		
+		//Translate to the desired coordinates and rotate if desired
+		gl.glTranslatef(coordinates[0], coordinates[1], coordinates[2]);
+		gl.glRotatef(rotation[0], 1.0f, 0.0f, 0.0f);
+		gl.glRotatef(rotation[1], 0.0f, 1.0f, 0.0f);
+		gl.glRotatef(rotation[2], 0.0f, 0.0f, 1.0f);
+		
+		gl.glRotatef(-90f, 1.0f, 0.0f, 0.0f);
+		
+		if (transparentsOnDemandListsBuilt[whichList]) {
+			gl.glCallList(transparentsOnDemandList[whichList]);
+		} else {		
+			final int SIDES = 12;
+			final float EDGE_SIZE = 0.01f;
+			 			
+			float base = -0.5f*maxLength;
+	
+			float fill = length*maxLength;
+			
+			float radius = Math.max(dimensions[0], dimensions[2]) / 2;
+			
+			//On-demand generated list			
+			transparentsOnDemandListsBuilt[whichList] = true;
+			gl.glNewList(transparentsOnDemandList[whichList], GL2.GL_COMPILE_AND_EXECUTE);					
+				//Translate 'down' to center this object
+				gl.glTranslatef(0f, 0f, base+fill);
 				
-				//The shadow Element				
+				//Make a new quadratic object
+				GLUquadric qobj = glu.gluNewQuadric();						
+				
+				//The shadow Element, draw dynamically colored elements first			
 					//Bottom disk left out, since it's the top disk of the solid
 												
 					//Sides
-					gl.glColor4f(color[0], color[1], color[2], alpha);
-					glu.gluCylinder(qobj, radius, radius, Yp-Yf, SIDES, 1);			
-					
-					//Edge of bottom disk also left out
+					gl.glColor4f(color[0], color[1], color[2], ALPHA);
+					glu.gluCylinder(qobj, radius, radius, maxLength-fill, SIDES, 1);
 								
-					gl.glTranslatef(0.0f, Yp-Yf, 0.0f);
+					gl.glTranslatef(0f, 0f, maxLength-fill);
 					
 					//Top disk
-					gl.glColor4f(color[0], color[1], color[2], alpha);
 					glu.gluDisk(qobj, 0.0, radius, SIDES, 1);
 					
 					//Edge of top disk
-					gl.glColor4f(0.8f,0.8f,0.8f, alpha);
+					gl.glColor4f(0.8f,0.8f,0.8f, ALPHA);					
 					glu.gluCylinder(qobj, radius, radius, EDGE_SIZE, SIDES, 1);		
 				
 				//Cleanup
 				glu.gluDeleteQuadric(qobj);
+			
 			gl.glEndList();
 		}
-		
 		//Restore the old modelview matrix
 		gl.glPopMatrix();
 	}
