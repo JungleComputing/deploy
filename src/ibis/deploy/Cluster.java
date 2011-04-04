@@ -345,7 +345,7 @@ public class Cluster {
         }
 
         //copy all properties with right prefix to properties map
-        properties.addProperties(properties.filter(prefix, true, false));
+        this.properties.addProperties(properties.filter(prefix, true, false));
 
     }
 
