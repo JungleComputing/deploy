@@ -46,8 +46,6 @@ public class Colors {
 			colorMap.put(location, result);
 		}
 
-		System.err.println("Next color = " + result);
-
 		return result;
 	}
 }
