@@ -7,7 +7,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * An experiment. Each experiment consists of multiple jobs, usually running in
@@ -88,16 +87,15 @@ public class Experiment {
 		String[] jobNames = properties.getElementList("");
 
 		for (String jobName : jobNames) {
-			JobDescription job = getJob(jobName);
-
-			if (job == null) {
-				job = new JobDescription(jobName);
-				addJob(job);
-			}
+			JobDescription job = new JobDescription(jobName);
+			
+			job.setPoolName(getName());
 
 			job.loadFromProperties(properties, "default");
 
 			job.loadFromProperties(properties, jobName);
+			
+			addJob(job);
 		}
 
 	}
