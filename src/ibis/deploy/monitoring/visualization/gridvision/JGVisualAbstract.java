@@ -6,7 +6,7 @@ import java.util.List;
 import javax.media.opengl.GL2;
 
 public abstract class JGVisualAbstract implements JGVisual {
-	private final static float SPHERE_RADIUS_MULTIPLIER = 0.075f;
+	private final static float SPHERE_RADIUS_MULTIPLIER = 0.175f;
 	
 	protected JungleGoggles goggles;
 	protected JGVisual parent;

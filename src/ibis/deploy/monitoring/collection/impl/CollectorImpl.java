@@ -412,16 +412,16 @@ public class CollectorImpl implements Collector, Runnable {
 			synchronized (jobQueue) {
 				if (waiting == workercount) {
 					if (!jobQueue.isEmpty()) {
-						logger.error("workers idling while jobqueue not empty.");
+						logger.debug("workers idling while jobqueue not empty.");
 					}
 					logger.debug("Succesfully finished queue.");
 				} else {
 					// If they have not, give warning, and try again next turn.
-					logger.warn("Workers still working: "
+					logger.debug("Workers still working: "
 							+ (workercount - waiting));
-					logger.warn("Ibises left in queue: " + jobQueue.size()
+					logger.debug("Ibises left in queue: " + jobQueue.size()
 							+ " / " + ibises.size());
-					logger.warn("Consider increasing the refresh time.");
+					logger.debug("Consider increasing the refresh time.");
 				}
 			}
 			iterations++;

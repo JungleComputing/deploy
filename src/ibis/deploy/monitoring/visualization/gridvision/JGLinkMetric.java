@@ -116,7 +116,7 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 		if (mShape == MetricShape.BAR) {
 			drawSolidBar(gl, currentValue, dimensions[1]);
 		} else if (mShape == MetricShape.TUBE) {
-			drawSolidTube(gl, currentValue, dimensions[1]);
+			//drawSolidTube(gl, currentValue, dimensions[1]);
 		}		
 	}
 	
@@ -131,7 +131,7 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 		if (mShape == MetricShape.BAR) {
 			drawTransparentBar(gl, currentValue, dimensions[1]);
 		} else if (mShape == MetricShape.TUBE) {
-			drawTransparentTube(gl, currentValue, dimensions[1]);
+			drawAlphaTube(gl, currentValue, dimensions[1]);
 		}
 	}
 	
@@ -520,6 +520,74 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 					gl.glColor4f(0.8f,0.8f,0.8f, ALPHA);					
 					glu.gluCylinder(qobj, radius, radius, EDGE_SIZE, SIDES, 1);		
 				
+				//Cleanup
+				glu.gluDeleteQuadric(qobj);
+			
+			gl.glEndList();
+		}
+		//Restore the old modelview matrix
+		gl.glPopMatrix();
+	}
+	
+	protected void drawAlphaTube(GL2 gl, float alpha, float maxLength) {
+		//Save the current modelview matrix
+		gl.glPushMatrix();	
+		
+		//Translate to the desired coordinates and rotate if desired
+		gl.glTranslatef(coordinates[0], coordinates[1], coordinates[2]);
+		gl.glRotatef(rotation[0], 1.0f, 0.0f, 0.0f);
+		gl.glRotatef(rotation[1], 0.0f, 1.0f, 0.0f);
+		gl.glRotatef(rotation[2], 0.0f, 0.0f, 1.0f);
+		
+		gl.glRotatef(-90f, 1.0f, 0.0f, 0.0f);
+		
+		if (transparentsOnDemandListsBuilt[whichList]) {
+			gl.glCallList(transparentsOnDemandList[whichList]);
+		} else {		
+			final int SIDES = 12;
+			final float EDGE_SIZE = 0.01f;
+			 			
+			float Yn = -0.5f*maxLength;	
+			float Yf = maxLength;
+			
+			float radius = Math.max(dimensions[0], dimensions[2]) / 2;
+			
+			//On-demand generated list
+			transparentsOnDemandListsBuilt[whichList] = true;
+			gl.glNewList(transparentsOnDemandList[whichList], GL2.GL_COMPILE_AND_EXECUTE);
+				
+				//Translate 'down' to center this object
+				gl.glTranslatef(0f, 0f, Yn);
+							
+				//Make a new quadratic object
+				GLUquadric qobj = glu.gluNewQuadric();
+						
+				//The Solid Element, draw dynamically colored elements first
+					gl.glColor4f(color[0], color[1], color[2], alpha);
+					//Bottom disk
+					glu.gluDisk(qobj, 0.0, radius, SIDES, 1);
+					
+					//Sides
+					glu.gluCylinder(qobj, radius, radius, Yf, SIDES, 1);	
+					
+					//Translate 'up'
+					gl.glTranslatef(0f, 0f, Yf);
+					
+					//Top disk
+					glu.gluDisk(qobj, 0.0, radius, SIDES, 1);
+					
+				//Now, draw the fixed color elements.	
+					gl.glColor4f(0.8f,0.8f,0.8f, alpha);
+					
+					//Edge of top disk
+					glu.gluCylinder(qobj, radius, radius, EDGE_SIZE, SIDES, 1);	
+					
+					//Translate 'down'
+					gl.glTranslatef(0f, 0f, -Yf);
+					
+					//Edge of bottom disk
+					glu.gluCylinder(qobj, radius, radius, EDGE_SIZE, SIDES, 1);
+									
 				//Cleanup
 				glu.gluDeleteQuadric(qobj);
 			

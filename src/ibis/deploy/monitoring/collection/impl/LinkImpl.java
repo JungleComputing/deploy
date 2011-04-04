@@ -128,7 +128,7 @@ public class LinkImpl extends ElementImpl implements Link {
 				} catch (BeyondAllowedRangeException e) {
 					// Impossible unless one of the children has a value that is
 					// already bad
-					logger.error("The impossible BeyondAllowedRangeException just happened anyway.");
+					logger.debug("The impossible BeyondAllowedRangeException just happened anyway.");
 				} catch (MetricNotAvailableException e) {
 					logger.error("The impossible MetricNotAvailableException just happened anyway.");
 				}
@@ -214,7 +214,7 @@ public class LinkImpl extends ElementImpl implements Link {
 			} catch (BeyondAllowedRangeException e) {
 				// Impossible unless one of the children has a value that is
 				// already bad
-				logger.error("The impossible BeyondAllowedRangeException just happened anyway.");
+				logger.debug("The impossible BeyondAllowedRangeException just happened anyway.");
 			} catch (MetricNotAvailableException e) {
 				logger.error("The impossible MetricNotAvailableException just happened anyway.");
 			}	

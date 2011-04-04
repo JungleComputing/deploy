@@ -29,24 +29,43 @@
 
 # default.user.name=ndrost
 
-# Details of cluster "VU"
-VU.server.adaptor = SshTrilead
-VU.server.uri = any://fs0.das3.cs.vu.nl
-VU.job.adaptor = SshTrilead
-VU.job.uri = any://fs0.das3.cs.vu.nl/jobmanager-sge
-VU.file.adaptors = SshTrilead,Local
-VU.java.path = /usr/local/package/jdk1.6.0_17-linux-amd64/bin/java
-VU.job.wrapper.script = das3.script
+# Details of cluster "DAS3VU"
+DAS3VU.server.adaptor = SshTrilead
+DAS3VU.server.uri = any://fs0.das3.cs.vu.nl
+DAS3VU.job.adaptor = SshTrilead
+DAS3VU.job.uri = any://fs0.das3.cs.vu.nl/jobmanager-sge
+DAS3VU.file.adaptors = SshTrilead,Local
+DAS3VU.java.path = /usr/local/package/jdk1.6.0_17-linux-amd64/bin/java
+DAS3VU.job.wrapper.script = das3.script
 #VU.user.name =
 #VU.user.key = 
 #VU.cache.dir = 
 #VU.server.output.files =
 #VU.server.system.properties =
-VU.nodes = 85
-VU.cores = 340
+DAS3VU.nodes = 85
+DAS3VU.cores = 340
 #VU.memory = 
-VU.latitude = 52.3328
-VU.longitude = 4.8669
+DAS3VU.latitude = 52.3328
+DAS3VU.longitude = 4.8669
+
+# Details of cluster "DAS4VU"
+DAS4VU.server.adaptor = SshTrilead
+DAS4VU.server.uri = any://fs0.das4.cs.vu.nl
+DAS4VU.job.adaptor = SshTrilead
+DAS4VU.job.uri = any://fs0.das4.cs.vu.nl/jobmanager-sge
+DAS4VU.file.adaptors = SshTrilead,Local
+DAS4VU.java.path = /usr/local/package/jdk1.6.0_17-linux-amd64/bin/java
+DAS4VU.job.wrapper.script = das3.script
+#VU.user.name =
+#VU.user.key = 
+#VU.cache.dir = 
+#VU.server.output.files =
+#VU.server.system.properties =
+DAS4VU.nodes = 74
+DAS4VU.cores = 592
+#VU.memory = 
+DAS4VU.latitude = 52.3328
+DAS4VU.longitude = 4.8669
 
 # Details of cluster "MultimediaN"
 MultimediaN.server.adaptor = SshTrilead

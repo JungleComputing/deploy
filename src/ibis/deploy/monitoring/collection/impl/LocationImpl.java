@@ -100,9 +100,9 @@ public class LocationImpl extends ElementImpl implements Location {
 						result.add(link);
 					}
 				} catch (OutputUnavailableException e) {
-					logger.debug("OutputUnavailableException caught. Metric is probably undefined.");
+					logger.error("OutputUnavailableException caught. Metric is probably undefined.");
 				} catch (MetricNotAvailableException e) {
-					logger.error("The impossible MetricNotAvailableException just happened anyway.");
+					logger.debug("The impossible MetricNotAvailableException just happened anyway.");
 				}
 			}
 		} else {
@@ -116,9 +116,9 @@ public class LocationImpl extends ElementImpl implements Location {
 						result.add(link);
 					}
 				} catch (OutputUnavailableException e) {
-					logger.debug("OutputUnavailableException caught. Metric is probably undefined.");
+					logger.error("OutputUnavailableException caught. Metric is probably undefined.");
 				} catch (MetricNotAvailableException e) {
-					logger.error("The impossible MetricNotAvailableException just happened anyway.");
+					logger.debug("The impossible MetricNotAvailableException just happened anyway.");
 				}
 			}
 		}
@@ -371,7 +371,7 @@ public class LocationImpl extends ElementImpl implements Location {
 			} catch (BeyondAllowedRangeException e) {
 				// Impossible unless one of the children has a value that is
 				// already bad
-				logger.error("The impossible BeyondAllowedRangeException just happened anyway.");
+				logger.debug("The impossible BeyondAllowedRangeException just happened anyway.");
 			} catch (MetricNotAvailableException e) {
 				logger.error("The impossible MetricNotAvailableException just happened anyway.");
 			}		
