@@ -317,7 +317,7 @@ public class JobDescription {
 	/**
 	 * Copy constructor
 	 * 
-	 * @param other
+	 * @param original
 	 *            original description to get data from
 	 */
 	public JobDescription(JobDescription original) {
@@ -351,16 +351,15 @@ public class JobDescription {
 	 * <li>Cluster settings in given Cluster</li>
 	 * </ol>
 	 * 
-	 * @param applicationSet
-	 *            applications to use for resolving settings.
-	 * @param grid
-	 *            clusters to use for resolving settings.
+	 * @param application
+	 *            application to use for resolving settings.
+	 * @param cluster
+	 *            cluster to use for resolving settings.
 	 * 
-	 * @return the resulting application, as a new object.
-	 * @throws Exception
+	 * @return the resulting job description, as a new object.
 	 */
 	public JobDescription resolve(Application application, Cluster cluster)
-			throws Exception {
+			 {
 		JobDescription result = new JobDescription(this);
 
 		if (application != null) {

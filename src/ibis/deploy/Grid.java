@@ -9,7 +9,8 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Grid containing clusters. Basically just a HashMap with cluster objects, and some functions for loading and saving grids.S
+ * Grid containing clusters. Basically just a HashMap with cluster objects, and
+ * some functions for loading and saving grids.S
  * 
  * @author Niels Drost
  * 
@@ -17,20 +18,19 @@ import java.util.List;
 public class Grid {
 
     private final List<Cluster> clusters;
-    
-    
+
     /**
      * Constructs a new empty grid.
      */
     public Grid() {
-    	clusters = new ArrayList<Cluster>();
-    	
+        clusters = new ArrayList<Cluster>();
+
         try {
-        	clusters.add(Cluster.getLocalCluster());
-		} catch (Exception e) {
-			//should not happen
-			throw new RuntimeException("exception while creating grid", e);
-		}
+            clusters.add(Cluster.getLocalCluster());
+        } catch (Exception e) {
+            // should not happen
+            throw new RuntimeException("exception while creating grid", e);
+        }
     }
 
     /**
@@ -56,8 +56,7 @@ public class Grid {
         if (!file.getName().endsWith(".grid")) {
             throw new Exception("grid files must have a \".grid\" extension");
         }
-        
-        
+
         clusters.add(Cluster.getLocalCluster());
 
         DeployProperties properties = new DeployProperties();
@@ -66,24 +65,22 @@ public class Grid {
         String[] clusterNames = properties.getElementList("");
         if (clusterNames != null) {
             for (String clusterName : clusterNames) {
-            	Cluster cluster = getCluster(clusterName);
-            	
-            	if (cluster == null) {
-            		cluster = new Cluster(clusterName);
-                    addCluster(cluster);
-            	}
-            	
-            	//add default properties (if any)
-            	cluster.loadFromProperties(properties, "default");
+                Cluster cluster = getCluster(clusterName);
 
-            	//add normal properties
-            	cluster.loadFromProperties(properties, clusterName);
-            	
+                if (cluster == null) {
+                    cluster = new Cluster(clusterName);
+                    addCluster(cluster);
+                }
+
+                // add default properties (if any)
+                cluster.loadFromProperties(properties, "default");
+
+                // add normal properties
+                cluster.loadFromProperties(properties, clusterName);
+
             }
         }
     }
-
- 
 
     /**
      * Returns the Clusters in this Grid.
@@ -95,39 +92,38 @@ public class Grid {
     }
 
     /**
-     * Removes the cluster with the given name from the grid (if it belongs to the grid at
-     * all).
+     * Removes the cluster with the given name from the grid (if it belongs to
+     * the grid at all).
      * 
      * @param name
      *            the name of the cluster to be removed from this group
      */
     public void removeCluster(String name) {
-    	 for (int i = 0; i < clusters.size(); i++) {
-             if (clusters.get(i).getName().equals(name)) {
-            	 clusters.remove(i);
-            	 //go back one
-            	 i--;
-             }
-         }
+        for (int i = 0; i < clusters.size(); i++) {
+            if (clusters.get(i).getName().equals(name)) {
+                clusters.remove(i);
+                // go back one
+                i--;
+            }
+        }
     }
 
     /**
-     * Creates a new cluster in this grid, with a given name.
+     * Adds a new cluster to this grid.
      * 
-     * @param name
-     *            the name of the cluster.
-     * 
-     * @return the new cluster.
-     * 
-     * @throws Exception
-     *             if the name given is <code>null</code>
+     * @param cluster
+     *            the cluster.
+     *            
+     * @throws AlreadyExistsException
+     *             if the cluster (name) is already present in this grid
      */
     public void addCluster(Cluster cluster) throws Exception {
         if (hasCluster(cluster.getName())) {
-            throw new AlreadyExistsException("Cannot add cluster, cluster with name \""
-                    + cluster.getName() + "\" already exists");
+            throw new AlreadyExistsException(
+                    "Cannot add cluster, cluster with name \""
+                            + cluster.getName() + "\" already exists");
         }
-        
+
         clusters.add(cluster);
     }
 
@@ -163,7 +159,6 @@ public class Grid {
         }
         return null;
     }
-
 
     /**
      * Save this grid and all contained clusters to a property file

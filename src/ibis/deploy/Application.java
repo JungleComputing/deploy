@@ -10,8 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jdesktop.swingx.JXList.ListSearchable;
-
 /**
  * Ibis-based Java Application Description. Applications are usually part of
  * (and created by) an ApplicationSet.
@@ -155,13 +153,8 @@ public class Application {
      * 
      * @param properties
      *            properties to load application from
-     * @param name
-     *            name of this application.
      * @param prefix
      *            prefix used for loading application
-     * @throws Exception
-     *             if application cannot be read properly, or its name is
-     *             invalid
      */
     public void setFromProperties(DeployProperties properties, String prefix) {
     	prefix = prefix + ".";

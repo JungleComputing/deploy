@@ -267,10 +267,10 @@ public class Deploy {
      * 
      * @param description
      *            description of the job.
-     * @param applicationSet
-     *            applicationSet for job
-     * @param grid
-     *            grid to use
+     * @param application
+     *            application for job
+     * @param cluster
+     *            cluster to use
      * @param hubListener
      *            listener for state of hub
      * @param jobListener
