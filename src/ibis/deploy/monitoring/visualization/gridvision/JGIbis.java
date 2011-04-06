@@ -8,7 +8,6 @@ import ibis.deploy.monitoring.collection.Metric.MetricModifier;
 
 
 public class JGIbis extends JGVisualAbstract implements JGVisual  {	
-	
 	public JGIbis(JungleGoggles goggles, JGVisual parent, GLUgl2 glu, Ibis dataIbis) {
 		super(goggles, parent);
 		
@@ -21,5 +20,6 @@ public class JGIbis extends JGVisualAbstract implements JGVisual  {
 		for (Metric dataMetric : dataMetrics) {			
 			metrics.add(new JGMetric(goggles, this, dataMetric, MetricModifier.NORM));
 		}
+		name = dataIbis.getLocation().getName();
 	}
 }

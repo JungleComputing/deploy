@@ -10,7 +10,7 @@ import ibis.deploy.monitoring.collection.Metric;
 import ibis.deploy.monitoring.collection.Metric.MetricModifier;
 
 
-public class JGLocation extends JGVisualAbstract implements JGVisual {		
+public class JGLocation extends JGVisualAbstract implements JGVisual {	
 	public JGLocation(JungleGoggles goggles, JGVisual parent, GLUgl2 glu, Location dataLocation, float[] newSeparation) {
 		super(goggles, parent);
 
@@ -44,5 +44,7 @@ public class JGLocation extends JGVisualAbstract implements JGVisual {
 			metrics.add(new JGMetric(goggles, this, dataMetric, MetricModifier.NORM));
 			metrics.add(new JGMetric(goggles, this, dataMetric, MetricModifier.MAX));
 		}
-	}	
+		
+		name = dataLocation.getName();
+	}
 }

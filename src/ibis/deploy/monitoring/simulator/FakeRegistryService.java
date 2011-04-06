@@ -22,7 +22,7 @@ public class FakeRegistryService implements ibis.ipl.server.RegistryServiceInter
 
 	final int POOLS = 1;
 	final int COUNTRIES = 1;
-	final int UNIVERSITIES = 4;
+	final int UNIVERSITIES = 1;
 	final int CLUSTERS = 4;
 	final int IBISES = 16;
 	

@@ -1,9 +1,12 @@
 package ibis.deploy.monitoring.visualization.gridvision;
 
+import java.awt.Font;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.media.opengl.GL2;
+
+import com.jogamp.opengl.util.awt.TextRenderer;
 
 public abstract class JGVisualAbstract implements JGVisual {
 	private final static float SPHERE_RADIUS_MULTIPLIER = 0.175f;
@@ -27,6 +30,9 @@ public abstract class JGVisualAbstract implements JGVisual {
 	protected float[] locationSeparation = { 0, 0, 0 };
 	protected float[] ibisSeparation = { 0, 0, 0 };
 	protected float[] metricSeparation = { 0.05f, 0.05f, 0.05f };
+	
+	protected TextRenderer tr;
+	protected String name;
 
 	public JGVisualAbstract(JungleGoggles goggles, JGVisual parent) {
 		this.goggles = goggles;
@@ -54,6 +60,10 @@ public abstract class JGVisualAbstract implements JGVisual {
 		radius = 0f;
 		width = 0f;
 		height = 0f;
+		
+		Font font = new Font("SansSerif", Font.BOLD, 36);
+		tr = new TextRenderer(font);
+		name = "";
 	}
 
 	public void init(GL2 gl) {
@@ -382,12 +392,38 @@ public abstract class JGVisualAbstract implements JGVisual {
 				for (JGVisual metric : metrics) {
 					metric.drawTransparents(gl, renderMode);
 				}
+				
+				//Save the current modelview matrix
+				gl.glPushMatrix();
+				
+				tr.begin3DRendering();
+			    // optionally set the color
+			    tr.setColor(1f, 1f, 1f, 0.5f);
+			    tr.draw3D(name, coordinates[0], coordinates[1]-height, coordinates[2], 0.005f);
+			    // ... more draw commands, color changes, etc.
+			    tr.end3DRendering();
+			    
+			    //Restore the old modelview matrix
+				gl.glPopMatrix();
 			}
 		} else {
 			if (state == State.COLLAPSED || state == State.UNFOLDED) {
 				for (JGVisual metric : metrics) {
 					metric.drawTransparents(gl, renderMode);
 				}
+				
+				//Save the current modelview matrix
+				gl.glPushMatrix();
+				
+				tr.begin3DRendering();
+			    // optionally set the color
+			    tr.setColor(1f, 1f, 1f, 0.5f);
+			    tr.draw3D(name, coordinates[0], coordinates[1]-height, coordinates[2], 0.005f);
+			    // ... more draw commands, color changes, etc.
+			    tr.end3DRendering();
+			    
+			    //Restore the old modelview matrix
+				gl.glPopMatrix();
 			}
 		}
 	}
