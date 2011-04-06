@@ -24,7 +24,7 @@ public class FakeRegistryService implements ibis.ipl.server.RegistryServiceInter
 	final int COUNTRIES = 1;
 	final int UNIVERSITIES = 4;
 	final int CLUSTERS = 4;
-	final int IBISES = 20;
+	final int IBISES = 16;
 	
 	private HashMap<String, IbisIdentifier[]> pools;
 	private HashMap<IbisIdentifier, State> ibises;

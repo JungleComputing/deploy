@@ -33,8 +33,7 @@
         <mkdir dir="lib-server" />
 
         <copy todir="lib">
-            <fileset dir="external" includes="*.jar" />
-            <fileset dir="external" includes="native_libraries/*" />
+            <fileset dir="external" includes="*.jar" />            
         	<fileset dir="${jogl}" />
             <fileset dir="${javagat}" />
             <fileset dir="${ipl}" />
