@@ -392,15 +392,17 @@ public abstract class JGVisualAbstract implements JGVisual {
 				for (JGVisual metric : metrics) {
 					metric.drawTransparents(gl, renderMode);
 				}
-				
+								
 				//Save the current modelview matrix
 				gl.glPushMatrix();
 				
-				tr.begin3DRendering();
-			    // optionally set the color
-			    tr.setColor(1f, 1f, 1f, 0.5f);
-			    tr.draw3D(name, coordinates[0], coordinates[1]-height, coordinates[2], 0.005f);
-			    // ... more draw commands, color changes, etc.
+				tr.begin3DRendering();				
+					if (goggles.currentlySelected(this)) {
+						tr.setColor(1f, 1f, 1f, 1f);
+					} else {
+						tr.setColor(1f, 1f, 1f, 0.5f);
+					}					
+				    tr.draw3D(name, coordinates[0], coordinates[1]-height, coordinates[2], 0.005f);
 			    tr.end3DRendering();
 			    
 			    //Restore the old modelview matrix
@@ -416,10 +418,12 @@ public abstract class JGVisualAbstract implements JGVisual {
 				gl.glPushMatrix();
 				
 				tr.begin3DRendering();
-			    // optionally set the color
-			    tr.setColor(1f, 1f, 1f, 0.5f);
-			    tr.draw3D(name, coordinates[0], coordinates[1]-height, coordinates[2], 0.005f);
-			    // ... more draw commands, color changes, etc.
+					if (goggles.currentlySelected(this)) {
+						tr.setColor(1f, 1f, 1f, 1f);
+					} else {
+						tr.setColor(1f, 1f, 1f, 0.5f);
+					}					
+				    tr.draw3D(name, coordinates[0], coordinates[1]-height, coordinates[2], 0.005f);
 			    tr.end3DRendering();
 			    
 			    //Restore the old modelview matrix
@@ -444,9 +448,7 @@ public abstract class JGVisualAbstract implements JGVisual {
 		gl.glColor4f(0.1f, 0.1f, 0.1f, 0.1f);
 		
 		
-		float HEIGHT = 1.5f, WIDTH = 1.5f;
-		
-		
+		float HEIGHT = 1.5f, WIDTH = 1.5f;		
 		
 		gl.glLineWidth(1.0f);
 		

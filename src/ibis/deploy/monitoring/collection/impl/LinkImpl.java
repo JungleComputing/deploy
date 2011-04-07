@@ -72,7 +72,7 @@ public class LinkImpl extends ElementImpl implements Link {
 	}
 
 	public void update() {
-		// First update all of our children (lower locations, ibises)
+		// First update all of our children
 		for (Link child : children) {
 			((LinkImpl) child).update();
 		}		

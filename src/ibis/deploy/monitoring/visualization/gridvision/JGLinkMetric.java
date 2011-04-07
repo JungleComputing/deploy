@@ -14,6 +14,7 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 	private static final float HEIGHT = 1.00f;
 	private static final float ALPHA = 0.4f;
 	private static final int ACCURACY = 20;
+	private static final int MAX_PARTICLES = 20;
 	
 	private static boolean DONT_SHOW_EMPTY = true;
 	
@@ -30,6 +31,8 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 	private boolean[] transparentsOnDemandListsBuilt, solidsOnDemandListsBuilt;
 	private boolean listsInitialized;
 	private int whichList;
+	
+	private Particle[] particles;
 	
 	private float[] dimensions = {WIDTH,HEIGHT,WIDTH};
 	
@@ -63,21 +66,28 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 	}
 	
 	public void init(GL2 gl) {
-		if (listsInitialized) {
-			gl.glDeleteLists(solidsOnDemandList[0], ACCURACY+1);
-			gl.glDeleteLists(transparentsOnDemandList[0], ACCURACY+1);
-		}
-		solidsOnDemandList[0] = gl.glGenLists(ACCURACY+1);
-		transparentsOnDemandList[0] = gl.glGenLists(ACCURACY+1);
-		
-		for (int i=0; i<ACCURACY+1; i++) {
-			solidsOnDemandListsBuilt[i] = false;
-			transparentsOnDemandListsBuilt[i] = false;
+		if (mShape != MetricShape.PARTICLES) {
+			if (listsInitialized) {
+				gl.glDeleteLists(solidsOnDemandList[0], ACCURACY+1);
+				gl.glDeleteLists(transparentsOnDemandList[0], ACCURACY+1);
+			}
+			solidsOnDemandList[0] = gl.glGenLists(ACCURACY+1);
+			transparentsOnDemandList[0] = gl.glGenLists(ACCURACY+1);
 			
-			solidsOnDemandList[i] = solidsOnDemandList[0]+i;
-			transparentsOnDemandList[i] = transparentsOnDemandList[0]+i;
+			for (int i=0; i<ACCURACY+1; i++) {
+				solidsOnDemandListsBuilt[i] = false;
+				transparentsOnDemandListsBuilt[i] = false;
+				
+				solidsOnDemandList[i] = solidsOnDemandList[0]+i;
+				transparentsOnDemandList[i] = transparentsOnDemandList[0]+i;
+			}
+			listsInitialized = true;
+		} else {
+			particles = new Particle[MAX_PARTICLES];
+			for (int i = 0; i < MAX_PARTICLES; i++) {
+				particles[i] = new Particle();
+			}
 		}
-		listsInitialized = true;
 	}
 	
 	public void setCoordinates(float[] newCoords) {	
@@ -107,19 +117,26 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 	
 	public void drawSolids(GL2 gl, int renderMode) {
 		if (renderMode == GL2.GL_SELECT) { gl.glLoadName(glName); }		
-		
+				
 		whichList = (int)(ACCURACY*currentValue);
 		
+		//always draw all particles
+		//drawParticles(gl);
+		
 		//Do not draw links that have no value
-		if (DONT_SHOW_EMPTY && whichList == 0) return;
+		if (DONT_SHOW_EMPTY && whichList == 0) {
+			return;
+		}
 		
 		if (mShape == MetricShape.BAR) {
 			drawSolidBar(gl, currentValue, dimensions[1]);
 		} else if (mShape == MetricShape.TUBE) {
 			//drawSolidTube(gl, currentValue, dimensions[1]);
+		} else if (mShape == MetricShape.PARTICLES) {			 
+			//startParticle(dimensions[1]);			
 		}		
 	}
-	
+		
 	public void drawTransparents(GL2 gl, int renderMode) {
 		if (renderMode == GL2.GL_SELECT) { gl.glLoadName(glName); }		
 		
@@ -144,8 +161,8 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 			e.printStackTrace();
 		}	
 	}
-	
-	protected void drawSolidBar(GL2 gl, float length, float maxLength) {
+		
+	private void drawSolidBar(GL2 gl, float length, float maxLength) {
 		//Save the current modelview matrix
 		gl.glPushMatrix();
 		
@@ -273,7 +290,7 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 		gl.glPopMatrix();
 	}
 
-	protected void drawTransparentBar(GL2 gl, float length, float maxLength) {
+	private void drawTransparentBar(GL2 gl, float length, float maxLength) {
 		//Save the current modelview matrix
 		gl.glPushMatrix();
 		
@@ -402,7 +419,7 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 		gl.glPopMatrix();
 	}
 	
-	protected void drawSolidTube(GL2 gl, float length, float maxLength) {
+	private void drawSolidTube(GL2 gl, float length, float maxLength) {
 		//Save the current modelview matrix
 		gl.glPushMatrix();	
 		
@@ -471,7 +488,7 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 	}
 		
 		
-	protected void drawTransparentTube(GL2 gl, float length, float maxLength) {
+	private void drawTransparentTube(GL2 gl, float length, float maxLength) {
 		//Save the current modelview matrix
 		gl.glPushMatrix();	
 		
@@ -529,7 +546,7 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 		gl.glPopMatrix();
 	}
 	
-	protected void drawAlphaTube(GL2 gl, float alpha, float maxLength) {
+	private void drawAlphaTube(GL2 gl, float alpha, float maxLength) {
 		//Save the current modelview matrix
 		gl.glPushMatrix();	
 		
@@ -596,4 +613,34 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 		//Restore the old modelview matrix
 		gl.glPopMatrix();
 	}
+	
+	private void startParticle(float maxLength) {
+		float 	Yn = -0.5f*maxLength,
+				Yp = 0.5f*maxLength;
+		
+		for (Particle p : particles) {
+			if (!p.shown) {
+				p.init(Yn, Yp);
+			}
+		}		
+	}
+	
+	private void drawParticles(GL2 gl) {
+		//Save the current modelview matrix
+		gl.glPushMatrix();	
+		
+		//Translate to the desired coordinates and rotate if desired
+		gl.glTranslatef(coordinates[0], coordinates[1], coordinates[2]);
+		gl.glRotatef(rotation[0], 1.0f, 0.0f, 0.0f);
+		gl.glRotatef(rotation[1], 0.0f, 1.0f, 0.0f);
+		gl.glRotatef(rotation[2], 0.0f, 0.0f, 1.0f);
+		
+		for (Particle p : particles) {
+			p.draw(gl);
+		}	
+		
+		//Restore the old modelview matrix
+		gl.glPopMatrix();
+	}
+	
 }

@@ -438,6 +438,7 @@ public class JungleGoggles implements GLEventListener {
 	public void setViewDist(float newViewDist) {
 		viewDist = newViewDist;
 		
+		/*
 		JGVisual selectedParent = namesToParents.get(selectedItem);
 		if (selectedParent != null) {
 			if (viewDist > ZOOM_IN_THRESHOLD) {
@@ -448,6 +449,7 @@ public class JungleGoggles implements GLEventListener {
 				viewDist = STANDARD_VIEWDIST;			
 			}		
 		}
+		*/
 	}
 	
 	public float getViewDist() {

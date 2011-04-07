@@ -37,7 +37,7 @@ public class JGLink extends JGVisualAbstract implements JGVisual {
 		State dstState = destination.getState();
 		
 		if (srcState == State.COLLAPSED && dstState == State.COLLAPSED) {
-			for (JGVisual metric : metrics)	{
+			for (JGVisual metric : metrics)	{				
 				metric.drawSolids(gl, renderMode);
 			}	
 		}				

@@ -17,7 +17,9 @@ import ibis.deploy.monitoring.collection.exceptions.IncorrectParametersException
 
 public class BytesReceivedPerSecond extends ibis.deploy.monitoring.collection.impl.MetricDescriptionImpl implements ibis.deploy.monitoring.collection.MetricDescription {
 	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.collection.metrics.BytesReceivedPerSecond");
-		
+
+	private static final float MAX = 1024000; //1GB
+	
 	public BytesReceivedPerSecond() {
 		super();
 		
@@ -66,7 +68,10 @@ public class BytesReceivedPerSecond extends ibis.deploy.monitoring.collection.im
 					} else {
 						max = max_prev;
 					}
-					float percent = (float)perSec/(float)max;
+
+					float percent = (float)perSec/MAX; //(float)max;
+					if (percent > 1f) percent = 1f;
+					
 					percentResult.put(received.getKey(), percent);					
 				} else {
 					logger.error("Wrong types for map in parameter.");
