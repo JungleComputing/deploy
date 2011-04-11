@@ -4,6 +4,7 @@ import ibis.deploy.util.Colors;
 import ibis.deploy.util.Util;
 import ibis.util.TypedProperties;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -61,7 +62,7 @@ public class Cluster {
         out.println("# latitude            Latitude position of this cluster (double)");
         out.println("# longitude           Longitude position of this cluster (double)");
         out.println("# color               Color (as a HTML color string) used to represent this cluster");
-
+        out.println("# location            Location used for jobs in this cluster (will be prepended with job name)");
     }
 
     // name of this cluster
@@ -118,7 +119,9 @@ public class Cluster {
     // Longitude position of this cluster
     private double longitude;
 
-    private String color;
+    private Color color;
+    
+    private String location;
 
     private boolean visibleOnMap;
 
@@ -283,24 +286,24 @@ public class Cluster {
         if (properties.getProperty(prefix + "server.adaptor") != null) {
             serverAdaptor = properties.getProperty(prefix + "server.adaptor");
         }
-        if (properties.getURIProperty(prefix + "server.uri") != null) {
+        if (properties.getProperty(prefix + "server.uri") != null) {
             serverURI = properties.getURIProperty(prefix + "server.uri");
         }
         if (properties.getProperty(prefix + "job.adaptor") != null) {
             jobAdaptor = properties.getProperty(prefix + "job.adaptor");
         }
-        if (properties.getURIProperty(prefix + "job.uri") != null) {
+        if (properties.getProperty(prefix + "job.uri") != null) {
             jobURI = properties.getURIProperty(prefix + "job.uri");
         }
         // get adaptors as list of string, defaults to "null"
-        if (properties.getStringListProperty(prefix + "file.adaptors") != null) {
+        if (properties.getProperty(prefix + "file.adaptors") != null) {
             fileAdaptors = properties.getStringListProperty(prefix
                     + "file.adaptors");
         }
         if (properties.getProperty(prefix + "java.path") != null) {
             javaPath = properties.getProperty(prefix + "java.path");
         }
-        if (properties.getFileProperty(prefix + "job.wrapper.script") != null) {
+        if (properties.getProperty(prefix + "job.wrapper.script") != null) {
             jobWrapperScript = properties.getFileProperty(prefix
                     + "job.wrapper.script");
         }
@@ -310,15 +313,15 @@ public class Cluster {
         if (properties.getProperty(prefix + "user.key") != null) {
             keyFile = properties.getProperty(prefix + "user.key");
         }
-        if (properties.getFileProperty(prefix + "cache.dir") != null) {
+        if (properties.getProperty(prefix + "cache.dir") != null) {
             cacheDir = properties.getFileProperty(prefix + "cache.dir");
         }
-        if (properties.getFileListProperty(prefix + "server.output.files") != null) {
+        if (properties.getProperty(prefix + "server.output.files") != null) {
             serverOutputFiles = properties.getFileListProperty(prefix
                     + "server.output.files");
         }
         if (properties
-                .getStringMapProperty(prefix + "server.system.properties") != null) {
+                .getProperty(prefix + "server.system.properties") != null) {
             serverSystemProperties = properties.getStringMapProperty(prefix
                     + "server.system.properties");
         }
@@ -338,10 +341,16 @@ public class Cluster {
             longitude = properties.getDoubleProperty(prefix + "longitude", 0);
         }
         
-        if (properties.getProperty(prefix + "color") != null) {
-            color = properties.getProperty(prefix + "color");
+        if (properties.getProperty(prefix + "location") != null) {
+        	location = properties.getProperty(prefix + "location");
         } else {
-        	color = Colors.locationToColorString(getName());
+        	location = getName();
+        }
+        
+        if (properties.getProperty(prefix + "color") != null) {
+            color = properties.getColorProperty(prefix + "color");
+        } else {
+        	color = Colors.locationToColorString(getLocation());
         }
 
         //copy all properties with right prefix to properties map
@@ -898,28 +907,20 @@ public class Cluster {
         this.longitude = longitude;
     }
 
-    public String getColorCode() {
+    public Color getColor() {
         return color;
     }
 
-    // public Color getColor() {
-    // if (color == null || color.equals("")) {
-    // return null;
-    // }
-    // return Color.decode(color);
-    // }
-    //
-    // public Color getLightColor() {
-    // Color color = getColor();
-    //
-    // if (color == null) {
-    // return null;
-    // }
-    // return new Color(color.getRed(), color.getGreen(), color.getBlue(), 125);
-    // }
-
-    public void setColor(String color) {
+    public void setColor(Color color) {
         this.color = color;
+    }
+    
+    public String getLocation() {
+    	return location;
+    }
+    
+    public void setLocation(String location) {
+    	this.location = location;
     }
     
     /**
@@ -1042,7 +1043,7 @@ public class Cluster {
 
         if (fileAdaptors != null) {
             out.println(dotPrefix + "file.adaptors = "
-                    + Util.strings2CSS(fileAdaptors));
+                    + DeployProperties.strings2CSS(fileAdaptors));
             empty = false;
         } else if (printComments) {
             out.println("#" + dotPrefix + "file.adaptors = ");
@@ -1085,7 +1086,7 @@ public class Cluster {
 
         if (serverOutputFiles != null) {
             out.println(dotPrefix + "server.output.files = "
-                    + Util.files2CSS(serverOutputFiles));
+                    + DeployProperties.files2CSS(serverOutputFiles));
             empty = false;
         } else if (printComments) {
             out.println("#" + dotPrefix + "server.output.files =");
@@ -1093,7 +1094,7 @@ public class Cluster {
 
         if (serverSystemProperties != null) {
             out.println(dotPrefix + "server.system.properties = "
-                    + Util.toCSString(serverSystemProperties));
+                    + DeployProperties.toCSString(serverSystemProperties));
             empty = false;
         } else if (printComments) {
             out.println("#" + dotPrefix + "server.system.properties =");
@@ -1133,6 +1134,21 @@ public class Cluster {
         } else if (printComments) {
             out.println("#" + dotPrefix + "longitude = ");
         }
+        
+        if (color != null) {
+            out.println(dotPrefix + "color = " + Colors.color2colorCode(color));
+            empty = false;
+        } else if (printComments) {
+            out.println("#" + dotPrefix + "color = ");
+        }
+
+        
+        if (location != null) {
+            out.println(dotPrefix + "location = " + location);
+            empty = false;
+        } else if (printComments) {
+            out.println("#" + dotPrefix + "location = ");
+        }
 
         if (empty && printComments) {
             out.println("#Dummy property to make sure cluster is actually defined");
@@ -1164,22 +1180,22 @@ public class Cluster {
         result += " Server URI = " + getServerURI() + "\n";
         result += " Job adaptor = " + getJobAdaptor() + "\n";
         result += " Job URI = " + getJobURI() + "\n";
-        result += " File adaptors = " + Util.strings2CSS(fileAdaptors) + "\n";
+        result += " File adaptors = " + DeployProperties.strings2CSS(fileAdaptors) + "\n";
         result += " Java path = " + getJavaPath() + "\n";
         result += " Wrapper Script = " + getJobWrapperScript() + "\n";
         result += " User name = " + getUserName() + "\n";
         result += " User keyfile = " + getKeyFile() + "\n";
         result += " Cache dir = " + getCacheDir() + "\n";
-        result += " Server output files = " + Util.files2CSS(serverOutputFiles)
+        result += " Server output files = " + DeployProperties.files2CSS(serverOutputFiles)
                 + "\n";
         result += " Server system properties = "
-                + Util.toCSString(getServerSystemProperties()) + "\n";
+                + DeployProperties.toCSString(getServerSystemProperties()) + "\n";
         result += " Nodes = " + getNodes() + "\n";
         result += " Cores = " + getCores() + "\n";
         result += " Memory = " + getMemory() + "\n";
         result += " Latitude = " + getLatitude() + "\n";
         result += " Longitude = " + getLongitude() + "\n";
-        result += " Color = " + getColorCode() + "\n";
+        result += " Color = " + Colors.color2colorCode(color) + "\n";
 
         return result;
     }

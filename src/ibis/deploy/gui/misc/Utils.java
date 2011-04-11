@@ -20,21 +20,7 @@ public class Utils {
         return result;
     }
 
-    public static Color getColor(String colorString) {
-        if (colorString == null || colorString.equals("")) {
-            return null;
-        }
-        return Color.decode(colorString);
-    }
 
-    public static Color getLightColor(String colorString) {
-        Color color = getColor(colorString);
-
-        if (color == null) {
-            return null;
-        }
-        return new Color(color.getRed(), color.getGreen(), color.getBlue(), 135);
-    }
 
     /**
      * Returns an JButton, or null if the path was invalid.

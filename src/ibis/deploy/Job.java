@@ -1,6 +1,7 @@
 package ibis.deploy;
 
 import ibis.deploy.Deploy.HubPolicy;
+import ibis.deploy.util.Colors;
 import ibis.deploy.util.Rsync;
 import ibis.deploy.util.StateForwarder;
 import ibis.deploy.util.Util;
@@ -123,7 +124,7 @@ public class Job implements Runnable {
      * @return a copy of the description used to start this job.
      */
     public JobDescription getDescription() {
-            return new JobDescription(description);
+        return new JobDescription(description);
     }
 
     /**
@@ -190,7 +191,12 @@ public class Job implements Runnable {
     }
 
     public void waitUntilDeployed() throws Exception {
-        String location = description.getName() + "@" + cluster.getName();
+        String location;
+        if (cluster.getLocation() == null) {
+            location = description.getName() + "@" + cluster.getName();
+        } else {
+            location = description.getName() + "@" + cluster.getLocation();
+        }
 
         while (!isFinished()) {
             if (deploy.poolSizes().containsKey(description.getPoolName())) {
@@ -297,7 +303,7 @@ public class Job implements Runnable {
                 cluster.getJobAdaptor());
 
         context.addPreference("file.adaptor.name",
-                Util.strings2CSS(cluster.getFileAdaptors()));
+                DeployProperties.strings2CSS(cluster.getFileAdaptors()));
 
         return context;
     }
@@ -312,11 +318,13 @@ public class Job implements Runnable {
 
         if (clusterCacheDir == null
                 || cluster.getJobAdaptor().equalsIgnoreCase("zorilla")) {
-            org.gridlab.gat.io.File gatFile = GAT.createFile(context, new URI(src.toURI()));
+            org.gridlab.gat.io.File gatFile = GAT.createFile(context, new URI(
+                    src.toURI()));
             // Don't use netURI.toString()! The JavaGAT URI constructor is quite
-            // different from the java.net.URI one. Any %-escape in netURI.toString() is
+            // different from the java.net.URI one. Any %-escape in
+            // netURI.toString() is
             // handled wrong! --Ceriel
-            
+
             // sd.addPreStagedFile(gatFile, gatCwd);
             sd.addPreStagedFile(gatFile);
             return;
@@ -405,10 +413,15 @@ public class Job implements Runnable {
         }
 
         // ibis stuff
+        String location = cluster.getLocation();
+        if (location == null) {
+            location = cluster.getName();
+        }
+
         sd.addJavaSystemProperty(IbisProperties.LOCATION, description.getName()
-                + "@" + cluster.getName());
+                + "@" + location);
         sd.addJavaSystemProperty(IbisProperties.LOCATION_COLOR,
-                cluster.getColorCode());
+                Colors.color2colorCode(cluster.getColor()));
         sd.addJavaSystemProperty(IbisProperties.POOL_NAME,
                 description.getPoolName());
         sd.addJavaSystemProperty(IbisProperties.POOL_SIZE,
@@ -518,8 +531,7 @@ public class Job implements Runnable {
             JavaSoftwareDescription sd) throws Exception {
         org.gridlab.gat.resources.JobDescription result;
 
-        File wrapperScript = description.getCluster()
-                .getJobWrapperScript();
+        File wrapperScript = description.getCluster().getJobWrapperScript();
 
         if (wrapperScript == null) {
             result = new org.gridlab.gat.resources.JobDescription(sd);
@@ -601,9 +613,8 @@ public class Job implements Runnable {
                 forwarder.setState(State.WAITING);
 
                 // start a hub especially for this job
-                localHub = new RemoteServer(description.getCluster(),
-                        true, rootHub, deployHome, verbose, hubListener,
-                        keepSandbox);
+                localHub = new RemoteServer(description.getCluster(), true,
+                        rootHub, deployHome, verbose, hubListener, keepSandbox);
 
                 // wait until hub really running
                 localHub.waitUntilRunning();
@@ -731,6 +742,5 @@ public class Job implements Runnable {
     public Application getApplication() {
         return application;
     }
-
 
 }

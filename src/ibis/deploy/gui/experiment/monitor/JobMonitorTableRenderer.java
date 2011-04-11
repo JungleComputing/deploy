@@ -4,6 +4,7 @@ import ibis.deploy.Job;
 import ibis.deploy.JobDescription;
 import ibis.deploy.State;
 import ibis.deploy.gui.misc.Utils;
+import ibis.deploy.util.Colors;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -86,11 +87,11 @@ class JobMonitorTableRenderer extends JLabel implements TableCellRenderer {
                     .convertRowIndexToModel(row));
 
             if (isSelected) {
-                setBackground(Utils.getColor(jobDescription
-                        .getCluster().getColorCode()));
+                setBackground(jobDescription
+                        .getCluster().getColor());
             } else {
-                setBackground(Utils.getLightColor(jobDescription
-                        .getCluster().getColorCode()));
+                setBackground(Colors.getLightColor(jobDescription
+                        .getCluster().getColor()));
             }
 
             setText(jobDescription.getCluster().getName());

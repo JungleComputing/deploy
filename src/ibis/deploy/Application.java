@@ -165,8 +165,8 @@ public class Application {
         if (properties.getProperty(prefix + "main.class") != null) {
             mainClass = properties.getProperty(prefix + "main.class");
         }
-        if (properties.getStringListProperty(prefix + "arguments") != null) {
-            arguments = properties.getStringListProperty(prefix + "arguments");
+        if (properties.getProperty(prefix + "arguments") != null) {
+            arguments = properties.getStringListProperty(prefix + "arguments", "\\s");
         }
         if (properties.getFileListProperty(prefix + "input.files") != null) {
             inputFiles = properties.getFileListProperty(prefix + "input.files");
@@ -181,7 +181,7 @@ public class Application {
         }
         if (properties.getStringListProperty(prefix + "jvm.options") != null) {
             jvmOptions = properties.getStringListProperty(prefix
-                    + "jvm.options");
+                    + "jvm.options", "\\s");
         }
         if (properties.getFileProperty(prefix + "log4j.file") != null) {
             log4jFile = properties.getFileProperty(prefix + "log4j.file");
@@ -674,14 +674,14 @@ public class Application {
 
         if (arguments != null) {
             out.println(dotPrefix + "arguments = "
-                    + Util.strings2CSS(arguments));
+                    + DeployProperties.strings2SSS(arguments));
             empty = false;
         } else if (printComments) {
             out.println("#" + dotPrefix + "arguments =");
         }
 
         if (libs != null) {
-            out.println(dotPrefix + "libs = " + Util.files2CSS(libs));
+            out.println(dotPrefix + "libs = " + DeployProperties.files2CSS(libs));
             empty = false;
         } else if (printComments) {
             out.println("#" + dotPrefix + "libs =");
@@ -689,7 +689,7 @@ public class Application {
 
         if (inputFiles != null) {
             out.println(dotPrefix + "input.files = "
-                    + Util.files2CSS(inputFiles));
+                    + DeployProperties.files2CSS(inputFiles));
             empty = false;
         } else if (printComments) {
             out.println("#" + dotPrefix + "input.files =");
@@ -697,7 +697,7 @@ public class Application {
 
         if (outputFiles != null) {
             out.println(dotPrefix + "output.files = "
-                    + Util.files2CSS(outputFiles));
+                    + DeployProperties.files2CSS(outputFiles));
             empty = false;
         } else if (printComments) {
             out.println("#" + dotPrefix + "output.files =");
@@ -705,7 +705,7 @@ public class Application {
 
         if (systemProperties != null) {
             out.println(dotPrefix + "system.properties = "
-                    + Util.toCSString(systemProperties));
+                    + DeployProperties.toCSString(systemProperties));
             empty = false;
         } else if (printComments) {
             out.println("#" + dotPrefix + "system.properties =");
@@ -713,7 +713,7 @@ public class Application {
 
         if (jvmOptions != null) {
             out.println(dotPrefix + "jvm.options = "
-                    + Util.strings2CSS(jvmOptions));
+                    + DeployProperties.strings2SSS(jvmOptions));
             empty = false;
         } else if (printComments) {
             out.println("#" + dotPrefix + "java.options =");
@@ -754,13 +754,13 @@ public class Application {
         }
 
         result += " Main class = " + getMainClass() + "\n";
-        result += " Arguments = " + Util.strings2CSS(getArguments()) + "\n";
-        result += " Libs = " + Util.files2CSS(getLibs()) + "\n";
-        result += " Input Files = " + Util.files2CSS(getInputFiles()) + "\n";
-        result += " Output Files = " + Util.files2CSS(getOutputFiles()) + "\n";
+        result += " Arguments = " + DeployProperties.strings2SSS(arguments) + "\n";
+        result += " Libs = " + DeployProperties.files2CSS(libs) + "\n";
+        result += " Input Files = " + DeployProperties.files2CSS(inputFiles) + "\n";
+        result += " Output Files = " + DeployProperties.files2CSS(outputFiles) + "\n";
         result += " System properties = "
-                + Util.toCSString(getSystemProperties()) + "\n";
-        result += " JVM Options = " + Util.strings2CSS(getJVMOptions()) + "\n";
+                + DeployProperties.toCSString(getSystemProperties()) + "\n";
+        result += " JVM Options = " + DeployProperties.strings2SSS(jvmOptions) + "\n";
         result += " Log4j File = " + getLog4jFile() + "\n";
 
         return result;

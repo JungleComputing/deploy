@@ -351,7 +351,7 @@ public class GraphGenerator {
 
     private void assignNodeColor(Node node, Node parent, Visualization vis) {
         NodeItem visualItem;
-        String colorCode;
+        Color colorCode;
         int color;
 
         visualItem = (NodeItem) vis.getVisualItem(VizUtils.NODES, node);
@@ -361,8 +361,8 @@ public class GraphGenerator {
             if (grid.getCluster(visualItem.getString(VizUtils.NODE_NAME)) != null) {
                 colorCode = grid.getCluster(
                         visualItem.getString(VizUtils.NODE_NAME))
-                        .getColorCode();
-                color = Utils.getColor(colorCode).getRGB();
+                        .getColor();
+                color = colorCode.getRGB();
             } else {
                 color = Color.decode(VizUtils.getRandomColor()).getRGB();
             }
@@ -378,8 +378,8 @@ public class GraphGenerator {
                 if (grid.getCluster(parent.getString(VizUtils.NODE_NAME)) != null) {
                     colorCode = grid.getCluster(
                             parent.getString(VizUtils.NODE_NAME))
-                            .getColorCode();
-                    color = Utils.getColor(colorCode).getRGB();
+                            .getColor();
+                    color = colorCode.getRGB();
                 } else {
                     color = Color.decode(VizUtils.getRandomColor()).getRGB();
                 }

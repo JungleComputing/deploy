@@ -1,5 +1,6 @@
 package ibis.deploy;
 
+import ibis.deploy.util.Colors;
 import ibis.deploy.util.OutputPrefixForwarder;
 import ibis.deploy.util.Rsync;
 import ibis.deploy.util.StateForwarder;
@@ -123,7 +124,7 @@ public class RemoteServer implements Runnable, Server {
                 .getServerAdaptor()
                 + ",local");
 
-        context.addPreference("file.adaptor.name", Util.strings2CSS(cluster
+        context.addPreference("file.adaptor.name", DeployProperties.strings2CSS(cluster
                 .getFileAdaptors()));
 
         // make sshtrilead file adaptor cache some info
@@ -199,7 +200,7 @@ public class RemoteServer implements Runnable, Server {
 
         // list of other hubs
         arguments.add("--hub-addresses");
-        arguments.add(Util.strings2CSS(rootHub.getHubs()));
+        arguments.add(DeployProperties.strings2CSS(rootHub.getHubs()));
 
         sd.setJavaArguments(arguments.toArray(new String[0]));
 
@@ -231,11 +232,11 @@ public class RemoteServer implements Runnable, Server {
         if (hubOnly) {
             sd.addJavaSystemProperty(ServerProperties.VIZ_INFO,
                     "H^Smartsockets Hub @ " + cluster.getName() + "^"
-                            + cluster.getColorCode());
+                            + Colors.color2colorCode(cluster.getColor()));
         } else {
             sd.addJavaSystemProperty(ServerProperties.VIZ_INFO,
                     "S^Ibis Server @ " + cluster.getName() + "^"
-                            + cluster.getColorCode());
+                            + Colors.color2colorCode(cluster.getColor()));
         }
 
         if (cluster.getServerSystemProperties() != null) {
