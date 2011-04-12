@@ -1,7 +1,5 @@
 package ibis.deploy;
 
-import ibis.deploy.util.Util;
-
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -30,23 +28,15 @@ public class Application {
         out.println("# KEY                COMMENT");
         out.println("# main.class         Main class of application");
         out.println("# arguments          Arguments of the application(*)");
-        out
-                .println("# libs               Files and directories which need to be in the classpath.");
+        out.println("# libs               Files and directories which need to be in the classpath.");
         out.println("#                    Automatically pre-staged as well(*)");
-        out
-                .println("# input.files        Input files copied to root of sandbox(*)");
-        out
-                .println("# output.files       Output files copied from root of sandbox(*)");
-        out
-                .println("# system.properties  Additional system properties in the form of name=value(*)");
-        out
-                .println("# jvm.options        Additional JVM options, for instance memory options(*)");
-        out
-                .println("# log4j.file         Log4j properties file used for the application.");
-        out
-                .println("#                    Defaults to log4j of ibis-deploy itself.");
-        out
-                .println("# memory.size        Integer: amount of memory to use for this application (in Megabytes)");
+        out.println("# input.files        Input files copied to root of sandbox(*)");
+        out.println("# output.files       Output files copied from root of sandbox(*)");
+        out.println("# system.properties  Additional system properties in the form of name=value(*)");
+        out.println("# jvm.options        Additional JVM options, for instance memory options(*)");
+        out.println("# log4j.file         Log4j properties file used for the application.");
+        out.println("#                    Defaults to log4j of ibis-deploy itself.");
+        out.println("# memory.size        Integer: amount of memory to use for this application (in Megabytes)");
         out.println("# (* = comma separated list of items)");
 
     }
@@ -106,48 +96,49 @@ public class Application {
      *             if name is null or contains periods and/or spaces
      */
     public Application(String name) throws Exception {
-    	this();
-    	
+        this();
+
         setName(name);
     }
 
     public Application(Application original) {
-    	this();
-    	
-    	this.name = original.name;
+        this();
 
-    	if (original.libs != null) {
-    	this.libs = new ArrayList<File>(original.libs);
-    	}
-    	
-    	this.mainClass = original.mainClass;
-    	
-    	if (original.arguments != null) {
-    		this.arguments = new ArrayList<String>(original.arguments);
-    	}
-    	
-    	if (original.inputFiles != null) {
-    		this.inputFiles = new ArrayList<File>(original.inputFiles);
-    	}
-    	
-    	if (original.outputFiles != null) {
-    		this.outputFiles = new ArrayList<File>(original.outputFiles);
-    	}
+        this.name = original.name;
 
-    	if (original.systemProperties != null) {
-    		this.systemProperties = new HashMap<String, String>(original.systemProperties);
-    	}
-    	
-    	if (original.jvmOptions != null) {
-    		this.jvmOptions = new ArrayList<String>(original.jvmOptions);
-    	}
-    	
-    	log4jFile = original.log4jFile;
-    	
-    	memorySize = original.memorySize;
-	}
+        if (original.libs != null) {
+            this.libs = new ArrayList<File>(original.libs);
+        }
 
-	/**
+        this.mainClass = original.mainClass;
+
+        if (original.arguments != null) {
+            this.arguments = new ArrayList<String>(original.arguments);
+        }
+
+        if (original.inputFiles != null) {
+            this.inputFiles = new ArrayList<File>(original.inputFiles);
+        }
+
+        if (original.outputFiles != null) {
+            this.outputFiles = new ArrayList<File>(original.outputFiles);
+        }
+
+        if (original.systemProperties != null) {
+            this.systemProperties = new HashMap<String, String>(
+                    original.systemProperties);
+        }
+
+        if (original.jvmOptions != null) {
+            this.jvmOptions = new ArrayList<String>(original.jvmOptions);
+        }
+
+        log4jFile = original.log4jFile;
+
+        memorySize = original.memorySize;
+    }
+
+    /**
      * Load application from the given properties (usually loaded from an
      * application-group file)
      * 
@@ -157,7 +148,7 @@ public class Application {
      *            prefix used for loading application
      */
     public void setFromProperties(DeployProperties properties, String prefix) {
-    	prefix = prefix + ".";
+        prefix = prefix + ".";
 
         if (properties.getFileListProperty(prefix + "libs") != null) {
             libs = properties.getFileListProperty(prefix + "libs");
@@ -166,7 +157,8 @@ public class Application {
             mainClass = properties.getProperty(prefix + "main.class");
         }
         if (properties.getProperty(prefix + "arguments") != null) {
-            arguments = properties.getStringListProperty(prefix + "arguments", "\\s");
+            arguments = properties.getStringListProperty(prefix + "arguments",
+                    "\\s");
         }
         if (properties.getFileListProperty(prefix + "input.files") != null) {
             inputFiles = properties.getFileListProperty(prefix + "input.files");
@@ -270,11 +262,10 @@ public class Application {
      *             with the given name already exists in the applicationSet
      */
     public void setName(String name) throws Exception {
-    	if(name == null) {
-    		return;
-    	}
-    
-    	
+        if (name == null) {
+            return;
+        }
+
         if (name.equals(this.name)) {
             // name unchanged
             return;
@@ -289,7 +280,7 @@ public class Application {
             throw new Exception("application name cannot contain spaces : \""
                     + name + "\"");
         }
-       
+
         this.name = name;
     }
 
@@ -681,7 +672,8 @@ public class Application {
         }
 
         if (libs != null) {
-            out.println(dotPrefix + "libs = " + DeployProperties.files2CSS(libs));
+            out.println(dotPrefix + "libs = "
+                    + DeployProperties.files2CSS(libs));
             empty = false;
         } else if (printComments) {
             out.println("#" + dotPrefix + "libs =");
@@ -734,8 +726,7 @@ public class Application {
         }
 
         if (empty && printComments) {
-            out
-                    .println("#Dummy property to make sure application is actually defined");
+            out.println("#Dummy property to make sure application is actually defined");
             out.println(dotPrefix);
         }
     }
@@ -754,13 +745,17 @@ public class Application {
         }
 
         result += " Main class = " + getMainClass() + "\n";
-        result += " Arguments = " + DeployProperties.strings2SSS(arguments) + "\n";
+        result += " Arguments = " + DeployProperties.strings2SSS(arguments)
+                + "\n";
         result += " Libs = " + DeployProperties.files2CSS(libs) + "\n";
-        result += " Input Files = " + DeployProperties.files2CSS(inputFiles) + "\n";
-        result += " Output Files = " + DeployProperties.files2CSS(outputFiles) + "\n";
+        result += " Input Files = " + DeployProperties.files2CSS(inputFiles)
+                + "\n";
+        result += " Output Files = " + DeployProperties.files2CSS(outputFiles)
+                + "\n";
         result += " System properties = "
                 + DeployProperties.toCSString(getSystemProperties()) + "\n";
-        result += " JVM Options = " + DeployProperties.strings2SSS(jvmOptions) + "\n";
+        result += " JVM Options = " + DeployProperties.strings2SSS(jvmOptions)
+                + "\n";
         result += " Log4j File = " + getLog4jFile() + "\n";
 
         return result;
@@ -772,6 +767,5 @@ public class Application {
     public String toString() {
         return name;
     }
-
 
 }

@@ -1,7 +1,6 @@
 package ibis.deploy;
 
 import ibis.deploy.util.Colors;
-import ibis.deploy.util.Util;
 import ibis.util.TypedProperties;
 
 import java.awt.Color;
@@ -24,7 +23,6 @@ import org.gridlab.gat.URI;
  * 
  */
 public class Cluster {
-	
 
     /**
      * Print a table of valid keys and some explanations to the given stream
@@ -120,7 +118,7 @@ public class Cluster {
     private double longitude;
 
     private Color color;
-    
+
     private String location;
 
     private boolean visibleOnMap;
@@ -132,27 +130,27 @@ public class Cluster {
      * the local cluster
      */
     public static Cluster getLocalCluster() throws Exception {
-    	Cluster result = new Cluster("local");
-    	
+        Cluster result = new Cluster("local");
+
         result.setServerAdaptor("local");
         result.setServerURI(new URI("any://localhost"));
         result.setJobAdaptor("local");
         result.setJobURI(new URI("any://localhost"));
         result.setFileAdaptors("local");
-        result.setJavaPath(System.getProperty("java.home") + File.separator + "bin"
-                + File.separator + "java");
+        result.setJavaPath(System.getProperty("java.home") + File.separator
+                + "bin" + File.separator + "java");
         result.setNodes(1);
         result.setCores(Runtime.getRuntime().availableProcessors());
         result.setLatitude(0);
         result.setLongitude(0);
 
         result.setVisibleOnMap(false);
-        
+
         result.setColor(Colors.LOCAL_COLOR);
-        
+
         return result;
     }
-    
+
     /**
      * Creates a new "anonymous" cluster with no name.
      * 
@@ -161,7 +159,7 @@ public class Cluster {
         this.name = "anonymous";
 
         properties = new DeployProperties();
-        
+
         serverAdaptor = null;
         serverURI = null;
         jobAdaptor = null;
@@ -194,11 +192,11 @@ public class Cluster {
     public Cluster(String name) throws Exception {
         setName(name);
 
-        //set color from name
+        // set color from name
         color = Colors.locationToColorString(name);
 
         properties = new DeployProperties();
-        
+
         serverAdaptor = null;
         serverURI = null;
         jobAdaptor = null;
@@ -220,51 +218,54 @@ public class Cluster {
     }
 
     /**
-     * Copy constructor 
-     * @param original the original cluster
+     * Copy constructor
+     * 
+     * @param original
+     *            the original cluster
      */
     public Cluster(Cluster original) {
-    	this();
-    	
-    	name = original.name;
-    	color = original.color;
+        this();
 
-    	properties.addProperties(original.properties);
-    	
+        name = original.name;
+        color = original.color;
+
+        properties.addProperties(original.properties);
+
         serverAdaptor = original.serverAdaptor;
         serverURI = original.serverURI;
         jobAdaptor = original.jobAdaptor;
         jobURI = original.jobURI;
-        
+
         if (original.fileAdaptors != null) {
-        	fileAdaptors = new ArrayList<String>(original.fileAdaptors);
+            fileAdaptors = new ArrayList<String>(original.fileAdaptors);
         }
-        	
+
         javaPath = original.javaPath;
-        
+
         jobWrapperScript = original.jobWrapperScript;
         userName = original.userName;
         keyFile = original.keyFile;
-        
+
         cacheDir = original.cacheDir;
-        
+
         if (original.serverOutputFiles != null) {
-        	serverOutputFiles = new ArrayList<File>(original.serverOutputFiles);
+            serverOutputFiles = new ArrayList<File>(original.serverOutputFiles);
         }
-        
+
         if (original.serverSystemProperties != null) {
-        	serverSystemProperties = new HashMap<String, String>(original.serverSystemProperties);
+            serverSystemProperties = new HashMap<String, String>(
+                    original.serverSystemProperties);
         }
-        
+
         nodes = original.nodes;
         cores = original.cores;
         memory = original.memory;
         latitude = original.latitude;
         longitude = original.longitude;
         visibleOnMap = original.visibleOnMap;
-	}
+    }
 
-	/**
+    /**
      * Load cluster from the given properties (usually loaded from a grid file)
      * 
      * @param properties
@@ -320,8 +321,7 @@ public class Cluster {
             serverOutputFiles = properties.getFileListProperty(prefix
                     + "server.output.files");
         }
-        if (properties
-                .getProperty(prefix + "server.system.properties") != null) {
+        if (properties.getProperty(prefix + "server.system.properties") != null) {
             serverSystemProperties = properties.getStringMapProperty(prefix
                     + "server.system.properties");
         }
@@ -340,20 +340,20 @@ public class Cluster {
         if (properties.getDoubleProperty(prefix + "longitude", 0) != 0) {
             longitude = properties.getDoubleProperty(prefix + "longitude", 0);
         }
-        
+
         if (properties.getProperty(prefix + "location") != null) {
-        	location = properties.getProperty(prefix + "location");
+            location = properties.getProperty(prefix + "location");
         } else {
-        	location = getName();
+            location = getName();
         }
-        
+
         if (properties.getProperty(prefix + "color") != null) {
             color = properties.getColorProperty(prefix + "color");
         } else {
-        	color = Colors.locationToColorString(getLocation());
+            color = Colors.locationToColorString(getLocation());
         }
 
-        //copy all properties with right prefix to properties map
+        // copy all properties with right prefix to properties map
         this.properties.addProperties(properties.filter(prefix, true, false));
 
     }
@@ -369,7 +369,6 @@ public class Cluster {
                 && longitude == 0;
     }
 
-
     /**
      * Set any unset settings from the given other object
      * 
@@ -380,7 +379,7 @@ public class Cluster {
         if (other == null) {
             return;
         }
-        
+
         if (other.serverAdaptor != null && serverAdaptor == null) {
             serverAdaptor = other.serverAdaptor;
         }
@@ -427,7 +426,8 @@ public class Cluster {
             serverOutputFiles.addAll(other.serverOutputFiles);
         }
 
-        if (other.serverSystemProperties != null && serverSystemProperties == null) {
+        if (other.serverSystemProperties != null
+                && serverSystemProperties == null) {
             for (Map.Entry<String, String> entry : other.serverSystemProperties
                     .entrySet()) {
                 setServerSystemProperty(entry.getKey(), entry.getValue());
@@ -458,7 +458,7 @@ public class Cluster {
             color = other.color;
         }
 
-        //if any is set, show
+        // if any is set, show
         visibleOnMap = visibleOnMap || other.visibleOnMap;
     }
 
@@ -483,8 +483,8 @@ public class Cluster {
      */
     public void setName(String name) throws Exception {
         if (name == null) {
-            //throw new Exception("no name specified for cluster");
-        	return;
+            // throw new Exception("no name specified for cluster");
+            return;
         }
 
         if (name.equals(this.name)) {
@@ -914,18 +914,19 @@ public class Cluster {
     public void setColor(Color color) {
         this.color = color;
     }
-    
+
     public String getLocation() {
-    	return location;
+        return location;
     }
-    
+
     public void setLocation(String location) {
-    	this.location = location;
+        this.location = location;
     }
-    
+
     /**
-     * Get the raw properties this cluster was created from. Useful for supporting
-     * custom properties in deploy based applications
+     * Get the raw properties this cluster was created from. Useful for
+     * supporting custom properties in deploy based applications
+     * 
      * @return the raw properties this cluster was created from.
      */
     public TypedProperties getProperties() {
@@ -1134,7 +1135,7 @@ public class Cluster {
         } else if (printComments) {
             out.println("#" + dotPrefix + "longitude = ");
         }
-        
+
         if (color != null) {
             out.println(dotPrefix + "color = " + Colors.color2colorCode(color));
             empty = false;
@@ -1142,7 +1143,6 @@ public class Cluster {
             out.println("#" + dotPrefix + "color = ");
         }
 
-        
         if (location != null) {
             out.println(dotPrefix + "location = " + location);
             empty = false;
@@ -1180,16 +1180,18 @@ public class Cluster {
         result += " Server URI = " + getServerURI() + "\n";
         result += " Job adaptor = " + getJobAdaptor() + "\n";
         result += " Job URI = " + getJobURI() + "\n";
-        result += " File adaptors = " + DeployProperties.strings2CSS(fileAdaptors) + "\n";
+        result += " File adaptors = "
+                + DeployProperties.strings2CSS(fileAdaptors) + "\n";
         result += " Java path = " + getJavaPath() + "\n";
         result += " Wrapper Script = " + getJobWrapperScript() + "\n";
         result += " User name = " + getUserName() + "\n";
         result += " User keyfile = " + getKeyFile() + "\n";
         result += " Cache dir = " + getCacheDir() + "\n";
-        result += " Server output files = " + DeployProperties.files2CSS(serverOutputFiles)
-                + "\n";
+        result += " Server output files = "
+                + DeployProperties.files2CSS(serverOutputFiles) + "\n";
         result += " Server system properties = "
-                + DeployProperties.toCSString(getServerSystemProperties()) + "\n";
+                + DeployProperties.toCSString(getServerSystemProperties())
+                + "\n";
         result += " Nodes = " + getNodes() + "\n";
         result += " Cores = " + getCores() + "\n";
         result += " Memory = " + getMemory() + "\n";

@@ -3,8 +3,6 @@ package ibis.deploy.gui.deployViz.data;
 import ibis.deploy.Grid;
 import ibis.deploy.gui.GUI;
 import ibis.deploy.gui.deployViz.helpers.VizUtils;
-import ibis.deploy.gui.misc.Utils;
-
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;

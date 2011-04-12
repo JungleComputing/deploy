@@ -4,7 +4,6 @@ import ibis.deploy.Deploy.HubPolicy;
 import ibis.deploy.util.Colors;
 import ibis.deploy.util.Rsync;
 import ibis.deploy.util.StateForwarder;
-import ibis.deploy.util.Util;
 import ibis.ipl.IbisProperties;
 import ibis.ipl.registry.central.RegistryProperties;
 import ibis.util.ThreadPool;

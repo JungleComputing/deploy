@@ -1,18 +1,11 @@
 package ibis.deploy.util;
 
-import ibis.deploy.Job;
-
 import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class Colors {
 	
-	 private static final Logger logger = LoggerFactory.getLogger(Colors.class);
-
 	// colors used for clusters
 	private static final String[] colors = { "#FF0000", "#FF8000", "#FFFF00",
 			"#80FF00", "#00FFFF", "#007FFF", "#0000FF", "#8000FF", "#FF00FF",

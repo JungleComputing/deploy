@@ -56,8 +56,7 @@ public class IntentSoftwareDescription extends JavaSoftwareDescription {
         }
         if (!environment.containsKey("BOOTCLASSPATH")) {
             environment
-                    .put(
-                            "BOOTCLASSPATH",
+                    .put("BOOTCLASSPATH",
                             "/system/framework/core.jar:/system/framework/ext.jar:/system/framework/framework.jar:/system/framework/android.policy.jar:/system/framework/services.jar");
         }
         if (!environment.containsKey("LD_LIBRARY_PATH")) {
@@ -93,8 +92,7 @@ public class IntentSoftwareDescription extends JavaSoftwareDescription {
         }
         if (!environment.containsKey("BOOTCLASSPATH")) {
             environment
-                    .put(
-                            "BOOTCLASSPATH",
+                    .put("BOOTCLASSPATH",
                             "/system/framework/core.jar:/system/framework/ext.jar:/system/framework/framework.jar:/system/framework/android.policy.jar:/system/framework/services.jar");
         }
         if (!environment.containsKey("LD_LIBRARY_PATH")) {

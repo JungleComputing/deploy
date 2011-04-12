@@ -1,6 +1,5 @@
 package ibis.deploy.gui.worldmap.helpers;
 
-import ibis.deploy.gui.misc.Utils;
 import ibis.deploy.gui.worldmap.MapUtilities;
 import ibis.deploy.gui.worldmap.helpers.ClusterWaypoint;
 import ibis.deploy.util.Colors;

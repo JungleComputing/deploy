@@ -25,13 +25,13 @@ public interface Server {
     void addListener(StateListener listener);
 
     State getState();
-    
+
     boolean isFinished();
-    
+
     void kill();
-    
+
     public RegistryServiceInterface getRegistryService();
 
-    public ManagementServiceInterface getManagementService(); 
-    
+    public ManagementServiceInterface getManagementService();
+
 }

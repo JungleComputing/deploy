@@ -113,7 +113,7 @@ public class Grid {
      * 
      * @param cluster
      *            the cluster.
-     *            
+     * 
      * @throws AlreadyExistsException
      *             if the cluster (name) is already present in this grid
      */

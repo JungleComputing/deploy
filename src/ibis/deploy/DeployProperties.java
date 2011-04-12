@@ -31,7 +31,7 @@ public class DeployProperties extends TypedProperties {
 
     private static final Logger logger = LoggerFactory
             .getLogger(DeployProperties.class);
-    
+
     /**
      * Convert a list of Strings to a single space separated String
      * 
@@ -53,7 +53,7 @@ public class DeployProperties extends TypedProperties {
         }
         return result.substring(0, result.length() - 1);
     }
-    
+
     /**
      * convert a list of Strings to a single space separated String
      * 
@@ -120,9 +120,6 @@ public class DeployProperties extends TypedProperties {
         return result.substring(0, result.length() - 2);
     }
 
-  
-
-    
     /**
      * convert a list of files to a single comma separated String
      * 
@@ -212,7 +209,8 @@ public class DeployProperties extends TypedProperties {
      * Finds a list of clusters, jobs or application in a list of properties
      * 
      * Each unique string in the set of keys(cut on the first ".") starting with
-     * the given prefix is returned, except for "default". Result is also sorted.
+     * the given prefix is returned, except for "default". Result is also
+     * sorted.
      * 
      * @param prefix
      *            prefix to filter on
@@ -315,14 +313,14 @@ public class DeployProperties extends TypedProperties {
 
         return result;
     }
-    
+
     public Color getColorProperty(String key) {
-    	try {
-			return Color.decode(getProperty(key));
-		} catch (NumberFormatException e){
-			logger.error("Cannot decode color " + getProperty(key), e);
-			return null;
-		}
+        try {
+            return Color.decode(getProperty(key));
+        } catch (NumberFormatException e) {
+            logger.error("Cannot decode color " + getProperty(key), e);
+            return null;
+        }
     }
 
     /**
@@ -341,7 +339,7 @@ public class DeployProperties extends TypedProperties {
 
         return Arrays.asList(getStringList(key));
     }
-    
+
     /**
      * Returns a property as a list of strings. Returns null if property not
      * found

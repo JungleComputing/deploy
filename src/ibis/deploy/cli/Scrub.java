@@ -1,13 +1,8 @@
 package ibis.deploy.cli;
 
-import ibis.deploy.ApplicationSet;
-import ibis.deploy.Experiment;
-import ibis.deploy.Grid;
 import ibis.deploy.Workspace;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Cleans up property files by reading, then writing them. Also creates a

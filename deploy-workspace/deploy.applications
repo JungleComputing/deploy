@@ -29,7 +29,7 @@ RegistryUpcalls.system.properties = ibis.managementclient=true,ibis.bytescount=t
 
 # Application "RegistryBenchmark"
 RegistryBenchmark.main.class = ibis.ipl.benchmarks.registry.Main
-RegistryBenchmark.arguments = --runtime,120
+RegistryBenchmark.arguments = --runtime 120
 RegistryBenchmark.libs = lib-server,ipl-apps/ipl-benchmarks-2.2.jar
 #RegistryBenchmark.input.files =
 #RegistryBenchmark.output.files =
@@ -40,7 +40,7 @@ RegistryBenchmark.system.properties = ibis.managementclient=true,ibis.bytescount
 
 # Application "Go"
 Go.main.class = go.dac.Main
-Go.arguments = --size,4,--stones,3
+Go.arguments = --size 4 --stones 3
 Go.libs = lib-server,ipl-apps/go.jar
 #Go.input.files =
 #Go.output.files =
