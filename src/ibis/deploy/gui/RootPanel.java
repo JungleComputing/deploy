@@ -23,13 +23,13 @@ public class RootPanel extends JPanel {
 
 	private static final long serialVersionUID = 2685960743908025422L;
 
-	public RootPanel(GUI gui) throws Exception {
+	public RootPanel(GUI gui, String[] logos) throws Exception {
 		setLayout(new BorderLayout());
 		tabs = new JTabbedPane();
 
 		tabs.addTab("Experiments", Utils.createImageIcon(
 				"images/utilities-system-monitor.png", "Experiments Tab"),
-				new ExperimentsPanel(gui));
+				new ExperimentsPanel(gui, logos));
 
 		// experimentTab = new DetachableTab("Experiments",
 		// "images/utilities-system-monitor.png",

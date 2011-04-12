@@ -148,7 +148,7 @@ public class GUI {
         }
     }
 
-    private void createAndShowGUI() throws Exception {
+    private void createAndShowGUI(String... logos) throws Exception {
         JMenuItem menuItem;
 
         UIManager.put("swing.boldMetal", Boolean.FALSE);
@@ -163,6 +163,10 @@ public class GUI {
         this.menuBar = new JMenuBar();
         JMenu menu = new JMenu("File");
 
+        if (getMode() == Mode.MONITOR) {
+            frame.setTitle("Ibis Deloy Monitoring");
+        }
+        
         if (isReadOnly()) {
             menuItem = new JMenuItem("Exit");
             menuItem.addActionListener(new ActionListener() {
@@ -224,7 +228,7 @@ public class GUI {
         frame.setJMenuBar(this.menuBar);
 
         frame.getContentPane().setLayout(new BorderLayout());
-        myRoot = new RootPanel(this);
+        myRoot = new RootPanel(this, logos);
         frame.getContentPane().add(myRoot, BorderLayout.CENTER);
 
         frame.setPreferredSize(new Dimension(DEFAULT_SCREEN_WIDTH,
@@ -268,11 +272,11 @@ public class GUI {
         System.err.println("-h | --help\tThis message");
     }
 
-    public GUI(Deploy deploy, Workspace workspace, Mode mode) throws Exception {
+    public GUI(Deploy deploy, Workspace workspace, Mode mode, String... logos) throws Exception {
         this.deploy = deploy;
         this.mode = mode;
         this.workspace = workspace;
-        createAndShowGUI();
+        createAndShowGUI(logos);
     }
 
     protected GUI(String[] arguments) {

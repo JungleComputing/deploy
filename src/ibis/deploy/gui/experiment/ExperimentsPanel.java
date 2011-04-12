@@ -16,7 +16,7 @@ public class ExperimentsPanel extends JPanel {
 
     private static final long serialVersionUID = -5264882651577509288L;
 
-    public ExperimentsPanel(GUI gui) {
+    public ExperimentsPanel(GUI gui, String[] logos) {
         setLayout(new BorderLayout());
 
         JobTableModel jobTableModel = new JobTableModel(gui);
@@ -30,7 +30,7 @@ public class ExperimentsPanel extends JPanel {
         JPanel jobTable;
 
         if (gui.getMode() == Mode.MONITOR) {
-            jobTable = new JobMonitorPanel(gui);
+            jobTable = new JobMonitorPanel(gui, logos);
         } else {
 
             jobTable = new JobTablePanel(gui, jobTableModel);

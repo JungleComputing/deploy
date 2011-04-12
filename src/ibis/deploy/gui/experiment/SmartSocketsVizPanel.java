@@ -19,7 +19,7 @@ public class SmartSocketsVizPanel extends JPanel {
     private static final long serialVersionUID = 2050832546714791634L;
 
     public SmartSocketsVizPanel(GUI gui, JobTableModel model) {
-        setBorder(BorderFactory.createTitledBorder("Experiment Monitor"));
+        setBorder(BorderFactory.createTitledBorder("Network Overlay"));
         setLayout(new BorderLayout());
         JPanel smartSocketsPanel = new JPanel();
 
