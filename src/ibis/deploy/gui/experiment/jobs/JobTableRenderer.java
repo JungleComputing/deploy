@@ -162,7 +162,6 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
 			button.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent arg0) {
-					System.err.println("Output!");
 					JDialog dialog = new JDialog(SwingUtilities
 							.getWindowAncestor(table), "Output Files for "
 							+ job.getDescription().getName());

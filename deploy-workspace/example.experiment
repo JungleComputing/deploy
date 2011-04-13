@@ -35,7 +35,7 @@ job-00.pool.name = example
 # Details of job "job-01"
 job-01.application.name = Go
 job-01.process.count = 4
-job-01.cluster.name = VU
+job-01.cluster.name = VU-DAS3
 job-01.resource.count = 4
 #job-01.runtime =
 job-01.pool.name = example
@@ -44,7 +44,7 @@ job-01.pool.name = example
 # Details of job "job-02"
 job-02.application.name = Go
 job-02.process.count = 4
-job-02.cluster.name = UvA
+job-02.cluster.name = UvA-DAS3
 job-02.resource.count = 4
 #job-02.runtime =
 job-02.pool.name = example
@@ -53,7 +53,7 @@ job-02.pool.name = example
 # Details of job "job-03"
 job-03.application.name = Go
 job-03.process.count = 4
-job-03.cluster.name = MultimediaN
+job-03.cluster.name = MultimediaN-DAS3
 job-03.resource.count = 4
 #job-03.runtime =
 job-03.pool.name = example
@@ -62,7 +62,7 @@ job-03.pool.name = example
 # Details of job "job-04"
 job-04.application.name = Go
 job-04.process.count = 4
-job-04.cluster.name = Delft
+job-04.cluster.name = Delft-DAS3
 job-04.resource.count = 4
 #job-04.runtime =
 job-04.pool.name = example
@@ -71,7 +71,7 @@ job-04.pool.name = example
 # Details of job "job-05"
 job-05.application.name = Go
 job-05.process.count = 4
-job-05.cluster.name = Leiden
+job-05.cluster.name = Leiden-DAS3
 job-05.resource.count = 4
 #job-05.runtime =
 job-05.pool.name = example

@@ -166,7 +166,7 @@ public class JobRow {
         }
 
         try {
-            System.err.println("submit job");
+            logger.info("submitting job" + jobDescription.getName());
             job = gui.getDeploy().submitJob(jobDescription,
                     gui.getApplicationSet(), gui.getGrid(),
                     new StateListener() {

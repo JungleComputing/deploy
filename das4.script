@@ -1,7 +1,6 @@
 #!/bin/sh
 
 export SGE_ROOT=/cm/shared/apps/sge/6.2u5
-export PRUN_ETC=/cm/shared/package/reserve.sge/etc
 
 NR_NODES=$1
 shift
@@ -11,20 +10,22 @@ JAVA=$1
 shift
 ARGS=$*
 
-#OPTION="-1 -sge-script $PRUN_ETC/prun-openmpi"
-OPTION="-1"
-RUNTIME=0:15:00
+OPTION=-1
+RUNTIME=10:00:00
 
-if [ `expr $NR_NODES \* 4` = "$NR_PROCS" ]; then
+if [ `expr $NR_NODES \* 8` = "$NR_PROCS" ]; then
 
-	OPTION=-4
+       OPTION=-8
+
+elif [ `expr $NR_NODES \* 4` = "$NR_PROCS" ]; then
+
+       OPTION=-4
 
 elif [ `expr $NR_NODES \* 2` = "$NR_PROCS" ]; then
 
-	OPTION=-2
+       OPTION=-2
 
 fi
 
-echo /cm/shared/package/reserve.sge/bin/prun $OPTION -asocial -t $RUNTIME -np $NR_NODES $JAVA "$ARGS"
-exec /cm/shared/package/reserve.sge/bin/prun $OPTION -asocial -t $RUNTIME -np $NR_NODES $JAVA $ARGS
-
+echo /cm/shared/package/reserve.sge/bin/prun -rsh ssh $OPTION -asocial -t $RUNTIME -np $NR_NODES $JAVA $ARGS
+exec /cm/shared/package/reserve.sge/bin/prun -rsh ssh $OPTION -asocial -t $RUNTIME -np $NR_NODES $JAVA $ARGS
