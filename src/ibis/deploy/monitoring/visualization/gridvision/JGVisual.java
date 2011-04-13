@@ -4,7 +4,7 @@ import javax.media.opengl.GL2;
 
 public interface JGVisual {
 	public enum CollectionShape { CITYSCAPE, CUBE, SPHERE }
-	public enum MetricShape { BAR, TUBE, SPHERE, PARTICLES }
+	public enum MetricShape { BAR, TUBE, ALPHATUBE, SPHERE, PARTICLES }
 	public enum State { COLLAPSED, UNFOLDED, NOT_SHOWN }
 	
 	public void init(GL2 gl);

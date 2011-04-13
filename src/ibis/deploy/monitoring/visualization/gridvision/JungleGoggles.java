@@ -18,7 +18,7 @@ import com.jogamp.opengl.util.gl2.GLUT;
 import ibis.deploy.monitoring.collection.Collector;
 import ibis.deploy.monitoring.collection.Element;
 import ibis.deploy.monitoring.collection.Link;
-import ibis.deploy.monitoring.visualization.gridvision.JGVisual.State;
+import ibis.deploy.monitoring.visualization.gridvision.exceptions.AllInUseException;
 import ibis.deploy.monitoring.visualization.gridvision.swing.ContextSensitiveMenu;
 import ibis.deploy.monitoring.visualization.gridvision.swing.GogglePanel;
 
@@ -26,8 +26,7 @@ public class JungleGoggles implements GLEventListener {
 	private static final long serialVersionUID = 1928258465842884618L;
 	
 	private static final float STANDARD_VIEWDIST = -10f;
-	private static final float ZOOM_IN_THRESHOLD = -5f;
-	private static final float ZOOM_OUT_THRESHOLD = -30f;
+	private static final int MAX_PARTICLES = 2000;
 
 	GL2 gl;
 	GLUgl2 glu = new GLUgl2();
@@ -62,6 +61,11 @@ public class JungleGoggles implements GLEventListener {
 
 	// Data interface
 	Collector collector;
+	
+	//Particle stuff
+	private Particle[] particles;
+	private boolean[] particleInUse;
+	private ParticleTimer ptimer;
 
 	/*
 	 * --------------------------------------------------------------------------
@@ -109,6 +113,17 @@ public class JungleGoggles implements GLEventListener {
 		linkRegistry = new HashMap<Element, JGVisual>();
 		namesToVisuals = new HashMap<Integer, JGVisual>();
 		namesToParents = new HashMap<Integer, JGVisual>();
+		
+		//Particle stuff
+		particles = new Particle[MAX_PARTICLES];
+		particleInUse = new boolean[MAX_PARTICLES];
+		for (int i = 0; i < MAX_PARTICLES; i++) {
+			particles[i] = new Particle(i);
+			particleInUse[i] = false; 
+		}
+		
+		ptimer = new ParticleTimer(this);
+		new Thread(ptimer).start();
 		
 		// Visual updater definition
 		UpdateTimer updater = new UpdateTimer(this);
@@ -227,6 +242,39 @@ public class JungleGoggles implements GLEventListener {
 			DisplayListBuilder.DisplayList whichPointer) {
 		return listBuilder.getPointer(whichPointer);
 	}
+	
+	/**
+	 * Functions used to handle the particle storage system.
+	 */
+	public Particle getParticle() throws AllInUseException {
+		synchronized(particles) {
+			Particle result = null;
+			for (int i = 0; i < MAX_PARTICLES; i++) {
+				if (!particleInUse[i]) {
+					result = particles[i];
+					particleInUse[i] = true;
+					return result;
+				}
+			}
+			if (result == null) { throw new AllInUseException(); }			
+			
+		}
+		return null;
+	}
+	
+	public void returnParticle(Particle p) {
+		synchronized(particles) {
+			int number = p.getNumber();
+			particleInUse[number] = false;
+		}		
+	}
+	
+	public void doParticleMoves(float fraction) {
+		for (int i = 0; i < MAX_PARTICLES; i++) {
+			particles[i].doMoveFraction(fraction);
+		}
+	}	
+	
 
 	/**
 	 * This function sets the current state to the original state.
@@ -258,6 +306,11 @@ public class JungleGoggles implements GLEventListener {
 
 				linkRegistry.put(link, jglink);
 			}
+		}
+		
+		//Re-Init the particles
+		for (int i = 0; i < MAX_PARTICLES; i++) {		
+			particleInUse[i] = false; 
 		}
 		
 		rePositionUniverse();

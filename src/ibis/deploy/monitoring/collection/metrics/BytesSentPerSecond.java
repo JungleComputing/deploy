@@ -18,7 +18,7 @@ import ibis.deploy.monitoring.collection.exceptions.IncorrectParametersException
 public class BytesSentPerSecond extends ibis.deploy.monitoring.collection.impl.MetricDescriptionImpl implements ibis.deploy.monitoring.collection.MetricDescription {
 	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.collection.metrics.BytesSentPerSecond");
 	
-	private static final float MAX = 1024000; //1GB
+	private static final float MAX = 1024000; //1/2 GB
 	
 	public BytesSentPerSecond() {
 		super();
@@ -60,8 +60,10 @@ public class BytesSentPerSecond extends ibis.deploy.monitoring.collection.impl.M
 						total += value;
 						
 						long perSec = (long) ((float)value / time_seconds);
+						if (perSec < 0) perSec = 0;
 						result.put(received.getKey(), perSec);
 						
+						/*
 						long max_prev = (Long)castMetric.getHelperVariable(this.name+"_max_prev");
 						long max = Math.max(max_prev, perSec);
 						if (max > max_prev) {
@@ -69,6 +71,7 @@ public class BytesSentPerSecond extends ibis.deploy.monitoring.collection.impl.M
 						} else {
 							max = max_prev;
 						}
+						*/
 						
 						float percent = (float)perSec/MAX; //(float)max;
 						if (percent > 1f) percent = 1f;

@@ -2,51 +2,70 @@ package ibis.deploy.monitoring.visualization.gridvision;
 
 import javax.media.opengl.GL2;
 
-public class Particle implements Moveable {
-	private static final float SPEED = 0.1f;
-	
-	Timer timer;
-	
-	float start, current, stop;
+public class Particle {
+	private static final float SPEED = 4f;
+		
+	float current, stop;
 	boolean shown;
 
 	private boolean listBuilt;
 	private int list;
+	private int number;
 	
-	public Particle() {
-		start = 0f;
-		timer = new Timer(this);
-		new Thread(timer).start();
-		
+	float[] color;
+	private boolean reversed;
+	
+	public Particle(int number) {				
 		shown = false;
 		listBuilt = false;
-	}
-	
-	public void init(float start, float stop) {
-		this.start = start;
-		this.current = start;
-		this.stop = stop;
+		list = -1;
 		
-		float length = stop - start;
-		long time = (long) (length / SPEED);
-				
-		timer.startTiming(time);
-		shown = true;
+		this.number = number;
 	}
 	
-	public void doMoveFraction(float fraction) {		
-		if (fraction < 0.0f) { 
-			System.out.println("too small");
-			return; 
-		} else if (fraction > 1.0f) {
-			shown = false;
+	public int getNumber() {
+		return number;
+	}
+	
+	public void init(float start, float stop, boolean reversed, float[] color) {
+		if (!reversed) {
+			this.current = start;
+			this.stop = stop;
+		} else {
+			this.current = stop;
+			this.stop = start;
+		}
+		this.reversed = reversed;
+		
+		this.color = new float[4];		
+		for (int i = 0; i < 4; i++) {
+			this.color[i] = color[i];
 		}
 		
-		current = start + (fraction * ( stop - start ));
-		System.out.println(current);
+		shown = true;
+		listBuilt = false;
+		
 	}
 	
-	public void draw(GL2 gl) {
+	public void doMoveFraction(float fraction) {
+		if (!reversed) {
+			float toMove = fraction*SPEED;
+			current += toMove;
+			
+			if (current > stop) {
+				shown = false;
+			}
+		} else {
+			float toMove = fraction*SPEED;
+			current -= toMove;
+			
+			if (current < stop) {
+				shown = false;
+			}
+		}
+	}
+	
+	public boolean draw(GL2 gl) {
 		if (shown) {
 			//Save the current modelview matrix
 			gl.glPushMatrix();		
@@ -55,8 +74,9 @@ public class Particle implements Moveable {
 			
 			if (listBuilt) {			
 				gl.glCallList(list);
-			} else {
+			} else {				
 				listBuilt = true;
+				gl.glDeleteLists(list, 1);
 				list = gl.glGenLists(1);
 			
 				float 	Xn = -0.5f*0.05f,
@@ -69,8 +89,8 @@ public class Particle implements Moveable {
 				
 				gl.glNewList(list, GL2.GL_COMPILE_AND_EXECUTE);
 				
-					gl.glBegin(GL2.GL_QUADS);	
-						gl.glColor3f(0.0f,0.0f,0.8f);
+					gl.glBegin(GL2.GL_QUADS);
+						gl.glColor4f(color[0], color[1], color[2], color[3]);
 						//TOP
 						gl.glVertex3f( Xn, Yf, Zn);
 						gl.glVertex3f( Xn, Yf, Zp);
@@ -113,6 +133,11 @@ public class Particle implements Moveable {
 			
 			//Restore the old modelview matrix
 			gl.glPopMatrix();
+			
+			return true;
 		}
+		
+		return false;
 	}
+	
 }

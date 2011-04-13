@@ -36,7 +36,9 @@ public class NonHeapMemory extends ibis.deploy.monitoring.collection.impl.Metric
 			CompositeData received	= (CompositeData) results[0];
 			
 			long mem_max  = (Long) received.get("max");
+			if (mem_max < 0) mem_max = 0;
 			long mem_used = (Long) received.get("used");
+			if (mem_used < 0) mem_used = 0;
 					
 			try {			 
 				castMetric.setValue(MetricModifier.NORM, MetricOutput.PERCENT, (float) mem_used / (float) mem_max);

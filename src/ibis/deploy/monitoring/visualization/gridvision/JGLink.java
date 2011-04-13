@@ -1,5 +1,7 @@
 package ibis.deploy.monitoring.visualization.gridvision;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.media.opengl.GL2;
@@ -7,9 +9,12 @@ import javax.media.opengl.glu.gl2.GLUgl2;
 
 import ibis.deploy.monitoring.collection.Link;
 import ibis.deploy.monitoring.collection.Metric;
+import ibis.deploy.monitoring.collection.Link.LinkDirection;
+import ibis.deploy.monitoring.collection.MetricDescription;
 
 public class JGLink extends JGVisualAbstract implements JGVisual {
 	private JGVisual source, destination;
+	private List<JGVisual> srcToDestMetrics, dstToSrcMetrics;
 
 	public JGLink(JungleGoggles goggles, JGVisual parent, GLUgl2 glu, JGVisual source,
 			JGVisual destination, Link dataLink) {
@@ -20,15 +25,29 @@ public class JGLink extends JGVisualAbstract implements JGVisual {
 
 		//jv.registerVisual(dataLink, this);
 		
-		for (Metric dataMetric : dataLink.getMetrics()) {
-			metrics.add(new JGLinkMetric(goggles, this, glu, dataMetric));
+		srcToDestMetrics = new ArrayList<JGVisual>();
+		
+		Metric[] dataMetrics = dataLink.getMetrics(LinkDirection.SRC_TO_DST);
+		for (Metric dataMetric : dataMetrics) {			
+			srcToDestMetrics.add(new JGLinkMetric(goggles, this, glu, dataMetric, false));
+		}
+				
+		dstToSrcMetrics = new ArrayList<JGVisual>();
+		dataMetrics = dataLink.getMetrics(LinkDirection.DST_TO_SRC);
+		for (Metric dataMetric : dataMetrics) {
+			dstToSrcMetrics.add(new JGLinkMetric(goggles, this, glu, dataMetric, true));
 		}
 	}
 	
 	public void init(GL2 gl) {
-		for (JGVisual metric : metrics) {
-			JGLinkMetric linkmetric = (JGLinkMetric) metric;
-			linkmetric.init(gl);
+		for (JGVisual metric : srcToDestMetrics) {
+			JGLinkMetric linkMetric = (JGLinkMetric) metric;
+			linkMetric.init(gl);
+		}
+		
+		for (JGVisual metric : dstToSrcMetrics) {
+			JGLinkMetric linkMetric = (JGLinkMetric) metric;
+			linkMetric.init(gl);
 		}
 	}
 	
@@ -37,9 +56,13 @@ public class JGLink extends JGVisualAbstract implements JGVisual {
 		State dstState = destination.getState();
 		
 		if (srcState == State.COLLAPSED && dstState == State.COLLAPSED) {
-			for (JGVisual metric : metrics)	{				
+			for (JGVisual metric : srcToDestMetrics)	{				
 				metric.drawSolids(gl, renderMode);
-			}	
+			}
+			
+			for (JGVisual metric : dstToSrcMetrics)	{				
+				metric.drawSolids(gl, renderMode);
+			}
 		}				
 	}
 	
@@ -48,12 +71,15 @@ public class JGLink extends JGVisualAbstract implements JGVisual {
 		State dstState = destination.getState();
 		
 		if (srcState == State.COLLAPSED && dstState == State.COLLAPSED) {
-			for (JGVisual metric : metrics)	{
+			for (JGVisual metric : srcToDestMetrics)	{
 				metric.drawTransparents(gl, renderMode);
 			}	
+			
+			for (JGVisual metric : dstToSrcMetrics)	{
+				metric.drawTransparents(gl, renderMode);
+			}
 		}
-	}
-	
+	}	
 
 	public void setCoordinates(float[] newCoords) {
 		// Calculate the angles we need to turn towards the destination
@@ -107,12 +133,24 @@ public class JGLink extends JGVisualAbstract implements JGVisual {
 		newRotation[1] = yAngle;
 		newRotation[2] = zAngle - 90.0f;
 
-		setCityScape(metrics, metricSeparation, length, newRotation);		
+		setCityScape(srcToDestMetrics, metricSeparation, length, newRotation);
+		
+		setCityScape(dstToSrcMetrics, metricSeparation, length, newRotation);
+	}
+	
+	public void update() {
+		for (JGVisual metric : srcToDestMetrics) {
+			metric.update();
+		}
+		
+		for (JGVisual metric : dstToSrcMetrics) {
+			metric.update();
+		}
 	}
 
-	private void setCityScape(List<JGVisual> children, float[] separation, float length, float[] newRotation) {
-		int childCount = children.size();
-		float maxWidth = maxWidth(children);
+	private void setCityScape(List<JGVisual> linkMetrics, float[] separation, float length, float[] newRotation) {
+		int childCount = linkMetrics.size();
+		float maxWidth = maxWidth(linkMetrics);
 
 		// get the breakoff point for rows and columns
 		int[] count = new int[3];
@@ -135,13 +173,13 @@ public class JGLink extends JGVisualAbstract implements JGVisual {
 		//calculate my own new radius
 		radius = FloatMatrixMath.max(maxShift);
 		width = FloatMatrixMath.max(maxShift);
-		height = maxHeight(children);
+		height = maxHeight(linkMetrics);
 
 		// Propagate the movement to the children
 		float[] childLocation = { 0, 0, 0 };
 		int i = 0;
 		float[] position = { 0, 0, 0 };
-		for (JGVisual child : children) {
+		for (JGVisual child : linkMetrics) {
 			// cascade the new location
 			childLocation = FloatMatrixMath.add(centeredCoordinates, FloatMatrixMath.mul(shift, position));
 

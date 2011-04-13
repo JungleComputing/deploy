@@ -35,7 +35,8 @@ public class SystemMemory extends ibis.deploy.monitoring.collection.impl.MetricD
 			long mem_all	= (Long) results[0];
 			long mem_free	= (Long) results[1];
 			
-			long mem_used = mem_all - mem_free;
+			long mem_used = mem_all - mem_free;			
+			if (mem_used < 0) mem_used = 0;
 					
 			try {			 
 				castMetric.setValue(MetricModifier.NORM, MetricOutput.PERCENT, (float) mem_used / (float) mem_all);

@@ -1,5 +1,7 @@
 package ibis.deploy.monitoring.visualization.gridvision;
 
+import java.util.ArrayList;
+
 import javax.media.opengl.GL2;
 import javax.media.opengl.glu.GLUquadric;
 import javax.media.opengl.glu.gl2.GLUgl2;
@@ -11,6 +13,7 @@ import ibis.deploy.monitoring.collection.Metric;
 import ibis.deploy.monitoring.collection.Metric.MetricModifier;
 import ibis.deploy.monitoring.collection.MetricDescription.MetricOutput;
 import ibis.deploy.monitoring.collection.exceptions.OutputUnavailableException;
+import ibis.deploy.monitoring.visualization.gridvision.exceptions.AllInUseException;
 
 public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.visualization.gridvision.JGLinkMetric");
@@ -19,7 +22,6 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 	private static final float HEIGHT = 1.00f;
 	private static final float ALPHA = 0.4f;
 	private static final int ACCURACY = 20;
-	private static final int MAX_PARTICLES = 20;
 	
 	private static boolean DONT_SHOW_EMPTY = true;
 	
@@ -37,12 +39,15 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 	private boolean listsInitialized;
 	private int whichList;
 	
-	private Particle[] particles;
-	
 	private float[] dimensions = {WIDTH,HEIGHT,WIDTH};
 	
-	JGLinkMetric(JungleGoggles goggles, JGVisual parent, GLUgl2 glu, Metric metric) {
+	ArrayList<Particle> localParticleStore;
+	private boolean reversed;
+	
+	JGLinkMetric(JungleGoggles goggles, JGVisual parent, GLUgl2 glu, Metric metric, boolean reversed) {
 		super(goggles, parent);
+		
+		this.reversed = reversed;
 		
 		this.glu = glu;
 		this.metric = metric;
@@ -55,7 +60,7 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 			e.printStackTrace();
 		}
 		
-		mShape = MetricShape.TUBE;
+		mShape = MetricShape.PARTICLES;
 		width = Math.max(dimensions[0], dimensions[2]);
 		height = dimensions[1];		
 		
@@ -68,6 +73,8 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 		whichList = 0;		
 		
 		glName = goggles.registerGLName(parent, this);
+		
+		localParticleStore = new ArrayList<Particle>();
 	}
 	
 	public void init(GL2 gl) {
@@ -87,11 +94,6 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 				transparentsOnDemandList[i] = transparentsOnDemandList[0]+i;
 			}
 			listsInitialized = true;
-		} else {
-			particles = new Particle[MAX_PARTICLES];
-			for (int i = 0; i < MAX_PARTICLES; i++) {
-				particles[i] = new Particle();
-			}
 		}
 	}
 	
@@ -125,20 +127,14 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 				
 		whichList = (int)(ACCURACY*currentValue);
 		
-		//always draw all particles
-		//drawParticles(gl);
-		
 		//Do not draw links that have no value
-		if (DONT_SHOW_EMPTY && whichList == 0) {
-			return;
-		}
-		
-		if (mShape == MetricShape.BAR) {
-			drawSolidBar(gl, currentValue, dimensions[1]);
-		} else if (mShape == MetricShape.TUBE) {
-			//drawSolidTube(gl, currentValue, dimensions[1]);
-		} else if (mShape == MetricShape.PARTICLES) {			 
-			//startParticle(dimensions[1]);			
+		if (DONT_SHOW_EMPTY && whichList != 0) {			
+			if (mShape == MetricShape.BAR) {
+				drawSolidBar(gl, currentValue, dimensions[1]);
+			} else if (mShape == MetricShape.TUBE) {
+				drawSolidTube(gl, currentValue, dimensions[1]);
+			} else if (mShape == MetricShape.ALPHATUBE) {
+			}
 		}		
 	}
 		
@@ -148,19 +144,33 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 		whichList = (int)(ACCURACY*currentValue);
 		
 		//Do not draw links that have no value
-		if (DONT_SHOW_EMPTY && whichList == 0) return;
+		if (DONT_SHOW_EMPTY && whichList != 0) {	
+			if (mShape == MetricShape.BAR) {
+				drawTransparentBar(gl, currentValue, dimensions[1]);
+			} else if (mShape == MetricShape.TUBE) {
+				drawTransparentTube(gl, currentValue, dimensions[1]);
+			} else if (mShape == MetricShape.ALPHATUBE) {
+				drawAlphaTube(gl, currentValue, dimensions[1]);
+			}
+		}
 		
-		if (mShape == MetricShape.BAR) {
-			drawTransparentBar(gl, currentValue, dimensions[1]);
-		} else if (mShape == MetricShape.TUBE) {
-			drawAlphaTube(gl, currentValue, dimensions[1]);
+		if (mShape == MetricShape.PARTICLES) {		
+			if (whichList != 0) {
+				try {
+					Particle p = goggles.getParticle();
+					localParticleStore.add(p);
+					startParticle(p, dimensions[1], currentValue);
+				} catch (AllInUseException e) {
+					//Whatever, ignore.
+				}
+			}
+			drawParticles(gl);
 		}
 	}
 	
 	public void update() {				
 		try {
-			currentValue = (Float) metric.getValue(MetricModifier.NORM, currentOutputMethod);
-			
+			currentValue = (Float) metric.getValue(MetricModifier.NORM, currentOutputMethod);			
 		} catch (OutputUnavailableException e) {
 			//This shouldn't happen if the metric is defined properly
 			e.printStackTrace();
@@ -619,15 +629,20 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 		gl.glPopMatrix();
 	}
 	
-	private void startParticle(float maxLength) {
-		float 	Yn = -0.5f*maxLength,
-				Yp = 0.5f*maxLength;
+	private void startParticle(Particle p, float maxLength, float alpha) {
+		float 	Yn, Yp;
 		
-		for (Particle p : particles) {
-			if (!p.shown) {
-				p.init(Yn, Yp);
-			}
-		}		
+		Yn = -0.5f*maxLength;
+		Yp = 0.5f*maxLength;
+		
+		
+		float[] theColor = new float[4];
+		theColor[0] = color[0];
+		theColor[1] = color[1];
+		theColor[2] = color[2];
+		theColor[3] = alpha;
+		
+		p.init(Yn, Yp, reversed, theColor);
 	}
 	
 	private void drawParticles(GL2 gl) {
@@ -640,9 +655,24 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 		gl.glRotatef(rotation[1], 0.0f, 1.0f, 0.0f);
 		gl.glRotatef(rotation[2], 0.0f, 0.0f, 1.0f);
 		
-		for (Particle p : particles) {
-			p.draw(gl);
-		}	
+		if (reversed) {
+			gl.glTranslatef(0f, 0f, 0.05f);
+		} else {
+			gl.glTranslatef(0f, 0f,-0.05f);
+		}
+		
+		ArrayList<Particle> deadParticles = new ArrayList<Particle>();
+		for (Particle p : localParticleStore) {
+			gl.glColor4f(color[0], color[1], color[2], 1f);
+			if (!p.draw(gl)) {
+				deadParticles.add(p);				
+			}
+		}
+		
+		for (Particle p : deadParticles) {
+			localParticleStore.remove(p);
+			goggles.returnParticle(p);
+		}
 		
 		//Restore the old modelview matrix
 		gl.glPopMatrix();
