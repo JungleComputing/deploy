@@ -8,7 +8,7 @@ public class DisplayListBuilder {
 	GLUgl2 glu;
 
 	private static final int ACCURACY = 20;
-	private static final float ALPHA = 0.4f;
+	private static final float LINE_ALPHA = 0.4f;
 	
 	private float LINE_WIDTH = 0.3f;
 	final int SIDES = 12;
@@ -277,9 +277,9 @@ public class DisplayListBuilder {
 				
 				gl.glBegin(GL2.GL_LINE_LOOP);
 					if (selected) {
-						gl.glColor4f(1f,1f,1f, ALPHA);
+						gl.glColor4f(1f,1f,1f, LINE_ALPHA);
 					} else {
-						gl.glColor4f(0.8f,0.8f,0.8f, ALPHA);
+						gl.glColor4f(0.8f,0.8f,0.8f, LINE_ALPHA);
 					}
 					//TOP
 					gl.glVertex3f( Xn, Yp, Zn);
@@ -299,9 +299,9 @@ public class DisplayListBuilder {
 				
 				gl.glBegin(GL2.GL_LINE_LOOP);
 					if (selected) {
-						gl.glColor4f(1f,1f,1f, ALPHA);
+						gl.glColor4f(1f,1f,1f, LINE_ALPHA);
 					} else {
-						gl.glColor4f(0.8f,0.8f,0.8f, ALPHA);
+						gl.glColor4f(0.8f,0.8f,0.8f, LINE_ALPHA);
 					}
 					//FRONT
 					gl.glVertex3f( Xn, Yp, Zp);
@@ -312,9 +312,9 @@ public class DisplayListBuilder {
 				
 				gl.glBegin(GL2.GL_LINE_LOOP);
 					if (selected) {
-						gl.glColor4f(1f,1f,1f, ALPHA);
+						gl.glColor4f(1f,1f,1f, LINE_ALPHA);
 					} else {
-						gl.glColor4f(0.8f,0.8f,0.8f, ALPHA);
+						gl.glColor4f(0.8f,0.8f,0.8f, LINE_ALPHA);
 					}
 					//BACK
 					gl.glVertex3f( Xp, Yp, Zn);
@@ -325,9 +325,9 @@ public class DisplayListBuilder {
 				
 				gl.glBegin(GL2.GL_LINE_LOOP);
 					if (selected) {
-						gl.glColor4f(1f,1f,1f, ALPHA);
+						gl.glColor4f(1f,1f,1f, LINE_ALPHA);
 					} else {
-						gl.glColor4f(0.8f,0.8f,0.8f, ALPHA);
+						gl.glColor4f(0.8f,0.8f,0.8f, LINE_ALPHA);
 					}
 					//LEFT
 					gl.glVertex3f( Xn, Yp, Zn);
@@ -338,9 +338,9 @@ public class DisplayListBuilder {
 				
 				gl.glBegin(GL2.GL_LINE_LOOP);
 					if (selected) {
-						gl.glColor4f(1f,1f,1f, ALPHA);
+						gl.glColor4f(1f,1f,1f, LINE_ALPHA);
 					} else {
-						gl.glColor4f(0.8f,0.8f,0.8f, ALPHA);
+						gl.glColor4f(0.8f,0.8f,0.8f, LINE_ALPHA);
 					}
 					//RIGHT
 					gl.glVertex3f( Xp, Yp, Zp);
@@ -454,7 +454,7 @@ public class DisplayListBuilder {
 					if (selected) {
 						gl.glColor4f(1f,1f,1f,1f);
 					} else {
-						gl.glColor4f(0.8f,0.8f,0.8f, ALPHA);
+						gl.glColor4f(0.8f,0.8f,0.8f, LINE_ALPHA);
 					}
 					glu.gluCylinder(qobj, radius, radius, EDGE_SIZE, SIDES, 1);		
 				

@@ -4,12 +4,17 @@ import javax.media.opengl.GL2;
 import javax.media.opengl.glu.GLUquadric;
 import javax.media.opengl.glu.gl2.GLUgl2;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ibis.deploy.monitoring.collection.Metric;
 import ibis.deploy.monitoring.collection.Metric.MetricModifier;
 import ibis.deploy.monitoring.collection.MetricDescription.MetricOutput;
 import ibis.deploy.monitoring.collection.exceptions.OutputUnavailableException;
 
 public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
+	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.visualization.gridvision.JGLinkMetric");
+	
 	private static final float WIDTH = 0.1f;
 	private static final float HEIGHT = 1.00f;
 	private static final float ALPHA = 0.4f;

@@ -86,6 +86,7 @@ public class CollectorImpl implements Collector, Runnable {
 
 		// Set the default metrics
 		descriptions.add(new CPUUsage());
+		descriptions.add(new SystemMemory());
 		descriptions.add(new HeapMemory());
 		descriptions.add(new NonHeapMemory());
 		// descriptions.add(new ThreadsMetric());

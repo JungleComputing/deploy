@@ -11,7 +11,7 @@ import ibis.deploy.monitoring.collection.MetricDescription.MetricOutput;
 import ibis.deploy.monitoring.collection.exceptions.OutputUnavailableException;
 
 public class JGMetric extends JGVisualAbstract implements JGVisual {
-	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.gui.junglevision.visuals.Metric");
+	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.visualization.gridvision.JGMetric");
 	private final float ALPHA = 0.1f;
 	
 	private enum MetricDisplay { TRANSPARANCY_ENABLED, SOLIDS_ONLY };
@@ -70,7 +70,7 @@ public class JGMetric extends JGVisualAbstract implements JGVisual {
 				drawList(gl, barPointer, currentValue, 1.0f);
 			}
 		} else if (mShape == MetricShape.TUBE) {
-			if (goggles.currentlySelected(glName)) {		
+			if (goggles.currentlySelected(glName)) {
 				drawList(gl, selectedTubePointer, currentValue, 1.0f);
 			} else {
 				drawList(gl, tubePointer, currentValue, 1.0f);
