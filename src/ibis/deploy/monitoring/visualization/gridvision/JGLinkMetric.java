@@ -16,6 +16,7 @@ import ibis.deploy.monitoring.collection.exceptions.OutputUnavailableException;
 import ibis.deploy.monitoring.visualization.gridvision.exceptions.AllInUseException;
 
 public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
+	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.visualization.gridvision.JGLinkMetric");
 	
 	private static final float WIDTH = 0.1f;
@@ -122,20 +123,26 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 		return result;
 	}
 	
-	public void drawSolids(GL2 gl, int renderMode) {
+	public void drawSolids(GL2 gl, int renderMode) {		
 		if (renderMode == GL2.GL_SELECT) { gl.glLoadName(glName); }		
 				
 		whichList = (int)(ACCURACY*currentValue);
 		
-		//Do not draw links that have no value
-		if (DONT_SHOW_EMPTY && whichList != 0) {			
-			if (mShape == MetricShape.BAR) {
-				drawSolidBar(gl, currentValue, dimensions[1]);
-			} else if (mShape == MetricShape.TUBE) {
-				drawSolidTube(gl, currentValue, dimensions[1]);
-			} else if (mShape == MetricShape.ALPHATUBE) {
+		//Save the current modelview matrix
+		gl.glPushMatrix();
+		
+			//Do not draw links that have no value
+			if (DONT_SHOW_EMPTY && whichList != 0) {			
+				if (mShape == MetricShape.BAR) {
+					drawSolidBar(gl, currentValue, dimensions[1]);
+				} else if (mShape == MetricShape.TUBE) {
+					drawSolidTube(gl, currentValue, dimensions[1]);
+				} else if (mShape == MetricShape.ALPHATUBE) {
+				}
 			}
-		}		
+		
+		//Restore the old modelview matrix
+		gl.glPopMatrix();
 	}
 		
 	public void drawTransparents(GL2 gl, int renderMode) {

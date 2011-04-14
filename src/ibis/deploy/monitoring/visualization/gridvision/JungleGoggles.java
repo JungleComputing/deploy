@@ -245,7 +245,7 @@ public class JungleGoggles implements GLEventListener {
 	
 	/**
 	 * Functions used to handle the particle storage system.
-	 */
+	 */	
 	public Particle getParticle() throws AllInUseException {
 		synchronized(particles) {
 			Particle result = null;
@@ -255,11 +255,9 @@ public class JungleGoggles implements GLEventListener {
 					particleInUse[i] = true;
 					return result;
 				}
-			}
-			if (result == null) { throw new AllInUseException(); }			
-			
-		}
-		return null;
+			}			
+		}		
+		throw new AllInUseException();
 	}
 	
 	public void returnParticle(Particle p) {

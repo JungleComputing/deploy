@@ -18,12 +18,12 @@ import ibis.deploy.monitoring.collection.exceptions.IncorrectParametersException
 public class BytesSentPerSecond extends ibis.deploy.monitoring.collection.impl.MetricDescriptionImpl implements ibis.deploy.monitoring.collection.MetricDescription {
 	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.collection.metrics.BytesSentPerSecond");
 	
-	private static final float MAX = 1024000; //1/2 GB
+	private static final float MAX = 1024; //1/2 GB
 	
 	public BytesSentPerSecond() {
 		super();
 		
-		name = "Bytes_Sent";		
+		name = "Bytes_Sent_Per_Sec";		
 		type = MetricType.LINK;
 		
 		color[0] =  64f/255f;
@@ -44,22 +44,25 @@ public class BytesSentPerSecond extends ibis.deploy.monitoring.collection.impl.M
 		long total = 0L;
 		
 		if (results[0] instanceof Map<?, ?>) {
+			long time_now = System.currentTimeMillis();
+			long time_elapsed = time_now - (Long)castMetric.getHelperVariable(this.name+"_time_prev");					
+			castMetric.setHelperVariable(this.name+"_time_prev", time_now);
+			
 			for (Map.Entry<?,?> incoming : ((Map<?, ?>) results[0]).entrySet()) {
 				if (incoming.getKey() instanceof IbisIdentifier && incoming.getValue() instanceof Long) {
 					@SuppressWarnings("unchecked") //we've just checked it!
 					Map.Entry<IbisIdentifier, Long> received = (Entry<IbisIdentifier, Long>) incoming;				
-				
-					long time_now = System.currentTimeMillis();
-					long time_elapsed = time_now - (Long)castMetric.getHelperVariable(this.name+"_time_prev");					
-					castMetric.setHelperVariable(this.name+"_time_prev", time_now);
-					
+														
 					if (time_elapsed != 0) {
 						float time_seconds = (float)time_elapsed / 1000.0f;
 						
-						long value = received.getValue();
-						total += value;
+						long sent_now = received.getValue();
+						long sent = sent_now - (Long)castMetric.getHelperVariable(this.name+"_sent_prev");					
+						castMetric.setHelperVariable(this.name+"_sent_prev", sent_now);
 						
-						long perSec = (long) ((float)value / time_seconds);
+						total += sent;
+						
+						long perSec = (long) ((float)sent / time_seconds);
 						if (perSec < 0) perSec = 0;
 						result.put(received.getKey(), perSec);
 						

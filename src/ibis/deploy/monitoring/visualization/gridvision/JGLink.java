@@ -1,7 +1,6 @@
 package ibis.deploy.monitoring.visualization.gridvision;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.media.opengl.GL2;
@@ -10,7 +9,6 @@ import javax.media.opengl.glu.gl2.GLUgl2;
 import ibis.deploy.monitoring.collection.Link;
 import ibis.deploy.monitoring.collection.Metric;
 import ibis.deploy.monitoring.collection.Link.LinkDirection;
-import ibis.deploy.monitoring.collection.MetricDescription;
 
 public class JGLink extends JGVisualAbstract implements JGVisual {
 	private JGVisual source, destination;
@@ -160,7 +158,7 @@ public class JGLink extends JGVisualAbstract implements JGVisual {
 
 		float[] shift = { 0, 0, 0 };
 		shift[0] = maxWidth + separation[0];
-		//separation[1] ignored
+		//shift[1] = source.getHeight() * 0.5f;
 		shift[2] = maxWidth + separation[2];
 
 		// Center the drawing around the coordinates
@@ -182,15 +180,18 @@ public class JGLink extends JGVisualAbstract implements JGVisual {
 		for (JGVisual child : linkMetrics) {
 			// cascade the new location
 			childLocation = FloatMatrixMath.add(centeredCoordinates, FloatMatrixMath.mul(shift, position));
-
+			
+			float[] halfHeight = { 0, -0.5f*source.getHeight(), 0f };
+			childLocation = FloatMatrixMath.add(childLocation, halfHeight);
+			
 			child.setCoordinates(childLocation);
 
 			// reduce the length by the radii of the origin and destination
 			// objects
 			JGLinkMetric linkMetric = (JGLinkMetric) child;
 			float[] newDimensions = linkMetric.getDimensions();
-			newDimensions[1] = length
-					- (source.getRadius() + this.destination.getRadius());
+			newDimensions[1] = length 
+					- (source.getRadius() + this.destination.getRadius())*2f;
 			linkMetric.setDimensions(newDimensions);
 
 			// and set to correct rotation
