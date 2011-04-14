@@ -10,6 +10,7 @@
     <property name="gui-jar" value="deploy-gui${version}.jar" />
     <property name="cli-jar" value="deploy-cli${version}.jar" />
 	<property name="mon-jar" value="deploy-mon${version}.jar" />
+	<property name="viz-jar" value="deploy-viz${version}.jar" />
 
     <!-- Import environment properties -->
 
@@ -74,6 +75,10 @@
     	
     	<!-- Create jar file -->
     	<jar destfile="lib/${mon-jar}" basedir="tmp" includes="ibis/deploy/monitoring/**/*.class">
+    	</jar>
+		
+		<!-- Create jar file -->
+    	<jar destfile="lib/${viz-jar}" basedir="tmp" includes="ibis/deploy/vizFramework/**/*.class">
     	</jar>
 
         <!-- Create jar file -->
