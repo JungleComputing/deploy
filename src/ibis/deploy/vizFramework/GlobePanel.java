@@ -12,7 +12,7 @@ public class GlobePanel extends JPanel {
 	GLJPanel gljpanel;
 
 	public GlobePanel(final Collector collector) {
-		setLayout(new BorderLayout(0, 0));
+		setLayout(new BorderLayout(5, 5));
 
 		// Set up the window
 		add(gljpanel);

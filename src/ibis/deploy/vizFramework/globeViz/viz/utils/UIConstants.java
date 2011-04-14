@@ -1,4 +1,4 @@
-package ibis.deploy.vizFramework.globeViz.viz;
+package ibis.deploy.vizFramework.globeViz.viz.utils;
 
 import gov.nasa.worldwind.render.PatternFactory;
 

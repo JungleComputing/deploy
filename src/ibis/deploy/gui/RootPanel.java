@@ -6,7 +6,9 @@ import ibis.deploy.gui.deployViz.DeployVizPanel;
 import ibis.deploy.gui.experiment.ExperimentsPanel;
 import ibis.deploy.gui.misc.Utils;
 import ibis.deploy.monitoring.visualization.gridvision.swing.GogglePanel;
+import ibis.deploy.vizFramework.GlobePanel;
 import ibis.deploy.vizFramework.MetricManager;
+import ibis.deploy.vizFramework.globeViz.viz.GlobeVisualization;
 import ibis.smartsockets.viz.SmartsocketsViz;
 
 import java.awt.BorderLayout;
@@ -21,6 +23,7 @@ public class RootPanel extends JPanel {
 	DetachableTab smartSocketsTab;
 	DetachableTab gridVisionTab;
 	DetachableTab deployVizTab;
+	DetachableTab globeTab;
 
 	private static final long serialVersionUID = 2685960743908025422L;
 
@@ -52,13 +55,19 @@ public class RootPanel extends JPanel {
 
 		deployVizTab = new DetachableTab("Connection Overview",
 				"images/gridvision.png", new DeployVizPanel(gui), tabs);
-
-//		if (!gui.isReadOnly()) {
-//			gridVisionTab = new DetachableTab("3D Visualization", 
-//					"images/gridvision.png", new GogglePanel(gui.getCollector()), tabs);
-//		}
 		
-		MetricManager mgr = new MetricManager(gui.getCollector());
+		GlobeVisualization globe = new GlobeVisualization();
+		
+		globeTab = new DetachableTab("Global Overview",
+                        "images/gridvision.png", globe, tabs);
+
+
+		if (!gui.isReadOnly()) {
+			gridVisionTab = new DetachableTab("3D Visualization", 
+					"images/gridvision.png", new GogglePanel(gui.getCollector()), tabs);
+		}
+		
+		MetricManager mgr = new MetricManager(gui.getCollector(), globe);
 		add(tabs, BorderLayout.CENTER);
 	}
 }
