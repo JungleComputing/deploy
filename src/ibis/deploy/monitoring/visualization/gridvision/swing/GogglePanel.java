@@ -14,6 +14,12 @@ import javax.swing.JPanel;
 
 import com.jogamp.opengl.util.FPSAnimator;
 
+import javax.swing.ButtonGroup;
+import javax.swing.JMenuBar;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JRadioButtonMenuItem;
+
 public class GogglePanel extends JPanel {
 	private static final long serialVersionUID = 4754345291079348455L;
 
@@ -57,11 +63,46 @@ public class GogglePanel extends JPanel {
 
 		// Set up the window
 		add(gljpanel);
+		
+		//Create Menus
+			JMenuBar menuBar = new JMenuBar();
+				JMenu mnCollections = new JMenu("Collections");
+			menuBar.add(mnCollections);
+			
+				String[] metricItems = {"Bars","Tubes","Spheres"};
+				ButtonGroup metricGroup = new ButtonGroup();
+				GoggleAction al1 = new SetMetricFormAction(goggles, "Bars");
+			menuBar.add(makeRadioMenu("Metrics", metricGroup, metricItems, "Bars", al1));
+			
+				String[] networkItems = {"Tubes","AlphaTubes","Particles"};
+				ButtonGroup networkGroup = new ButtonGroup();
+				GoggleAction al2 = new SetNetworkFormAction(goggles, "Particles");
+			menuBar.add(makeRadioMenu("Network", networkGroup, networkItems, "Particles", al2));
+						
+		add(menuBar, BorderLayout.NORTH);
 
 		gljpanel.requestFocusInWindow();
 	}
 	
 	public GLJPanel getPanel() {
 		return gljpanel;
+	}
+	
+	private JMenu makeRadioMenu(String name, ButtonGroup group, String[] labels, String currentSelection, GoggleAction al) {
+		JMenu result = new JMenu(name);
+		
+		for (String label : labels) {
+			JRadioButtonMenuItem current = new JRadioButtonMenuItem(label);
+			current.addActionListener(al.clone(label));
+			result.add(current);
+			group.add(current);
+			if (currentSelection.compareTo(label) == 0) {
+				group.setSelected(current.getModel(), true);
+			} else {
+				group.setSelected(current.getModel(), false);
+			}
+		}
+		
+		return result;
 	}
 }

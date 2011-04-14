@@ -209,6 +209,17 @@ public class JGLink extends JGVisualAbstract implements JGVisual {
 	}
 	
 	@Override
+	public void setMetricShape(MetricShape newShape) {
+		for (JGVisual metric : srcToDestMetrics)	{				
+			metric.setMetricShape(newShape);
+		}
+		
+		for (JGVisual metric : dstToSrcMetrics)	{				
+			metric.setMetricShape(newShape);
+		}
+	}
+	
+	@Override
 	public boolean equals(Object other) {
 		if (other == null)
 			return false;
