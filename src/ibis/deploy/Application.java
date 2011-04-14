@@ -189,7 +189,7 @@ public class Application {
      * @param other
      *            source application object
      */
-    void append(Application other) {
+    void resolve(Application other) {
         if (other == null) {
             return;
         }

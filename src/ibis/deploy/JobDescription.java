@@ -362,15 +362,11 @@ public class JobDescription {
     public JobDescription resolve(Application application, Cluster cluster) {
         JobDescription result = new JobDescription(this);
 
-        if (application != null) {
-            // fetch any unset settings from the given application
-            result.application.append(application);
-        }
+        // fetch any unset settings from the given application
+        result.application.resolve(application);
 
-        if (cluster != null) {
-            // fetch any unset settings from the given cluster
-            result.cluster.append(cluster);
-        }
+        // fetch any unset settings from the given cluster
+        result.cluster.resolve(cluster);
 
         return result;
     }

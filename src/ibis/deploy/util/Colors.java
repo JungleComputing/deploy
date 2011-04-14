@@ -34,7 +34,7 @@ public class Colors {
 	/**
 	 * Create a random (but consistent) color from a location string.
 	 */
-	public static synchronized Color locationToColorString(String location) {
+	public static synchronized Color fromLocation(String location) {
 		if (location == null) {
 			return null;
 		}

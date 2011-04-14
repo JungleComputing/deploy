@@ -193,7 +193,7 @@ public class Cluster {
         setName(name);
 
         // set color from name
-        color = Colors.locationToColorString(name);
+        color = Colors.fromLocation(name);
 
         properties = new DeployProperties();
 
@@ -343,14 +343,10 @@ public class Cluster {
 
         if (properties.getProperty(prefix + "location") != null) {
             location = properties.getProperty(prefix + "location");
-        } else {
-            location = getName();
         }
 
         if (properties.getProperty(prefix + "color") != null) {
             color = properties.getColorProperty(prefix + "color");
-        } else {
-            color = Colors.locationToColorString(getLocation());
         }
 
         // copy all properties with right prefix to properties map
@@ -375,91 +371,99 @@ public class Cluster {
      * @param other
      *            source cluster object
      */
-    void append(Cluster other) {
-        if (other == null) {
-            return;
-        }
+    void resolve(Cluster other) {
+        if (other != null) {
 
-        if (other.serverAdaptor != null && serverAdaptor == null) {
-            serverAdaptor = other.serverAdaptor;
-        }
-
-        if (other.serverURI != null && serverURI == null) {
-            serverURI = other.serverURI;
-        }
-
-        if (other.jobAdaptor != null && jobAdaptor == null) {
-            jobAdaptor = other.jobAdaptor;
-        }
-
-        if (other.jobURI != null && jobURI == null) {
-            jobURI = other.jobURI;
-        }
-
-        if (other.fileAdaptors != null && fileAdaptors == null) {
-            fileAdaptors = new ArrayList<String>();
-            fileAdaptors.addAll(other.fileAdaptors);
-        }
-
-        if (other.javaPath != null && javaPath == null) {
-            javaPath = other.javaPath;
-        }
-
-        if (other.jobWrapperScript != null && jobWrapperScript == null) {
-            jobWrapperScript = other.jobWrapperScript;
-        }
-
-        if (other.userName != null && userName == null) {
-            userName = other.userName;
-        }
-
-        if (other.keyFile != null && keyFile == null) {
-            keyFile = other.keyFile;
-        }
-
-        if (other.cacheDir != null && cacheDir == null) {
-            cacheDir = other.cacheDir;
-        }
-
-        if (other.serverOutputFiles != null && serverOutputFiles == null) {
-            serverOutputFiles = new ArrayList<File>();
-            serverOutputFiles.addAll(other.serverOutputFiles);
-        }
-
-        if (other.serverSystemProperties != null
-                && serverSystemProperties == null) {
-            for (Map.Entry<String, String> entry : other.serverSystemProperties
-                    .entrySet()) {
-                setServerSystemProperty(entry.getKey(), entry.getValue());
+            if (other.serverAdaptor != null && serverAdaptor == null) {
+                serverAdaptor = other.serverAdaptor;
             }
-        }
 
-        if (other.nodes != 0 && nodes == 0) {
-            nodes = other.nodes;
-        }
+            if (other.serverURI != null && serverURI == null) {
+                serverURI = other.serverURI;
+            }
 
-        if (other.cores != 0 && cores == 0) {
-            cores = other.cores;
-        }
+            if (other.jobAdaptor != null && jobAdaptor == null) {
+                jobAdaptor = other.jobAdaptor;
+            }
 
-        if (other.memory != 0 && memory == 0) {
-            memory = other.memory;
-        }
+            if (other.jobURI != null && jobURI == null) {
+                jobURI = other.jobURI;
+            }
 
-        if (other.latitude != 0 && latitude == 0) {
-            latitude = other.latitude;
-        }
+            if (other.fileAdaptors != null && fileAdaptors == null) {
+                fileAdaptors = new ArrayList<String>();
+                fileAdaptors.addAll(other.fileAdaptors);
+            }
 
-        if (other.longitude != 0 && longitude == 0) {
-            longitude = other.longitude;
-        }
+            if (other.javaPath != null && javaPath == null) {
+                javaPath = other.javaPath;
+            }
 
-        if (other.color != null && color == null) {
-            color = other.color;
-        }
+            if (other.jobWrapperScript != null && jobWrapperScript == null) {
+                jobWrapperScript = other.jobWrapperScript;
+            }
 
-        // if any is set, show
-        visibleOnMap = visibleOnMap || other.visibleOnMap;
+            if (other.userName != null && userName == null) {
+                userName = other.userName;
+            }
+
+            if (other.keyFile != null && keyFile == null) {
+                keyFile = other.keyFile;
+            }
+
+            if (other.cacheDir != null && cacheDir == null) {
+                cacheDir = other.cacheDir;
+            }
+
+            if (other.serverOutputFiles != null && serverOutputFiles == null) {
+                serverOutputFiles = new ArrayList<File>();
+                serverOutputFiles.addAll(other.serverOutputFiles);
+            }
+
+            if (other.serverSystemProperties != null
+                    && serverSystemProperties == null) {
+                for (Map.Entry<String, String> entry : other.serverSystemProperties
+                        .entrySet()) {
+                    setServerSystemProperty(entry.getKey(), entry.getValue());
+                }
+            }
+
+            if (other.nodes != 0 && nodes == 0) {
+                nodes = other.nodes;
+            }
+
+            if (other.cores != 0 && cores == 0) {
+                cores = other.cores;
+            }
+
+            if (other.memory != 0 && memory == 0) {
+                memory = other.memory;
+            }
+
+            if (other.latitude != 0 && latitude == 0) {
+                latitude = other.latitude;
+            }
+
+            if (other.longitude != 0 && longitude == 0) {
+                longitude = other.longitude;
+            }
+
+            if (other.color != null && color == null) {
+                color = other.color;
+            }
+
+            // if any is set, show
+            visibleOnMap = visibleOnMap || other.visibleOnMap;
+        }
+        
+        if (location == null) {
+            location = getName();
+        }
+        
+        if (color == null) {
+            color = Colors.fromLocation(location);
+        }
+       
     }
 
     /**
