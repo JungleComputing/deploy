@@ -15,6 +15,7 @@ import java.util.Map.Entry;
 import ibis.deploy.monitoring.collection.Collector;
 import ibis.deploy.monitoring.collection.Element;
 import ibis.deploy.monitoring.collection.Ibis;
+import ibis.deploy.monitoring.collection.Link;
 import ibis.deploy.monitoring.collection.Location;
 import ibis.deploy.monitoring.collection.MetricDescription;
 import ibis.deploy.monitoring.collection.Pool;
@@ -56,6 +57,7 @@ public class CollectorImpl implements Collector, Runnable {
 	private HashMap<Element, Location> parents;
 	private HashMap<String, Pool> pools;
 	private HashMap<IbisIdentifier, Ibis> ibises;
+	private HashSet<Link> links;
 
 	// Externally available
 	private Location root;
@@ -74,6 +76,7 @@ public class CollectorImpl implements Collector, Runnable {
 		pools = new HashMap<String, Pool>();
 		descriptions = new HashSet<MetricDescription>();
 		ibises = new HashMap<IbisIdentifier, Ibis>();
+		links = new HashSet<Link>();
 		jobQueue = new LinkedList<Element>();
 		workers = new ArrayList<Worker>();
 
@@ -199,7 +202,7 @@ public class CollectorImpl implements Collector, Runnable {
 	private void initLocations() {
 		ibises.clear();
 		locations.clear();
-		parents.clear();
+		parents.clear();		
 		
 		Float[] color = { 0f, 0f, 0f };
 		root = new LocationImpl("root", color);
@@ -217,7 +220,7 @@ public class CollectorImpl implements Collector, Runnable {
 				// for all ibises
 				for (IbisIdentifier ibisid : poolIbises) {
 					// Get the lowest location
-					ibis.ipl.Location ibisLocation = ibisid.location(); //.getParent();
+					ibis.ipl.Location ibisLocation = ibisid.location().getParent();
 					String locationName = ibisLocation.toString();
 
 					Location current;
@@ -276,12 +279,15 @@ public class CollectorImpl implements Collector, Runnable {
 	}
 
 	private void initLinks() {
+		links.clear();
+		
 		// pre-make the location-location links
 		for (Location source : locations.values()) {
 			for (Location destination : locations.values()) {
 				try {
 					if (!isAncestorOf(source, destination) && !isAncestorOf(destination, source)) {
-						source.getLink(destination);
+						LinkImpl newLink = (LinkImpl) source.getLink(destination);
+						links.add(newLink);
 					}
 				} catch (SelfLinkeageException ignored) {
 					// ignored, because we do not want this link
@@ -294,7 +300,8 @@ public class CollectorImpl implements Collector, Runnable {
 			for (Location destination : locations.values()) {
 				try {
 					if (!isAncestorOf(source, destination) && !isAncestorOf(destination, source)) {
-						source.getLink(destination);
+						LinkImpl newLink = (LinkImpl) source.getLink(destination);
+						links.add(newLink);
 					}
 				} catch (SelfLinkeageException ignored) {
 					// ignored, because we do not want this link
@@ -306,7 +313,8 @@ public class CollectorImpl implements Collector, Runnable {
 		for (Ibis source : ibises.values()) {
 			for (Ibis destination : ibises.values()) {
 				try {
-					source.getLink(destination);
+					LinkImpl newLink = (LinkImpl) source.getLink(destination);
+					links.add(newLink);
 				} catch (SelfLinkeageException ignored) {
 					// ignored, because we do not want this link
 				}
@@ -314,6 +322,12 @@ public class CollectorImpl implements Collector, Runnable {
 		}
 
 		((LocationImpl) root).makeLinkHierarchy();
+	}
+	
+	private void setlinksNotUpdated() {
+		for (Link link : links) {
+			((LinkImpl) link).setNotUpdated();
+		}
 	}
 
 	// Getters
@@ -394,6 +408,8 @@ public class CollectorImpl implements Collector, Runnable {
 			// Add stuff to the queue and notify
 			synchronized (jobQueue) {
 				initUniverse();
+				setlinksNotUpdated();
+				
 				jobQueue.addAll(ibises.values());
 				jobQueue.add(root);
 				waiting = 0;

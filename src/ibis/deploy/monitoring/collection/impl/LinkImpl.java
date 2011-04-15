@@ -27,11 +27,13 @@ public class LinkImpl extends ElementImpl implements Link {
 	private ElementImpl source;
 	private ElementImpl destination;
 	private HashMap<MetricDescription, Metric> srcToDstMetrics, dstToSrcMetrics;
+	private boolean updatedThisCycle;
 
 	public LinkImpl(ElementImpl origin, Element destination) {
 		super();
 		this.source = origin;
 		this.destination = (ElementImpl) destination;
+		updatedThisCycle = false;
 		
 		srcToDstMetrics = new HashMap<MetricDescription, Metric>();
 		dstToSrcMetrics	 = new HashMap<MetricDescription, Metric>();
@@ -109,18 +111,22 @@ public class LinkImpl extends ElementImpl implements Link {
 	}
 
 	public void update() {
-		// First update all of our children
-		for (Link child : children) {
-			((LinkImpl) child).update();
-		}		
+		if ( !updatedThisCycle ) {
+			// First update all of our children
+			for (Link child : children) {
+				((LinkImpl) child).update();
+			}
 		
-		if (source instanceof IbisImpl && destination instanceof IbisImpl) {
-			updateIbisIbisLink();
-		} else if (source instanceof LocationImpl || destination instanceof LocationImpl) {
-			//updateElementElementLink();
-		} else {
-			logger.error("Tried to update a Link between weird elements.");
-		}		
+			if (source instanceof IbisImpl && destination instanceof IbisImpl) {
+				updateIbisIbisLink();
+			} else if (source instanceof LocationImpl || destination instanceof LocationImpl) {
+				//updateElementElementLink();
+			} else {
+				logger.error("Tried to update a Link between weird elements.");
+			}
+		}
+		
+		updatedThisCycle = true;
 	}
 
 	private void updateIbisIbisLink() {
@@ -465,6 +471,10 @@ public class LinkImpl extends ElementImpl implements Link {
 				.equals(that.destination))
 				|| (this.source.equals(that.destination) && this.destination
 						.equals(that.source));
+	}
+	
+	public void setNotUpdated() {
+		updatedThisCycle = false;
 	}
 
 	@Override
