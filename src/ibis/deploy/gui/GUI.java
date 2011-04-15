@@ -30,6 +30,7 @@ import java.util.List;
 
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -111,9 +112,8 @@ public class GUI {
     }
 
     private void close() {
-        int choice = JOptionPane.showConfirmDialog(frame,
-                "Really exit?", "Exiting Ibis-Deploy",
-                JOptionPane.YES_NO_OPTION);
+        int choice = JOptionPane.showConfirmDialog(frame, "Really exit?",
+                "Exiting Ibis-Deploy", JOptionPane.YES_NO_OPTION);
 
         if (choice == JOptionPane.YES_OPTION) {
             frame.dispose();
@@ -126,13 +126,18 @@ public class GUI {
     private void saveAndClose() {
         File location = getWorkspaceLocation();
 
-        int choice = JOptionPane.showOptionDialog(frame,
+        JOptionPane options = new JOptionPane(
                 "Exiting ibis-deploy. Save workspace to \"" + location + "\"?",
-                "Save Workspace?", JOptionPane.YES_NO_CANCEL_OPTION,
-                JOptionPane.QUESTION_MESSAGE, null, new String[] { "Yes", "No",
-                        "Cancel" }, "No");
-
-        if (choice == JOptionPane.YES_OPTION) {
+                JOptionPane.QUESTION_MESSAGE,
+                JOptionPane.YES_NO_CANCEL_OPTION, null, new Object[] {"Yes", "No", "Cancel"}, "No");
+        
+        JDialog dialog = options.createDialog(frame, "Save Workspace?");
+        
+        dialog.setVisible(true);
+        
+        Object choice = options.getValue();
+        
+        if (choice != null && choice.equals("Yes")) {
             try {
                 saveWorkspace();
             } catch (Exception e) {
@@ -140,7 +145,7 @@ public class GUI {
             }
             frame.dispose();
             System.exit(0);
-        } else if (choice == JOptionPane.NO_OPTION) {
+        } else if (choice != null && choice.equals("No")) {
             frame.dispose();
             System.exit(0);
         } else {
@@ -166,7 +171,7 @@ public class GUI {
         if (getMode() == Mode.MONITOR) {
             frame.setTitle("Ibis Deloy Monitoring");
         }
-        
+
         if (isReadOnly()) {
             menuItem = new JMenuItem("Exit");
             menuItem.addActionListener(new ActionListener() {
@@ -272,7 +277,8 @@ public class GUI {
         System.err.println("-h | --help\tThis message");
     }
 
-    public GUI(Deploy deploy, Workspace workspace, Mode mode, String... logos) throws Exception {
+    public GUI(Deploy deploy, Workspace workspace, Mode mode, String... logos)
+            throws Exception {
         this.deploy = deploy;
         this.mode = mode;
         this.workspace = workspace;

@@ -80,6 +80,7 @@ public class RunButtonPanel extends JPanel {
                 gui.getExperiment().addJob(result);
             } catch (AlreadyExistsException e) {
                 id++;
+                result = null;
             }
         }
         return result;

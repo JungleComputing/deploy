@@ -231,12 +231,12 @@ public class RemoteServer implements Runnable, Server {
         if (hubOnly) {
             sd.addJavaSystemProperty(
                     ServerProperties.VIZ_INFO,
-                    "H^Smartsockets Hub @ " + cluster.getName() + "^"
+                    "H^" + cluster.getName() + "^Smartsockets Hub @ " + cluster.getName() + "^"
                             + Colors.color2colorCode(cluster.getColor()));
         } else {
             sd.addJavaSystemProperty(
                     ServerProperties.VIZ_INFO,
-                    "S^Ibis Server @ " + cluster.getName() + "^"
+                    "S^Ibis Server^Ibis Server @ " + cluster.getName() + "^"
                             + Colors.color2colorCode(cluster.getColor()));
         }
 
