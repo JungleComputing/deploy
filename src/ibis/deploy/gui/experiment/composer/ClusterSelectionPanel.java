@@ -62,8 +62,8 @@ public class ClusterSelectionPanel extends JPanel {
                 if (worldMapPanel != null) {
                     worldMapPanel.setSelected((Cluster) clusterComboBox
                             .getSelectedItem());
-                    resourceCountPanel.setResourceCount(worldMapPanel
-                            .getResourceCount());
+//                    resourceCountPanel.setResourceCount(worldMapPanel
+//                            .getResourceCount());
                 }
 
             }
