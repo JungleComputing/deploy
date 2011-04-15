@@ -206,10 +206,8 @@ public class LocationImpl extends ElementImpl implements Location {
 				other = src;
 			}
 			
-			//First, incorporate the links between my ibises and his ibises.
-			
-			ArrayList<Ibis> myIbises = getIbises();			
-			
+			//First, incorporate the links between my ibises and his ibis(es).			
+			ArrayList<Ibis> myIbises = getIbises();						
 			if (other instanceof Location) {
 				ArrayList<Ibis> hisIbises = ((Location) other).getIbises();
 								

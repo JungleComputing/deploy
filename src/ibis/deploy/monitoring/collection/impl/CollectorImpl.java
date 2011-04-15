@@ -320,7 +320,7 @@ public class CollectorImpl implements Collector, Runnable {
 				}
 			}
 		}
-
+		System.out.println("Collector created "+links.size()+" links.");
 		((LocationImpl) root).makeLinkHierarchy();
 	}
 	
@@ -382,7 +382,7 @@ public class CollectorImpl implements Collector, Runnable {
 		return parents.get(child);
 	}
 	
-	private boolean isAncestorOf(Element child, Element ancestor) {		
+	public boolean isAncestorOf(Element child, Element ancestor) {		
 		Element current = parents.get(child);
 		while (current != null) {
 			if (current == ancestor) return true;

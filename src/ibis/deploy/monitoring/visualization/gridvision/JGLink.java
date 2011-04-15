@@ -20,8 +20,6 @@ public class JGLink extends JGVisualAbstract implements JGVisual {
 
 		this.source = source;
 		this.destination = destination;
-
-		//jv.registerVisual(dataLink, this);
 		
 		srcToDestMetrics = new ArrayList<JGVisual>();
 		

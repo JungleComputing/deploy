@@ -310,6 +310,7 @@ public class JungleGoggles implements GLEventListener {
 				linkRegistry.put(link, jglink);
 			}
 		}
+		System.out.println("Goggles created "+linkRegistry.size()+" links.");
 		
 		//Re-Init the particles
 		for (int i = 0; i < MAX_PARTICLES; i++) {		
