@@ -1,8 +1,8 @@
 package ibis.deploy.gui.worldmap.helpers;
 
-import ibis.deploy.gui.misc.Utils;
 import ibis.deploy.gui.worldmap.MapUtilities;
 import ibis.deploy.gui.worldmap.helpers.ClusterWaypoint;
+import ibis.deploy.util.Colors;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -26,13 +26,13 @@ public class ClusterWaypointRenderer implements WaypointRenderer {
             final int x = cwp.getOffset().width;
             final int y = cwp.getOffset().height;
 
-            Color clusterBorderColor = Utils.getColor(cwp.getCluster()
-                    .getColorCode());
+            Color clusterBorderColor = cwp.getCluster()
+                    .getColor();
             if (clusterBorderColor == null)
                 clusterBorderColor = MapUtilities.defaultClusterBorderColor;
 
-            Color clusterFillColor = Utils.getLightColor(cwp.getCluster()
-                    .getColorCode());
+            Color clusterFillColor = Colors.getLightColor(cwp.getCluster()
+                    .getColor());
             if (clusterFillColor == null)
                 clusterFillColor = MapUtilities.defaultClusterFillColor;
 
@@ -49,13 +49,13 @@ public class ClusterWaypointRenderer implements WaypointRenderer {
                 g.setPaint(selectedBorderColor);
                 g.drawOval(x - radius, y - radius, diameter, diameter);
             } else if (cwp.isSelected()) {
-                g.setPaint(Utils.getColor(cwp.getCluster().getColorCode()));
+                g.setPaint(cwp.getCluster().getColor());
                 g.fillArc(x - radius, y - radius, diameter, diameter, 90, -(cwp
                         .getResourceCount() * 360)
                         / Math.max(1, cwp.getCluster().getNodes()));
                 g
-                        .setPaint(Utils.getLightColor(cwp.getCluster()
-                                .getColorCode()));
+                        .setPaint(Colors.getLightColor(cwp.getCluster()
+                                .getColor()));
                 g.fillArc(x - radius, y - radius, diameter, diameter, 90, 360
                         - (cwp.getResourceCount() * 360)
                         / Math.max(1, cwp.getCluster().getNodes()));

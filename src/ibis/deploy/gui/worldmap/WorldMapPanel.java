@@ -30,8 +30,6 @@ public class WorldMapPanel extends JPanel {
 
     private ClusterSelectionPanel clusterSelectionPanel;
 
-    private Cluster selectedCluster;
-
     private ClusterWaypoint selectedWaypoint = null;
 
     private Set<Waypoint> waypoints = new HashSet<Waypoint>();
@@ -123,7 +121,6 @@ public class WorldMapPanel extends JPanel {
     }
 
     public void setSelected(Cluster selectedCluster) {
-        this.selectedCluster = selectedCluster;
         for (Waypoint waypoint : waypoints) {
             if (((ClusterWaypoint) waypoint).getCluster() == selectedCluster) {
                 this.selectedWaypoint = (ClusterWaypoint) waypoint;

@@ -40,8 +40,8 @@ public class ClusterSelectionPanel extends JPanel {
 
         gui.addSubmitJobListener(new SubmitJobListener() {
 
-            public void modify(JobDescription jobDescription) {
-                jobDescription.setClusterName(clusterComboBox.getSelectedItem()
+            public void modify(JobDescription jobDescription) throws Exception {
+                jobDescription.getCluster().setName(clusterComboBox.getSelectedItem()
                         .toString());
             }
 
@@ -62,8 +62,8 @@ public class ClusterSelectionPanel extends JPanel {
                 if (worldMapPanel != null) {
                     worldMapPanel.setSelected((Cluster) clusterComboBox
                             .getSelectedItem());
-                    resourceCountPanel.setResourceCount(worldMapPanel
-                            .getResourceCount());
+//                    resourceCountPanel.setResourceCount(worldMapPanel
+//                            .getResourceCount());
                 }
 
             }

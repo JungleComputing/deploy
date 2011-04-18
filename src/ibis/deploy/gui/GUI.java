@@ -30,6 +30,7 @@ import java.util.List;
 
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -77,7 +78,7 @@ public class GUI {
 
     private RootPanel myRoot;
 
-    private final boolean readOnly;
+     private final Mode mode;
     
     private Collector collector;
 
@@ -126,10 +127,9 @@ public class GUI {
     }
 
     private void close() {
-        int choice = JOptionPane.showConfirmDialog(frame,
-                "Really exit ibis-deploy?", "Exiting Ibis-Deploy",
-                JOptionPane.YES_NO_OPTION);
-
+        int choice = JOptionPane.showConfirmDialog(frame, "Really exit?",
+                "Exiting Ibis-Deploy", JOptionPane.YES_NO_OPTION);
+                
         if (choice == JOptionPane.YES_OPTION) {
             frame.dispose();
             System.exit(0);
@@ -140,14 +140,19 @@ public class GUI {
 
     private void saveAndClose() {
         File location = getWorkspaceLocation();
-        
-        int choice = JOptionPane.showOptionDialog(frame,
-                "Exiting ibis-deploy. Save workspace to \"" + location + "\"?",
-                "Save Workspace?", JOptionPane.YES_NO_CANCEL_OPTION,
-                JOptionPane.QUESTION_MESSAGE, null, 
-                new String[] {"Yes", "No", "Cancel"}, "No");
 
-        if (choice == JOptionPane.YES_OPTION) {
+        JOptionPane options = new JOptionPane(
+                "Exiting ibis-deploy. Save workspace to \"" + location + "\"?",
+                JOptionPane.QUESTION_MESSAGE,
+                JOptionPane.YES_NO_CANCEL_OPTION, null, new Object[] {"Yes", "No", "Cancel"}, "No");
+        
+        JDialog dialog = options.createDialog(frame, "Save Workspace?");
+        
+        dialog.setVisible(true);
+        
+        Object choice = options.getValue();
+        
+        if (choice != null && choice.equals("Yes")) {
             try {
                 saveWorkspace();
             } catch (Exception e) {
@@ -155,7 +160,7 @@ public class GUI {
             }
             frame.dispose();
             System.exit(0);
-        } else if (choice == JOptionPane.NO_OPTION) {
+        } else if (choice != null && choice.equals("No")) {
             frame.dispose();
             System.exit(0);
         } else {
@@ -163,7 +168,7 @@ public class GUI {
         }
     }
 
-    private void createAndShowGUI() throws Exception {
+    private void createAndShowGUI(String... logos) throws Exception {
         JMenuItem menuItem;
 
         UIManager.put("swing.boldMetal", Boolean.FALSE);
@@ -178,7 +183,11 @@ public class GUI {
         this.menuBar = new JMenuBar();
         JMenu menu = new JMenu("File");
 
-        if (readOnly) {
+        if (getMode() == Mode.MONITOR) {
+            frame.setTitle("Ibis Deloy Monitoring");
+        }
+
+        if (isReadOnly()) {
             menuItem = new JMenuItem("Exit");
             menuItem.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent arg0) {
@@ -210,7 +219,7 @@ public class GUI {
         
         menu.add(MapUtilities.getMapMenu());
 
-        if (!readOnly) {
+        if (!isReadOnly()) {
             JMenu subMenu = new JMenu("Hub Policy");
             ButtonGroup hubPolicy = new ButtonGroup();
             menuItem = new JRadioButtonMenuItem(new HubPolicyAction("No hubs",
@@ -239,13 +248,13 @@ public class GUI {
         frame.setJMenuBar(this.menuBar);
 
         frame.getContentPane().setLayout(new BorderLayout());
-        myRoot = new RootPanel(this);
+        myRoot = new RootPanel(this, logos);
         frame.getContentPane().add(myRoot, BorderLayout.CENTER);
 
         frame.setPreferredSize(new Dimension(DEFAULT_SCREEN_WIDTH,
                 DEFAULT_SCREEN_HEIGHT));
 
-        if (readOnly) {
+        if (isReadOnly()) {
             frame.addWindowListener(new WindowAdapter() {
                 public void windowClosing(WindowEvent we) {
                     close();
@@ -268,7 +277,6 @@ public class GUI {
 
         frame.setVisible(true);
 
-       
     }
 
     private static void printUsage() {
@@ -284,13 +292,21 @@ public class GUI {
         System.err.println("-h | --help\tThis message");
     }
 
+	public GUI(Deploy deploy, Workspace workspace, Mode mode, String... logos)
+            throws Exception {
+        this.deploy = deploy;
+        this.mode = mode;
+        this.workspace = workspace;
+        createAndShowGUI(logos);
+    }
+    
     protected GUI(String[] arguments) {
         boolean verbose = false;
         boolean keepSandboxes = false;
         boolean fakeData = false;
         String serverCluster = null;
         int port = 0;
-        boolean readOnly = false;
+        Mode mode = Mode.NORMAL;
 
         try {
             for (int i = 0; i < arguments.length; i++) {
@@ -309,7 +325,7 @@ public class GUI {
                     printUsage();
                     System.exit(0);
                 } else if (arguments[i].equals("-r")) {
-                    readOnly = true;
+                    mode = Mode.READ_ONLY;
                 } else if (arguments[i].equals("-f")) {
                     fakeData = true;
                 } else {
@@ -340,7 +356,7 @@ public class GUI {
             System.exit(1);
         }
 
-        this.readOnly = readOnly;
+        this.mode = mode;
 
         if (verbose) {
             System.err.println("DEPLOY: Workspace:");
@@ -470,7 +486,7 @@ public class GUI {
     // this.sharedHubs = sharedHubs;
     // }
 
-    public void fireSubmitJob(JobDescription jobDescription) {
+    public void fireSubmitJob(JobDescription jobDescription) throws Exception {
         for (SubmitJobListener listener : submitJobListeners) {
             listener.modify(jobDescription);
         }
@@ -518,7 +534,7 @@ public class GUI {
     }
 
     public boolean isReadOnly() {
-        return readOnly;
+        return mode == Mode.READ_ONLY || mode == Mode.MONITOR;
     }
 
     public JFrame getFrame() {
@@ -528,6 +544,11 @@ public class GUI {
     public RootPanel getRootPanel() {
         return myRoot;
     }
+    
+    public Mode getMode() {
+        return mode;
+    }
+    
     
     public Collector getCollector() {
     	return collector;

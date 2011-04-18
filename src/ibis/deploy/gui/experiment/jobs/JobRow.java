@@ -43,8 +43,7 @@ public class JobRow {
 
     public JobRow(JobDescription jobDescription, JobTableModel model, GUI gui)
             throws Exception {
-        this.jobDescription = jobDescription.resolve(gui.getApplicationSet(),
-                gui.getGrid());
+        this.jobDescription = jobDescription.resolve(gui.getApplicationSet(), gui.getGrid());
         this.model = model;
         this.gui = gui;
 
@@ -84,11 +83,11 @@ public class JobRow {
         case HUB_STATUS_COLUMN:
             return hubState;
         case CLUSTER_COLUMN:
-            return jobDescription.getClusterName();
+            return jobDescription.getCluster().getName();
         case MIDDLEWARE_COLUMN:
-            return jobDescription.getClusterOverrides().getJobAdaptor();
+            return jobDescription.getCluster().getJobAdaptor();
         case APPLICATION_COLUMN:
-            return jobDescription.getApplicationName();
+            return jobDescription.getApplication().getName();
         case PROCESS_COUNT_COLUMN:
             return jobDescription.getProcessCount();
         case RESOURCE_COUNT_COLUMN:
@@ -167,7 +166,7 @@ public class JobRow {
         }
 
         try {
-            System.err.println("submit job");
+            logger.info("submitting job" + jobDescription.getName());
             job = gui.getDeploy().submitJob(jobDescription,
                     gui.getApplicationSet(), gui.getGrid(),
                     new StateListener() {

@@ -39,10 +39,11 @@
             <fileset dir="${ipl}" />
         </copy>
 
+        <!--
         <copy todir="lib-server">
-            <!-- <fileset dir="lib/ipl" includes="commons*,ibis*,ipl*,jstun*,log4j*,sbbi*,slf4j*,smartsockets*,trilead*" /> -->
             <fileset dir="${ipl}" />
         </copy>
+-->
 
     </target>
 
@@ -64,7 +65,7 @@
         </javac>
 
         <!-- Create jar file -->
-        <jar destfile="lib/${lib-jar}" basedir="tmp" includes="ibis/deploy/*.class">
+        <jar destfile="lib/${lib-jar}" basedir="tmp" includes="ibis/deploy/*.class,ibis/deploy/util/*.class">
         </jar>
 
         <!-- Create jar file -->
@@ -87,7 +88,12 @@
 
         <mkdir dir="lib-server" />
 
+		<!-- Re-package all the ipl jars into one jar for the server.
+    	     Exclude some unneeded jars to keep the file size down -->
 
+        <jar destfile="lib-server/server-all.jar">
+            <zipgroupfileset dir="${ipl}" includes="*.jar" excludes="antenna*,bcel*,TGGraphLayout*" />
+        </jar>
 
     </target>
 

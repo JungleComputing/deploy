@@ -15,15 +15,15 @@ RUNTIME=10:00:00
 
 if [ `expr $NR_NODES \* 8` = "$NR_PROCS" ]; then
 
-	OPTION=-8
+       OPTION=-8
 
 elif [ `expr $NR_NODES \* 4` = "$NR_PROCS" ]; then
 
-	OPTION=-4
+       OPTION=-4
 
 elif [ `expr $NR_NODES \* 2` = "$NR_PROCS" ]; then
 
-	OPTION=-2
+       OPTION=-2
 
 fi
 

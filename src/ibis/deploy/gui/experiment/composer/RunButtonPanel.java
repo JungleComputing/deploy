@@ -76,9 +76,11 @@ public class RunButtonPanel extends JPanel {
         JobDescription result = null;
         while (result == null) {
             try {
-                result = gui.getExperiment().createNewJob(String.format("job-%02d",id));
+            	result = new JobDescription(String.format("job-%02d",id));
+                gui.getExperiment().addJob(result);
             } catch (AlreadyExistsException e) {
                 id++;
+                result = null;
             }
         }
         return result;

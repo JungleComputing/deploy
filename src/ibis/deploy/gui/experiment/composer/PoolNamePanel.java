@@ -25,8 +25,7 @@ public class PoolNamePanel extends JPanel {
         gui.addExperimentWorkSpaceListener(new WorkSpaceChangedListener() {
 
             public void workSpaceChanged(GUI gui) {
-                textField.setText(gui.getExperiment().getDefaults()
-                        .getPoolName());
+                textField.setText(gui.getExperiment().getName());
             }
 
         });

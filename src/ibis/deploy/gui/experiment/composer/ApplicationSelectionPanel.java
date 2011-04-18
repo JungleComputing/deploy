@@ -37,8 +37,8 @@ public class ApplicationSelectionPanel extends JPanel {
 
         gui.addSubmitJobListener(new SubmitJobListener() {
 
-            public void modify(JobDescription jobDescription) {
-                jobDescription.setApplicationName(applicationComboBox
+            public void modify(JobDescription jobDescription) throws Exception {
+                jobDescription.getApplication().setName(applicationComboBox
                         .getSelectedItem().toString());
             }
 
