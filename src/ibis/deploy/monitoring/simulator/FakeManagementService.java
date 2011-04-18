@@ -71,6 +71,12 @@ public class FakeManagementService implements ManagementServiceInterface, FakeSe
 				} else if (	desc[i].getBeanName().compareTo("java.lang:type=OperatingSystem") == 0 &&
 							desc[i].getAttribute().compareTo("AvailableProcessors") == 0) {
 					result[i] = (int) 4;
+				} else if (	desc[i].getBeanName().compareTo("java.lang:type=OperatingSystem") == 0 &&
+							desc[i].getAttribute().compareTo("TotalPhysicalMemorySize") == 0) {
+					result[i] = (long) 40000;
+				} else if (	desc[i].getBeanName().compareTo("java.lang:type=OperatingSystem") == 0 &&
+							desc[i].getAttribute().compareTo("FreePhysicalMemorySize") == 0) {
+					result[i] = (long) 20000;
 				} else if (	desc[i].getBeanName().compareTo("java.lang:type=Memory") == 0 &&
 							desc[i].getAttribute().compareTo("HeapMemoryUsage") == 0) {
 					
@@ -97,7 +103,7 @@ public class FakeManagementService implements ManagementServiceInterface, FakeSe
 					
 					HashMap<String, Long> values = new HashMap<String, Long>();
 					values.put("used", 	(long) (Math.random()*5000));
-					values.put("max", 	(long) (Math.random()*5000));
+					values.put("max", 	(long) (5000L+Math.random()*5000));
 					
 					CompositeData data = null;
 					try {
@@ -133,7 +139,7 @@ public class FakeManagementService implements ManagementServiceInterface, FakeSe
 					
 					HashMap<String, Long> values = new HashMap<String, Long>();
 					values.put("used", 	(long)(Math.random()*5000));
-					values.put("max", 	(long)(Math.random()*5000));
+					values.put("max", 	(long)(5000L+Math.random()*5000));
 					
 					CompositeData data = null;
 					try {

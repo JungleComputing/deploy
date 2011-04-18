@@ -16,13 +16,12 @@ import ibis.deploy.gui.deployViz.helpers.VizUtils;
 import ibis.deploy.monitoring.collection.Ibis;
 import ibis.deploy.monitoring.collection.Location;
 import ibis.deploy.monitoring.collection.Link;
+import ibis.deploy.monitoring.collection.Link.LinkDirection;
+import ibis.deploy.monitoring.collection.Metric;
 import ibis.deploy.monitoring.collection.Metric.MetricModifier;
-import ibis.deploy.monitoring.collection.MetricDescription;
 import ibis.deploy.monitoring.collection.MetricDescription.MetricOutput;
-import ibis.deploy.monitoring.collection.exceptions.MetricNotAvailableException;
 import ibis.deploy.monitoring.collection.exceptions.OutputUnavailableException;
-import ibis.deploy.monitoring.collection.impl.Metric;
-import ibis.deploy.monitoring.collection.metrics.BytesReceivedPerSecond;
+import ibis.deploy.monitoring.collection.impl.LocationImpl;
 import ibis.deploy.vizFramework.globeViz.viz.CircleAnnotation;
 import ibis.deploy.vizFramework.globeViz.viz.GlobeVisualization;
 import ibis.deploy.vizFramework.globeViz.viz.utils.UIConstants;
@@ -62,34 +61,36 @@ public class GlobeVizDataConvertor implements IDataConvertor {
 
     private void generateLocationDots(Location root, String spacer, int level) {
         ArrayList<Location> dataChildren = root.getChildren();
+        //System.out.println(spacer + root.getName());
         if (dataChildren == null || dataChildren.size() == 0) {
             ArrayList<Ibis> ibises = root.getAllIbises();
-//            createAnnotation(root);
-//            generateConnections(root);
-//            for (Ibis ibis : ibises) {
-//                for (ibis.deploy.monitoring.collection.Metric metric : ibis
-//                        .getMetrics()) {
-//                    
-//                    if (metric.getDescription().getName().equals("CPU")) {
-//                        try {
-//                            float value = (Float) metric.getValue(
-//                                    MetricModifier.NORM, MetricOutput.PERCENT);
-//                            System.out.println("CPU ---> "+ value);
-//                        } catch (OutputUnavailableException e) {
-//                            // TODO Auto-generated catch block
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                }
-//            }
+            // createAnnotation(root);
+            // generateConnections(root);
+            // for (Ibis ibis : ibises) {
+            // for (ibis.deploy.monitoring.collection.Metric metric : ibis
+            // .getMetrics()) {
+            //
+            // if (metric.getDescription().getName().equals("CPU")) {
+            // try {
+            // float value = (Float) metric.getValue(
+            // MetricModifier.NORM, MetricOutput.PERCENT);
+            // System.out.println("CPU ---> "+ value);
+            // } catch (OutputUnavailableException e) {
+            // // TODO Auto-generated catch block
+            // e.printStackTrace();
+            // }
+            // }
+            // }
+            // }
+            return;
         }
         for (Location loc : dataChildren) {
-            if (level == 0) {
-                createAnnotation(loc);
-                generateConnections(loc);
-            }
+            // if (level == 0) {
+            createAnnotation(loc);
+            generateConnections(loc);
+            // }
 
-            ibis.deploy.monitoring.collection.impl.Location finalLocation = (ibis.deploy.monitoring.collection.impl.Location) loc;
+            LocationImpl finalLocation = (LocationImpl) loc;
 
             generateLocationDots(loc, spacer.concat("  "), level - 1);
         }
@@ -101,63 +102,94 @@ public class GlobeVizDataConvertor implements IDataConvertor {
         Position pos1, pos2;
 
         for (Link link : links) {
-            startLocation = ((ibis.deploy.monitoring.collection.impl.Location) link
-                    .getSource()).getName();
-            stopLocation = ((ibis.deploy.monitoring.collection.impl.Location) link
-                    .getDestination()).getName();
 
-            pos1 = locationList.get(startLocation);
-            pos2 = locationList.get(stopLocation);
+            // only create arcs between locations
+            if ((link.getSource() instanceof LocationImpl)
+                    && (link.getDestination() instanceof LocationImpl)) {
+                startLocation = ((LocationImpl) link.getSource()).getName();
+                stopLocation = ((LocationImpl) link.getDestination()).getName();
 
-            // try {
-            // Metric m = (Metric)link.getMetric(new BytesReceivedPerSecond());
-            // try {
-            // System.out.println("-------->" + m.getValue(MetricModifier.NORM,
-            // MetricOutput.PERCENT));
-            // } catch (OutputUnavailableException e) {
-            // // TODO Auto-generated catch block
-            // e.printStackTrace();
-            // }
-            //
-            // } catch (MetricNotAvailableException e1) {
-            // // TODO Auto-generated catch block
-            // e1.printStackTrace();
-            // }
+                pos1 = locationList.get(startLocation);
+                pos2 = locationList.get(stopLocation);
 
-            for (ibis.deploy.monitoring.collection.Metric metric : link
-                    .getMetrics()) {
-                // System.out.println(metric.getDescription().getName());
-
-                if (metric.getDescription().getName().equals("Bytes_Sent")) {
-                    try {
-                        float value = (Float) metric.getValue(
-                                MetricModifier.NORM, MetricOutput.PERCENT);
-                        System.out.println(value);
-                    } catch (OutputUnavailableException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                }
-                // float currentValue;
                 // try {
-                //
-                // currentValue = (Float) metric.getValue(MetricModifier.NORM,
-                // MetricOutput.PERCENT);
-                // System.out.println("-------->" + currentValue);
+                // Metric m = (Metric)link.getMetric(new
+                // BytesReceivedPerSecond());
+                // try {
+                // System.out.println("-------->" +
+                // m.getValue(MetricModifier.NORM,
+                // MetricOutput.PERCENT));
                 // } catch (OutputUnavailableException e) {
                 // // TODO Auto-generated catch block
                 // e.printStackTrace();
                 // }
                 //
-            }
+                // } catch (MetricNotAvailableException e1) {
+                // // TODO Auto-generated catch block
+                // e1.printStackTrace();
+                // }
 
-            // ratio = item.getLong(VizUtils.WEIGHT) * 1.0f /
-            // VizUtils.MAX_EDGE_WEIGHT;
-            // color = VizUtils.blend(startColor, stopColor, ratio,
-            // ((BSplineEdgeItem) item).getAlpha());
+                for (Metric metric : link.getMetrics(LinkDirection.SRC_TO_DST)) {
 
-            if (pos1 != null && pos2 != null) {
-                globe.drawArc(pos1, pos2);
+                    try {
+                        float value = (Float) metric.getValue(
+                                MetricModifier.NORM, MetricOutput.PERCENT);
+                        if (value != 0) {
+                            System.out.println(value);
+                        }
+                    } catch (OutputUnavailableException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+
+                    // if
+                    // (metric.getDescription().getName().equals("Bytes_Sent_Per_Sec"))
+                    // {
+                    // try {
+                    // float value = (Float) metric.getValue(
+                    // MetricModifier.NORM, MetricOutput.PERCENT);
+                    // System.out.println(value);
+                    // } catch (OutputUnavailableException e) {
+                    // // TODO Auto-generated catch block
+                    // e.printStackTrace();
+                    // }
+                    // }
+                    // float currentValue;
+                    // try {
+                    //
+                    // currentValue = (Float)
+                    // metric.getValue(MetricModifier.NORM,
+                    // MetricOutput.PERCENT);
+                    // System.out.println("-------->" + currentValue);
+                    // } catch (OutputUnavailableException e) {
+                    // // TODO Auto-generated catch block
+                    // e.printStackTrace();
+                    // }
+                    //
+                }
+
+                for (Metric metric : link.getMetrics(LinkDirection.DST_TO_SRC)) {
+
+                    try {
+                        float value = (Float) metric.getValue(
+                                MetricModifier.NORM, MetricOutput.PERCENT);
+                        if (value != 0) {
+                            System.out.println(value);
+                        }
+                    } catch (OutputUnavailableException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
+
+                // ratio = item.getLong(VizUtils.WEIGHT) * 1.0f /
+                // VizUtils.MAX_EDGE_WEIGHT;
+                // color = VizUtils.blend(startColor, stopColor, ratio,
+                // ((BSplineEdgeItem) item).getAlpha());
+
+                if (pos1 != null && pos2 != null) {
+                    globe.drawArc(pos1, pos2);
+                }
             }
         }
 
@@ -184,7 +216,7 @@ public class GlobeVizDataConvertor implements IDataConvertor {
 
     private void createAnnotation(Location loc) {
         CircleAnnotation annotation;
-        ibis.deploy.monitoring.collection.impl.Location finalLocation = (ibis.deploy.monitoring.collection.impl.Location) loc;
+        LocationImpl finalLocation = (LocationImpl) loc;
         Position pos = new Position(LatLon.fromDegrees(
                 finalLocation.getLatitude(), finalLocation.getLongitude()), 0);
 

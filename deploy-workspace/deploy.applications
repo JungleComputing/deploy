@@ -40,7 +40,7 @@ RegistryBenchmark.system.properties = ibis.managementclient=true,ibis.bytescount
 
 # Application "Go"
 Go.main.class = go.dac.Main
-Go.arguments = --size,4,--stones,3
+Go.arguments = --size,8,--stones,3
 Go.libs = lib-server,ipl-apps/go.jar
 #Go.input.files =
 #Go.output.files =

@@ -11,7 +11,7 @@ import ibis.deploy.monitoring.collection.exceptions.BeyondAllowedRangeException;
 import ibis.deploy.monitoring.collection.exceptions.IncorrectParametersException;
 import ibis.ipl.support.management.AttributeDescription;
 
-public class NonHeapMemory extends ibis.deploy.monitoring.collection.impl.MetricDescription implements ibis.deploy.monitoring.collection.MetricDescription {
+public class NonHeapMemory extends ibis.deploy.monitoring.collection.impl.MetricDescriptionImpl implements ibis.deploy.monitoring.collection.MetricDescription {
 	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.collection.metrics.NonHeapMemory");
 
 	public NonHeapMemory() {
@@ -20,9 +20,9 @@ public class NonHeapMemory extends ibis.deploy.monitoring.collection.impl.Metric
 		name = "MEM_NONHEAP";	
 		type = MetricType.NODE;
 
-		color[0] = 0.5f;
-		color[1] = 0.5f;
-		color[2] = 0.0f;
+		color[0] =   0f/255f;
+		color[1] = 255f/255f;
+		color[2] =   0f/255f;
 
 		necessaryAttributes.add(new AttributeDescription("java.lang:type=Memory", "NonHeapMemoryUsage"));
 
@@ -31,12 +31,14 @@ public class NonHeapMemory extends ibis.deploy.monitoring.collection.impl.Metric
 	}
 
 	public void update(Object[] results, Metric metric) throws IncorrectParametersException {
-		ibis.deploy.monitoring.collection.impl.Metric castMetric = ((ibis.deploy.monitoring.collection.impl.Metric)metric);
+		ibis.deploy.monitoring.collection.impl.MetricImpl castMetric = ((ibis.deploy.monitoring.collection.impl.MetricImpl)metric);
 		if (results[0] instanceof CompositeData) {
 			CompositeData received	= (CompositeData) results[0];
 			
 			long mem_max  = (Long) received.get("max");
+			if (mem_max < 0) mem_max = 0;
 			long mem_used = (Long) received.get("used");
+			if (mem_used < 0) mem_used = 0;
 					
 			try {			 
 				castMetric.setValue(MetricModifier.NORM, MetricOutput.PERCENT, (float) mem_used / (float) mem_max);

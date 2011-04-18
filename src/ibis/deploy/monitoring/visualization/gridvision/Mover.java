@@ -1,6 +1,6 @@
 package ibis.deploy.monitoring.visualization.gridvision;
 
-public class Mover {
+public class Mover implements Moveable {
 	private float[] oldLocation, currentLocation, newLocation;
 	private Timer timer;
 	

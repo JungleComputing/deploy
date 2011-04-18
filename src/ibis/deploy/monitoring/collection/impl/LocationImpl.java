@@ -8,7 +8,12 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ibis.deploy.monitoring.collection.Ibis;
+import ibis.deploy.monitoring.collection.Link;
+import ibis.deploy.monitoring.collection.Location;
+import ibis.deploy.monitoring.collection.Metric;
 import ibis.deploy.monitoring.collection.Metric.MetricModifier;
+import ibis.deploy.monitoring.collection.MetricDescription;
 import ibis.deploy.monitoring.collection.MetricDescription.MetricOutput;
 import ibis.deploy.monitoring.collection.MetricDescription.MetricType;
 import ibis.deploy.monitoring.collection.exceptions.BeyondAllowedRangeException;
@@ -21,21 +26,20 @@ import ibis.deploy.monitoring.collection.exceptions.SelfLinkeageException;
  * 
  * @author Maarten van Meersbergen
  */
-public class Location extends Element implements
-        ibis.deploy.monitoring.collection.Location {
+public class LocationImpl extends ElementImpl implements Location {
     private static final Logger logger = LoggerFactory
             .getLogger("ibis.deploy.monitoring.collection.impl.Location");
 
     private String name;
     private Float[] color;
 
+    private ArrayList<Ibis> ibises;
+    private ArrayList<Location> children;
+
     private double latitude;
     private double longitude;
 
-    private ArrayList<ibis.deploy.monitoring.collection.Ibis> ibises;
-    private ArrayList<ibis.deploy.monitoring.collection.Location> children;
-
-    public Location(String name, Float[] color) {
+    public LocationImpl(String name, Float[] color) {
         super();
         this.name = name;
         this.color = new Float[3];
@@ -43,11 +47,12 @@ public class Location extends Element implements
         this.color[1] = color[1];
         this.color[2] = color[2];
 
-        ibises = new ArrayList<ibis.deploy.monitoring.collection.Ibis>();
-        children = new ArrayList<ibis.deploy.monitoring.collection.Location>();
+        ibises = new ArrayList<Ibis>();
+        children = new ArrayList<Location>();
     }
-    
-    public Location(String name, Float[] color, double latitude, double longitude) {
+
+    public LocationImpl(String name, Float[] color, double latitude,
+            double longitude) {
         super();
         this.name = name;
         this.color = new Float[3];
@@ -57,7 +62,7 @@ public class Location extends Element implements
 
         ibises = new ArrayList<ibis.deploy.monitoring.collection.Ibis>();
         children = new ArrayList<ibis.deploy.monitoring.collection.Location>();
-        
+
         this.latitude = latitude;
         this.longitude = longitude;
     }
@@ -67,48 +72,46 @@ public class Location extends Element implements
         return name;
     }
 
-    public ibis.deploy.monitoring.collection.Metric[] getMetrics() {
-        ArrayList<ibis.deploy.monitoring.collection.Metric> result = new ArrayList<ibis.deploy.monitoring.collection.Metric>();
-        for (ibis.deploy.monitoring.collection.Metric metric : metrics.values()) {
+    public Metric[] getMetrics() {
+        ArrayList<Metric> result = new ArrayList<Metric>();
+        for (Metric metric : metrics.values()) {
             if (metric.getDescription().getType() == MetricType.NODE) {
                 result.add(metric);
             }
         }
-        return result.toArray(new ibis.deploy.monitoring.collection.Metric[0]);
+        return result.toArray(new Metric[0]);
     }
 
     public Float[] getColor() {
         return color;
     }
 
-    public ArrayList<ibis.deploy.monitoring.collection.Ibis> getIbises() {
+    public ArrayList<Ibis> getIbises() {
         return ibises;
     }
 
-    public ArrayList<ibis.deploy.monitoring.collection.Ibis> getAllIbises() {
-        ArrayList<ibis.deploy.monitoring.collection.Ibis> result = new ArrayList<ibis.deploy.monitoring.collection.Ibis>();
+    public ArrayList<Ibis> getAllIbises() {
+        ArrayList<Ibis> result = new ArrayList<Ibis>();
         result.addAll(ibises);
 
-        for (ibis.deploy.monitoring.collection.Location child : children) {
+        for (Location child : children) {
             result.addAll(child.getAllIbises());
         }
 
         return result;
     }
 
-    public ArrayList<ibis.deploy.monitoring.collection.Location> getChildren() {
+    public ArrayList<Location> getChildren() {
         return children;
     }
 
-    public ArrayList<ibis.deploy.monitoring.collection.Link> getLinks(
-            ibis.deploy.monitoring.collection.MetricDescription metric,
+    public ArrayList<Link> getLinks(MetricDescription metric,
             MetricOutput outputmethod, float minimumValue, float maximumValue) {
-        ArrayList<ibis.deploy.monitoring.collection.Link> result = new ArrayList<ibis.deploy.monitoring.collection.Link>();
+        ArrayList<Link> result = new ArrayList<Link>();
 
         if (outputmethod == MetricOutput.N) {
-            for (Entry<Element, ibis.deploy.monitoring.collection.Link> entry : links
-                    .entrySet()) {
-                Link link = ((Link) entry.getValue());
+            for (Entry<ElementImpl, Link> entry : links.entrySet()) {
+                LinkImpl link = ((LinkImpl) entry.getValue());
                 int linkvalue;
                 try {
                     linkvalue = (Integer) link.getMetric(metric).getValue(
@@ -117,15 +120,14 @@ public class Location extends Element implements
                         result.add(link);
                     }
                 } catch (OutputUnavailableException e) {
-                    logger.debug("OutputUnavailableException caught. Metric is probably undefined.");
+                    logger.error("OutputUnavailableException caught. Metric is probably undefined.");
                 } catch (MetricNotAvailableException e) {
-                    logger.error("The impossible MetricNotAvailableException just happened anyway.");
+                    logger.debug("The impossible MetricNotAvailableException just happened anyway.");
                 }
             }
         } else {
-            for (Entry<Element, ibis.deploy.monitoring.collection.Link> entry : links
-                    .entrySet()) {
-                Link link = ((Link) entry.getValue());
+            for (Entry<ElementImpl, Link> entry : links.entrySet()) {
+                LinkImpl link = ((LinkImpl) entry.getValue());
                 float linkvalue;
                 try {
                     linkvalue = (Float) link.getMetric(metric).getValue(
@@ -134,9 +136,9 @@ public class Location extends Element implements
                         result.add(link);
                     }
                 } catch (OutputUnavailableException e) {
-                    logger.debug("OutputUnavailableException caught. Metric is probably undefined.");
+                    logger.error("OutputUnavailableException caught. Metric is probably undefined.");
                 } catch (MetricNotAvailableException e) {
-                    logger.error("The impossible MetricNotAvailableException just happened anyway.");
+                    logger.debug("The impossible MetricNotAvailableException just happened anyway.");
                 }
             }
         }
@@ -146,60 +148,59 @@ public class Location extends Element implements
     public int getNumberOfDescendants() {
         int result = ibises.size();
 
-        for (ibis.deploy.monitoring.collection.Location child : children) {
-            result += ((Location) child).getNumberOfDescendants();
+        for (Location child : children) {
+            result += ((LocationImpl) child).getNumberOfDescendants();
         }
 
         return result;
     }
 
     // Setters
-    public void addIbis(ibis.deploy.monitoring.collection.Ibis ibis) {
+    public void addIbis(Ibis ibis) {
         ibises.add(ibis);
     }
 
-    public void removeIbis(ibis.deploy.monitoring.collection.Ibis ibis) {
+    public void removeIbis(Ibis ibis) {
         ibises.remove(ibis);
     }
 
-    public void addChild(ibis.deploy.monitoring.collection.Location location) {
+    public void addChild(Location location) {
         if (!children.contains(location)) {
             children.add(location);
         }
     }
 
-    public void removeChild(ibis.deploy.monitoring.collection.Location location) {
+    public void removeChild(Location location) {
         children.remove(location);
     }
 
-    public void setMetrics(
-            Set<ibis.deploy.monitoring.collection.MetricDescription> descriptions) {
-        for (ibis.deploy.monitoring.collection.Ibis ibis : ibises) {
-            ((Ibis) ibis).setMetrics(descriptions);
+    public void setMetrics(Set<MetricDescription> descriptions) {
+        for (Ibis ibis : ibises) {
+            ((IbisImpl) ibis).setMetrics(descriptions);
         }
-        for (ibis.deploy.monitoring.collection.Location child : children) {
-            ((Location) child).setMetrics(descriptions);
+        for (Location child : children) {
+            ((LocationImpl) child).setMetrics(descriptions);
         }
-        for (ibis.deploy.monitoring.collection.Link link : links.values()) {
-            ((Link) link).setMetrics(descriptions);
+        for (Link link : links.values()) {
+            ((LinkImpl) link).setMetrics(descriptions);
         }
 
         // add new metrics
-        for (ibis.deploy.monitoring.collection.MetricDescription md : descriptions) {
+        for (MetricDescription md : descriptions) {
             if (!metrics.containsKey(md)) {
-                Metric newMetric = (Metric) ((MetricDescription) md)
+                MetricImpl newMetric = (MetricImpl) ((MetricDescriptionImpl) md)
                         .getMetric(this);
                 metrics.put(md, newMetric);
             }
         }
 
         // make a snapshot of our current metrics.
-        Set<ibis.deploy.monitoring.collection.MetricDescription> temp = new HashSet<ibis.deploy.monitoring.collection.MetricDescription>();
+        Set<MetricDescription> temp = new HashSet<MetricDescription>();
         temp.addAll(metrics.keySet());
 
         // and loop through the snapshot to remove unwanted metrics that don't
         // appear in the new set
-        for (ibis.deploy.monitoring.collection.MetricDescription entry : temp) {
+        for (MetricDescription entry : temp) {
             if (!descriptions.contains(entry)) {
                 metrics.remove(entry);
             }
@@ -207,40 +208,75 @@ public class Location extends Element implements
     }
 
     public void makeLinkHierarchy() {
-        for (ibis.deploy.monitoring.collection.Link link : links.values()) {
-            Location source = (Location) link.getSource();
-            Location destination = (Location) link.getDestination();
+        // We make the hierarchy bottom-up, so we start with the children
+        for (Location child : children) {
+            ((LocationImpl) child).makeLinkHierarchy();
+        }
 
-            for (ibis.deploy.monitoring.collection.Location sourceChild : source
-                    .getChildren()) {
-                for (ibis.deploy.monitoring.collection.Location destinationChild : destination
-                        .getChildren()) {
-                    ibis.deploy.monitoring.collection.Link childLink;
+        for (Link link : links.values()) {
+            ElementImpl src = (ElementImpl) link.getSource();
+            ElementImpl dst = (ElementImpl) link.getDestination();
+
+            ElementImpl other;
+
+            if (src == this) {
+                other = dst;
+            } else {
+                other = src;
+            }
+
+            // First, incorporate the links between my ibises and his ibises.
+
+            ArrayList<Ibis> myIbises = getIbises();
+
+            if (other instanceof Location) {
+                ArrayList<Ibis> hisIbises = ((Location) other).getIbises();
+
+                for (Ibis myIbis : myIbises) {
+                    for (Ibis hisIbis : hisIbises) {
+                        try {
+                            Link childLink = myIbis.getLink(hisIbis);
+                            ((LinkImpl) link).addChild(childLink);
+                        } catch (SelfLinkeageException ignored) {
+                            // ignored, because we do not want this link
+                        }
+                    }
+                }
+            } else if (other instanceof Ibis) {
+                for (Ibis myIbis : myIbises) {
                     try {
-                        childLink = sourceChild.getLink(destinationChild);
-                        ((Link) link).addChild(childLink);
+                        Link childLink = myIbis.getLink(other);
+                        ((LinkImpl) link).addChild(childLink);
+                    } catch (SelfLinkeageException ignored) {
+                        // ignored, because we do not want this link
+                    }
+                }
+            }
+
+            // Then, include the links between his child locations and me
+
+            if (other instanceof Location) {
+                for (Location hisChild : ((Location) other).getChildren()) {
+                    try {
+                        Link childLink = getLink(hisChild);
+                        ((LinkImpl) link).addChild(childLink);
                     } catch (SelfLinkeageException ignored) {
                         // ignored, because we do not want this link
                     }
                 }
             }
         }
-        for (ibis.deploy.monitoring.collection.Location child : children) {
-            ((Location) child).makeLinkHierarchy();
-        }
     }
 
     public void update() {
         // make sure the children are updated first
-        for (ibis.deploy.monitoring.collection.Location child : children) {
-            ((Location) child).update();
+        for (Location child : children) {
+            ((LocationImpl) child).update();
         }
 
-        for (Entry<ibis.deploy.monitoring.collection.MetricDescription, ibis.deploy.monitoring.collection.Metric> data : metrics
-                .entrySet()) {
-            ibis.deploy.monitoring.collection.MetricDescription desc = data
-                    .getKey();
-            Metric metric = (Metric) data.getValue();
+        for (Entry<MetricDescription, Metric> data : metrics.entrySet()) {
+            MetricDescription desc = data.getKey();
+            MetricImpl metric = (MetricImpl) data.getValue();
 
             try {
                 ArrayList<MetricOutput> types = desc.getOutputTypes();
@@ -252,9 +288,10 @@ public class Location extends Element implements
                         float total = 0f, max = -10000000f, min = 10000000f;
 
                         // First, we gather our own metrics
-                        for (ibis.deploy.monitoring.collection.Ibis entry : ibises) {
-                            Ibis ibis = (Ibis) entry;
-                            Metric ibisMetric = (Metric) ibis.getMetric(desc);
+                        for (Ibis entry : ibises) {
+                            IbisImpl ibis = (IbisImpl) entry;
+                            MetricImpl ibisMetric = (MetricImpl) ibis
+                                    .getMetric(desc);
                             float ibisValue = (Float) ibisMetric.getValue(
                                     MetricModifier.NORM, outputtype);
 
@@ -271,17 +308,17 @@ public class Location extends Element implements
                             // locations,
                             // multiplied by their weight.
                             int childIbises = 0;
-                            for (ibis.deploy.monitoring.collection.Location child : children) {
+                            for (Location child : children) {
                                 float childValue = (Float) child
                                         .getMetric(desc)
                                         .getValue(MetricModifier.NORM,
                                                 outputtype);
 
-                                childIbises += ((Location) child)
+                                childIbises += ((LocationImpl) child)
                                         .getNumberOfDescendants();
 
                                 total += childValue
-                                        * ((Location) child)
+                                        * ((LocationImpl) child)
                                                 .getNumberOfDescendants();
 
                                 if (childValue > max)
@@ -296,7 +333,7 @@ public class Location extends Element implements
                         } else {
                             // Then we add the metric values of our child
                             // locations
-                            for (ibis.deploy.monitoring.collection.Location child : children) {
+                            for (Location child : children) {
                                 float childValue = (Float) child
                                         .getMetric(desc)
                                         .getValue(MetricModifier.NORM,
@@ -318,7 +355,7 @@ public class Location extends Element implements
                         long total = 0, max = 0, min = 1000000;
 
                         // First, we gather our own metrics
-                        for (ibis.deploy.monitoring.collection.Ibis ibis : ibises) {
+                        for (Ibis ibis : ibises) {
                             long ibisValue = (Long) ibis.getMetric(desc)
                                     .getValue(MetricModifier.NORM, outputtype);
 
@@ -331,7 +368,7 @@ public class Location extends Element implements
                         }
 
                         // Then we add the metric values of our child locations
-                        for (ibis.deploy.monitoring.collection.Location child : children) {
+                        for (Location child : children) {
                             long childValue = (Long) child.getMetric(desc)
                                     .getValue(MetricModifier.NORM, outputtype);
 
@@ -353,10 +390,14 @@ public class Location extends Element implements
             } catch (BeyondAllowedRangeException e) {
                 // Impossible unless one of the children has a value that is
                 // already bad
-                logger.error("The impossible BeyondAllowedRangeException just happened anyway.");
+                logger.debug("The impossible BeyondAllowedRangeException just happened anyway.");
             } catch (MetricNotAvailableException e) {
                 logger.error("The impossible MetricNotAvailableException just happened anyway.");
             }
+        }
+
+        for (Link link : links.values()) {
+            ((LinkImpl) link).update();
         }
     }
 
@@ -368,8 +409,7 @@ public class Location extends Element implements
 
         result += name + " has " + metrics.size() + " metrics: ";
 
-        for (Entry<ibis.deploy.monitoring.collection.MetricDescription, ibis.deploy.monitoring.collection.Metric> entry : metrics
-                .entrySet()) {
+        for (Entry<MetricDescription, Metric> entry : metrics.entrySet()) {
             if (entry.getValue().getDescription().getType() == MetricType.NODE) {
                 result += " " + entry.getValue().getDescription().getName();
             } else {
@@ -379,41 +419,41 @@ public class Location extends Element implements
 
         result += "\n";
 
-        for (ibis.deploy.monitoring.collection.Link link : links.values()) {
-            result += name + " " + ((Link) link).debugPrint();
+        for (Link link : links.values()) {
+            result += name + " " + ((LinkImpl) link).debugPrint();
         }
 
         result += "\n";
 
-        for (ibis.deploy.monitoring.collection.Ibis ibis : ibises) {
-            result += name + " " + ((Ibis) ibis).debugPrint();
+        for (Ibis ibis : ibises) {
+            result += name + " " + ((IbisImpl) ibis).debugPrint();
         }
 
         result += "\n";
 
-        for (ibis.deploy.monitoring.collection.Location child : children) {
-            result += ((Location) child).debugPrint();
+        for (Location child : children) {
+            result += ((LocationImpl) child).debugPrint();
         }
 
         return result;
     }
-    
-    //Getters and setters for latitude and longitude
-    
+
+    // Getters and setters for latitude and longitude
+
     public double getLatitude() {
         return latitude;
 
     }
-    
-    public void setLatitude(double newLatitude){
+
+    public void setLatitude(double newLatitude) {
         latitude = newLatitude;
     }
 
     public double getLongitude() {
         return longitude;
     }
-    
-    public void setLongitude(double newLongitude){
+
+    public void setLongitude(double newLongitude) {
         longitude = newLongitude;
     }
 

@@ -18,11 +18,15 @@ import com.jogamp.opengl.util.gl2.GLUT;
 import ibis.deploy.monitoring.collection.Collector;
 import ibis.deploy.monitoring.collection.Element;
 import ibis.deploy.monitoring.collection.Link;
+import ibis.deploy.monitoring.visualization.gridvision.exceptions.AllInUseException;
 import ibis.deploy.monitoring.visualization.gridvision.swing.ContextSensitiveMenu;
 import ibis.deploy.monitoring.visualization.gridvision.swing.GogglePanel;
 
 public class JungleGoggles implements GLEventListener {
 	private static final long serialVersionUID = 1928258465842884618L;
+	
+	private static final float STANDARD_VIEWDIST = -10f;
+	private static final int MAX_PARTICLES = 2000;
 
 	GL2 gl;
 	GLUgl2 glu = new GLUgl2();
@@ -57,6 +61,11 @@ public class JungleGoggles implements GLEventListener {
 
 	// Data interface
 	Collector collector;
+	
+	//Particle stuff
+	private Particle[] particles;
+	private boolean[] particleInUse;
+	private ParticleTimer ptimer;
 
 	/*
 	 * --------------------------------------------------------------------------
@@ -77,7 +86,7 @@ public class JungleGoggles implements GLEventListener {
 		zFar = 1500.0f;
 
 		// Initial view
-		viewDist = -6;
+		viewDist = STANDARD_VIEWDIST;
 		viewRotation = new Float[3];
 		viewTranslation = new Float[3];
 		for (int i = 0; i < 3; i++) {
@@ -104,6 +113,17 @@ public class JungleGoggles implements GLEventListener {
 		linkRegistry = new HashMap<Element, JGVisual>();
 		namesToVisuals = new HashMap<Integer, JGVisual>();
 		namesToParents = new HashMap<Integer, JGVisual>();
+		
+		//Particle stuff
+		particles = new Particle[MAX_PARTICLES];
+		particleInUse = new boolean[MAX_PARTICLES];
+		for (int i = 0; i < MAX_PARTICLES; i++) {
+			particles[i] = new Particle(i);
+			particleInUse[i] = false; 
+		}
+		
+		ptimer = new ParticleTimer(this);
+		new Thread(ptimer).start();
 		
 		// Visual updater definition
 		UpdateTimer updater = new UpdateTimer(this);
@@ -222,6 +242,37 @@ public class JungleGoggles implements GLEventListener {
 			DisplayListBuilder.DisplayList whichPointer) {
 		return listBuilder.getPointer(whichPointer);
 	}
+	
+	/**
+	 * Functions used to handle the particle storage system.
+	 */	
+	public Particle getParticle() throws AllInUseException {
+		synchronized(particles) {
+			Particle result = null;
+			for (int i = 0; i < MAX_PARTICLES; i++) {
+				if (!particleInUse[i]) {
+					result = particles[i];
+					particleInUse[i] = true;
+					return result;
+				}
+			}			
+		}		
+		throw new AllInUseException();
+	}
+	
+	public void returnParticle(Particle p) {
+		synchronized(particles) {
+			int number = p.getNumber();
+			particleInUse[number] = false;
+		}		
+	}
+	
+	public void doParticleMoves(float fraction) {
+		for (int i = 0; i < MAX_PARTICLES; i++) {
+			particles[i].doMoveFraction(fraction);
+		}
+	}	
+	
 
 	/**
 	 * This function sets the current state to the original state.
@@ -255,6 +306,11 @@ public class JungleGoggles implements GLEventListener {
 			}
 		}
 		
+		//Re-Init the particles
+		for (int i = 0; i < MAX_PARTICLES; i++) {		
+			particleInUse[i] = false; 
+		}
+		
 		rePositionUniverse();
 	}
 	
@@ -285,30 +341,45 @@ public class JungleGoggles implements GLEventListener {
 	 * it will swap buffers and update the display.
 	 */
 	public void display(GLAutoDrawable drawable) {
+		//Determine, if any, the selected item and it's parent
+		JGVisual selectedVisual = namesToParents.get(selectedItem);
+		JGVisual selectedParent = namesToParents.get(selectedItem);	
+		
+		/** Draw all desireables
+		 */
+		
+		// Get the current opengl instance, and clear the depth and color buffers		
 		GL2 gl = drawable.getGL().getGL2();
-
-		// Added GL2.GL_DEPTH_BUFFER_BIT
 		gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
 
 		// Draw the current state of the universe
 		drawUniverse(gl, GL2.GL_RENDER);
 		
-		//Draw a selection indicator around the currently selected item
-		JGVisual selectedVisual = namesToParents.get(selectedItem);
-		if (selectedVisual != null) {
-			selectedVisual.drawSelectionCube(gl);
+		//Draw a selection indicator around the currently selected item			
+		if (selectedParent != null) {
+			selectedParent.drawSelectionCube(gl);
 		}
 
 		// Draw the Heads Up Display
 		drawHud(gl);
-
+		
+		if (menuRequest) {
+			if (selectedParent != null) {
+				ContextSensitiveMenu popup = new ContextSensitiveMenu(namesToParents.get(selectedItem));
+				GLJPanel canvas = panel.getPanel();
+				canvas.add(popup);
+				popup.show(canvas, menuCoordX, menuCoordY);
+			}
+			menuRequest = false;
+		}
+		
 		// Start the rendering process so that it runs in parallel with the
 		// computations we need to do for the NEXT frame
 		gl.glFinish();
 
 		
-		// While we are rendering, update visuals for the next display cycle:
-
+		/** While we are rendering, update visuals for the next display cycle:
+		 */
 		// First, reset the universe if requested to do so
 		if (resetRequest || collector.change()) {
 			initializeUniverse();
@@ -324,22 +395,12 @@ public class JungleGoggles implements GLEventListener {
 		if (pickRequest) {
 			selectedItem = pick(gl, pickPoint);			
 			pickRequest = false;
-		}		
-		
-		if (menuRequest) {
-			ContextSensitiveMenu popup = new ContextSensitiveMenu(namesToParents.get(selectedItem));
-			GLJPanel canvas = panel.getPanel();
-			canvas.add(popup);
-			popup.show(canvas, menuCoordX, menuCoordY);
-			
-			menuRequest = false;
-		}
+		}			
 
 		// And recenter (move) to that location
 		if (recenterRequest) {
-			if (namesToVisuals.get(selectedItem) != null) {
-				float[] newCenter = namesToVisuals.get(selectedItem)
-						.getCoordinates();
+			if (selectedVisual != null) {
+				float[] newCenter = selectedVisual.getCoordinates();
 				m.moveTo(newCenter);
 			}
 
@@ -374,14 +435,19 @@ public class JungleGoggles implements GLEventListener {
 		gl.glRotatef(viewRotation[0], 1, 0, 0);
 		gl.glRotatef(viewRotation[1], 0, 1, 0);
 
-		// Draw the universe (locations tree)
-		universe.drawSolids(gl, renderMode);
-		universe.drawTransparents(gl, renderMode);
-
-		// Draw all the links
+		// Draw the solid elements (location tree and links)
 		for (JGVisual link : linkRegistry.values()) {
 			link.drawSolids(gl, renderMode);
 		}
+		
+		universe.drawSolids(gl, renderMode);
+
+		//Then, draw the transparent elements of both.		
+		for (JGVisual link : linkRegistry.values()) {
+			link.drawTransparents(gl, renderMode);
+		}
+		
+		universe.drawTransparents(gl, renderMode);
 	}
 
 	private void drawHud(GL2 gl) {
@@ -422,6 +488,23 @@ public class JungleGoggles implements GLEventListener {
 
 	public void setViewDist(float newViewDist) {
 		viewDist = newViewDist;
+		
+		/*
+		JGVisual selectedParent = namesToParents.get(selectedItem);
+		if (selectedParent != null) {
+			if (viewDist > ZOOM_IN_THRESHOLD) {
+				selectedParent.setState(State.UNFOLDED);
+				viewDist = STANDARD_VIEWDIST;
+			} else if (viewDist < ZOOM_OUT_THRESHOLD) {
+				selectedParent.setState(State.COLLAPSED);
+				viewDist = STANDARD_VIEWDIST;			
+			}		
+		}
+		*/
+	}
+	
+	public float getViewDist() {
+		return viewDist;
 	}
 
 	public void doPickRequest(Point p) {

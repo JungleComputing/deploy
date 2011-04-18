@@ -12,7 +12,12 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import ibis.deploy.monitoring.collection.Collector;
 import ibis.deploy.monitoring.collection.Element;
+import ibis.deploy.monitoring.collection.Ibis;
+import ibis.deploy.monitoring.collection.Location;
+import ibis.deploy.monitoring.collection.MetricDescription;
+import ibis.deploy.monitoring.collection.Pool;
 import ibis.deploy.monitoring.collection.exceptions.SelfLinkeageException;
 import ibis.deploy.monitoring.collection.exceptions.SingletonObjectNotInstantiatedException;
 import ibis.deploy.monitoring.collection.metrics.*;
@@ -24,15 +29,14 @@ import org.slf4j.LoggerFactory;
 /**
  * Serves as the main class for the data collecting module.
  */
-public class Collector implements ibis.deploy.monitoring.collection.Collector,
-        Runnable {
+public class CollectorImpl implements Collector, Runnable {
     private static final Logger logger = LoggerFactory
             .getLogger("ibis.deploy.monitoring.collection.impl.Collector");
     private static final ibis.ipl.Location universe = new ibis.ipl.impl.Location(
             new String[0]);
     private static final int workercount = 8;
 
-    private static Collector ref = null;
+    private static CollectorImpl ref = null;
 
     // Interfaces to the IPL
     private ManagementServiceInterface manInterface;
@@ -50,43 +54,50 @@ public class Collector implements ibis.deploy.monitoring.collection.Collector,
     private int waiting = 0;
 
     // Internal lists
-    private HashMap<String, ibis.deploy.monitoring.collection.Location> locations;
-    private HashMap<String, ibis.deploy.monitoring.collection.Pool> pools;
-    private HashMap<IbisIdentifier, ibis.deploy.monitoring.collection.Ibis> ibises;
+    private HashMap<String, Location> locations;
+    private HashMap<Element, Location> parents;
+    private HashMap<String, Pool> pools;
+    private HashMap<IbisIdentifier, Ibis> ibises;
 
     // Externally available
-    private ibis.deploy.monitoring.collection.Location root;
-    private HashSet<ibis.deploy.monitoring.collection.MetricDescription> descriptions;
+    private Location root;
+    private HashSet<MetricDescription> descriptions;
     private boolean change = false;
 
-    private Collector(ManagementServiceInterface manInterface,
+    private CollectorImpl(ManagementServiceInterface manInterface,
             RegistryServiceInterface regInterface) {
         this.manInterface = manInterface;
         this.regInterface = regInterface;
 
         // Initialize all of the lists and hashmaps needed
         poolSizes = new HashMap<String, Integer>();
-        locations = new HashMap<String, ibis.deploy.monitoring.collection.Location>();
-        pools = new HashMap<String, ibis.deploy.monitoring.collection.Pool>();
-        descriptions = new HashSet<ibis.deploy.monitoring.collection.MetricDescription>();
-        ibises = new HashMap<IbisIdentifier, ibis.deploy.monitoring.collection.Ibis>();
-        jobQueue = new LinkedList<ibis.deploy.monitoring.collection.Element>();
+        locations = new HashMap<String, Location>();
+        parents = new HashMap<Element, Location>();
+        pools = new HashMap<String, Pool>();
+        descriptions = new HashSet<MetricDescription>();
+        ibises = new HashMap<IbisIdentifier, Ibis>();
+        jobQueue = new LinkedList<Element>();
         workers = new ArrayList<Worker>();
 
         // Create a universe (location root)
         Float[] color = { 0f, 0f, 0f };
-        root = new Location("root", color);
+        root = new LocationImpl("root", color,
+                RandomDataGenerator.generateRandomLatitude(),
+                RandomDataGenerator.generateRandomLongitude());
 
         // Set the default refreshrate
         refreshrate = 1000;
 
         // Set the default metrics
         descriptions.add(new CPUUsage());
+        descriptions.add(new SystemMemory());
         descriptions.add(new HeapMemory());
         descriptions.add(new NonHeapMemory());
         // descriptions.add(new ThreadsMetric());
-        descriptions.add(new BytesReceivedPerSecond());
+        // descriptions.add(new BytesReceivedPerSecond());
         descriptions.add(new BytesSentPerSecond());
+        // descriptions.add(new BytesReceived());
+        // descriptions.add(new BytesSent());
     }
 
     private void initWorkers() {
@@ -104,18 +115,18 @@ public class Collector implements ibis.deploy.monitoring.collection.Collector,
         }
     }
 
-    public static Collector getCollector(
+    public static CollectorImpl getCollector(
             ManagementServiceInterface manInterface,
             RegistryServiceInterface regInterface) {
         if (ref == null) {
-            ref = new Collector(manInterface, regInterface);
+            ref = new CollectorImpl(manInterface, regInterface);
             ref.initWorkers();
             // ref.initUniverse();
         }
         return ref;
     }
 
-    public static Collector getCollector()
+    public static CollectorImpl getCollector()
             throws SingletonObjectNotInstantiatedException {
         if (ref != null) {
             return ref;
@@ -181,7 +192,7 @@ public class Collector implements ibis.deploy.monitoring.collection.Collector,
                 int newSize = entry.getValue();
 
                 if (newSize > 0) {
-                    pools.put(poolName, new Pool(poolName));
+                    pools.put(poolName, new PoolImpl(poolName));
                 }
             }
         }
@@ -192,14 +203,14 @@ public class Collector implements ibis.deploy.monitoring.collection.Collector,
     private void initLocations() {
         ibises.clear();
         locations.clear();
+        parents.clear();
+
         Float[] color = { 0f, 0f, 0f };
-        root = new Location("root", color,
-                RandomDataGenerator.generateRandomLatitude(),
-                RandomDataGenerator.generateRandomLongitude());
+        root = new LocationImpl("root", color, RandomDataGenerator.generateRandomLatitude(), RandomDataGenerator.generateRandomLongitude());
+        parents.put(root, null);
 
         // For all pools
-        for (Entry<String, ibis.deploy.monitoring.collection.Pool> entry : pools
-                .entrySet()) {
+        for (Entry<String, Pool> entry : pools.entrySet()) {
             String poolName = entry.getKey();
 
             // Get the members of this pool
@@ -209,25 +220,25 @@ public class Collector implements ibis.deploy.monitoring.collection.Collector,
 
                 // for all ibises
                 for (IbisIdentifier ibisid : poolIbises) {
-                    // Get the lowest location, skip the lowest (ibis) location
-                    ibis.ipl.Location ibisLocation = ibisid.location()
-                            .getParent();
+                    // Get the lowest location
+                    ibis.ipl.Location ibisLocation = ibisid.location(); // .getParent();
                     String locationName = ibisLocation.toString();
 
-                    ibis.deploy.monitoring.collection.Location current;
+                    Location current;
                     if (locations.containsKey(locationName)) {
                         current = locations.get(locationName);
                     } else {
-                        current = new Location(locationName, color,
+                        current = new LocationImpl(locationName, color,
                                 RandomDataGenerator.generateRandomLatitude(),
                                 RandomDataGenerator.generateRandomLongitude());
                         locations.put(locationName, current);
                     }
 
                     // And add the ibis to that location
-                    Ibis ibis = new Ibis(manInterface, ibisid,
+                    IbisImpl ibis = new IbisImpl(manInterface, ibisid,
                             entry.getValue(), current);
-                    ((Location) current).addIbis(ibis);
+                    ((LocationImpl) current).addIbis(ibis);
+                    parents.put(ibis, current);
                     ibises.put(ibisid, ibis);
 
                     // for all location levels, get parent
@@ -238,17 +249,21 @@ public class Collector implements ibis.deploy.monitoring.collection.Collector,
 
                         // Make a new location if we have not encountered the
                         // parent
-                        ibis.deploy.monitoring.collection.Location parent;
+                        Location parent;
                         if (locations.containsKey(name)) {
                             parent = locations.get(name);
                         } else {
-                            parent = new Location(name, color, RandomDataGenerator.generateRandomLatitude(),
-                                    RandomDataGenerator.generateRandomLongitude());
+                            parent = new LocationImpl(name, color,
+                                    RandomDataGenerator
+                                            .generateRandomLatitude(),
+                                    RandomDataGenerator
+                                            .generateRandomLongitude());
                             locations.put(name, parent);
                         }
 
                         // And add the current location as a child of the parent
-                        ((Location) parent).addChild(current);
+                        ((LocationImpl) parent).addChild(current);
+                        parents.put(current, parent);
 
                         current = parent;
 
@@ -257,7 +272,8 @@ public class Collector implements ibis.deploy.monitoring.collection.Collector,
 
                     // Finally, add the top-level location to the root location,
                     // it will only add if it is not already there
-                    ((Location) root).addChild(current);
+                    ((LocationImpl) root).addChild(current);
+                    parents.put(current, root);
                 }
             } catch (IOException e1) {
                 if (logger.isErrorEnabled()) {
@@ -268,17 +284,32 @@ public class Collector implements ibis.deploy.monitoring.collection.Collector,
     }
 
     private void initMetrics() {
-        ((Location) root).setMetrics(descriptions);
+        ((LocationImpl) root).setMetrics(descriptions);
     }
 
     private void initLinks() {
         // pre-make the location-location links
-        for (ibis.deploy.monitoring.collection.Location source : locations
-                .values()) {
-            for (ibis.deploy.monitoring.collection.Location destination : locations
-                    .values()) {
+        for (Location source : locations.values()) {
+            for (Location destination : locations.values()) {
                 try {
-                    source.getLink(destination);
+                    if (!isAncestorOf(source, destination)
+                            && !isAncestorOf(destination, source)) {
+                        source.getLink(destination);
+                    }
+                } catch (SelfLinkeageException ignored) {
+                    // ignored, because we do not want this link
+                }
+            }
+        }
+
+        // pre-make the ibis-location links
+        for (Ibis source : ibises.values()) {
+            for (Location destination : locations.values()) {
+                try {
+                    if (!isAncestorOf(source, destination)
+                            && !isAncestorOf(destination, source)) {
+                        source.getLink(destination);
+                    }
                 } catch (SelfLinkeageException ignored) {
                     // ignored, because we do not want this link
                 }
@@ -286,9 +317,8 @@ public class Collector implements ibis.deploy.monitoring.collection.Collector,
         }
 
         // pre-make the ibis-ibis links
-        for (ibis.deploy.monitoring.collection.Ibis source : ibises.values()) {
-            for (ibis.deploy.monitoring.collection.Ibis destination : ibises
-                    .values()) {
+        for (Ibis source : ibises.values()) {
+            for (Ibis destination : ibises.values()) {
                 try {
                     source.getLink(destination);
                 } catch (SelfLinkeageException ignored) {
@@ -297,23 +327,23 @@ public class Collector implements ibis.deploy.monitoring.collection.Collector,
             }
         }
 
-        ((Location) root).makeLinkHierarchy();
+        ((LocationImpl) root).makeLinkHierarchy();
     }
 
     // Getters
-    public ibis.deploy.monitoring.collection.Location getRoot() {
+    public Location getRoot() {
         return root;
     }
 
-    public ArrayList<ibis.deploy.monitoring.collection.Pool> getPools() {
-        ArrayList<ibis.deploy.monitoring.collection.Pool> result = new ArrayList<ibis.deploy.monitoring.collection.Pool>();
-        for (ibis.deploy.monitoring.collection.Pool pool : pools.values()) {
+    public ArrayList<Pool> getPools() {
+        ArrayList<Pool> result = new ArrayList<Pool>();
+        for (Pool pool : pools.values()) {
             result.add(pool);
         }
         return result;
     }
 
-    public HashSet<ibis.deploy.monitoring.collection.MetricDescription> getAvailableMetrics() {
+    public HashSet<MetricDescription> getAvailableMetrics() {
         return descriptions;
     }
 
@@ -328,14 +358,9 @@ public class Collector implements ibis.deploy.monitoring.collection.Collector,
         refreshrate = newInterval;
     }
 
-    public int getRefreshRate() {
-        return refreshrate;
-    }
-
     // Getters for the worker threads
-    public ibis.deploy.monitoring.collection.Element getWork(Worker w)
-            throws InterruptedException {
-        ibis.deploy.monitoring.collection.Element result = null;
+    public Element getWork(Worker w) throws InterruptedException {
+        Element result = null;
 
         synchronized (jobQueue) {
             while (jobQueue.isEmpty()) {
@@ -349,8 +374,22 @@ public class Collector implements ibis.deploy.monitoring.collection.Collector,
         return result;
     }
 
-    public ibis.deploy.monitoring.collection.Ibis getIbis(IbisIdentifier ibisid) {
+    public Ibis getIbis(IbisIdentifier ibisid) {
         return ibises.get(ibisid);
+    }
+
+    public Element getParent(Element child) {
+        return parents.get(child);
+    }
+
+    private boolean isAncestorOf(Element child, Element ancestor) {
+        Element current = parents.get(child);
+        while (current != null) {
+            if (current == ancestor)
+                return true;
+            current = parents.get(current);
+        }
+        return false;
     }
 
     public void run() {
@@ -389,19 +428,24 @@ public class Collector implements ibis.deploy.monitoring.collection.Collector,
             synchronized (jobQueue) {
                 if (waiting == workercount) {
                     if (!jobQueue.isEmpty()) {
-                        logger.error("workers idling while jobqueue not empty.");
+                        logger.debug("workers idling while jobqueue not empty.");
                     }
                     logger.debug("Succesfully finished queue.");
                 } else {
                     // If they have not, give warning, and try again next turn.
-                    logger.warn("Workers still working: "
+                    logger.debug("Workers still working: "
                             + (workercount - waiting));
-                    logger.warn("Ibises left in queue: " + jobQueue.size()
+                    logger.debug("Ibises left in queue: " + jobQueue.size()
                             + " / " + ibises.size());
-                    logger.warn("Consider increasing the refresh time.");
+                    logger.debug("Consider increasing the refresh time.");
                 }
             }
             iterations++;
         }
+    }
+
+    @Override
+    public int getRefreshRate() {
+        return refreshrate;
     }
 }

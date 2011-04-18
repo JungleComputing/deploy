@@ -17,9 +17,7 @@ import ibis.deploy.monitoring.visualization.gridvision.swing.GogglePanel;
 public class Junglevision {
 	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.gui.junglevision.Junglevision");
-	
-    public Junglevision() {}
-	
+		
     /**
      * main function for the standalone Junglevision program. Not to be used once integrated into deploy.
      */
@@ -29,7 +27,7 @@ public class Junglevision {
     	FakeManagementService manInterface = new FakeManagementService(regInterface);
     	
     	//Data interface
-        Collector collector = ibis.deploy.monitoring.collection.impl.Collector.getCollector(manInterface, regInterface);
+        Collector collector = ibis.deploy.monitoring.collection.impl.CollectorImpl.getCollector(manInterface, regInterface);
 		new Thread(collector).start();
 		
 		//Setup the standalone frame

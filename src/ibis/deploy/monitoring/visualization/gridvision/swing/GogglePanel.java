@@ -23,11 +23,10 @@ public class GogglePanel extends JPanel {
 		setLayout(new BorderLayout(0, 0));
 
 		// Make the GLEventListener
-		JungleGoggles gog = new JungleGoggles(collector, this);
+		JungleGoggles goggles = new JungleGoggles(collector, this);
 
 		// Standard GL2 capabilities
 		GLProfile glp = GLProfile.get(GLProfile.GL2);
-		glp = GLProfile.get(GLProfile.GL2);
 		GLCapabilities glCapabilities = new GLCapabilities(glp);
 
 		// glCapabilities.setDoubleBuffered(true);
@@ -38,16 +37,16 @@ public class GogglePanel extends JPanel {
 		glCapabilities.setNumSamples(4);
 
 		gljpanel = new GLJPanel(glCapabilities);
-		gljpanel.addGLEventListener(gog);
+		gljpanel.addGLEventListener(goggles);
 
 		// Add Mouse event listener
-		MouseHandler mouseHandler = new MouseHandler(gog);
+		MouseHandler mouseHandler = new MouseHandler(goggles);
 		gljpanel.addMouseListener(mouseHandler);
 		gljpanel.addMouseMotionListener(mouseHandler);
 		gljpanel.addMouseWheelListener(mouseHandler);
 
 		// Add key event listener
-		KeyHandler keyHandler = new KeyHandler(gog);
+		KeyHandler keyHandler = new KeyHandler(goggles);
 		gljpanel.addKeyListener(keyHandler);
 
 		// Set up animator

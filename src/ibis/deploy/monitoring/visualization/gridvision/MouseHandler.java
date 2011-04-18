@@ -11,7 +11,6 @@ import javax.swing.SwingUtilities;
 public class MouseHandler implements MouseListener, MouseMotionListener, MouseWheelListener{	
 	private JungleGoggles goggles;
 		
-	private float viewDist = -6;
 	
 	private Float[] rotation;
 	
@@ -24,8 +23,8 @@ public class MouseHandler implements MouseListener, MouseMotionListener, MouseWh
 	private float dragLeftXorigin;	
 	private float dragLeftYorigin;
 	
-	public MouseHandler(JungleGoggles jv) {
-		this.goggles = jv;
+	public MouseHandler(JungleGoggles goggles) {
+		this.goggles = goggles;
 		
 		rotation = new Float[3];
 	}
@@ -79,11 +78,10 @@ public class MouseHandler implements MouseListener, MouseMotionListener, MouseWh
 		//Empty - unneeded		
 	}
 
-	public void mouseWheelMoved(MouseWheelEvent e) {	
+	public void mouseWheelMoved(MouseWheelEvent e) {
+		float viewDist = goggles.getViewDist();
 		viewDist += e.getWheelRotation();
-		if (viewDist > 0) { viewDist = 0; }
 		
-		//System.out.println("viewdist "+ viewDist + " dragCoefficient " + dragCoefficient);
 		goggles.setViewDist(viewDist);
 	}
 }

@@ -8,16 +8,30 @@ import ibis.deploy.monitoring.collection.Metric.MetricModifier;
 
 
 public class JGIbis extends JGVisualAbstract implements JGVisual  {	
-	
 	public JGIbis(JungleGoggles goggles, JGVisual parent, GLUgl2 glu, Ibis dataIbis) {
 		super(goggles, parent);
+		
+		state = State.COLLAPSED;
 				
-		//jv.registerVisual(dataIbis, this);
+		goggles.registerVisual(dataIbis, this);
 		
 		Metric dataMetrics[] = dataIbis.getMetrics();
 		
-		for (Metric dataMetric : dataMetrics) {			
-			metrics.add(new JGMetric(goggles, this, dataMetric, MetricModifier.NORM));
+		Metric[] memMetrics = new Metric[3];			
+			
+		for (Metric dataMetric : dataMetrics) {
+			if (dataMetric.getDescription().getName().compareTo("MEM_SYS") == 0) {
+				memMetrics[0] = dataMetric;
+			} else if (dataMetric.getDescription().getName().compareTo("MEM_HEAP") == 0) {
+				memMetrics[2] = dataMetric;
+			} else if (dataMetric.getDescription().getName().compareTo("MEM_NONHEAP") == 0) {
+				memMetrics[1] = dataMetric;
+			} else {
+				metrics.add(new JGMetric(goggles, this, dataMetric, MetricModifier.NORM));
+			}
 		}
+		metrics.add(new JGCombinedMetric(goggles, this, memMetrics));
+		
+		name = dataIbis.getLocation().getName();
 	}
 }

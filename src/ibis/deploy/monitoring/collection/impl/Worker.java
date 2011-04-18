@@ -7,30 +7,31 @@ import ibis.deploy.monitoring.collection.exceptions.SingletonObjectNotInstantiat
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Worker extends Thread {	
-	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.collection.impl.Worker");
+public class Worker extends Thread {
+	private static final Logger logger = LoggerFactory
+			.getLogger("ibis.deploy.monitoring.collection.impl.Worker");
 
-	private Collector c;
+	private CollectorImpl c;
 	ibis.deploy.monitoring.collection.Element element;
 
 	public Worker() {
 		try {
-			this.c = Collector.getCollector();
+			this.c = CollectorImpl.getCollector();
 		} catch (SingletonObjectNotInstantiatedException e) {
 			logger.error("Collector not instantiated properly.");
 		}
 	}
 
-	public void run() {		
+	public void run() {
 		while (true) {
 			try {
 				element = c.getWork(this);
-				
-				if (element instanceof Location) {
-					((Location)element).update();
-				} else if (element instanceof Ibis) {
+
+				if (element instanceof LocationImpl) {
+					((LocationImpl) element).update();
+				} else if (element instanceof IbisImpl) {
 					try {
-						((Ibis)element).update();
+						((IbisImpl) element).update();
 					} catch (TimeoutException e) {
 						logger.debug("timed out.");
 					}
@@ -38,7 +39,7 @@ public class Worker extends Thread {
 					logger.error("Wrong type in work queue.");
 				}
 			} catch (InterruptedException e1) {
-				//try again
+				// try again
 			}
 			element = null;
 		}

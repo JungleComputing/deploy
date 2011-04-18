@@ -1,12 +1,15 @@
 package ibis.deploy.monitoring.visualization.gridvision;
 
+import java.awt.Font;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.media.opengl.GL2;
 
+import com.jogamp.opengl.util.awt.TextRenderer;
+
 public abstract class JGVisualAbstract implements JGVisual {
-	private final static float SPHERE_RADIUS_MULTIPLIER = 0.075f;
+	private final static float SPHERE_RADIUS_MULTIPLIER = 0.175f;
 	
 	protected JungleGoggles goggles;
 	protected JGVisual parent;
@@ -19,7 +22,7 @@ public abstract class JGVisualAbstract implements JGVisual {
 	protected float[] rotation;
 
 	protected CollectionShape locationColShape, ibisColShape, metricColShape;
-	protected FoldState foldState;
+	protected State state;
 	protected MetricShape mShape;
 
 	protected float radius, width, height;
@@ -27,6 +30,9 @@ public abstract class JGVisualAbstract implements JGVisual {
 	protected float[] locationSeparation = { 0, 0, 0 };
 	protected float[] ibisSeparation = { 0, 0, 0 };
 	protected float[] metricSeparation = { 0.05f, 0.05f, 0.05f };
+	
+	protected TextRenderer tr;
+	protected String name;
 
 	public JGVisualAbstract(JungleGoggles goggles, JGVisual parent) {
 		this.goggles = goggles;
@@ -47,14 +53,17 @@ public abstract class JGVisualAbstract implements JGVisual {
 		rotation[2] = 0.0f;
 		
 		locationColShape = CollectionShape.CITYSCAPE;
-		ibisColShape = CollectionShape.CITYSCAPE;
+		ibisColShape = CollectionShape.SPHERE;
 		metricColShape = CollectionShape.CITYSCAPE;
-		foldState = FoldState.COLLAPSED;
-		mShape = MetricShape.BAR;
+		state = State.UNFOLDED;
 		
 		radius = 0f;
 		width = 0f;
 		height = 0f;
+		
+		Font font = new Font("SansSerif", Font.BOLD, 36);
+		tr = new TextRenderer(font);
+		name = "";
 	}
 
 	public void init(GL2 gl) {
@@ -73,7 +82,7 @@ public abstract class JGVisualAbstract implements JGVisual {
 		coordinates[0] = newCoordinates[0];
 		coordinates[1] = newCoordinates[1];
 		coordinates[2] = newCoordinates[2];
-
+		
 		// First, give our location children a new home
 		if (locations.size() > 0) {
 			if (locationColShape == CollectionShape.CITYSCAPE) {
@@ -307,61 +316,119 @@ public abstract class JGVisualAbstract implements JGVisual {
 	
 	public JGVisual getParent() {
 		return parent;
+		//goggles.unselect();
 	}
 	
-	public void setFoldState(FoldState newFoldState) {
+	public void setState(State newState) {		
 		//If collapsing while we are already collapsed, collapse our parent instead.
-		if (foldState == FoldState.COLLAPSED && newFoldState == FoldState.COLLAPSED) {
+		if (state == State.COLLAPSED && newState == State.COLLAPSED) {
 			if (parent != null && !(parent instanceof JGUniverse)) { //If this is not the root/universe
-				parent.setFoldState(FoldState.COLLAPSED);
+				parent.setState(State.COLLAPSED);
+				newState = State.NOT_SHOWN;
+			}
+		} else if (newState == State.COLLAPSED) { 
+			for (JGVisual child : locations) {
+				child.setState(State.NOT_SHOWN);
+			}
+			for (JGVisual child : ibises) {
+				child.setState(State.NOT_SHOWN);
+			}
+		} else if (newState == State.UNFOLDED) {			
+			for (JGVisual child : locations) {
+				child.setState(State.COLLAPSED);
+			}
+			for (JGVisual child : ibises) {
+				child.setState(State.COLLAPSED);
+			}
+		} else if (newState == State.NOT_SHOWN) {
+			for (JGVisual child : locations) {
+				child.setState(State.NOT_SHOWN);
+			}
+			for (JGVisual child : ibises) {
+				child.setState(State.NOT_SHOWN);
 			}
 		}
-		foldState = newFoldState;
+		
+		state = newState;
 		goggles.unselect();
 	}
 	
-	public FoldState getFoldState() {
-		return foldState;
+	public State getState() {
+		return state;
 	}
 
 	public void drawSolids(GL2 gl, int renderMode) {
 		if (this instanceof JGLocation || this instanceof JGUniverse) {
-			if (foldState == FoldState.UNFOLDED) {
+			if (state == State.UNFOLDED) {
 				for (JGVisual location : locations) {
 					location.drawSolids(gl, renderMode);
 				}
 				for (JGVisual ibis : ibises) {
 					ibis.drawSolids(gl, renderMode);
 				}
-			} else {
+			} else if (state == State.COLLAPSED) {
 				for (JGVisual metric : metrics) {
 					metric.drawSolids(gl, renderMode);
 				}
 			}
 		} else {
-			for (JGVisual metric : metrics) {
-				metric.drawSolids(gl, renderMode);
+			if (state == State.COLLAPSED || state == State.UNFOLDED) {
+				for (JGVisual metric : metrics) {
+					metric.drawSolids(gl, renderMode);
+				}
 			}
 		}
 	}
 	
 	public void drawTransparents(GL2 gl, int renderMode) {
 		if (this instanceof JGLocation || this instanceof JGUniverse) {
-			if (foldState == FoldState.UNFOLDED) {
+			if (state == State.UNFOLDED) {
 				for (JGVisual location : locations) {
 					location.drawTransparents(gl, renderMode);
 				}
 				for (JGVisual ibis : ibises) {
 					ibis.drawTransparents(gl, renderMode);
 				}	
-			} else {
+			} else if (state == State.COLLAPSED) {
 				for (JGVisual metric : metrics) {
 					metric.drawTransparents(gl, renderMode);
 				}
+								
+				//Save the current modelview matrix
+				gl.glPushMatrix();
+				
+				tr.begin3DRendering();				
+					if (goggles.currentlySelected(this)) {
+						tr.setColor(1f, 1f, 1f, 1f);
+					} else {
+						tr.setColor(1f, 1f, 1f, 0.5f);
+					}					
+				    tr.draw3D(name, coordinates[0], coordinates[1]-height, coordinates[2], 0.005f);
+			    tr.end3DRendering();
+			    
+			    //Restore the old modelview matrix
+				gl.glPopMatrix();
 			}
 		} else {
-			for (JGVisual metric : metrics) {
-				metric.drawTransparents(gl, renderMode);
+			if (state == State.COLLAPSED || state == State.UNFOLDED) {
+				for (JGVisual metric : metrics) {
+					metric.drawTransparents(gl, renderMode);
+				}
+				
+				//Save the current modelview matrix
+				gl.glPushMatrix();
+				
+				tr.begin3DRendering();
+					if (goggles.currentlySelected(this)) {
+						tr.setColor(1f, 1f, 1f, 1f);
+					} else {
+						tr.setColor(1f, 1f, 1f, 0.5f);
+					}					
+				    tr.draw3D(name, coordinates[0], coordinates[1]-height, coordinates[2], 0.005f);
+			    tr.end3DRendering();
+			    
+			    //Restore the old modelview matrix
+				gl.glPopMatrix();
 			}
 		}
 	}
@@ -382,9 +449,7 @@ public abstract class JGVisualAbstract implements JGVisual {
 		gl.glColor4f(0.1f, 0.1f, 0.1f, 0.1f);
 		
 		
-		float HEIGHT = 1.5f, WIDTH = 1.5f;
-		
-		
+		float HEIGHT = 1.5f, WIDTH = 1.5f;		
 		
 		gl.glLineWidth(1.0f);
 		
@@ -502,7 +567,7 @@ public abstract class JGVisualAbstract implements JGVisual {
 		return result;
 	}
 	
-	private float maxWidth(List<JGVisual> children) {
+	protected float maxWidth(List<JGVisual> children) {
 		float result = -Float.MAX_VALUE;
 		for (JGVisual child : children) {
 			float in = child.getWidth();
@@ -512,7 +577,7 @@ public abstract class JGVisualAbstract implements JGVisual {
 		return result;
 	}
 	
-	private float maxHeight(List<JGVisual> children) {
+	protected float maxHeight(List<JGVisual> children) {
 		float result = -Float.MAX_VALUE;
 		for (JGVisual child : children) {
 			float in = child.getHeight();

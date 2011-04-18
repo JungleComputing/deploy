@@ -390,7 +390,7 @@ public class GUI {
             }
             
             //Data interface
-            collector = ibis.deploy.monitoring.collection.impl.Collector.getCollector(manInterface, regInterface);
+            collector = ibis.deploy.monitoring.collection.impl.CollectorImpl.getCollector(manInterface, regInterface);
     		new Thread(collector).start();
     		
         } catch (Exception e) {

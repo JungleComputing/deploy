@@ -112,4 +112,12 @@ public class FloatMatrixMath {
 		
 		return result;	
 	}
+	
+	public static float length(float[] vector) {
+		float result = 0f;
+		
+		result = (float) Math.sqrt(Math.pow(vector[0], 2)+Math.pow(vector[1], 2)+Math.pow(vector[2], 2));
+		
+		return result;
+	}
 }

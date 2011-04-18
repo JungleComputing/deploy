@@ -7,7 +7,7 @@ import javax.swing.JRadioButtonMenuItem;
 
 import ibis.deploy.monitoring.visualization.gridvision.JGVisual;
 import ibis.deploy.monitoring.visualization.gridvision.JGVisual.CollectionShape;
-import ibis.deploy.monitoring.visualization.gridvision.JGVisual.FoldState;
+import ibis.deploy.monitoring.visualization.gridvision.JGVisual.State;
 
 public class ContextSensitiveMenu extends JPopupMenu {
 	private static final long serialVersionUID = -2817492958876235518L;
@@ -26,9 +26,9 @@ public class ContextSensitiveMenu extends JPopupMenu {
 		add(makeRadioMenu("Collection Form", shapeGroup, collectionItems, currentSelection, al1));
 		
 			String[] collapseItems = {"Collapse","Unfold"};
-			FoldState fstate = caller.getFoldState();
-			if (fstate == FoldState.COLLAPSED) 		currentSelection = "Collapse";
-			else if (fstate == FoldState.UNFOLDED) 	currentSelection = "Unfold";
+			State fstate = caller.getState();
+			if (fstate == State.COLLAPSED) 		currentSelection = "Collapse";
+			else if (fstate == State.UNFOLDED) 	currentSelection = "Unfold";
 			
 			ButtonGroup collapseGroup = new ButtonGroup();
 			GoggleAction al2 = new SetCollapseAction(caller, currentSelection);
