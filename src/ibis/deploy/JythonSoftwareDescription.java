@@ -43,7 +43,8 @@ public class JythonSoftwareDescription extends JavaSoftwareDescription {
     /**
      * Constructs the command line arguments from the class path, the jvm
      * options, the system properties, the main and the java arguments of this
-     * {@link org.gridlab.gat.resources.SoftwareDescription SoftwareDescription}.
+     * {@link org.gridlab.gat.resources.SoftwareDescription SoftwareDescription}
+     * .
      * 
      * @return the command line arguments
      */

@@ -20,8 +20,6 @@ public class JGLink extends JGVisualAbstract implements JGVisual {
 
 		this.source = source;
 		this.destination = destination;
-
-		//jv.registerVisual(dataLink, this);
 		
 		srcToDestMetrics = new ArrayList<JGVisual>();
 		
@@ -205,6 +203,17 @@ public class JGLink extends JGVisualAbstract implements JGVisual {
 			if (i != 0 && position[0] == 0) {
 				position[2]++;
 			}
+		}
+	}
+	
+	@Override
+	public void setMetricShape(MetricShape newShape) {
+		for (JGVisual metric : srcToDestMetrics)	{				
+			metric.setMetricShape(newShape);
+		}
+		
+		for (JGVisual metric : dstToSrcMetrics)	{				
+			metric.setMetricShape(newShape);
 		}
 	}
 	

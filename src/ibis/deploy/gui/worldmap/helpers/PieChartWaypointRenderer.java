@@ -1,9 +1,9 @@
 package ibis.deploy.gui.worldmap.helpers;
 
-import ibis.deploy.gui.misc.Utils;
 import ibis.deploy.gui.worldmap.MapUtilities;
 import ibis.deploy.gui.worldmap.helpers.ClusterWaypoint;
 import ibis.deploy.gui.worldmap.helpers.PieChartWaypoint;
+import ibis.deploy.util.Colors;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -38,10 +38,9 @@ public class PieChartWaypointRenderer implements WaypointRenderer {
                 clusterColor = MapUtilities.selectedClusterFillColor;
                 clusterBorderColor = MapUtilities.selectedClusterBorderColor;
             } else {
-                clusterColor = Utils.getLightColor(clusterwp.getCluster()
-                        .getColorCode());
-                clusterBorderColor = Utils.getColor(clusterwp.getCluster()
-                        .getColorCode());
+				clusterColor = Colors.getLightColor(clusterwp.getCluster()
+						.getColor());
+				clusterBorderColor = clusterwp.getCluster().getColor();
             }
             if (clusterColor == null) {
                 clusterColor = MapUtilities.defaultClusterFillColor;

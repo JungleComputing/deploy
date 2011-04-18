@@ -44,6 +44,24 @@ public class Workspace {
     }
 
     /**
+     * Constructs a workspace from the given grid, application, and experiments
+     * 
+     * @param grid
+     *            the grid of the new workspace
+     * @param applications
+     *            the Applications of the workspace
+     * @param experiments
+     *            the experiments of the new workspace
+     */
+    public Workspace(Grid grid, ApplicationSet applications,
+            Experiment... experiments) {
+        this.grid = grid;
+        this.applications = applications;
+        this.experiments = new ArrayList<Experiment>();
+        this.experiments.addAll(Arrays.asList(experiments));
+    }
+
+    /**
      * Constructs a workspace from all properties files stored in the given
      * directory. Constructs the grid, applications and experiments within the
      * workspace.

@@ -80,7 +80,7 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 	}
 	
 	public void init(GL2 gl) {
-		if (mShape != MetricShape.PARTICLES) {
+		//if (mShape != MetricShape.PARTICLES) {
 			if (listsInitialized) {
 				gl.glDeleteLists(solidsOnDemandList[0], ACCURACY+1);
 				gl.glDeleteLists(transparentsOnDemandList[0], ACCURACY+1);
@@ -96,7 +96,7 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 				transparentsOnDemandList[i] = transparentsOnDemandList[0]+i;
 			}
 			listsInitialized = true;
-		}
+		//}
 	}
 	
 	public void setCoordinates(float[] newCoords) {	
@@ -460,8 +460,8 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 			final int SIDES = 12;
 			final float EDGE_SIZE = 0.01f;
 			 			
-			float Yn = -0.5f*maxLength;	
-			float Yf = length*maxLength;
+			float base = -0.5f*maxLength;	
+			float fill = length*maxLength;
 			
 			float radius = Math.max(dimensions[0], dimensions[2]) / 2;
 			
@@ -469,8 +469,13 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 			solidsOnDemandListsBuilt[whichList] = true;
 			gl.glNewList(solidsOnDemandList[whichList], GL2.GL_COMPILE_AND_EXECUTE);
 				
+			if (!reversed) {
 				//Translate 'down' to center this object
-				gl.glTranslatef(0f, 0f, Yn);
+				gl.glTranslatef(0f, 0f, base);
+			} else {
+				//Translate 'down' to center this object
+				gl.glTranslatef(0f, 0f, base+maxLength-fill);
+			}
 							
 				//Make a new quadratic object
 				GLUquadric qobj = glu.gluNewQuadric();
@@ -481,10 +486,10 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 					glu.gluDisk(qobj, 0.0, radius, SIDES, 1);
 					
 					//Sides
-					glu.gluCylinder(qobj, radius, radius, Yf, SIDES, 1);	
+					glu.gluCylinder(qobj, radius, radius, fill, SIDES, 1);	
 					
 					//Translate 'up'
-					gl.glTranslatef(0f, 0f, Yf);
+					gl.glTranslatef(0f, 0f, fill);
 					
 					//Top disk
 					glu.gluDisk(qobj, 0.0, radius, SIDES, 1);
@@ -496,7 +501,7 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 					glu.gluCylinder(qobj, radius, radius, EDGE_SIZE, SIDES, 1);	
 					
 					//Translate 'down'
-					gl.glTranslatef(0f, 0f, -Yf);
+					gl.glTranslatef(0f, 0f, -fill);
 					
 					//Edge of bottom disk
 					glu.gluCylinder(qobj, radius, radius, EDGE_SIZE, SIDES, 1);
@@ -537,21 +542,33 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 			
 			//On-demand generated list			
 			transparentsOnDemandListsBuilt[whichList] = true;
-			gl.glNewList(transparentsOnDemandList[whichList], GL2.GL_COMPILE_AND_EXECUTE);					
+			gl.glNewList(transparentsOnDemandList[whichList], GL2.GL_COMPILE_AND_EXECUTE);
+			
+			if (!reversed) {
 				//Translate 'down' to center this object
 				gl.glTranslatef(0f, 0f, base+fill);
+			} else {
+				//Translate 'down' to center this object
+				gl.glTranslatef(0f, 0f, base);
+			}
 				
 				//Make a new quadratic object
 				GLUquadric qobj = glu.gluNewQuadric();						
 				
 				//The shadow Element, draw dynamically colored elements first			
 					//Bottom disk left out, since it's the top disk of the solid
-												
-					//Sides
+						
 					gl.glColor4f(color[0], color[1], color[2], ALPHA);
+					
+				if (!reversed) {
+					//Sides					
 					glu.gluCylinder(qobj, radius, radius, maxLength-fill, SIDES, 1);
 								
 					gl.glTranslatef(0f, 0f, maxLength-fill);
+				} else {
+					//Sides					
+					glu.gluCylinder(qobj, radius, radius, maxLength-fill, SIDES, 1);
+				}
 					
 					//Top disk
 					glu.gluDisk(qobj, 0.0, radius, SIDES, 1);

@@ -1,9 +1,11 @@
 package ibis.deploy.gui.experiment;
 
 import ibis.deploy.gui.GUI;
+import ibis.deploy.gui.Mode;
 import ibis.deploy.gui.experiment.composer.ExperimentEditorPanel;
 import ibis.deploy.gui.experiment.jobs.JobTableModel;
 import ibis.deploy.gui.experiment.jobs.JobTablePanel;
+import ibis.deploy.gui.experiment.monitor.JobMonitorPanel;
 
 import java.awt.BorderLayout;
 
@@ -14,7 +16,7 @@ public class ExperimentsPanel extends JPanel {
 
     private static final long serialVersionUID = -5264882651577509288L;
 
-    public ExperimentsPanel(GUI gui) {
+    public ExperimentsPanel(GUI gui, String[] logos) {
         setLayout(new BorderLayout());
 
         JobTableModel jobTableModel = new JobTableModel(gui);
@@ -25,14 +27,21 @@ public class ExperimentsPanel extends JPanel {
         ExperimentEditorPanel editor = new ExperimentEditorPanel(gui,
                 jobTableModel);
 
-        JobTablePanel jobTable = new JobTablePanel(gui, jobTableModel);
+        JPanel jobTable;
+
+        if (gui.getMode() == Mode.MONITOR) {
+            jobTable = new JobMonitorPanel(gui, logos);
+        } else {
+
+            jobTable = new JobTablePanel(gui, jobTableModel);
+        }
 
         // pane containing experiment editor to the left
         // and SmartSockets visualizer to the right
         JSplitPane horizontalSplitPane = new JSplitPane(
                 JSplitPane.HORIZONTAL_SPLIT, editor, smartSockets);
         horizontalSplitPane.setOneTouchExpandable(true);
-        
+
         if (gui.isReadOnly()) {
             horizontalSplitPane
             .setDividerLocation((int) (GUI.DEFAULT_SCREEN_WIDTH * 0.5));
@@ -55,7 +64,7 @@ public class ExperimentsPanel extends JPanel {
         verticalSplitPane.setResizeWeight(0.5);
 
         add(verticalSplitPane, BorderLayout.CENTER);
-        
+
     }
 
 }

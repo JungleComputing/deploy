@@ -1,11 +1,11 @@
 package ibis.deploy;
 
+import java.awt.Color;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,6 +33,157 @@ public class DeployProperties extends TypedProperties {
             .getLogger(DeployProperties.class);
 
     /**
+     * Convert a list of Strings to a single space separated String
+     * 
+     * @param list
+     *            the input list
+     * @return a comma separated version of the list
+     */
+    public static String strings2SSS(List<String> list) {
+        if (list == null) {
+            return null;
+        }
+
+        if (list.size() == 0) {
+            return "";
+        }
+        String result = "";
+        for (String object : list) {
+            result = result + object.toString() + " ";
+        }
+        return result.substring(0, result.length() - 1);
+    }
+
+    /**
+     * convert a list of Strings to a single space separated String
+     * 
+     * @param list
+     *            the input list
+     * @return a comma separated version of the list
+     */
+    public static String strings2SSS(String[] list) {
+        if (list == null) {
+            return null;
+        }
+
+        if (list.length == 0) {
+            return "";
+        }
+        String result = "";
+        for (String object : list) {
+            result = result + object.toString() + " ";
+        }
+        return result.substring(0, result.length() - 2);
+    }
+
+    /**
+     * convert a list of Strings to a single comma separated String
+     * 
+     * @param list
+     *            the input list
+     * @return a comma separated version of the list
+     */
+    public static String strings2CSS(String[] list) {
+        if (list == null) {
+            return null;
+        }
+
+        if (list.length == 0) {
+            return "";
+        }
+        String result = "";
+        for (String object : list) {
+            result = result + object.toString() + ", ";
+        }
+        return result.substring(0, result.length() - 2);
+    }
+
+    /**
+     * Convert a list of Strings to a single comma separated String
+     * 
+     * @param list
+     *            the input list
+     * @return a comma separated version of the list
+     */
+    public static String strings2CSS(List<String> list) {
+        if (list == null) {
+            return null;
+        }
+
+        if (list.size() == 0) {
+            return "";
+        }
+        String result = "";
+        for (String object : list) {
+            result = result + object.toString() + ", ";
+        }
+        return result.substring(0, result.length() - 2);
+    }
+
+    /**
+     * convert a list of files to a single comma separated String
+     * 
+     * @param list
+     *            the input list
+     * @return a comma separated version of the list
+     */
+    public static String files2CSS(List<File> list) {
+        if (list == null) {
+            return null;
+        }
+
+        if (list.size() == 0) {
+            return "";
+        }
+        String result = "";
+        for (File file : list) {
+            result = result + file.toString() + ", ";
+        }
+        return result.substring(0, result.length() - 2);
+    }
+
+    /**
+     * convert a list of files to a single comma separated String
+     * 
+     * @param list
+     *            the input list
+     * @return a comma separated version of the list
+     */
+    public static String files2CSS(File[] list) {
+        if (list == null) {
+            return null;
+        }
+
+        if (list.length == 0) {
+            return "";
+        }
+        String result = "";
+        for (File file : list) {
+            result = result + file.toString() + ", ";
+        }
+        return result.substring(0, result.length() - 2);
+    }
+
+    /**
+     * convert a string map to a single comma separated String
+     * 
+     * @param map
+     *            the input map
+     * @return a comma separated version of the map
+     */
+    public static String toCSString(Map<String, String> map) {
+        if (map == null) {
+            return null;
+        }
+
+        String result = "";
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            result += entry.getKey() + "=" + entry.getValue() + ", ";
+        }
+        return result;
+    }
+
+    /**
      * Finds a list of clusters, jobs or application in a list of properties
      * 
      * Each unique string in the set of keys(cut on the first ".") is returned,
@@ -58,7 +209,8 @@ public class DeployProperties extends TypedProperties {
      * Finds a list of clusters, jobs or application in a list of properties
      * 
      * Each unique string in the set of keys(cut on the first ".") starting with
-     * the given prefix is returned, except for "default"
+     * the given prefix is returned, except for "default". Result is also
+     * sorted.
      * 
      * @param prefix
      *            prefix to filter on
@@ -66,7 +218,7 @@ public class DeployProperties extends TypedProperties {
      * @return the set of elements
      */
     public String[] getElementList(String prefix) {
-        Set<String> result = new HashSet<String>();
+        Set<String> result = new TreeSet<String>();
 
         for (Object key : keySet()) {
             if (key.toString().startsWith(prefix)) {
@@ -125,26 +277,11 @@ public class DeployProperties extends TypedProperties {
         }
 
         List<File> result = new ArrayList<File>();
-        for (String string : getStringList(key, ",")) {
+        for (String string : getStringList(key)) {
             result.add(new File(string));
         }
 
         return result;
-    }
-
-    /**
-     * Returns the split-up value of a string property. The value is supposed to
-     * be a comma and/or space separated string. See
-     * {@link java.lang.String#split(String)} for details of the splitting. If
-     * the property is not defined, an empty array of strings is returned.
-     * 
-     * @param key
-     *            the property name
-     * @return the split-up property value.
-     */
-    public String[] getStringList(String key) {
-        // split by comma's and whitespace of any length
-        return getStringList(key, ",|\\s+", new String[0]);
     }
 
     /**
@@ -177,6 +314,15 @@ public class DeployProperties extends TypedProperties {
         return result;
     }
 
+    public Color getColorProperty(String key) {
+        try {
+            return Color.decode(getProperty(key));
+        } catch (NumberFormatException e) {
+            logger.error("Cannot decode color " + getProperty(key), e);
+            return null;
+        }
+    }
+
     /**
      * Returns a property as a list of strings. Returns null if property not
      * found
@@ -192,6 +338,23 @@ public class DeployProperties extends TypedProperties {
         }
 
         return Arrays.asList(getStringList(key));
+    }
+
+    /**
+     * Returns a property as a list of strings. Returns null if property not
+     * found
+     * 
+     * @param key
+     *            key of the property to extract
+     * @return the property as a list of strings, or null if the property does
+     *         not exist
+     */
+    public List<String> getStringListProperty(String key, String delim) {
+        if (getProperty(key) == null) {
+            return null;
+        }
+
+        return Arrays.asList(getStringList(key, delim));
     }
 
 }

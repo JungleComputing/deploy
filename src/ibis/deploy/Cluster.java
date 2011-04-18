@@ -1,5 +1,9 @@
 package ibis.deploy;
 
+import ibis.deploy.util.Colors;
+import ibis.util.TypedProperties;
+
+import java.awt.Color;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -29,53 +33,35 @@ public class Cluster {
     public static void printTableOfKeys(PrintWriter out) {
         out.println("# Mandatory parameters for clusters:");
         out.println("# KEY                 COMMENT");
-        out
-                .println("# server.adaptor      JavaGAT adaptor used to deploy server");
-        out
-                .println("# server.uri          Contact URI used when deploying server");
-        out
-                .println("# job.adaptor         JavaGAT adaptor used to deploy jobs");
-        out
-                .println("# job.uri             Contact URI used when deploying job");
-        out
-                .println("# file.adaptors       Comma separated list of JavaGAT file adaptors used to");
-        out
-                .println("#                     copy files to and from this cluster(*)");
+        out.println("# server.adaptor      JavaGAT adaptor used to deploy server");
+        out.println("# server.uri          Contact URI used when deploying server");
+        out.println("# job.adaptor         JavaGAT adaptor used to deploy jobs");
+        out.println("# job.uri             Contact URI used when deploying job");
+        out.println("# file.adaptors       Comma separated list of JavaGAT file adaptors used to");
+        out.println("#                     copy files to and from this cluster(*)");
         out.println("#");
         out.println("# Optional parameters: ");
         out.println("# KEY                 COMMENT");
-        out
-                .println("# java.path           Path to java executable on this cluster.");
+        out.println("# java.path           Path to java executable on this cluster.");
         out.println("#                     If unspecified, \"java\" is used");
-        out
-                .println("# job.wrapper.script  If specified, the given script is copied to the cluster");
+        out.println("# job.wrapper.script  If specified, the given script is copied to the cluster");
         out.println("#                     and run instead of java");
-        out
-                .println("# user.name           User name used for authentication at cluster");
-        out
-                .println("# user.key            User keyfile used for authentication at cluster (only when user.name is set)");
-        out
-                .println("# cache.dir           Directory on cluster used to cache pre-stage files");
+        out.println("# user.name           User name used for authentication at cluster");
+        out.println("# user.key            User keyfile used for authentication at cluster (only when user.name is set)");
+        out.println("# cache.dir           Directory on cluster used to cache pre-stage files");
         out.println("#                     (updated using rsync)");
-        out
-                .println("# server.output.files Output files copied when server exits (e.g. statistics)");
+        out.println("# server.output.files Output files copied when server exits (e.g. statistics)");
 
-        out
-                .println("# server.system.properties system properties for the server (e.g. smartsocekts settings)");
+        out.println("# server.system.properties system properties for the server (e.g. smartsocekts settings)");
 
-        out
-                .println("# nodes               Number of nodes(machines) of this cluster (integer)");
-        out
-                .println("# cores               Total number of cores of this cluster (integer)");
-        out
-                .println("# memory               Amount of memory per node in Megabytes (integer)");
-        out
-                .println("# latitude            Latitude position of this cluster (double)");
-        out
-                .println("# longitude           Longitude position of this cluster (double)");
+        out.println("# nodes               Number of nodes(machines) of this cluster (integer)");
+        out.println("# cores               Total number of cores of this cluster (integer)");
+        out.println("# memory               Amount of memory per node in Megabytes (integer)");
+        out.println("# latitude            Latitude position of this cluster (double)");
+        out.println("# longitude           Longitude position of this cluster (double)");
+        out.println("# color               Color (as a HTML color string) used to represent this cluster");
+        out.println("# location            Location used for jobs in this cluster (will be prepended with job name)");
     }
-
-    private final Grid parent;
 
     // name of this cluster
     private String name;
@@ -103,7 +89,7 @@ public class Cluster {
 
     // user name to authenticate user with
     private String userName;
-    
+
     // Key file for user authentication
     private String keyFile;
 
@@ -131,79 +117,51 @@ public class Cluster {
     // Longitude position of this cluster
     private double longitude;
 
-    private String color;
+    private Color color;
+
+    private String location;
 
     private boolean visibleOnMap;
+
+    private final DeployProperties properties;
 
     /**
      * Applies to the current cluster a set of properties that are specific for
      * the local cluster
      */
-    private void applyLocalClusterSettings() throws Exception {
-        setName("local");
-        setServerAdaptor("local");
-        setServerURI(new URI("any://localhost"));
-        setJobAdaptor("local");
-        setJobURI(new URI("any://localhost"));
-        setFileAdaptors("local");
-        setJavaPath(System.getProperty("java.home") + File.separator + "bin"
-                + File.separator + "java");
-        setNodes(1);
-        setCores(Runtime.getRuntime().availableProcessors());
-        setLatitude(0);
-        setLongitude(0);
+    public static Cluster getLocalCluster() throws Exception {
+        Cluster result = new Cluster("local");
 
-        setVisibleOnMap(false);
+        result.setServerAdaptor("local");
+        result.setServerURI(new URI("any://localhost"));
+        result.setJobAdaptor("local");
+        result.setJobURI(new URI("any://localhost"));
+        result.setFileAdaptors("local");
+        result.setJavaPath(System.getProperty("java.home") + File.separator
+                + "bin" + File.separator + "java");
+        result.setNodes(1);
+        result.setCores(Runtime.getRuntime().availableProcessors());
+        result.setLatitude(0);
+        result.setLongitude(0);
+
+        result.setVisibleOnMap(false);
+
+        result.setColor(Colors.LOCAL_COLOR);
+
+        return result;
     }
 
     /**
-     * Creates a new cluster with a given name. Clusters cannot be created
-     * directly, but are constructed by a parent Grid object.
-     * 
-     * @param name
-     *            the name of the cluster
-     * @throws Exception
-     *             if name is null or contains periods and/or spaces
-     */
-    public Cluster(String name, Grid parent) throws Exception {
-        this.parent = parent;
-        setName(name);
-
-        if (name == "local") {
-            applyLocalClusterSettings();
-        } else {
-            serverAdaptor = null;
-            serverURI = null;
-            jobAdaptor = null;
-            jobURI = null;
-            fileAdaptors = null;
-            javaPath = null;
-            jobWrapperScript = null;
-            userName = null;
-            keyFile = null;
-            cacheDir = null;
-            serverOutputFiles = null;
-            serverSystemProperties = null;
-            nodes = 0;
-            cores = 0;
-            memory = 0;
-            latitude = 0;
-            longitude = 0;
-            color = null;
-            visibleOnMap = true;
-        }
-    }
-
-    /**
-     * Creates a cluster with no parent or name.
+     * Creates a new "anonymous" cluster with no name.
      * 
      */
     public Cluster() {
-        name = "anonymous";
-        parent = null;
+        this.name = "anonymous";
+
+        properties = new DeployProperties();
+
         serverAdaptor = null;
         serverURI = null;
-        serverOutputFiles = null;
         jobAdaptor = null;
         jobURI = null;
         fileAdaptors = null;
@@ -219,8 +177,92 @@ public class Cluster {
         memory = 0;
         latitude = 0;
         longitude = 0;
-        color = null;
         visibleOnMap = true;
+        color = null;
+    }
+
+    /**
+     * Creates a new cluster with a given name.
+     * 
+     * @param name
+     *            the name of the cluster
+     * @throws Exception
+     *             if name is null or contains periods and/or spaces
+     */
+    public Cluster(String name) throws Exception {
+        setName(name);
+
+        // set color from name
+        color = Colors.fromLocation(name);
+
+        properties = new DeployProperties();
+
+        serverAdaptor = null;
+        serverURI = null;
+        jobAdaptor = null;
+        jobURI = null;
+        fileAdaptors = null;
+        javaPath = null;
+        jobWrapperScript = null;
+        userName = null;
+        keyFile = null;
+        cacheDir = null;
+        serverOutputFiles = null;
+        serverSystemProperties = null;
+        nodes = 0;
+        cores = 0;
+        memory = 0;
+        latitude = 0;
+        longitude = 0;
+        visibleOnMap = true;
+    }
+
+    /**
+     * Copy constructor
+     * 
+     * @param original
+     *            the original cluster
+     */
+    public Cluster(Cluster original) {
+        this();
+
+        name = original.name;
+        color = original.color;
+
+        properties.addProperties(original.properties);
+
+        serverAdaptor = original.serverAdaptor;
+        serverURI = original.serverURI;
+        jobAdaptor = original.jobAdaptor;
+        jobURI = original.jobURI;
+
+        if (original.fileAdaptors != null) {
+            fileAdaptors = new ArrayList<String>(original.fileAdaptors);
+        }
+
+        javaPath = original.javaPath;
+
+        jobWrapperScript = original.jobWrapperScript;
+        userName = original.userName;
+        keyFile = original.keyFile;
+
+        cacheDir = original.cacheDir;
+
+        if (original.serverOutputFiles != null) {
+            serverOutputFiles = new ArrayList<File>(original.serverOutputFiles);
+        }
+
+        if (original.serverSystemProperties != null) {
+            serverSystemProperties = new HashMap<String, String>(
+                    original.serverSystemProperties);
+        }
+
+        nodes = original.nodes;
+        cores = original.cores;
+        memory = original.memory;
+        latitude = original.latitude;
+        longitude = original.longitude;
+        visibleOnMap = original.visibleOnMap;
     }
 
     /**
@@ -228,64 +270,16 @@ public class Cluster {
      * 
      * @param properties
      *            properties to load cluster from
-     * @param name
-     *            name of this cluster
      * @param prefix
      *            prefix used for all keys
-     * @param defaults
-     *            cluster containing default values for this cluster
      * 
      * @throws Exception
      *             if cluster cannot be read properly, or its name is invalid
      */
-    Cluster(DeployProperties properties, String name, String prefix, Grid parent)
+    public void loadFromProperties(DeployProperties properties, String prefix)
             throws Exception {
-        this.parent = parent;
-        setName(name);
-
         // add separator to prefix
         prefix = prefix + ".";
-
-        String defaultPrefix = "default.";
-
-        // first load all the default properties
-        if (name == "local") {
-            applyLocalClusterSettings(); // the default settings for the local
-            // cluster
-        } else { // apply the default settings from the file
-            serverAdaptor = properties.getProperty(defaultPrefix
-                    + "server.adaptor");
-            serverURI = properties.getURIProperty(defaultPrefix + "server.uri");
-            jobAdaptor = properties.getProperty(defaultPrefix + "job.adaptor");
-            jobURI = properties.getURIProperty(defaultPrefix + "job.uri");
-
-            // get adaptors as list of string, defaults to "null"
-            fileAdaptors = properties.getStringListProperty(defaultPrefix
-                    + "file.adaptors");
-
-            javaPath = properties.getProperty(defaultPrefix + "java.path");
-            jobWrapperScript = properties.getFileProperty(defaultPrefix
-                    + "job.wrapper.script");
-
-            userName = properties.getProperty(defaultPrefix + "user.name");
-            keyFile = properties.getProperty(defaultPrefix + "user.key");
-            cacheDir = properties.getFileProperty(defaultPrefix + "cache.dir");
-            serverOutputFiles = properties.getFileListProperty(defaultPrefix
-                    + "server.output.files");
-            serverSystemProperties = properties
-                    .getStringMapProperty(defaultPrefix
-                            + "server.system.properties");
-
-            nodes = properties.getIntProperty(defaultPrefix + "nodes", 0);
-            cores = properties.getIntProperty(defaultPrefix + "cores", 0);
-            memory = properties.getIntProperty(defaultPrefix + "memory", 0);
-            latitude = properties.getDoubleProperty(defaultPrefix + "latitude",
-                    0);
-            longitude = properties.getDoubleProperty(defaultPrefix
-                    + "longitude", 0);
-
-            visibleOnMap = true;
-        }
 
         // load all the properties corresponding to this cluster,
         // but only if they are set
@@ -293,24 +287,24 @@ public class Cluster {
         if (properties.getProperty(prefix + "server.adaptor") != null) {
             serverAdaptor = properties.getProperty(prefix + "server.adaptor");
         }
-        if (properties.getURIProperty(prefix + "server.uri") != null) {
+        if (properties.getProperty(prefix + "server.uri") != null) {
             serverURI = properties.getURIProperty(prefix + "server.uri");
         }
         if (properties.getProperty(prefix + "job.adaptor") != null) {
             jobAdaptor = properties.getProperty(prefix + "job.adaptor");
         }
-        if (properties.getURIProperty(prefix + "job.uri") != null) {
+        if (properties.getProperty(prefix + "job.uri") != null) {
             jobURI = properties.getURIProperty(prefix + "job.uri");
         }
         // get adaptors as list of string, defaults to "null"
-        if (properties.getStringListProperty(prefix + "file.adaptors") != null) {
+        if (properties.getProperty(prefix + "file.adaptors") != null) {
             fileAdaptors = properties.getStringListProperty(prefix
                     + "file.adaptors");
         }
         if (properties.getProperty(prefix + "java.path") != null) {
             javaPath = properties.getProperty(prefix + "java.path");
         }
-        if (properties.getFileProperty(prefix + "job.wrapper.script") != null) {
+        if (properties.getProperty(prefix + "job.wrapper.script") != null) {
             jobWrapperScript = properties.getFileProperty(prefix
                     + "job.wrapper.script");
         }
@@ -320,15 +314,14 @@ public class Cluster {
         if (properties.getProperty(prefix + "user.key") != null) {
             keyFile = properties.getProperty(prefix + "user.key");
         }
-        if (properties.getFileProperty(prefix + "cache.dir") != null) {
+        if (properties.getProperty(prefix + "cache.dir") != null) {
             cacheDir = properties.getFileProperty(prefix + "cache.dir");
         }
-        if (properties.getFileListProperty(prefix + "server.output.files") != null) {
+        if (properties.getProperty(prefix + "server.output.files") != null) {
             serverOutputFiles = properties.getFileListProperty(prefix
                     + "server.output.files");
         }
-        if (properties
-                .getStringMapProperty(prefix + "server.system.properties") != null) {
+        if (properties.getProperty(prefix + "server.system.properties") != null) {
             serverSystemProperties = properties.getStringMapProperty(prefix
                     + "server.system.properties");
         }
@@ -348,7 +341,17 @@ public class Cluster {
             longitude = properties.getDoubleProperty(prefix + "longitude", 0);
         }
 
-        this.color = null;
+        if (properties.getProperty(prefix + "location") != null) {
+            location = properties.getProperty(prefix + "location");
+        }
+
+        if (properties.getProperty(prefix + "color") != null) {
+            color = properties.getColorProperty(prefix + "color");
+        }
+
+        // copy all properties with right prefix to properties map
+        this.properties.addProperties(properties.filter(prefix, true, false));
+
     }
 
     public boolean isEmpty() {
@@ -356,114 +359,111 @@ public class Cluster {
                 && serverOutputFiles == null && jobAdaptor == null
                 && jobURI == null && fileAdaptors == null && javaPath == null
                 && jobWrapperScript == null && userName == null
-                && keyFile == null
-                && cacheDir == null && serverOutputFiles == null
-                && serverSystemProperties == null && nodes == 0 && cores == 0
-                && memory == 0 && latitude == 0 && longitude == 0;
+                && keyFile == null && cacheDir == null
+                && serverOutputFiles == null && serverSystemProperties == null
+                && nodes == 0 && cores == 0 && memory == 0 && latitude == 0
+                && longitude == 0;
     }
 
     /**
-     * Write all non-null values of given cluster into this cluster.
+     * Set any unset settings from the given other object
      * 
      * @param other
-     *            source application object
+     *            source cluster object
      */
-    void overwrite(Cluster other) {
-        if (other == null) {
-            return;
-        }
+    void resolve(Cluster other) {
+        if (other != null) {
 
-        if (other.name != null) {
-            name = other.name;
-        }
+            if (other.serverAdaptor != null && serverAdaptor == null) {
+                serverAdaptor = other.serverAdaptor;
+            }
 
-        if (other.serverAdaptor != null) {
-            serverAdaptor = other.serverAdaptor;
-        }
+            if (other.serverURI != null && serverURI == null) {
+                serverURI = other.serverURI;
+            }
 
-        if (other.serverURI != null) {
-            serverURI = other.serverURI;
-        }
+            if (other.jobAdaptor != null && jobAdaptor == null) {
+                jobAdaptor = other.jobAdaptor;
+            }
 
-        if (other.jobAdaptor != null) {
-            jobAdaptor = other.jobAdaptor;
-        }
+            if (other.jobURI != null && jobURI == null) {
+                jobURI = other.jobURI;
+            }
 
-        if (other.jobURI != null) {
-            jobURI = other.jobURI;
-        }
+            if (other.fileAdaptors != null && fileAdaptors == null) {
+                fileAdaptors = new ArrayList<String>();
+                fileAdaptors.addAll(other.fileAdaptors);
+            }
 
-        if (other.fileAdaptors != null) {
-            fileAdaptors = new ArrayList<String>();
-            fileAdaptors.addAll(other.fileAdaptors);
-        }
+            if (other.javaPath != null && javaPath == null) {
+                javaPath = other.javaPath;
+            }
 
-        if (other.javaPath != null) {
-            javaPath = other.javaPath;
-        }
+            if (other.jobWrapperScript != null && jobWrapperScript == null) {
+                jobWrapperScript = other.jobWrapperScript;
+            }
 
-        if (other.jobWrapperScript != null) {
-            jobWrapperScript = other.jobWrapperScript;
-        }
+            if (other.userName != null && userName == null) {
+                userName = other.userName;
+            }
 
-        if (other.userName != null) {
-            userName = other.userName;
+            if (other.keyFile != null && keyFile == null) {
+                keyFile = other.keyFile;
+            }
+
+            if (other.cacheDir != null && cacheDir == null) {
+                cacheDir = other.cacheDir;
+            }
+
+            if (other.serverOutputFiles != null && serverOutputFiles == null) {
+                serverOutputFiles = new ArrayList<File>();
+                serverOutputFiles.addAll(other.serverOutputFiles);
+            }
+
+            if (other.serverSystemProperties != null
+                    && serverSystemProperties == null) {
+                for (Map.Entry<String, String> entry : other.serverSystemProperties
+                        .entrySet()) {
+                    setServerSystemProperty(entry.getKey(), entry.getValue());
+                }
+            }
+
+            if (other.nodes != 0 && nodes == 0) {
+                nodes = other.nodes;
+            }
+
+            if (other.cores != 0 && cores == 0) {
+                cores = other.cores;
+            }
+
+            if (other.memory != 0 && memory == 0) {
+                memory = other.memory;
+            }
+
+            if (other.latitude != 0 && latitude == 0) {
+                latitude = other.latitude;
+            }
+
+            if (other.longitude != 0 && longitude == 0) {
+                longitude = other.longitude;
+            }
+
+            if (other.color != null && color == null) {
+                color = other.color;
+            }
+
+            // if any is set, show
+            visibleOnMap = visibleOnMap || other.visibleOnMap;
         }
         
-        if (other.keyFile != null) {
-            keyFile = other.keyFile;
+        if (location == null) {
+            location = getName();
         }
-
-        if (other.cacheDir != null) {
-            cacheDir = other.cacheDir;
+        
+        if (color == null) {
+            color = Colors.fromLocation(location);
         }
-
-        if (other.serverOutputFiles != null) {
-            serverOutputFiles = new ArrayList<File>();
-            serverOutputFiles.addAll(other.serverOutputFiles);
-        }
-
-        if (other.serverSystemProperties != null) {
-            for (Map.Entry<String, String> entry : other.serverSystemProperties
-                    .entrySet()) {
-                setServerSystemProperty(entry.getKey(), entry.getValue());
-            }
-        }
-
-        if (other.nodes != 0) {
-            nodes = other.nodes;
-        }
-
-        if (other.cores != 0) {
-            cores = other.cores;
-        }
-
-        if (other.memory != 0) {
-            memory = other.memory;
-        }
-
-        if (other.latitude != 0) {
-            latitude = other.latitude;
-        }
-
-        if (other.longitude != 0) {
-            longitude = other.longitude;
-        }
-
-        if (other.color != null) {
-            color = other.color;
-        }
-
-        visibleOnMap = other.visibleOnMap;
-    }
-
-    /**
-     * Returns grid of this cluster.
-     * 
-     * @return parent grid of this cluster.
-     */
-    public Grid getGrid() {
-        return parent;
+       
     }
 
     /**
@@ -487,16 +487,13 @@ public class Cluster {
      */
     public void setName(String name) throws Exception {
         if (name == null) {
-            throw new Exception("no name specified for cluster");
+            // throw new Exception("no name specified for cluster");
+            return;
         }
 
         if (name.equals(this.name)) {
             // name unchanged
             return;
-        }
-
-        if (this.name != null && this.name.equals("local")) {
-            throw new Exception("cannot rename local cluster");
         }
 
         if (name.contains(".")) {
@@ -506,14 +503,6 @@ public class Cluster {
         if (name.contains(" ")) {
             throw new Exception("cluster name cannot contain spaces : \""
                     + name + "\"");
-        }
-
-        if (parent != null) {
-            if (parent.hasCluster(name)) {
-                throw new Exception("cannot set Cluster name to \"" + name
-                        + "\", parent Grid already contains "
-                        + "a Cluster with that name");
-            }
         }
 
         this.name = name;
@@ -717,22 +706,22 @@ public class Cluster {
     public void setUserName(String userName) {
         this.userName = userName;
     }
-    
+
     /**
      * Returns keyfile used to authenticate at this cluster
      * 
      * @return keyfile used to authenticate at this cluster
-     */    
+     */
     public String getKeyFile() {
         return keyFile;
     }
-    
+
     /**
      * Sets keyfile used to authenticate at this cluster
      * 
      * @param keyFile
      *            keyfile used to authenticate at this cluster
-     */   
+     */
     public void setKeyFile(String keyFile) {
         this.keyFile = keyFile;
     }
@@ -922,28 +911,30 @@ public class Cluster {
         this.longitude = longitude;
     }
 
-    public String getColorCode() {
+    public Color getColor() {
         return color;
     }
 
-    // public Color getColor() {
-    // if (color == null || color.equals("")) {
-    // return null;
-    // }
-    // return Color.decode(color);
-    // }
-    //
-    // public Color getLightColor() {
-    // Color color = getColor();
-    //        
-    // if (color == null) {
-    // return null;
-    // }
-    // return new Color(color.getRed(), color.getGreen(), color.getBlue(), 125);
-    // }
-
-    public void setColor(String color) {
+    public void setColor(Color color) {
         this.color = color;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    /**
+     * Get the raw properties this cluster was created from. Useful for
+     * supporting custom properties in deploy based applications
+     * 
+     * @return the raw properties this cluster was created from.
+     */
+    public TypedProperties getProperties() {
+        return properties;
     }
 
     /**
@@ -1005,18 +996,6 @@ public class Cluster {
     }
 
     /**
-     * Resolves cluster and its defaults into a single new cluster object
-     * recursively.
-     * 
-     * @return a resolved cluster
-     */
-    Cluster resolve() {
-        Cluster result = new Cluster();
-        result.overwrite(this);
-        return result;
-    }
-
-    /**
      * Print the settings of this cluster to a (properties) file
      * 
      * @param out
@@ -1047,9 +1026,7 @@ public class Cluster {
         }
 
         if (serverURI != null) {
-            out
-                    .println(dotPrefix + "server.uri = "
-                            + serverURI.toASCIIString());
+            out.println(dotPrefix + "server.uri = " + serverURI.toASCIIString());
             empty = false;
         } else if (printComments) {
             out.println("#" + dotPrefix + "server.uri = ");
@@ -1071,7 +1048,7 @@ public class Cluster {
 
         if (fileAdaptors != null) {
             out.println(dotPrefix + "file.adaptors = "
-                    + Util.strings2CSS(fileAdaptors));
+                    + DeployProperties.strings2CSS(fileAdaptors));
             empty = false;
         } else if (printComments) {
             out.println("#" + dotPrefix + "file.adaptors = ");
@@ -1097,7 +1074,7 @@ public class Cluster {
         } else if (printComments) {
             out.println("#" + dotPrefix + "user.name = ");
         }
-        
+
         if (keyFile != null) {
             out.println(dotPrefix + "user.key = " + keyFile);
             empty = false;
@@ -1114,7 +1091,7 @@ public class Cluster {
 
         if (serverOutputFiles != null) {
             out.println(dotPrefix + "server.output.files = "
-                    + Util.files2CSS(serverOutputFiles));
+                    + DeployProperties.files2CSS(serverOutputFiles));
             empty = false;
         } else if (printComments) {
             out.println("#" + dotPrefix + "server.output.files =");
@@ -1122,7 +1099,7 @@ public class Cluster {
 
         if (serverSystemProperties != null) {
             out.println(dotPrefix + "server.system.properties = "
-                    + Util.toCSString(serverSystemProperties));
+                    + DeployProperties.toCSString(serverSystemProperties));
             empty = false;
         } else if (printComments) {
             out.println("#" + dotPrefix + "server.system.properties =");
@@ -1163,9 +1140,22 @@ public class Cluster {
             out.println("#" + dotPrefix + "longitude = ");
         }
 
+        if (color != null) {
+            out.println(dotPrefix + "color = " + Colors.color2colorCode(color));
+            empty = false;
+        } else if (printComments) {
+            out.println("#" + dotPrefix + "color = ");
+        }
+
+        if (location != null) {
+            out.println(dotPrefix + "location = " + location);
+            empty = false;
+        } else if (printComments) {
+            out.println("#" + dotPrefix + "location = ");
+        }
+
         if (empty && printComments) {
-            out
-                    .println("#Dummy property to make sure cluster is actually defined");
+            out.println("#Dummy property to make sure cluster is actually defined");
             out.println(prefix);
         }
     }
@@ -1194,22 +1184,24 @@ public class Cluster {
         result += " Server URI = " + getServerURI() + "\n";
         result += " Job adaptor = " + getJobAdaptor() + "\n";
         result += " Job URI = " + getJobURI() + "\n";
-        result += " File adaptors = " + Util.strings2CSS(fileAdaptors) + "\n";
+        result += " File adaptors = "
+                + DeployProperties.strings2CSS(fileAdaptors) + "\n";
         result += " Java path = " + getJavaPath() + "\n";
         result += " Wrapper Script = " + getJobWrapperScript() + "\n";
         result += " User name = " + getUserName() + "\n";
         result += " User keyfile = " + getKeyFile() + "\n";
         result += " Cache dir = " + getCacheDir() + "\n";
-        result += " Server output files = " + Util.files2CSS(serverOutputFiles)
-                + "\n";
+        result += " Server output files = "
+                + DeployProperties.files2CSS(serverOutputFiles) + "\n";
         result += " Server system properties = "
-                + Util.toCSString(getServerSystemProperties()) + "\n";
+                + DeployProperties.toCSString(getServerSystemProperties())
+                + "\n";
         result += " Nodes = " + getNodes() + "\n";
         result += " Cores = " + getCores() + "\n";
         result += " Memory = " + getMemory() + "\n";
         result += " Latitude = " + getLatitude() + "\n";
         result += " Longitude = " + getLongitude() + "\n";
-        result += " Color = " + getColorCode() + "\n";
+        result += " Color = " + Colors.color2colorCode(color) + "\n";
 
         return result;
     }

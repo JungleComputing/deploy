@@ -20,44 +20,28 @@ public class JobDescription {
         out.println("# Valid parameters for jobs:");
         out.println("# KEY                 COMMENT");
         out.println("# application.name    Name of application to run");
-        out
-                .println("# application.*       All valid entries for an application, overriding any");
-        out
-                .println("#                     specified in the application referenced");
+        out.println("# application.*       All valid entries for an application, overriding any");
+        out.println("#                     specified in the application referenced");
         out.println("# process.count       Total number of processes started");
-        out
-                .println("# cluster.name        Name of cluster to run application on");
-        out
-                .println("# cluster.*           All valid entries for a cluster, overriding any");
-        out
-                .println("#                     specified in the cluster referenced");
-        out
-                .println("# resource.count      Number of machines used on the cluster");
+        out.println("# cluster.name        Name of cluster to run application on");
+        out.println("# cluster.*           All valid entries for a cluster, overriding any");
+        out.println("#                     specified in the cluster referenced");
+        out.println("# resource.count      Number of machines used on the cluster");
 
-        out
-                .println("# runtime             Maximum runtime of job (in minutes)");
+        out.println("# runtime             Maximum runtime of job (in minutes)");
 
-        out
-                .println("# pool.name           Pool name. Defaults to name of experiment if unspecified");
-        out
-                .println("# pool.size           Size of pool. Only used in a closed-world application");
+        out.println("# pool.name           Pool name. Defaults to name of experiment if unspecified");
+        out.println("# pool.size           Size of pool. Only used in a closed-world application");
     }
-
-    // experiment this job belongs to
-    private final Experiment parent;
 
     // name of job
     private String name;
 
-    private String applicationName;
-
-    private final Application applicationOverrides;
+    private final Application application;
 
     private int processCount;
 
-    private String clusterName;
-
-    private final Cluster clusterOverrides;
+    private final Cluster cluster;
 
     private int resourceCount;
 
@@ -72,12 +56,9 @@ public class JobDescription {
      */
     JobDescription() {
         name = "anonymous";
-        parent = null;
-        applicationName = null;
-        applicationOverrides = new Application();
+        application = new Application();
         processCount = 0;
-        clusterName = null;
-        clusterOverrides = new Cluster();
+        cluster = new Cluster();
         resourceCount = 0;
         runtime = 0;
         poolName = null;
@@ -85,66 +66,35 @@ public class JobDescription {
     }
 
     /**
-     * Creates a new job with the given name. Jobs cannot be created directly,
-     * but are constructed by a parent Experiment object.
+     * Creates a new job with the given name.
      * 
      * @param name
      *            the name of the job
      * @throws Exception
      *             if name is unspecified, or contains periods or spaces
      */
-    JobDescription(String name, Experiment parent) throws Exception {
-        this.parent = parent;
-
+    public JobDescription(String name) throws Exception {
+        this();
         setName(name);
-
-        applicationName = null;
-        applicationOverrides = new Application();
-        processCount = 0;
-        clusterName = null;
-        try {
-            clusterOverrides = new Cluster("overrides", null);
-        } catch (Exception e) {
-            // should not happen
-            throw new RuntimeException(e);
-        }
-        resourceCount = 0;
-        runtime = 0;
-        poolName = null;
-        poolSize = 0;
     }
 
-    /**
-     * Load job from the given properties (usually loaded from an experiment
-     * file)
-     * 
-     * @param properties
-     *            properties to load job from
-     * @param object
-     *            name of this job, or null to load "defaults" job
-     * @throws Exception
-     *             if job cannot be read properly
-     */
-    JobDescription(DeployProperties properties, String name, String prefix,
-            Experiment parent) throws Exception {
-        this.parent = parent;
-
-        setName(name);
+    public void loadFromProperties(DeployProperties properties, String prefix)
+            throws Exception {
 
         // add separator to prefix
         prefix = prefix + ".";
 
-        applicationName = properties.getProperty(prefix + "application.name");
+        String applicationName = properties.getProperty(prefix
+                + "application.name");
 
-        applicationOverrides = new Application(properties, "overrides", prefix
-                + "application", null);
+        application.setName(applicationName);
+        application.setFromProperties(properties, prefix + "application");
 
         processCount = properties.getIntProperty(prefix + "process.count", 0);
 
-        clusterName = properties.getProperty(prefix + "cluster.name");
-
-        clusterOverrides = new Cluster(properties, "overrides", prefix
-                + "cluster", null);
+        String clusterName = properties.getProperty(prefix + "cluster.name");
+        cluster.setName(clusterName);
+        cluster.loadFromProperties(properties, prefix + "cluster");
 
         resourceCount = properties.getIntProperty(prefix + "resource.count", 0);
 
@@ -154,66 +104,6 @@ public class JobDescription {
 
         poolSize = properties.getIntProperty(prefix + "pool.size", 0);
 
-    }
-
-    // overwrites values with all non-null fields from "other" except
-    // application and cluster overwrites
-    private void overwrite(JobDescription other) {
-        if (other == null) {
-            return;
-        }
-
-        if (other.applicationName != null) {
-            this.applicationName = other.applicationName;
-        }
-
-        if (other.processCount != 0) {
-            this.processCount = other.processCount;
-        }
-
-        if (other.clusterName != null) {
-            this.clusterName = other.clusterName;
-        }
-
-        if (other.resourceCount != 0) {
-            this.resourceCount = other.resourceCount;
-        }
-
-        if (other.runtime != 0) {
-            this.runtime = other.runtime;
-        }
-
-        if (other.poolName != null) {
-            this.poolName = other.poolName;
-        }
-
-        if (other.poolSize != 0) {
-            this.poolSize = other.poolSize;
-        }
-
-    }
-
-    /**
-     * Returns the name of the experiment containing this job. Also the default
-     * name of the pool of this job.
-     * 
-     * @return the name of the experiment containing this job, or null if it
-     *         does not exist.
-     */
-    public String getExperimentName() {
-        if (parent == null) {
-            return null;
-        }
-        return parent.getName();
-    }
-
-    /**
-     * Returns the experiment containing this job.
-     * 
-     * @return the experiment containing this job.
-     */
-    public Experiment getExperiment() {
-        return parent;
     }
 
     /**
@@ -254,34 +144,7 @@ public class JobDescription {
                     + "\"");
         }
 
-        if (parent != null) {
-            if (parent.hasJob(name)) {
-                throw new Exception("cannot set Job name to \"" + name
-                        + "\", parent Experiment already contains "
-                        + "a Job with that name");
-            }
-        }
-
         this.name = name;
-    }
-
-    /**
-     * Returns the name of the application run.
-     * 
-     * @return the name of the application run.
-     */
-    public String getApplicationName() {
-        return applicationName;
-    }
-
-    /**
-     * Sets the name of the application run.
-     * 
-     * @param applicationName
-     *            the name of the application run.
-     */
-    public void setApplicationName(String applicationName) {
-        this.applicationName = applicationName;
     }
 
     /**
@@ -289,8 +152,8 @@ public class JobDescription {
      * 
      * @return application object used for "overriding" application settings.
      */
-    public Application getApplicationOverrides() {
-        return applicationOverrides;
+    public Application getApplication() {
+        return application;
     }
 
     /**
@@ -313,31 +176,12 @@ public class JobDescription {
     }
 
     /**
-     * Returns the name of the cluster used.
-     * 
-     * @return the name of the cluster used.
-     */
-    public String getClusterName() {
-        return clusterName;
-    }
-
-    /**
-     * Sets the name of the cluster used.
-     * 
-     * @param cluster
-     *            the name of the cluster used.
-     */
-    public void setClusterName(String cluster) {
-        this.clusterName = cluster;
-    }
-
-    /**
      * Returns cluster object used for "overriding" cluster settings.
      * 
      * @return cluster object used for "overriding" cluster settings.
      */
-    public Cluster getClusterOverrides() {
-        return clusterOverrides;
+    public Cluster getCluster() {
+        return cluster;
     }
 
     /**
@@ -437,29 +281,21 @@ public class JobDescription {
             throw new Exception("Cannot run job: Job name unspecified");
         }
 
-        if (applicationName == null) {
-            throw new Exception(prefix + "Application name not specified");
-        }
-
-        if (applicationOverrides == null) {
+        if (application == null) {
             throw new Exception(prefix + "Application overrides not specified");
         }
 
-        applicationOverrides.checkSettings(name);
+        application.checkSettings(name);
 
         if (processCount <= 0) {
             throw new Exception(prefix + "Process count zero or negative");
         }
 
-        if (clusterName == null) {
-            throw new Exception(prefix + "Cluster name not specified");
-        }
-
-        if (clusterOverrides == null) {
+        if (cluster == null) {
             throw new Exception(prefix + "Cluster overrides not specified");
         }
 
-        clusterOverrides.checkSettings(name, false);
+        cluster.checkSettings(name, false);
 
         if (resourceCount < 0) {
             throw new Exception(prefix + "Resource count negative");
@@ -479,79 +315,58 @@ public class JobDescription {
     }
 
     /**
-     * Resolves the stack of
-     * JobDescription/Application/ApplicationSet/Cluster/Grid objects into one
-     * new JobDescription with no dependencies and parents. Ordering (highest
-     * priority first):
+     * Copy constructor
+     * 
+     * @param original
+     *            original description to get data from
+     */
+    public JobDescription(JobDescription original) {
+        this.name = original.name;
+        this.processCount = original.processCount;
+        this.resourceCount = original.resourceCount;
+        this.runtime = original.runtime;
+        this.poolName = original.poolName;
+        this.poolSize = original.poolSize;
+
+        this.application = new Application(original.application);
+        this.cluster = new Cluster(original.cluster);
+    }
+
+    public JobDescription resolve(ApplicationSet applicationSet, Grid grid)
+            throws Exception {
+        Application application = applicationSet
+                .getApplication(getApplication().getName());
+        Cluster cluster = grid.getCluster(getCluster().getName());
+
+        return resolve(application, cluster);
+    }
+
+    /**
+     * Resolves the stack of JobDescription/Application/Cluster objects into one
+     * new JobDescription with no dependencies. Ordering (highest priority
+     * first):
      * 
      * <ol>
      * <li>Overrides and settings in this description</li>
-     * <li>Defaults in parent experiment</li>
-     * <li>Application settings in given ApplicationSet</li>
-     * <li>Default settings in given ApplicationSet</li>
-     * <li>Cluster settings in given Grid</li>
-     * <li>Default settings in given Grid</li>
+     * <li>Application settings in given Application</li>
+     * <li>Cluster settings in given Cluster</li>
      * </ol>
      * 
-     * @param applicationSet
-     *            applications to use for resolving settings.
-     * @param grid
-     *            clusters to use for resolving settings.
+     * @param application
+     *            application to use for resolving settings.
+     * @param cluster
+     *            cluster to use for resolving settings.
      * 
-     * @return the resulting application, as a new object.
-     * @throws Exception
+     * @return the resulting job description, as a new object.
      */
-    public JobDescription resolve(ApplicationSet applicationSet, Grid grid)
-            throws Exception {
-        JobDescription result = new JobDescription(name, null);
+    public JobDescription resolve(Application application, Cluster cluster) {
+        JobDescription result = new JobDescription(this);
 
-        // first we get all fields except the application and cluster objects,
-        // we need to know the "applicationName" and "clusterName" to resolve
-        // those
+        // fetch any unset settings from the given application
+        result.application.resolve(application);
 
-        if (parent != null) {
-            result.overwrite(parent.getDefaults());
-            result.setPoolName(parent.getName());
-        }
-        result.overwrite(this);
-
-        // next, get all settings from the specified application and cluster
-
-        if (applicationSet != null) {
-            // add application settings
-            Application application = applicationSet.getApplication(result
-                    .getApplicationName());
-            result.applicationOverrides.overwrite(application);
-        }
-
-        if (grid != null) {
-            // add cluster settings
-            Cluster cluster = grid.getCluster(result.getClusterName());
-
-            if (cluster != null) {
-                // use resolved cluster settings (may include some grid
-                // settings)
-                result.clusterOverrides.overwrite(cluster.resolve());
-            }
-        }
-
-        // add defaults from parent
-        if (parent != null) {
-            result.applicationOverrides
-                    .overwrite(parent.getDefaults().applicationOverrides);
-            result.clusterOverrides
-                    .overwrite(parent.getDefaults().clusterOverrides);
-        }
-
-        // add settings from this object
-        result.applicationOverrides.overwrite(this.applicationOverrides);
-        if (result.getApplicationName() != null) {
-            result.applicationOverrides.setName(result.getApplicationName());
-        }
-        result.clusterOverrides.overwrite(this.clusterOverrides);
-        if (result.getClusterName() != null) {
-            result.clusterOverrides.setName(result.getClusterName());
-        }
+        // fetch any unset settings from the given cluster
+        result.cluster.resolve(cluster);
 
         return result;
     }
@@ -577,14 +392,8 @@ public class JobDescription {
 
         String dotPrefix = prefix + ".";
 
-        if (applicationName == null) {
-            out.println("#" + dotPrefix + "application.name =");
-        } else {
-            out.println(dotPrefix + "application.name = " + applicationName);
-            empty = false;
-        }
-
-        applicationOverrides.save(out, dotPrefix + "application", false);
+        out.println(dotPrefix + "application.name = " + application.getName());
+        application.save(out, dotPrefix + "application", false);
 
         if (processCount == 0) {
             out.println("#" + dotPrefix + "process.count =");
@@ -593,14 +402,8 @@ public class JobDescription {
             empty = false;
         }
 
-        if (clusterName == null) {
-            out.println("#" + dotPrefix + "cluster.name =");
-        } else {
-            out.println(dotPrefix + "cluster.name = " + clusterName);
-            empty = false;
-        }
-
-        clusterOverrides.save(out, dotPrefix + "cluster", false);
+        out.println(dotPrefix + "cluster.name = " + cluster.getName());
+        cluster.save(out, dotPrefix + "cluster", false);
 
         if (resourceCount == 0) {
             out.println("#" + dotPrefix + "resource.count =");
@@ -644,15 +447,13 @@ public class JobDescription {
     public String toPrintString() {
         String result = "Job \"" + getName() + "\"\n";
         result += "Generic Settings:\n";
-        result += " Application Name = " + getApplicationName() + "\n";
         result += " Process Count = " + getProcessCount() + "\n";
-        result += " Cluster Name = " + getClusterName() + "\n";
         result += " Resource Count = " + getResourceCount() + "\n";
         result += " Runtime = " + getRuntime() + "\n";
         result += " Pool Name = " + getPoolName() + "\n";
         result += " Pool Size = " + getPoolSize() + "\n";
-        result += applicationOverrides.toPrintString();
-        result += clusterOverrides.toPrintString();
+        result += application.toPrintString();
+        result += cluster.toPrintString();
 
         return result;
     }
@@ -661,7 +462,7 @@ public class JobDescription {
      * @see java.lang.Object#toString()
      */
     public String toString() {
-        return name + "@" + getExperimentName();
+        return name;
     }
 
 }

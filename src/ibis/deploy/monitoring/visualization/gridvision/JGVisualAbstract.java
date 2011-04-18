@@ -276,6 +276,13 @@ public abstract class JGVisualAbstract implements JGVisual {
 
 	public void setMetricShape(MetricShape newShape) {
 		mShape = newShape;
+		
+		for (JGVisual location : locations) {
+			location.setMetricShape(newShape);
+		}
+		for (JGVisual ibis : ibises) {
+			ibis.setMetricShape(newShape);
+		}		
 		for (JGVisual metric : metrics) {
 			metric.setMetricShape(newShape);
 		}
@@ -316,7 +323,6 @@ public abstract class JGVisualAbstract implements JGVisual {
 	
 	public JGVisual getParent() {
 		return parent;
-		//goggles.unselect();
 	}
 	
 	public void setState(State newState) {		

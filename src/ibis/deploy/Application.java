@@ -28,29 +28,18 @@ public class Application {
         out.println("# KEY                COMMENT");
         out.println("# main.class         Main class of application");
         out.println("# arguments          Arguments of the application(*)");
-        out
-                .println("# libs               Files and directories which need to be in the classpath.");
+        out.println("# libs               Files and directories which need to be in the classpath.");
         out.println("#                    Automatically pre-staged as well(*)");
-        out
-                .println("# input.files        Input files copied to root of sandbox(*)");
-        out
-                .println("# output.files       Output files copied from root of sandbox(*)");
-        out
-                .println("# system.properties  Additional system properties in the form of name=value(*)");
-        out
-                .println("# jvm.options        Additional JVM options, for instance memory options(*)");
-        out
-                .println("# log4j.file         Log4j properties file used for the application.");
-        out
-                .println("#                    Defaults to log4j of ibis-deploy itself.");
-        out
-                .println("# memory.size        Integer: amount of memory to use for this application (in Megabytes)");
+        out.println("# input.files        Input files copied to root of sandbox(*)");
+        out.println("# output.files       Output files copied from root of sandbox(*)");
+        out.println("# system.properties  Additional system properties in the form of name=value(*)");
+        out.println("# jvm.options        Additional JVM options, for instance memory options(*)");
+        out.println("# log4j.file         Log4j properties file used for the application.");
+        out.println("#                    Defaults to log4j of ibis-deploy itself.");
+        out.println("# memory.size        Integer: amount of memory to use for this application (in Megabytes)");
         out.println("# (* = comma separated list of items)");
 
     }
-
-    // group this application belongs to
-    private final ApplicationSet parent;
 
     // name of application
     private String name;
@@ -85,7 +74,6 @@ public class Application {
      * Creates an empty application object, with no name or parent
      */
     Application() {
-        parent = null;
         name = "anonymous";
         libs = null;
         mainClass = null;
@@ -107,19 +95,47 @@ public class Application {
      * @throws Exception
      *             if name is null or contains periods and/or spaces
      */
-    Application(String name, ApplicationSet parent) throws Exception {
-        this.parent = parent;
-        setName(name);
+    public Application(String name) throws Exception {
+        this();
 
-        libs = null;
-        mainClass = null;
-        arguments = null;
-        inputFiles = null;
-        outputFiles = null;
-        systemProperties = null;
-        jvmOptions = null;
-        log4jFile = null;
-        memorySize = 0;
+        setName(name);
+    }
+
+    public Application(Application original) {
+        this();
+
+        this.name = original.name;
+
+        if (original.libs != null) {
+            this.libs = new ArrayList<File>(original.libs);
+        }
+
+        this.mainClass = original.mainClass;
+
+        if (original.arguments != null) {
+            this.arguments = new ArrayList<String>(original.arguments);
+        }
+
+        if (original.inputFiles != null) {
+            this.inputFiles = new ArrayList<File>(original.inputFiles);
+        }
+
+        if (original.outputFiles != null) {
+            this.outputFiles = new ArrayList<File>(original.outputFiles);
+        }
+
+        if (original.systemProperties != null) {
+            this.systemProperties = new HashMap<String, String>(
+                    original.systemProperties);
+        }
+
+        if (original.jvmOptions != null) {
+            this.jvmOptions = new ArrayList<String>(original.jvmOptions);
+        }
+
+        log4jFile = original.log4jFile;
+
+        memorySize = original.memorySize;
     }
 
     /**
@@ -128,41 +144,10 @@ public class Application {
      * 
      * @param properties
      *            properties to load application from
-     * @param name
-     *            name of this application.
      * @param prefix
      *            prefix used for loading application
-     * @throws Exception
-     *             if application cannot be read properly, or its name is
-     *             invalid
      */
-    Application(DeployProperties properties, String name, String prefix,
-            ApplicationSet parent) throws Exception {
-        this.parent = parent;
-        setName(name);
-
-        // load default settings first
-        String defaultPrefix = "default.";
-        libs = properties.getFileListProperty(defaultPrefix + "libs");
-        mainClass = properties.getProperty(defaultPrefix + "main.class");
-        arguments = properties.getStringListProperty(defaultPrefix
-                + "arguments");
-        inputFiles = properties.getFileListProperty(defaultPrefix
-                + "input.files");
-        outputFiles = properties.getFileListProperty(defaultPrefix
-                + "output.files");
-        systemProperties = properties.getStringMapProperty(defaultPrefix
-                + "system.properties");
-        jvmOptions = properties.getStringListProperty(defaultPrefix
-                + "jvm.options");
-        log4jFile = properties.getFileProperty(defaultPrefix + "log4j.file");
-        memorySize = properties
-                .getIntProperty(defaultPrefix + "memory.size", 0);
-
-        // load the properties corresponding to this application, but only if
-        // they are set
-
-        // add separator to prefix
+    public void setFromProperties(DeployProperties properties, String prefix) {
         prefix = prefix + ".";
 
         if (properties.getFileListProperty(prefix + "libs") != null) {
@@ -171,8 +156,9 @@ public class Application {
         if (properties.getProperty(prefix + "main.class") != null) {
             mainClass = properties.getProperty(prefix + "main.class");
         }
-        if (properties.getStringListProperty(prefix + "arguments") != null) {
-            arguments = properties.getStringListProperty(prefix + "arguments");
+        if (properties.getProperty(prefix + "arguments") != null) {
+            arguments = properties.getStringListProperty(prefix + "arguments",
+                    "\\s");
         }
         if (properties.getFileListProperty(prefix + "input.files") != null) {
             inputFiles = properties.getFileListProperty(prefix + "input.files");
@@ -187,7 +173,7 @@ public class Application {
         }
         if (properties.getStringListProperty(prefix + "jvm.options") != null) {
             jvmOptions = properties.getStringListProperty(prefix
-                    + "jvm.options");
+                    + "jvm.options", "\\s");
         }
         if (properties.getFileProperty(prefix + "log4j.file") != null) {
             log4jFile = properties.getFileProperty(prefix + "log4j.file");
@@ -198,72 +184,63 @@ public class Application {
     }
 
     /**
-     * Put all non-null values of given application into this application
+     * Set any unset settings from the given other object
      * 
      * @param other
      *            source application object
      */
-    void overwrite(Application other) {
+    void resolve(Application other) {
         if (other == null) {
             return;
         }
 
-        if (other.name != null) {
+        if (other.name != null && name == null) {
             name = other.name;
         }
 
-        if (other.mainClass != null) {
+        if (other.mainClass != null && mainClass == null) {
             this.mainClass = other.mainClass;
         }
 
-        if (other.arguments != null) {
+        if (other.arguments != null && arguments == null) {
             arguments = new ArrayList<String>();
             arguments.addAll(other.arguments);
         }
 
-        if (other.libs != null) {
+        if (other.libs != null && libs == null) {
             libs = new ArrayList<File>();
             libs.addAll(other.libs);
         }
 
-        if (other.inputFiles != null) {
+        if (other.inputFiles != null && inputFiles == null) {
             inputFiles = new ArrayList<File>();
             inputFiles.addAll(other.inputFiles);
         }
 
-        if (other.outputFiles != null) {
+        if (other.outputFiles != null && outputFiles == null) {
             outputFiles = new ArrayList<File>();
             outputFiles.addAll(other.outputFiles);
         }
 
-        if (other.systemProperties != null) {
+        if (other.systemProperties != null && systemProperties == null) {
             for (Map.Entry<String, String> entry : other.systemProperties
                     .entrySet()) {
                 setSystemProperty(entry.getKey(), entry.getValue());
             }
         }
 
-        if (other.jvmOptions != null) {
+        if (other.jvmOptions != null && jvmOptions == null) {
             jvmOptions = new ArrayList<String>();
             jvmOptions.addAll(other.jvmOptions);
         }
 
-        if (other.log4jFile != null) {
+        if (other.log4jFile != null && log4jFile == null) {
             this.log4jFile = other.log4jFile;
         }
 
-        if (other.memorySize != 0) {
+        if (other.memorySize != 0 && memorySize == 0) {
             this.memorySize = other.memorySize;
         }
-    }
-
-    /**
-     * Returns application group this application belongs to.
-     * 
-     * @return group this application belongs to (possibly null).
-     */
-    public ApplicationSet getApplicationSet() {
-        return parent;
     }
 
     /**
@@ -286,7 +263,7 @@ public class Application {
      */
     public void setName(String name) throws Exception {
         if (name == null) {
-            throw new Exception("application name cannot be null");
+            return;
         }
 
         if (name.equals(this.name)) {
@@ -302,14 +279,6 @@ public class Application {
         if (name.contains(" ")) {
             throw new Exception("application name cannot contain spaces : \""
                     + name + "\"");
-        }
-
-        if (parent != null) {
-            if (parent.hasApplication(name)) {
-                throw new Exception("cannot set application name to \"" + name
-                        + "\", parent ApplicationSet already contains "
-                        + "an application with that name");
-            }
         }
 
         this.name = name;
@@ -696,14 +665,15 @@ public class Application {
 
         if (arguments != null) {
             out.println(dotPrefix + "arguments = "
-                    + Util.strings2CSS(arguments));
+                    + DeployProperties.strings2SSS(arguments));
             empty = false;
         } else if (printComments) {
             out.println("#" + dotPrefix + "arguments =");
         }
 
         if (libs != null) {
-            out.println(dotPrefix + "libs = " + Util.files2CSS(libs));
+            out.println(dotPrefix + "libs = "
+                    + DeployProperties.files2CSS(libs));
             empty = false;
         } else if (printComments) {
             out.println("#" + dotPrefix + "libs =");
@@ -711,7 +681,7 @@ public class Application {
 
         if (inputFiles != null) {
             out.println(dotPrefix + "input.files = "
-                    + Util.files2CSS(inputFiles));
+                    + DeployProperties.files2CSS(inputFiles));
             empty = false;
         } else if (printComments) {
             out.println("#" + dotPrefix + "input.files =");
@@ -719,7 +689,7 @@ public class Application {
 
         if (outputFiles != null) {
             out.println(dotPrefix + "output.files = "
-                    + Util.files2CSS(outputFiles));
+                    + DeployProperties.files2CSS(outputFiles));
             empty = false;
         } else if (printComments) {
             out.println("#" + dotPrefix + "output.files =");
@@ -727,7 +697,7 @@ public class Application {
 
         if (systemProperties != null) {
             out.println(dotPrefix + "system.properties = "
-                    + Util.toCSString(systemProperties));
+                    + DeployProperties.toCSString(systemProperties));
             empty = false;
         } else if (printComments) {
             out.println("#" + dotPrefix + "system.properties =");
@@ -735,7 +705,7 @@ public class Application {
 
         if (jvmOptions != null) {
             out.println(dotPrefix + "jvm.options = "
-                    + Util.strings2CSS(jvmOptions));
+                    + DeployProperties.strings2SSS(jvmOptions));
             empty = false;
         } else if (printComments) {
             out.println("#" + dotPrefix + "java.options =");
@@ -756,8 +726,7 @@ public class Application {
         }
 
         if (empty && printComments) {
-            out
-                    .println("#Dummy property to make sure application is actually defined");
+            out.println("#Dummy property to make sure application is actually defined");
             out.println(dotPrefix);
         }
     }
@@ -776,13 +745,17 @@ public class Application {
         }
 
         result += " Main class = " + getMainClass() + "\n";
-        result += " Arguments = " + Util.strings2CSS(getArguments()) + "\n";
-        result += " Libs = " + Util.files2CSS(getLibs()) + "\n";
-        result += " Input Files = " + Util.files2CSS(getInputFiles()) + "\n";
-        result += " Output Files = " + Util.files2CSS(getOutputFiles()) + "\n";
+        result += " Arguments = " + DeployProperties.strings2SSS(arguments)
+                + "\n";
+        result += " Libs = " + DeployProperties.files2CSS(libs) + "\n";
+        result += " Input Files = " + DeployProperties.files2CSS(inputFiles)
+                + "\n";
+        result += " Output Files = " + DeployProperties.files2CSS(outputFiles)
+                + "\n";
         result += " System properties = "
-                + Util.toCSString(getSystemProperties()) + "\n";
-        result += " JVM Options = " + Util.strings2CSS(getJVMOptions()) + "\n";
+                + DeployProperties.toCSString(getSystemProperties()) + "\n";
+        result += " JVM Options = " + DeployProperties.strings2SSS(jvmOptions)
+                + "\n";
         result += " Log4j File = " + getLog4jFile() + "\n";
 
         return result;

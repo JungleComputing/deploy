@@ -4,6 +4,7 @@ import ibis.deploy.Job;
 import ibis.deploy.JobDescription;
 import ibis.deploy.State;
 import ibis.deploy.gui.misc.Utils;
+import ibis.deploy.util.Colors;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -33,10 +34,10 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
     public Component getTableCellRendererComponent(final JTable table,
             final Object value, boolean isSelected, boolean hasFocus,
             final int row, int column) {
-        setBorder(new EmptyBorder(5,5,5,5));
+		setBorder(new EmptyBorder(5, 5, 5, 5));
         setText("");
         setOpaque(isSelected);
-        
+
         setBackground(UIManager.getColor("Table.selectionBackground"));
         setForeground(Color.BLACK);
 
@@ -44,7 +45,7 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
 
         if (columnName.equalsIgnoreCase(JobTableModel.CONTROL_COLUMN_NAME)) {
             boolean start = false;
-                
+
             if (value != null) {
                start = (Boolean) value;
             }
@@ -119,14 +120,13 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
                     .convertRowIndexToModel(row));
 
             if (isSelected) {
-                setBackground(Utils.getColor(jobDescription
-                        .getClusterOverrides().getColorCode()));
+				setBackground(jobDescription.getCluster().getColor());
             } else {
-                setBackground(Utils.getLightColor(jobDescription
-                        .getClusterOverrides().getColorCode()));
+				setBackground(Colors.getLightColor(jobDescription.getCluster()
+						.getColor()));
             }
 
-            setText(jobDescription.getClusterName());
+			setText(jobDescription.getCluster().getName());
         } else if (columnName
                 .equalsIgnoreCase(JobTableModel.MIDDLEWARE_COLUMN_NAME)) {
             String adaptor = (String) value;
@@ -155,14 +155,13 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
             final JButton button = Utils.createImageButton(
 
                     null, "Show output of job", "output");
-            
-            //JButton button = new JButton("output");
-            //button.setMargin(new Insets(2, 2, 2, 2));
+
+			// JButton button = new JButton("output");
+			// button.setMargin(new Insets(2, 2, 2, 2));
             // button.setPreferredSize(new Dimension(10, 10));
             button.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent arg0) {
-                    System.err.println("Output!");
                     JDialog dialog = new JDialog(SwingUtilities
                             .getWindowAncestor(table), "Output Files for "
                             + job.getDescription().getName());

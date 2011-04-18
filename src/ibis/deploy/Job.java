@@ -1,6 +1,9 @@
 package ibis.deploy;
 
 import ibis.deploy.Deploy.HubPolicy;
+import ibis.deploy.util.Colors;
+import ibis.deploy.util.Rsync;
+import ibis.deploy.util.StateForwarder;
 import ibis.ipl.IbisProperties;
 import ibis.ipl.registry.central.RegistryProperties;
 import ibis.util.ThreadPool;
@@ -93,8 +96,8 @@ public class Job implements Runnable {
 
             Deploy deploy) throws Exception {
         this.description = description;
-        this.cluster = description.getClusterOverrides();
-        this.application = description.getApplicationOverrides();
+        this.cluster = description.getCluster();
+        this.application = description.getApplication();
         this.hubPolicy = hubPolicy;
         this.sharedHub = hub;
         this.keepSandbox = keepSandbox;
@@ -117,15 +120,10 @@ public class Job implements Runnable {
     /**
      * Returns the description used to start this job.
      * 
-     * @return the description used to start this job.
+     * @return a copy of the description used to start this job.
      */
     public JobDescription getDescription() {
-        // cheat and simply resolve it again.
-        try {
-            return description.resolve(null, null);
-        } catch (Exception e) {
-            throw new Error("could not resolve job", e);
-        }
+        return new JobDescription(description);
     }
 
     /**
@@ -137,6 +135,20 @@ public class Job implements Runnable {
      */
     public void addStateListener(StateListener listener) {
         forwarder.addListener(listener);
+    }
+
+    /**
+     * Add a listener to the hub of this server which reports the state of the
+     * Hub. Also causes a new event for this listener with the current state of
+     * the hub. Only works if a hub is started per cluster
+     * 
+     * @param listener
+     *            the listener to attach
+     */
+    public void addHubStateListener(StateListener listener) {
+        if (sharedHub != null) {
+            sharedHub.addListener(listener);
+        }
     }
 
     /**
@@ -178,7 +190,7 @@ public class Job implements Runnable {
     }
 
     public void waitUntilDeployed() throws Exception {
-        String location = description.getName() + "@" + cluster.getName();
+        String location = description.getName();
 
         while (!isFinished()) {
             if (deploy.poolSizes().containsKey(description.getPoolName())) {
@@ -285,7 +297,7 @@ public class Job implements Runnable {
                 cluster.getJobAdaptor());
 
         context.addPreference("file.adaptor.name",
-                Util.strings2CSS(cluster.getFileAdaptors()));
+                DeployProperties.strings2CSS(cluster.getFileAdaptors()));
 
         return context;
     }
@@ -300,9 +312,13 @@ public class Job implements Runnable {
 
         if (clusterCacheDir == null
                 || cluster.getJobAdaptor().equalsIgnoreCase("zorilla")) {
-            java.net.URI netURI = src.toURI();
-            org.gridlab.gat.io.File gatFile = GAT.createFile(context,
-                    netURI.toString());
+            org.gridlab.gat.io.File gatFile = GAT.createFile(context, new URI(
+                    src.toURI()));
+            // Don't use netURI.toString()! The JavaGAT URI constructor is quite
+            // different from the java.net.URI one. Any %-escape in
+            // netURI.toString() is
+            // handled wrong! --Ceriel
+
             // sd.addPreStagedFile(gatFile, gatCwd);
             sd.addPreStagedFile(gatFile);
             return;
@@ -391,10 +407,15 @@ public class Job implements Runnable {
         }
 
         // ibis stuff
+        String location = cluster.getLocation();
+        if (location == null) {
+            location = cluster.getName();
+        }
+
         sd.addJavaSystemProperty(IbisProperties.LOCATION, description.getName()
-                + "@" + cluster.getName());
+                + "@%HOSTNAME%@" + location);
         sd.addJavaSystemProperty(IbisProperties.LOCATION_COLOR,
-                cluster.getColorCode());
+                Colors.color2colorCode(cluster.getColor()));
         sd.addJavaSystemProperty(IbisProperties.POOL_NAME,
                 description.getPoolName());
         sd.addJavaSystemProperty(IbisProperties.POOL_SIZE,
@@ -504,8 +525,7 @@ public class Job implements Runnable {
             JavaSoftwareDescription sd) throws Exception {
         org.gridlab.gat.resources.JobDescription result;
 
-        File wrapperScript = description.getClusterOverrides()
-                .getJobWrapperScript();
+        File wrapperScript = description.getCluster().getJobWrapperScript();
 
         if (wrapperScript == null) {
             result = new org.gridlab.gat.resources.JobDescription(sd);
@@ -542,8 +562,8 @@ public class Job implements Runnable {
 
             // add wrapper to pre-stage files
             wrapperSd.addPreStagedFile(
-                    // GAT.createFile(context, wrapperScript.toString()),
-                    // GAT.createFile(context, "."));
+            // GAT.createFile(context, wrapperScript.toString()),
+            // GAT.createFile(context, "."));
                     GAT.createFile(context, wrapperScript.toString()));
 
             // set /bin/sh as executable
@@ -587,9 +607,8 @@ public class Job implements Runnable {
                 forwarder.setState(State.WAITING);
 
                 // start a hub especially for this job
-                localHub = new RemoteServer(description.getClusterOverrides(),
-                        true, rootHub, deployHome, verbose, hubListener,
-                        keepSandbox);
+                localHub = new RemoteServer(description.getCluster(), true,
+                        rootHub, deployHome, verbose, hubListener, keepSandbox);
 
                 // wait until hub really running
                 localHub.waitUntilRunning();
@@ -645,7 +664,7 @@ public class Job implements Runnable {
 
             // use address provided by user
             jobBroker = GAT.createResourceBroker(context, description
-                    .getClusterOverrides().getJobURI());
+                    .getCluster().getJobURI());
 
             org.gridlab.gat.resources.Job gatJob = jobBroker.submitJob(
                     jobDescription, forwarder, "job.status");
@@ -693,7 +712,7 @@ public class Job implements Runnable {
     public String toString() {
         return "Job: " + description.getName() + "/"
                 + description.getPoolName() + "@"
-                + description.getClusterName();
+                + description.getCluster().getName();
     }
 
     /**

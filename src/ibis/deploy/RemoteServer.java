@@ -1,5 +1,9 @@
 package ibis.deploy;
 
+import ibis.deploy.util.Colors;
+import ibis.deploy.util.OutputPrefixForwarder;
+import ibis.deploy.util.Rsync;
+import ibis.deploy.util.StateForwarder;
 import ibis.ipl.IbisProperties;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
@@ -77,7 +81,7 @@ public class RemoteServer implements Runnable, Server {
         gatJob = null;
         serverConnection = null;
 
-        this.cluster = cluster.resolve();
+        this.cluster = new Cluster(cluster);
 
         this.cluster.checkSettings("Server", true);
 
@@ -106,7 +110,8 @@ public class RemoteServer implements Runnable, Server {
         if (cluster.getUserName() != null) {
             String keyFile = cluster.getKeyFile();
             SecurityContext securityContext = new CertificateSecurityContext(
-                    keyFile == null ? null : new URI(keyFile), null, cluster.getUserName(), null);
+                    keyFile == null ? null : new URI(keyFile), null,
+                    cluster.getUserName(), null);
             context.addSecurityContext(securityContext);
         }
         // ensure files are readable on the other side
@@ -115,12 +120,11 @@ public class RemoteServer implements Runnable, Server {
         // fly during a copy
         context.addPreference("file.create", "true");
 
-        context.addPreference("resourcebroker.adaptor.name", cluster
-                .getServerAdaptor()
-                + ",local");
+        context.addPreference("resourcebroker.adaptor.name",
+                cluster.getServerAdaptor() + ",local");
 
-        context.addPreference("file.adaptor.name", Util.strings2CSS(cluster
-                .getFileAdaptors()));
+        context.addPreference("file.adaptor.name",
+                DeployProperties.strings2CSS(cluster.getFileAdaptors()));
 
         // make sshtrilead file adaptor cache some info
         context.addPreference("sshtrilead.caching.exists", "true");
@@ -195,7 +199,7 @@ public class RemoteServer implements Runnable, Server {
 
         // list of other hubs
         arguments.add("--hub-addresses");
-        arguments.add(Util.strings2CSS(rootHub.getHubs()));
+        arguments.add(DeployProperties.strings2CSS(rootHub.getHubs()));
 
         sd.setJavaArguments(arguments.toArray(new String[0]));
 
@@ -215,8 +219,8 @@ public class RemoteServer implements Runnable, Server {
         // add server output files to post-stage
         if (cluster.getServerOutputFiles() != null) {
             for (File file : cluster.getServerOutputFiles()) {
-                org.gridlab.gat.io.File gatFile = GAT.createFile(context, file
-                        .getPath());
+                org.gridlab.gat.io.File gatFile = GAT.createFile(context,
+                        file.getPath());
 
                 sd.addPostStagedFile(gatFile, GAT.createFile(context, "."));
             }
@@ -225,13 +229,15 @@ public class RemoteServer implements Runnable, Server {
         sd.addJavaSystemProperty(IbisProperties.LOCATION, cluster.getName());
 
         if (hubOnly) {
-            sd.addJavaSystemProperty(ServerProperties.VIZ_INFO,
-                    "H^Smartsockets Hub @ " + cluster.getName() + "^"
-                            + cluster.getColorCode());
+            sd.addJavaSystemProperty(
+                    ServerProperties.VIZ_INFO,
+                    "H^" + cluster.getName() + "^Smartsockets Hub @ " + cluster.getName() + "^"
+                            + Colors.color2colorCode(cluster.getColor()));
         } else {
-            sd.addJavaSystemProperty(ServerProperties.VIZ_INFO,
-                    "S^Ibis Server @ " + cluster.getName() + "^"
-                            + cluster.getColorCode());
+            sd.addJavaSystemProperty(
+                    ServerProperties.VIZ_INFO,
+                    "S^Ibis Server^Ibis Server @ " + cluster.getName() + "^"
+                            + Colors.color2colorCode(cluster.getColor()));
         }
 
         if (cluster.getServerSystemProperties() != null) {
@@ -435,7 +441,7 @@ public class RemoteServer implements Runnable, Server {
     public RegistryServiceInterface getRegistryService() {
         return serverConnection.getRegistryService();
     }
-    
+
     public ManagementServiceInterface getManagementService() {
         return serverConnection.getManagementService();
     }

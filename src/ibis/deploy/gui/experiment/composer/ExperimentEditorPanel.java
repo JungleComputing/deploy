@@ -19,7 +19,7 @@ public class ExperimentEditorPanel extends JPanel {
 	private final static int SPACER = 5;
 
 	public ExperimentEditorPanel(GUI gui, JobTableModel model) {
-		setBorder(BorderFactory.createTitledBorder("Experiment Editor"));
+		setBorder(BorderFactory.createTitledBorder("Map"));
 		setLayout(new BorderLayout(SPACER, SPACER));
 		WorldMapPanel worldMapPanel = new WorldMapPanel(gui, 16, true);
 		add(worldMapPanel, BorderLayout.CENTER);

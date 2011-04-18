@@ -80,7 +80,7 @@ public class DataCollector extends Thread {
 
 	@SuppressWarnings("unchecked")
 	public void collectIbisData() {
-		
+
 		Map<String, Integer> poolSizes = null;
 		IbisIdentifier[] ibises = null;
 		String poolName, ibisLocation;
@@ -117,7 +117,9 @@ public class DataCollector extends Thread {
 					// The site name is after the @ sign, we make sure this
 					// array only contains unique names
 					for (int i = 0; i < locationList.length; i++) {
+                        if (locationList[i].contains("@")) {
 						locationList[i] = locationList[i].split("@")[1];
+                        }
 
 						// if the location didn't previously exist in the list,
 						// add it
@@ -180,7 +182,8 @@ public class DataCollector extends Thread {
 						// ibis
 						tempResult = manInterface.getAttributes(ibis,
 								receivedBytesPerIbis);
-						// receivedBytes = (HashMap<IbisIdentifier, Long>) tempResult[0];
+                        // receivedBytes = (HashMap<IbisIdentifier, Long>)
+                        // tempResult[0];
 
 						for (IbisIdentifier neighbour : sentBytes.keySet()) {
 							neighbourName = neighbour.name() + "-"
@@ -199,21 +202,25 @@ public class DataCollector extends Thread {
 								connectionsPerIbis.get(neighbourName).put(
 										ibisName, sum);
 							} else {
-								totalBytes.put(neighbourName, sentBytes
-										.get(neighbour));
+                                totalBytes.put(neighbourName,
+                                        sentBytes.get(neighbour));
 								connectionsPerIbis.put(ibisName, totalBytes);
 							}
 
 						}
 
 					} catch (Exception e1) {
-						logger.error("Could not get monitor info from" + ibis.name() + ": " + e1.getMessage() + ". Did you enable monitoring in the application?");
+                        logger.error("Could not get monitor info from"
+                                + ibis.name()
+                                + ": "
+                                + e1.getMessage()
+                                + ". Did you enable monitoring in the application?");
 						logger.debug("Could not get monitoring info", e1);
-						
+
 						try {
 							Thread.sleep(1000);
 						} catch (InterruptedException e) {
-							//wait a bit
+                            // wait a bit
 						}
 
 						// e1.printStackTrace();

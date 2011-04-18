@@ -1,10 +1,10 @@
 package ibis.deploy;
 
+import ibis.deploy.util.Colors;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
 import ibis.ipl.server.ServerProperties;
 import ibis.smartsockets.virtual.VirtualSocketFactory;
-
 
 import java.util.Properties;
 
@@ -25,8 +25,7 @@ public class LocalServer implements Server {
     // used in case of a local server
     private final ibis.ipl.server.Server server;
 
-    LocalServer(boolean isServer,boolean verbose, int port)
-            throws Exception {
+    LocalServer(boolean isServer, boolean verbose, int port) throws Exception {
         this.isServer = isServer;
 
         if (isServer) {
@@ -35,24 +34,22 @@ public class LocalServer implements Server {
             logger.debug("Starting build-in hub");
         }
 
-        
-            Properties properties = new Properties();
-            properties.put(ServerProperties.HUB_ONLY, !isServer + "");
-            properties.put(ServerProperties.PRINT_ERRORS, "true");
-            properties.put(ServerProperties.VIZ_INFO, "D^Ibis Deploy @ local^"
-                    + Grid.LOCAL_COLOR + "^0");
-            properties.put(ServerProperties.PORT, "" + port);
+        Properties properties = new Properties();
+        properties.put(ServerProperties.HUB_ONLY, !isServer + "");
+        properties.put(ServerProperties.PRINT_ERRORS, "true");
+        properties.put(ServerProperties.VIZ_INFO, "D^local^Ibis Deploy @ local^"
+                + Colors.color2colorCode(Colors.LOCAL_COLOR) + "^0");
+        properties.put(ServerProperties.PORT, "" + port);
 
-            if (verbose) {
-                properties.put(ServerProperties.PRINT_EVENTS, "true");
-                properties.put(ServerProperties.PRINT_STATS, "true");
-            }
+        if (verbose) {
+            properties.put(ServerProperties.PRINT_EVENTS, "true");
+            properties.put(ServerProperties.PRINT_STATS, "true");
+        }
 
-            server = new ibis.ipl.server.Server(properties);
+        server = new ibis.ipl.server.Server(properties);
 
         logger.debug(server.toString());
     }
-
 
     /**
      * Get the address of this server.
@@ -116,7 +113,7 @@ public class LocalServer implements Server {
     public RegistryServiceInterface getRegistryService() {
         return server.getRegistryService();
     }
-    
+
     public ManagementServiceInterface getManagementService() {
         return server.getManagementService();
     }

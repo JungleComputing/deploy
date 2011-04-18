@@ -47,8 +47,8 @@ public class ClusterListTopPanel extends JPanel {
                         ID_COUNTER++;
                     }
 
-                    Cluster newCluster = gui.getGrid().createNewCluster(
-                            clusterName);
+					Cluster newCluster = new Cluster(clusterName);
+					gui.getGrid().addCluster(newCluster);
                     ((DefaultListModel) clusterList.getModel())
                             .addElement(newCluster);
                     editClusterPanels.put(newCluster,
@@ -73,12 +73,12 @@ public class ClusterListTopPanel extends JPanel {
                     // make sure that there is something selected in the list
                     if (clusterList.getSelectedIndex() >= 0) {
                         Cluster selectedCluster = (Cluster) ((DefaultListModel) clusterList
-                                .getModel())
-                                .get(clusterList.getSelectedIndex());
+								.getModel()).get(clusterList.getSelectedIndex());
                         (editClusterPanels.get(selectedCluster)).getParent()
                                 .remove(editClusterPanels.get(selectedCluster));
                         editClusterPanels.remove(selectedCluster);
-                        gui.getGrid().removeCluster(selectedCluster);
+						gui.getGrid().removeCluster(selectedCluster.getName());
+						
                         ((DefaultListModel) clusterList.getModel())
                                 .removeElementAt(clusterList.getSelectedIndex());
                         clusterEditorPanel.repaint();

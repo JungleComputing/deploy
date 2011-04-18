@@ -20,11 +20,27 @@ public class Experiment {
     // name of the experiment (and default pool)
     private String name;
 
-    // job representing defaults
-    private JobDescription defaults;
-
     // jobs in this experiment
     private List<JobDescription> jobs;
+
+    /**
+     * Constructs a experiment with the given name.
+     * 
+     * @param name
+     *            the name of the experiment
+     * @throws Exception
+     *             if the name is <code>null</code>, or contains periods or
+     *             spaces
+     */
+    public Experiment(String name) throws Exception {
+        jobs = new ArrayList<JobDescription>();
+
+        if (name == null) {
+            throw new NullPointerException("no name specified for experiment");
+        }
+
+        this.name = name;
+    }
 
     /**
      * Constructs a experiment object from properties stored in the given file.
@@ -37,8 +53,7 @@ public class Experiment {
      * @throws IOException
      *             if reading from the given file fails
      * @throws Exception
-     *             if the properties don't contain a 'name' property with the
-     *             name of the experiment
+     *             if the properties do not contain a valid experiment
      */
     public Experiment(File file) throws FileNotFoundException, IOException,
             Exception {
@@ -66,74 +81,23 @@ public class Experiment {
         }
 
         DeployProperties properties = new DeployProperties();
+
         properties.loadFromFile(file.getAbsolutePath());
 
-        defaults = new JobDescription(properties, "default", "default", this);
+        String[] jobNames = properties.getElementList("");
 
-        String[] jobNames = properties.getElementList();
         for (String jobName : jobNames) {
-            if (!jobName.equals("name")) {
-                JobDescription job = new JobDescription(properties, jobName,
-                        jobName, this);
-                jobs.add(job);
-            }
-        }
-    }
+            JobDescription job = new JobDescription(jobName);
 
-    /**
-     * Constructs an experiment object from the given properties. Also
-     * constructs the jobs inside this experiment.
-     * 
-     * @param properties
-     *            properties of the experiment
-     * @param name
-     *            name of the experiment
-     * @param prefix
-     *            prefix to use on all keys
-     * @throws Exception
-     *             if job cannot be read properly
-     * 
-     */
-    public Experiment(DeployProperties properties, String name, String prefix)
-            throws Exception {
-        jobs = new ArrayList<JobDescription>();
+            job.setPoolName(getName());
 
-        this.name = name;
+            job.loadFromProperties(properties, "default");
 
-        if (prefix != null) {
-            prefix = prefix + ".";
+            job.loadFromProperties(properties, jobName);
+
+            addJob(job);
         }
 
-        defaults = new JobDescription(properties, "default",
-                prefix + "default", this);
-
-        String[] jobNames = properties.getElementList(prefix);
-        for (String jobName : jobNames) {
-            JobDescription job = new JobDescription(properties, jobName, prefix
-                    + jobName, this);
-            jobs.add(job);
-        }
-
-    }
-
-    /**
-     * Constructs a experiment with the given name.
-     * 
-     * @param name
-     *            the name of the experiment
-     * @throws Exception
-     *             if the name is <code>null</code>, or contains periods or
-     *             spaces
-     */
-    public Experiment(String name) throws Exception {
-        jobs = new ArrayList<JobDescription>();
-
-        if (name == null) {
-            throw new NullPointerException("no name specified for experiment");
-        }
-
-        this.name = name;
-        defaults = new JobDescription("defaults", null);
     }
 
     /**
@@ -189,24 +153,18 @@ public class Experiment {
     /**
      * Creates a new job in this experiment, with a given name.
      * 
-     * @param name
-     *            the name of the job.
-     * @return the new job.
+     * @param job
+     *            the job.
      * @throws Exception
-     *             if the name given is <code>null</code>, or the job already
-     *             exists.
+     *             if the job already exists.
      */
-    public JobDescription createNewJob(String name) throws Exception {
-        if (hasJob(name)) {
+    public void addJob(JobDescription job) throws Exception {
+        if (hasJob(job.getName())) {
             throw new AlreadyExistsException("Cannot add job, job \"" + name
                     + "\" already exists");
         }
 
-        JobDescription result = new JobDescription(name, this);
-
-        jobs.add(result);
-
-        return result;
+        jobs.add(job);
     }
 
     /**
@@ -240,15 +198,6 @@ public class Experiment {
             }
         }
         return null;
-    }
-
-    /**
-     * Returns job representing defaults of this experiment.
-     * 
-     * @return job representing defaults of this experiment.
-     */
-    public JobDescription getDefaults() {
-        return defaults;
     }
 
     /**
@@ -297,8 +246,6 @@ public class Experiment {
 
         JobDescription.printTableOfKeys(out);
         out.println();
-        out.println("# Default settings:");
-        defaults.save(out, prefix + "default", false);
 
         // write jobs
         for (JobDescription job : jobs) {

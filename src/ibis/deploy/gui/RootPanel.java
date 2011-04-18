@@ -12,6 +12,7 @@ import ibis.deploy.vizFramework.globeViz.viz.GlobeVisualization;
 import ibis.smartsockets.viz.SmartsocketsViz;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
@@ -27,13 +28,13 @@ public class RootPanel extends JPanel {
 
 	private static final long serialVersionUID = 2685960743908025422L;
 
-	public RootPanel(GUI gui) throws Exception {
+	public RootPanel(GUI gui, String[] logos) throws Exception {
 		setLayout(new BorderLayout());
 		tabs = new JTabbedPane();
 
 		tabs.addTab("Experiments", Utils.createImageIcon(
 				"images/utilities-system-monitor.png", "Experiments Tab"),
-				new ExperimentsPanel(gui));
+				new ExperimentsPanel(gui, logos));
 
 		// experimentTab = new DetachableTab("Experiments",
 		// "images/utilities-system-monitor.png",
@@ -50,7 +51,8 @@ public class RootPanel extends JPanel {
 		}
 
 		smartSocketsTab = new DetachableTab("Network Overlay",
-				"images/gridvision.png", new SmartsocketsViz(gui.getDeploy()
+                "images/gridvision.png", new SmartsocketsViz(Color.BLACK,
+                        Color.WHITE, false, true, false, gui.getDeploy()
 						.getRootHubAddress()), tabs);
 
 		deployVizTab = new DetachableTab("Connection Overview",

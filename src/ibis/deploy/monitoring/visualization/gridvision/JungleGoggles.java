@@ -18,6 +18,7 @@ import com.jogamp.opengl.util.gl2.GLUT;
 import ibis.deploy.monitoring.collection.Collector;
 import ibis.deploy.monitoring.collection.Element;
 import ibis.deploy.monitoring.collection.Link;
+import ibis.deploy.monitoring.visualization.gridvision.JGVisual.MetricShape;
 import ibis.deploy.monitoring.visualization.gridvision.exceptions.AllInUseException;
 import ibis.deploy.monitoring.visualization.gridvision.swing.ContextSensitiveMenu;
 import ibis.deploy.monitoring.visualization.gridvision.swing.GogglePanel;
@@ -66,6 +67,10 @@ public class JungleGoggles implements GLEventListener {
 	private Particle[] particles;
 	private boolean[] particleInUse;
 	private ParticleTimer ptimer;
+	
+	//Persistent Form storage
+	MetricShape currentNWForm = MetricShape.PARTICLES;
+	MetricShape currentMetricForm = MetricShape.BAR;
 
 	/*
 	 * --------------------------------------------------------------------------
@@ -305,11 +310,16 @@ public class JungleGoggles implements GLEventListener {
 				linkRegistry.put(link, jglink);
 			}
 		}
+		System.out.println("Goggles created "+linkRegistry.size()+" links.");
 		
 		//Re-Init the particles
 		for (int i = 0; i < MAX_PARTICLES; i++) {		
 			particleInUse[i] = false; 
 		}
+		
+		//Re-Apply the current Shapes
+		setMetricForm(currentMetricForm);
+		setNetworkForm(currentNWForm);
 		
 		rePositionUniverse();
 	}
@@ -562,6 +572,18 @@ public class JungleGoggles implements GLEventListener {
 	
 	public void doRepositioning() {
 		repositionRequest = true;
+	}
+	
+	public void setNetworkForm(MetricShape newShape) {
+		currentNWForm = newShape;
+		for (JGVisual link : linkRegistry.values()) {
+			link.setMetricShape(newShape);
+		}
+	}
+	
+	public void setMetricForm(MetricShape newShape) {
+		currentMetricForm = newShape;
+		universe.setMetricShape(newShape);
 	}
 
 	/**
