@@ -27,31 +27,18 @@ import ibis.deploy.monitoring.collection.exceptions.SelfLinkeageException;
  * @author Maarten van Meersbergen
  */
 public class LocationImpl extends ElementImpl implements Location {
-    private static final Logger logger = LoggerFactory
-            .getLogger("ibis.deploy.monitoring.collection.impl.Location");
+	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.collection.impl.Location");
 
-    private String name;
-    private Float[] color;
+	private String name;
+	private Float[] color;
 
-    private ArrayList<Ibis> ibises;
-    private ArrayList<Location> children;
-
-    private double latitude;
+	private ArrayList<Ibis> ibises;
+	private ArrayList<Location> children;
+	
+	private double latitude;
     private double longitude;
 
-    public LocationImpl(String name, Float[] color) {
-        super();
-        this.name = name;
-        this.color = new Float[3];
-        this.color[0] = color[0];
-        this.color[1] = color[1];
-        this.color[2] = color[2];
-
-        ibises = new ArrayList<Ibis>();
-        children = new ArrayList<Location>();
-    }
-
-    public LocationImpl(String name, Float[] color, double latitude,
+	public LocationImpl(String name, Float[] color, double latitude,
             double longitude) {
         super();
         this.name = name;
@@ -66,379 +53,390 @@ public class LocationImpl extends ElementImpl implements Location {
         this.latitude = latitude;
         this.longitude = longitude;
     }
+	
+	public LocationImpl(String name, Float[] color) {
+		super();
+		this.name = name;
+		this.color = new Float[3];
+		this.color[0] = color[0];
+		this.color[1] = color[1];
+		this.color[2] = color[2];
 
-    // Getters
-    public String getName() {
-        return name;
-    }
+		ibises = new ArrayList<Ibis>();
+		children = new ArrayList<Location>();
+	}
 
-    public Metric[] getMetrics() {
-        ArrayList<Metric> result = new ArrayList<Metric>();
-        for (Metric metric : metrics.values()) {
-            if (metric.getDescription().getType() == MetricType.NODE) {
-                result.add(metric);
-            }
-        }
-        return result.toArray(new Metric[0]);
-    }
+	// Getters
+	public String getName() {
+		return name;
+	}
 
-    public Float[] getColor() {
-        return color;
-    }
+	public Metric[] getMetrics() {
+		ArrayList<Metric> result = new ArrayList<Metric>();
+		for (Metric metric : metrics.values()) {
+			if (metric.getDescription().getType() == MetricType.NODE) {
+				result.add(metric);
+			}
+		}
+		return result.toArray(new Metric[0]);
+	}
 
-    public ArrayList<Ibis> getIbises() {
-        return ibises;
-    }
+	public Float[] getColor() {
+		return color;
+	}
 
-    public ArrayList<Ibis> getAllIbises() {
-        ArrayList<Ibis> result = new ArrayList<Ibis>();
-        result.addAll(ibises);
+	public ArrayList<Ibis> getIbises() {
+		return ibises;
+	}
 
-        for (Location child : children) {
-            result.addAll(child.getAllIbises());
-        }
+	public ArrayList<Ibis> getAllIbises() {
+		ArrayList<Ibis> result = new ArrayList<Ibis>();
+		result.addAll(ibises);
 
-        return result;
-    }
+		for (Location child : children) {
+			result.addAll(child.getAllIbises());
+		}
 
-    public ArrayList<Location> getChildren() {
-        return children;
-    }
+		return result;
+	}
 
-    public ArrayList<Link> getLinks(MetricDescription metric,
-            MetricOutput outputmethod, float minimumValue, float maximumValue) {
-        ArrayList<Link> result = new ArrayList<Link>();
+	public ArrayList<Location> getChildren() {
+		return children;
+	}
 
-        if (outputmethod == MetricOutput.N) {
-            for (Entry<ElementImpl, Link> entry : links.entrySet()) {
-                LinkImpl link = ((LinkImpl) entry.getValue());
-                int linkvalue;
-                try {
-                    linkvalue = (Integer) link.getMetric(metric).getValue(
-                            MetricModifier.NORM, outputmethod);
-                    if (linkvalue >= minimumValue && linkvalue <= maximumValue) {
-                        result.add(link);
-                    }
-                } catch (OutputUnavailableException e) {
-                    logger.error("OutputUnavailableException caught. Metric is probably undefined.");
-                } catch (MetricNotAvailableException e) {
-                    logger.debug("The impossible MetricNotAvailableException just happened anyway.");
-                }
-            }
-        } else {
-            for (Entry<ElementImpl, Link> entry : links.entrySet()) {
-                LinkImpl link = ((LinkImpl) entry.getValue());
-                float linkvalue;
-                try {
-                    linkvalue = (Float) link.getMetric(metric).getValue(
-                            MetricModifier.NORM, outputmethod);
-                    if (linkvalue >= minimumValue && linkvalue <= maximumValue) {
-                        result.add(link);
-                    }
-                } catch (OutputUnavailableException e) {
-                    logger.error("OutputUnavailableException caught. Metric is probably undefined.");
-                } catch (MetricNotAvailableException e) {
-                    logger.debug("The impossible MetricNotAvailableException just happened anyway.");
-                }
-            }
-        }
-        return result;
-    }
+	public ArrayList<Link> getLinks(MetricDescription metric,
+			MetricOutput outputmethod, float minimumValue, float maximumValue) {
+		ArrayList<Link> result = new ArrayList<Link>();
 
-    public int getNumberOfDescendants() {
-        int result = ibises.size();
+		if (outputmethod == MetricOutput.N) {
+			for (Entry<ElementImpl, Link> entry : links.entrySet()) {
+				LinkImpl link = ((LinkImpl) entry.getValue());
+				int linkvalue;
+				try {
+					linkvalue = (Integer) link.getMetric(metric).getValue(
+							MetricModifier.NORM, outputmethod);
+					if (linkvalue >= minimumValue && linkvalue <= maximumValue) {
+						result.add(link);
+					}
+				} catch (OutputUnavailableException e) {
+					logger.error("OutputUnavailableException caught. Metric is probably undefined.");
+				} catch (MetricNotAvailableException e) {
+					logger.debug("The impossible MetricNotAvailableException just happened anyway.");
+				}
+			}
+		} else {
+			for (Entry<ElementImpl, Link> entry : links.entrySet()) {
+				LinkImpl link = ((LinkImpl) entry.getValue());
+				float linkvalue;
+				try {
+					linkvalue = (Float) link.getMetric(metric).getValue(
+							MetricModifier.NORM, outputmethod);
+					if (linkvalue >= minimumValue && linkvalue <= maximumValue) {
+						result.add(link);
+					}
+				} catch (OutputUnavailableException e) {
+					logger.error("OutputUnavailableException caught. Metric is probably undefined.");
+				} catch (MetricNotAvailableException e) {
+					logger.debug("The impossible MetricNotAvailableException just happened anyway.");
+				}
+			}
+		}
+		return result;
+	}
 
-        for (Location child : children) {
-            result += ((LocationImpl) child).getNumberOfDescendants();
-        }
+	public int getNumberOfDescendants() {
+		int result = ibises.size();
 
-        return result;
-    }
+		for (Location child : children) {
+			result += ((LocationImpl) child).getNumberOfDescendants();
+		}
 
-    // Setters
-    public void addIbis(Ibis ibis) {
-        ibises.add(ibis);
-    }
+		return result;
+	}
 
-    public void removeIbis(Ibis ibis) {
-        ibises.remove(ibis);
-    }
+	// Setters
+	public void addIbis(Ibis ibis) {
+		ibises.add(ibis);
+	}
 
-    public void addChild(Location location) {
-        if (!children.contains(location)) {
-            children.add(location);
-        }
-    }
+	public void removeIbis(Ibis ibis) {
+		ibises.remove(ibis);
+	}
 
-    public void removeChild(Location location) {
-        children.remove(location);
-    }
+	public void addChild(Location location) {
+		if (!children.contains(location)) {
+			children.add(location);
+		}
+	}
 
-    public void setMetrics(Set<MetricDescription> descriptions) {
-        for (Ibis ibis : ibises) {
-            ((IbisImpl) ibis).setMetrics(descriptions);
-        }
-        for (Location child : children) {
-            ((LocationImpl) child).setMetrics(descriptions);
-        }
-        for (Link link : links.values()) {
-            ((LinkImpl) link).setMetrics(descriptions);
-        }
+	public void removeChild(Location location) {
+		children.remove(location);
+	}
 
-        // add new metrics
-        for (MetricDescription md : descriptions) {
-            if (!metrics.containsKey(md)) {
-                MetricImpl newMetric = (MetricImpl) ((MetricDescriptionImpl) md)
-                        .getMetric(this);
-                metrics.put(md, newMetric);
-            }
-        }
+	public void setMetrics(Set<MetricDescription> descriptions) {
+		for (Ibis ibis : ibises) {
+			((IbisImpl) ibis).setMetrics(descriptions);
+		}
+		for (Location child : children) {
+			((LocationImpl) child).setMetrics(descriptions);
+		}
+		for (Link link : links.values()) {
+			((LinkImpl) link).setMetrics(descriptions);
+		}
 
-        // make a snapshot of our current metrics.
-        Set<MetricDescription> temp = new HashSet<MetricDescription>();
-        temp.addAll(metrics.keySet());
+		// add new metrics
+		for (MetricDescription md : descriptions) {
+			if (!metrics.containsKey(md)) {
+				MetricImpl newMetric = (MetricImpl) ((MetricDescriptionImpl) md)
+						.getMetric(this);
+				metrics.put(md, newMetric);
+			}
+		}
 
-        // and loop through the snapshot to remove unwanted metrics that don't
-        // appear in the new set
-        for (MetricDescription entry : temp) {
-            if (!descriptions.contains(entry)) {
-                metrics.remove(entry);
-            }
-        }
-    }
+		// make a snapshot of our current metrics.
+		Set<MetricDescription> temp = new HashSet<MetricDescription>();
+		temp.addAll(metrics.keySet());
 
-    public void makeLinkHierarchy() {
-        // We make the hierarchy bottom-up, so we start with the children
-        for (Location child : children) {
-            ((LocationImpl) child).makeLinkHierarchy();
-        }
+		// and loop through the snapshot to remove unwanted metrics that don't
+		// appear in the new set
+		for (MetricDescription entry : temp) {
+			if (!descriptions.contains(entry)) {
+				metrics.remove(entry);
+			}
+		}
+	}
 
-        for (Link link : links.values()) {
-            ElementImpl src = (ElementImpl) link.getSource();
-            ElementImpl dst = (ElementImpl) link.getDestination();
+	public void makeLinkHierarchy() {
+		//We make the hierarchy bottom-up, so we start with the children
+		for (Location child : children) {
+			((LocationImpl) child).makeLinkHierarchy();
+		}
 
-            ElementImpl other;
+		for (Link link : links.values()) {			
+			ElementImpl src = (ElementImpl) link.getSource();
+			ElementImpl dst = (ElementImpl) link.getDestination();
 
-            if (src == this) {
-                other = dst;
-            } else {
-                other = src;
-            }
+			ElementImpl other;
+			
+			
+			if (src == this) {
+				other = dst;
+			} else {
+				other = src;
+			}
+			
+			//First, incorporate the links between my ibises and his ibis(es).			
+			ArrayList<Ibis> myIbises = getIbises();						
+			if (other instanceof Location) {
+				ArrayList<Ibis> hisIbises = ((Location) other).getIbises();
+								
+				for (Ibis myIbis : myIbises) {
+					for (Ibis hisIbis : hisIbises) {
+						try {
+							Link childLink = myIbis.getLink(hisIbis);
+							((LinkImpl) link).addChild(childLink);
+						} catch (SelfLinkeageException ignored) {
+							// ignored, because we do not want this link
+						}
+					}
+				}
+			} else if (other instanceof Ibis) {
+				for (Ibis myIbis : myIbises) {
+					try {
+						Link childLink = myIbis.getLink(other);
+						((LinkImpl) link).addChild(childLink);
+					} catch (SelfLinkeageException ignored) {
+						// ignored, because we do not want this link
+					}
+				}
+			}
+			
+			//Then, include the links between his child locations and me
+			
+			if (other instanceof Location) {				
+				for (Location hisChild : ((Location) other).getChildren()) {
+					try {
+						Link childLink = getLink(hisChild);
+						((LinkImpl) link).addChild(childLink);
+					} catch (SelfLinkeageException ignored) {
+						// ignored, because we do not want this link
+					}
+				}				
+			}
+		}		
+	}
 
-            // First, incorporate the links between my ibises and his ibises.
+	public void update() {
+		// make sure the children are updated first
+		for (Location child : children) {
+			((LocationImpl) child).update();
+		}
 
-            ArrayList<Ibis> myIbises = getIbises();
+		for (Entry<MetricDescription, Metric> data : metrics.entrySet()) {
+			MetricDescription desc = data.getKey();
+			MetricImpl metric = (MetricImpl) data.getValue();
 
-            if (other instanceof Location) {
-                ArrayList<Ibis> hisIbises = ((Location) other).getIbises();
+			try {
+				ArrayList<MetricOutput> types = desc.getOutputTypes();
 
-                for (Ibis myIbis : myIbises) {
-                    for (Ibis hisIbis : hisIbises) {
-                        try {
-                            Link childLink = myIbis.getLink(hisIbis);
-                            ((LinkImpl) link).addChild(childLink);
-                        } catch (SelfLinkeageException ignored) {
-                            // ignored, because we do not want this link
-                        }
-                    }
-                }
-            } else if (other instanceof Ibis) {
-                for (Ibis myIbis : myIbises) {
-                    try {
-                        Link childLink = myIbis.getLink(other);
-                        ((LinkImpl) link).addChild(childLink);
-                    } catch (SelfLinkeageException ignored) {
-                        // ignored, because we do not want this link
-                    }
-                }
-            }
+				for (MetricOutput outputtype : types) {
+					if (outputtype == MetricOutput.PERCENT
+							|| outputtype == MetricOutput.R
+							|| outputtype == MetricOutput.RPOS) {
+						float total = 0f, max = -10000000f, min = 10000000f;
 
-            // Then, include the links between his child locations and me
+						// First, we gather our own metrics
+						for (Ibis entry : ibises) {
+							IbisImpl ibis = (IbisImpl) entry;
+							MetricImpl ibisMetric = (MetricImpl) ibis
+									.getMetric(desc);
+							float ibisValue = (Float) ibisMetric.getValue(
+									MetricModifier.NORM, outputtype);
 
-            if (other instanceof Location) {
-                for (Location hisChild : ((Location) other).getChildren()) {
-                    try {
-                        Link childLink = getLink(hisChild);
-                        ((LinkImpl) link).addChild(childLink);
-                    } catch (SelfLinkeageException ignored) {
-                        // ignored, because we do not want this link
-                    }
-                }
-            }
-        }
-    }
+							total += ibisValue;
 
-    public void update() {
-        // make sure the children are updated first
-        for (Location child : children) {
-            ((LocationImpl) child).update();
-        }
+							if (ibisValue > max)
+								max = ibisValue;
+							if (ibisValue < min)
+								min = ibisValue;
+						}
 
-        for (Entry<MetricDescription, Metric> data : metrics.entrySet()) {
-            MetricDescription desc = data.getKey();
-            MetricImpl metric = (MetricImpl) data.getValue();
+						if (outputtype == MetricOutput.PERCENT) {
+							// Then we add the metric values of our child
+							// locations,
+							// multiplied by their weight.
+							int childIbises = 0;
+							for (Location child : children) {
+								float childValue = (Float) child
+										.getMetric(desc)
+										.getValue(MetricModifier.NORM,
+												outputtype);
 
-            try {
-                ArrayList<MetricOutput> types = desc.getOutputTypes();
+								childIbises += ((LocationImpl) child)
+										.getNumberOfDescendants();
 
-                for (MetricOutput outputtype : types) {
-                    if (outputtype == MetricOutput.PERCENT
-                            || outputtype == MetricOutput.R
-                            || outputtype == MetricOutput.RPOS) {
-                        float total = 0f, max = -10000000f, min = 10000000f;
+								total += childValue
+										* ((LocationImpl) child)
+												.getNumberOfDescendants();
 
-                        // First, we gather our own metrics
-                        for (Ibis entry : ibises) {
-                            IbisImpl ibis = (IbisImpl) entry;
-                            MetricImpl ibisMetric = (MetricImpl) ibis
-                                    .getMetric(desc);
-                            float ibisValue = (Float) ibisMetric.getValue(
-                                    MetricModifier.NORM, outputtype);
+								if (childValue > max)
+									max = childValue;
+								if (childValue < min)
+									min = childValue;
+							}
+							metric.setValue(MetricModifier.NORM, outputtype,
+									total / (ibises.size() + childIbises));
+							metric.setValue(MetricModifier.MAX, outputtype, max);
+							metric.setValue(MetricModifier.MIN, outputtype, min);
+						} else {
+							// Then we add the metric values of our child
+							// locations
+							for (Location child : children) {
+								float childValue = (Float) child
+										.getMetric(desc)
+										.getValue(MetricModifier.NORM,
+												outputtype);
 
-                            total += ibisValue;
+								total += childValue;
 
-                            if (ibisValue > max)
-                                max = ibisValue;
-                            if (ibisValue < min)
-                                min = ibisValue;
-                        }
+								if (childValue > max)
+									max = childValue;
+								if (childValue < min)
+									min = childValue;
+							}
+							metric.setValue(MetricModifier.NORM, outputtype,
+									total);
+							metric.setValue(MetricModifier.MAX, outputtype, max);
+							metric.setValue(MetricModifier.MIN, outputtype, min);
+						}
+					} else { // We are MetricOutput.N
+						long total = 0, max = 0, min = 1000000;
 
-                        if (outputtype == MetricOutput.PERCENT) {
-                            // Then we add the metric values of our child
-                            // locations,
-                            // multiplied by their weight.
-                            int childIbises = 0;
-                            for (Location child : children) {
-                                float childValue = (Float) child
-                                        .getMetric(desc)
-                                        .getValue(MetricModifier.NORM,
-                                                outputtype);
+						// First, we gather our own metrics
+						for (Ibis ibis : ibises) {
+							long ibisValue = (Long) ibis.getMetric(desc)
+									.getValue(MetricModifier.NORM, outputtype);
 
-                                childIbises += ((LocationImpl) child)
-                                        .getNumberOfDescendants();
+							total += ibisValue;
 
-                                total += childValue
-                                        * ((LocationImpl) child)
-                                                .getNumberOfDescendants();
+							if (ibisValue > max)
+								max = ibisValue;
+							if (ibisValue < min)
+								min = ibisValue;
+						}
 
-                                if (childValue > max)
-                                    max = childValue;
-                                if (childValue < min)
-                                    min = childValue;
-                            }
-                            metric.setValue(MetricModifier.NORM, outputtype,
-                                    total / (ibises.size() + childIbises));
-                            metric.setValue(MetricModifier.MAX, outputtype, max);
-                            metric.setValue(MetricModifier.MIN, outputtype, min);
-                        } else {
-                            // Then we add the metric values of our child
-                            // locations
-                            for (Location child : children) {
-                                float childValue = (Float) child
-                                        .getMetric(desc)
-                                        .getValue(MetricModifier.NORM,
-                                                outputtype);
+						// Then we add the metric values of our child locations
+						for (Location child : children) {
+							long childValue = (Long) child.getMetric(desc)
+									.getValue(MetricModifier.NORM, outputtype);
 
-                                total += childValue;
+							total += childValue;
 
-                                if (childValue > max)
-                                    max = childValue;
-                                if (childValue < min)
-                                    min = childValue;
-                            }
-                            metric.setValue(MetricModifier.NORM, outputtype,
-                                    total);
-                            metric.setValue(MetricModifier.MAX, outputtype, max);
-                            metric.setValue(MetricModifier.MIN, outputtype, min);
-                        }
-                    } else { // We are MetricOutput.N
-                        long total = 0, max = 0, min = 1000000;
+							if (childValue > max)
+								max = childValue;
+							if (childValue < min)
+								min = childValue;
+						}
+						metric.setValue(MetricModifier.NORM, outputtype, total);
+						metric.setValue(MetricModifier.MAX, outputtype, max);
+						metric.setValue(MetricModifier.MIN, outputtype, min);
+					}
+				}
+			} catch (OutputUnavailableException impossible) {
+				// Impossible since we tested if it was available first.
+				logger.error("The impossible OutputUnavailableException just happened anyway.");
+			} catch (BeyondAllowedRangeException e) {
+				// Impossible unless one of the children has a value that is
+				// already bad
+				logger.debug("The impossible BeyondAllowedRangeException just happened anyway.");
+			} catch (MetricNotAvailableException e) {
+				logger.error("The impossible MetricNotAvailableException just happened anyway.");
+			}		
+		}
 
-                        // First, we gather our own metrics
-                        for (Ibis ibis : ibises) {
-                            long ibisValue = (Long) ibis.getMetric(desc)
-                                    .getValue(MetricModifier.NORM, outputtype);
+		for (Link link : links.values()) {
+			((LinkImpl) link).update();
+		}
+	}	
 
-                            total += ibisValue;
+	public String debugPrint() {
+		String result = "";
+		result += name + " has " + children.size() + " children. \n";
+		result += name + " has " + links.size() + " links. \n";
+		result += name + " has " + ibises.size() + " ibises. \n";
 
-                            if (ibisValue > max)
-                                max = ibisValue;
-                            if (ibisValue < min)
-                                min = ibisValue;
-                        }
+		result += name + " has " + metrics.size() + " metrics: ";
 
-                        // Then we add the metric values of our child locations
-                        for (Location child : children) {
-                            long childValue = (Long) child.getMetric(desc)
-                                    .getValue(MetricModifier.NORM, outputtype);
+		for (Entry<MetricDescription, Metric> entry : metrics.entrySet()) {
+			if (entry.getValue().getDescription().getType() == MetricType.NODE) {
+				result += " " + entry.getValue().getDescription().getName();
+			} else {
+				result += " !" + entry.getValue().getDescription().getName();
+			}
+		}
 
-                            total += childValue;
+		result += "\n";
 
-                            if (childValue > max)
-                                max = childValue;
-                            if (childValue < min)
-                                min = childValue;
-                        }
-                        metric.setValue(MetricModifier.NORM, outputtype, total);
-                        metric.setValue(MetricModifier.MAX, outputtype, max);
-                        metric.setValue(MetricModifier.MIN, outputtype, min);
-                    }
-                }
-            } catch (OutputUnavailableException impossible) {
-                // Impossible since we tested if it was available first.
-                logger.error("The impossible OutputUnavailableException just happened anyway.");
-            } catch (BeyondAllowedRangeException e) {
-                // Impossible unless one of the children has a value that is
-                // already bad
-                logger.debug("The impossible BeyondAllowedRangeException just happened anyway.");
-            } catch (MetricNotAvailableException e) {
-                logger.error("The impossible MetricNotAvailableException just happened anyway.");
-            }
-        }
+		for (Link link : links.values()) {
+			result += name + " " + ((LinkImpl) link).debugPrint();
+		}
 
-        for (Link link : links.values()) {
-            ((LinkImpl) link).update();
-        }
-    }
+		result += "\n";
 
-    public String debugPrint() {
-        String result = "";
-        result += name + " has " + children.size() + " children. \n";
-        result += name + " has " + links.size() + " links. \n";
-        result += name + " has " + ibises.size() + " ibises. \n";
+		for (Ibis ibis : ibises) {
+			result += name + " " + ((IbisImpl) ibis).debugPrint();
+		}
 
-        result += name + " has " + metrics.size() + " metrics: ";
+		result += "\n";
 
-        for (Entry<MetricDescription, Metric> entry : metrics.entrySet()) {
-            if (entry.getValue().getDescription().getType() == MetricType.NODE) {
-                result += " " + entry.getValue().getDescription().getName();
-            } else {
-                result += " !" + entry.getValue().getDescription().getName();
-            }
-        }
+		for (Location child : children) {
+			result += ((LocationImpl) child).debugPrint();
+		}
 
-        result += "\n";
-
-        for (Link link : links.values()) {
-            result += name + " " + ((LinkImpl) link).debugPrint();
-        }
-
-        result += "\n";
-
-        for (Ibis ibis : ibises) {
-            result += name + " " + ((IbisImpl) ibis).debugPrint();
-        }
-
-        result += "\n";
-
-        for (Location child : children) {
-            result += ((LocationImpl) child).debugPrint();
-        }
-
-        return result;
-    }
-
-    // Getters and setters for latitude and longitude
+		return result;
+	}
+	
+	 // Getters and setters for latitude and longitude
 
     public double getLatitude() {
         return latitude;
@@ -456,5 +454,6 @@ public class LocationImpl extends ElementImpl implements Location {
     public void setLongitude(double newLongitude) {
         longitude = newLongitude;
     }
+
 
 }

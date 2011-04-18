@@ -3,6 +3,7 @@ package ibis.deploy.monitoring.collection.impl;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
+import ibis.deploy.vizFramework.globeViz.viz.utils.RandomDataGenerator;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,13 +16,13 @@ import java.util.Map.Entry;
 import ibis.deploy.monitoring.collection.Collector;
 import ibis.deploy.monitoring.collection.Element;
 import ibis.deploy.monitoring.collection.Ibis;
+import ibis.deploy.monitoring.collection.Link;
 import ibis.deploy.monitoring.collection.Location;
 import ibis.deploy.monitoring.collection.MetricDescription;
 import ibis.deploy.monitoring.collection.Pool;
 import ibis.deploy.monitoring.collection.exceptions.SelfLinkeageException;
 import ibis.deploy.monitoring.collection.exceptions.SingletonObjectNotInstantiatedException;
 import ibis.deploy.monitoring.collection.metrics.*;
-import ibis.deploy.vizFramework.globeViz.viz.utils.RandomDataGenerator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +59,7 @@ public class CollectorImpl implements Collector, Runnable {
     private HashMap<Element, Location> parents;
     private HashMap<String, Pool> pools;
     private HashMap<IbisIdentifier, Ibis> ibises;
+    private HashSet<Link> links;
 
     // Externally available
     private Location root;
@@ -76,6 +78,7 @@ public class CollectorImpl implements Collector, Runnable {
         pools = new HashMap<String, Pool>();
         descriptions = new HashSet<MetricDescription>();
         ibises = new HashMap<IbisIdentifier, Ibis>();
+        links = new HashSet<Link>();
         jobQueue = new LinkedList<Element>();
         workers = new ArrayList<Worker>();
 
@@ -206,7 +209,9 @@ public class CollectorImpl implements Collector, Runnable {
         parents.clear();
 
         Float[] color = { 0f, 0f, 0f };
-        root = new LocationImpl("root", color, RandomDataGenerator.generateRandomLatitude(), RandomDataGenerator.generateRandomLongitude());
+        root = new LocationImpl("root", color,
+                RandomDataGenerator.generateRandomLatitude(),
+                RandomDataGenerator.generateRandomLongitude());
         parents.put(root, null);
 
         // For all pools
@@ -288,13 +293,17 @@ public class CollectorImpl implements Collector, Runnable {
     }
 
     private void initLinks() {
+        links.clear();
+
         // pre-make the location-location links
         for (Location source : locations.values()) {
             for (Location destination : locations.values()) {
                 try {
                     if (!isAncestorOf(source, destination)
                             && !isAncestorOf(destination, source)) {
-                        source.getLink(destination);
+                        LinkImpl newLink = (LinkImpl) source
+                                .getLink(destination);
+                        links.add(newLink);
                     }
                 } catch (SelfLinkeageException ignored) {
                     // ignored, because we do not want this link
@@ -308,7 +317,9 @@ public class CollectorImpl implements Collector, Runnable {
                 try {
                     if (!isAncestorOf(source, destination)
                             && !isAncestorOf(destination, source)) {
-                        source.getLink(destination);
+                        LinkImpl newLink = (LinkImpl) source
+                                .getLink(destination);
+                        links.add(newLink);
                     }
                 } catch (SelfLinkeageException ignored) {
                     // ignored, because we do not want this link
@@ -320,14 +331,21 @@ public class CollectorImpl implements Collector, Runnable {
         for (Ibis source : ibises.values()) {
             for (Ibis destination : ibises.values()) {
                 try {
-                    source.getLink(destination);
+                    LinkImpl newLink = (LinkImpl) source.getLink(destination);
+                    links.add(newLink);
                 } catch (SelfLinkeageException ignored) {
                     // ignored, because we do not want this link
                 }
             }
         }
-
+        System.out.println("Collector created " + links.size() + " links.");
         ((LocationImpl) root).makeLinkHierarchy();
+    }
+
+    private void setlinksNotUpdated() {
+        for (Link link : links) {
+            ((LinkImpl) link).setNotUpdated();
+        }
     }
 
     // Getters
@@ -382,7 +400,7 @@ public class CollectorImpl implements Collector, Runnable {
         return parents.get(child);
     }
 
-    private boolean isAncestorOf(Element child, Element ancestor) {
+    public boolean isAncestorOf(Element child, Element ancestor) {
         Element current = parents.get(child);
         while (current != null) {
             if (current == ancestor)
@@ -409,6 +427,8 @@ public class CollectorImpl implements Collector, Runnable {
             // Add stuff to the queue and notify
             synchronized (jobQueue) {
                 initUniverse();
+                setlinksNotUpdated();
+
                 jobQueue.addAll(ibises.values());
                 jobQueue.add(root);
                 waiting = 0;

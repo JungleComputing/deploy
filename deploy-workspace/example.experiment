@@ -17,9 +17,9 @@
 
 # Details of job "job-00"
 job-00.application.name = Go
-job-00.process.count = 16
-job-00.cluster.name = VUDAS3
-job-00.resource.count = 16
+job-00.process.count = 1
+job-00.cluster.name = local
+job-00.resource.count = 1
 #job-00.runtime =
 job-00.pool.name = example
 #job-00.pool.size =

@@ -22,162 +22,162 @@ import javax.swing.table.TableCellRenderer;
 
 class JobTableRenderer extends JLabel implements TableCellRenderer {
 
-    private static final long serialVersionUID = -1269380843774208099L;
+	private static final long serialVersionUID = -1269380843774208099L;
 
-    private final JobTableModel model;
+	private final JobTableModel model;
 
-    public JobTableRenderer(JobTableModel model) {
-        super();
-        this.model = model;
-    }
+	public JobTableRenderer(JobTableModel model) {
+		super();
+		this.model = model;
+	}
 
-    public Component getTableCellRendererComponent(final JTable table,
-            final Object value, boolean isSelected, boolean hasFocus,
-            final int row, int column) {
+	public Component getTableCellRendererComponent(final JTable table,
+			final Object value, boolean isSelected, boolean hasFocus,
+			final int row, int column) {
 		setBorder(new EmptyBorder(5, 5, 5, 5));
-        setText("");
-        setOpaque(isSelected);
+		setText("");
+		setOpaque(isSelected);
 
-        setBackground(UIManager.getColor("Table.selectionBackground"));
-        setForeground(Color.BLACK);
+		setBackground(UIManager.getColor("Table.selectionBackground"));
+		setForeground(Color.BLACK);
 
-        String columnName = table.getColumnName(column);
+		String columnName = table.getColumnName(column);
 
-        if (columnName.equalsIgnoreCase(JobTableModel.CONTROL_COLUMN_NAME)) {
-            boolean start = false;
+		if (columnName.equalsIgnoreCase(JobTableModel.CONTROL_COLUMN_NAME)) {
+			boolean start = false;
 
-            if (value != null) {
-               start = (Boolean) value;
-            }
+			if (value != null) {
+				start = (Boolean) value;
+			}
 
-            if (start) {
-                final JButton startButton = Utils.createImageButton(
+			if (start) {
+				final JButton startButton = Utils.createImageButton(
 
-                "images/media-playback-start.png", "Start job", null);
+				"images/media-playback-start.png", "Start job", null);
 
-                startButton.addActionListener(new ActionListener() {
+				startButton.addActionListener(new ActionListener() {
 
-                    public void actionPerformed(ActionEvent arg0) {
-                        startButton.setEnabled(false);
-                        model.start(table.convertRowIndexToModel(row));
-                    }
-                });
+					public void actionPerformed(ActionEvent arg0) {
+						startButton.setEnabled(false);
+						model.start(table.convertRowIndexToModel(row));
+					}
+				});
 
-                return startButton;
-            } else {
-                final JButton stopButton = Utils.createImageButton(
-                        "images/media-playback-stop.png", "Stop job", null);
-                stopButton.addActionListener(new ActionListener() {
+				return startButton;
+			} else {
+				final JButton stopButton = Utils.createImageButton(
+						"images/media-playback-stop.png", "Stop job", null);
+				stopButton.addActionListener(new ActionListener() {
 
-                    public void actionPerformed(ActionEvent arg0) {
-                        stopButton.setEnabled(false);
-                        model.stop(table.convertRowIndexToModel(row));
-                    }
-                });
-                return stopButton;
-            }
-        } else if (columnName.equalsIgnoreCase(JobTableModel.POOL_COLUMN_NAME)) {
-            setText("" + value);
-        } else if (columnName.equalsIgnoreCase(JobTableModel.NAME_COLUMN_NAME)) {
-            setText("" + value);
-        } else if (columnName
-                .equalsIgnoreCase(JobTableModel.JOB_STATUS_COLUMN_NAME)) {
-            State state = (State) value;
+					public void actionPerformed(ActionEvent arg0) {
+						stopButton.setEnabled(false);
+						model.stop(table.convertRowIndexToModel(row));
+					}
+				});
+				return stopButton;
+			}
+		} else if (columnName.equalsIgnoreCase(JobTableModel.POOL_COLUMN_NAME)) {
+			setText("" + value);
+		} else if (columnName.equalsIgnoreCase(JobTableModel.NAME_COLUMN_NAME)) {
+			setText("" + value);
+		} else if (columnName
+				.equalsIgnoreCase(JobTableModel.JOB_STATUS_COLUMN_NAME)) {
+			State state = (State) value;
 
-            if (state != null && state != State.UNKNOWN) {
-                if (state == State.DEPLOYED) {
-                    // green
-                    setForeground(Color.decode("#16B400"));
-                } else if (state == State.ERROR) {
-                    setForeground(Color.RED);
-                } else {
-                    setForeground(Color.BLACK);
-                }
+			if (state != null && state != State.UNKNOWN) {
+				if (state == State.DEPLOYED) {
+					// green
+					setForeground(Color.decode("#16B400"));
+				} else if (state == State.ERROR) {
+					setForeground(Color.RED);
+				} else {
+					setForeground(Color.BLACK);
+				}
 
-                setText(state.toString());
-            }
-        } else if (columnName
-                .equalsIgnoreCase(JobTableModel.HUB_STATUS_COLUMN_NAME)) {
-            State state = (State) value;
+				setText(state.toString());
+			}
+		} else if (columnName
+				.equalsIgnoreCase(JobTableModel.HUB_STATUS_COLUMN_NAME)) {
+			State state = (State) value;
 
-            if (state != null && state != State.UNKNOWN) {
-                if (state == State.DEPLOYED) {
-                    // green
-                    setForeground(Color.decode("#16B400"));
-                } else if (state == State.ERROR) {
-                    setForeground(Color.RED);
-                } else {
-                    setForeground(Color.BLACK);
-                }
+			if (state != null && state != State.UNKNOWN) {
+				if (state == State.DEPLOYED) {
+					// green
+					setForeground(Color.decode("#16B400"));
+				} else if (state == State.ERROR) {
+					setForeground(Color.RED);
+				} else {
+					setForeground(Color.BLACK);
+				}
 
-                setText(state.toString());
-            }
-        } else if (columnName
-                .equalsIgnoreCase(JobTableModel.CLUSTER_COLUMN_NAME)) {
-            setOpaque(true);
+				setText(state.toString());
+			}
+		} else if (columnName
+				.equalsIgnoreCase(JobTableModel.CLUSTER_COLUMN_NAME)) {
+			setOpaque(true);
 
-            JobDescription jobDescription = model.getJobDescription(table
-                    .convertRowIndexToModel(row));
+			JobDescription jobDescription = model.getJobDescription(table
+					.convertRowIndexToModel(row));
 
-            if (isSelected) {
+			if (isSelected) {
 				setBackground(jobDescription.getCluster().getColor());
-            } else {
+			} else {
 				setBackground(Colors.getLightColor(jobDescription.getCluster()
 						.getColor()));
-            }
+			}
 
 			setText(jobDescription.getCluster().getName());
-        } else if (columnName
-                .equalsIgnoreCase(JobTableModel.MIDDLEWARE_COLUMN_NAME)) {
-            String adaptor = (String) value;
-            if (adaptor != null && adaptor.equalsIgnoreCase("sshTrilead")) {
-                adaptor = "ssh";
-            }
-            setText(adaptor);
-        } else if (columnName
-                .equalsIgnoreCase(JobTableModel.APPLICATION_COLUMN_NAME)) {
-            setText("" + value);
-        } else if (columnName
-                .equalsIgnoreCase(JobTableModel.PROCESS_COUNT_COLUMN_NAME)) {
-            setText("" + value);
-        } else if (columnName
-                .equalsIgnoreCase(JobTableModel.RESOURCE_COUNT_COLUMN_NAME)) {
-            setText("" + value);
-        } else if (columnName
-                .equalsIgnoreCase(JobTableModel.OUTPUT_COLUMN_NAME)) {
-            boolean enabled = false;
-            if (value != null) {
-                enabled = (Boolean) value;
-            }
+		} else if (columnName
+				.equalsIgnoreCase(JobTableModel.MIDDLEWARE_COLUMN_NAME)) {
+			String adaptor = (String) value;
+			if (adaptor != null && adaptor.equalsIgnoreCase("sshTrilead")) {
+				adaptor = "ssh";
+			}
+			setText(adaptor);
+		} else if (columnName
+				.equalsIgnoreCase(JobTableModel.APPLICATION_COLUMN_NAME)) {
+			setText("" + value);
+		} else if (columnName
+				.equalsIgnoreCase(JobTableModel.PROCESS_COUNT_COLUMN_NAME)) {
+			setText("" + value);
+		} else if (columnName
+				.equalsIgnoreCase(JobTableModel.RESOURCE_COUNT_COLUMN_NAME)) {
+			setText("" + value);
+		} else if (columnName
+				.equalsIgnoreCase(JobTableModel.OUTPUT_COLUMN_NAME)) {
+			boolean enabled = false;
+			if (value != null) {
+				enabled = (Boolean) value;
+			}
 
-            final Job job = model.getJob(table.convertRowIndexToModel(row));
+			final Job job = model.getJob(table.convertRowIndexToModel(row));
 
-            final JButton button = Utils.createImageButton(
+			final JButton button = Utils.createImageButton(
 
-                    null, "Show output of job", "output");
+			null, "Show output of job", "output");
 
 			// JButton button = new JButton("output");
 			// button.setMargin(new Insets(2, 2, 2, 2));
-            // button.setPreferredSize(new Dimension(10, 10));
-            button.addActionListener(new ActionListener() {
+			// button.setPreferredSize(new Dimension(10, 10));
+			button.addActionListener(new ActionListener() {
 
-                public void actionPerformed(ActionEvent arg0) {
-                    JDialog dialog = new JDialog(SwingUtilities
-                            .getWindowAncestor(table), "Output Files for "
-                            + job.getDescription().getName());
-                    dialog.setContentPane(new OutputPanel(job));
-                    dialog.pack();
-                    dialog.setLocationRelativeTo(SwingUtilities
-                            .getWindowAncestor(table));
-                    dialog.setVisible(true);
+				public void actionPerformed(ActionEvent arg0) {
+					JDialog dialog = new JDialog(SwingUtilities
+							.getWindowAncestor(table), "Output Files for "
+							+ job.getDescription().getName());
+					dialog.setContentPane(new OutputPanel(job));
+					dialog.pack();
+					dialog.setLocationRelativeTo(SwingUtilities
+							.getWindowAncestor(table));
+					dialog.setVisible(true);
 
-                }
+				}
 
-            });
-            button.setEnabled(enabled);
+			});
+			button.setEnabled(enabled);
 
-            return button;
-        }
-        return this;
-    }
+			return button;
+		}
+		return this;
+	}
 }

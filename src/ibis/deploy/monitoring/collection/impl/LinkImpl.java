@@ -23,15 +23,27 @@ import ibis.deploy.monitoring.collection.exceptions.*;
 public class LinkImpl extends ElementImpl implements Link {
 	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.collection.impl.Link");
 
+	private CollectorImpl c;
+	
 	private ArrayList<Link> children;
 	private ElementImpl source;
 	private ElementImpl destination;
 	private HashMap<MetricDescription, Metric> srcToDstMetrics, dstToSrcMetrics;
+	private boolean updatedThisCycle;
+	
 
 	public LinkImpl(ElementImpl origin, Element destination) {
 		super();
 		this.source = origin;
 		this.destination = (ElementImpl) destination;
+		
+		try {
+			c = CollectorImpl.getCollector();
+		} catch (SingletonObjectNotInstantiatedException e) {
+			e.printStackTrace();
+		}
+		
+		updatedThisCycle = false;
 		
 		srcToDstMetrics = new HashMap<MetricDescription, Metric>();
 		dstToSrcMetrics	 = new HashMap<MetricDescription, Metric>();
@@ -109,23 +121,29 @@ public class LinkImpl extends ElementImpl implements Link {
 	}
 
 	public void update() {
-		// First update all of our children
-		for (Link child : children) {
-			((LinkImpl) child).update();
-		}		
+		if ( !updatedThisCycle ) {
+			// First update all of our children
+			for (Link child : children) {
+				((LinkImpl) child).update();
+			}
 		
-		if (source instanceof IbisImpl && destination instanceof IbisImpl) {
-			updateIbisIbisLink();
-		} else if (source instanceof LocationImpl || destination instanceof LocationImpl) {
-			//updateElementElementLink();
-		} else {
-			logger.error("Tried to update a Link between weird elements.");
-		}		
+			if (source instanceof IbisImpl && destination instanceof IbisImpl) {
+				updateIbisIbisLink(srcToDstMetrics, source, destination);
+				updateIbisIbisLink(dstToSrcMetrics, destination, source);			
+			} else if (source instanceof LocationImpl || destination instanceof LocationImpl) {
+				updateElementElementLink(srcToDstMetrics, source, destination);
+				updateElementElementLink(dstToSrcMetrics, destination, source);		
+			} else {
+				logger.error("Tried to update a Link between weird elements.");
+			}
+		}
+		
+		updatedThisCycle = true;
 	}
 
-	private void updateIbisIbisLink() {
+	private void updateIbisIbisLink(HashMap<MetricDescription, Metric> map, Element source, Element destination) {
 		//Transform the Link value maps into 'normal' metrics that apply to this link
-		for (Entry<MetricDescription, Metric> data : srcToDstMetrics.entrySet()) {
+		for (Entry<MetricDescription, Metric> data : map.entrySet()) {
 			MetricDescription desc = data.getKey();
 			MetricImpl metric = (MetricImpl) data.getValue();
 			
@@ -159,47 +177,11 @@ public class LinkImpl extends ElementImpl implements Link {
 				}
 			}
 		}
-		
-		//Transform the Link value maps into 'normal' metrics that apply to this link
-		for (Entry<MetricDescription, Metric> data : dstToSrcMetrics.entrySet()) {
-			MetricDescription desc = data.getKey();
-			MetricImpl metric = (MetricImpl) data.getValue();
-			
-			ArrayList<MetricOutput> types = desc.getOutputTypes();			
-			for (MetricOutput outputtype : types) {
-				try {
-					// First, we gather our own metrics
-					MetricImpl dstMetric = (MetricImpl) destination.getMetric(desc);
-
-					Number dstLinkValue = dstMetric.getValue(MetricModifier.NORM, outputtype, source);
-					
-					if (outputtype == MetricOutput.PERCENT || outputtype == MetricOutput.R || outputtype == MetricOutput.RPOS) {
-						float dstValue = dstLinkValue.floatValue();
-						metric.setValue(MetricModifier.NORM, outputtype, dstValue);				
-					} else { // We are MetricOutput.N
-						long dstValue = dstLinkValue.longValue();
-						metric.setValue(MetricModifier.NORM, outputtype, dstValue);
-					}					
-				} catch (OutputUnavailableException impossible) {
-					// Impossible since we tested if it was available first.
-					impossible.printStackTrace();
-					logger.error("The impossible OutputUnavailableException just happened anyway.");
-				} catch (BeyondAllowedRangeException impossible) {
-					// Impossible unless one of the children has a value that is
-					// already bad
-					impossible.printStackTrace();
-					logger.debug("The impossible BeyondAllowedRangeException just happened anyway.");
-				} catch (MetricNotAvailableException impossible) {
-					impossible.printStackTrace();
-					logger.error("The impossible MetricNotAvailableException just happened anyway.");
-				}
-			}
-		}
 	}
-
-	private void updateElementElementLink() {		
+	
+	private void updateElementElementLink(HashMap<MetricDescription, Metric> map, Element source, Element destination) {
 		//Aggregate 'Normal' Metrics from the children of this link, made during the linkHierarchy process
-		for (Entry<MetricDescription, Metric> data : srcToDstMetrics.entrySet()) {
+		for (Entry<MetricDescription, Metric> data : map.entrySet()) {
 			MetricDescription desc = data.getKey();
 			MetricImpl metric = (MetricImpl) data.getValue();
 
@@ -211,35 +193,48 @@ public class LinkImpl extends ElementImpl implements Link {
 						float total = 0f, max = -10000000f, min = 10000000f;
 	
 						if (outputtype == MetricOutput.PERCENT) {
-							// We add up the metric values of our child locations,
-							// multiplied by their weight.
-							int childLinks = 0;
+							// We add up the metric values of our child locations, and divide
+														
 							for (Link child : children) {
-								float childValue = child.getMetric(desc, LinkDirection.SRC_TO_DST).getValue(MetricModifier.NORM, outputtype).floatValue();
-	
-								childLinks += ((LinkImpl) child).getNumberOfDescendants();
-	
-								total += childValue * ((LinkImpl) child).getNumberOfDescendants();
-	
+								LinkDirection childDirection;
+								if (c.isAncestorOf(child, source)) {
+									childDirection = LinkDirection.SRC_TO_DST;
+								} else {
+									childDirection = LinkDirection.DST_TO_SRC;
+								}
+								
+								float childValue = child.getMetric(desc, childDirection).getValue(MetricModifier.NORM, MetricOutput.PERCENT).floatValue();
+								total += childValue;
+									
 								if (childValue > max)
 									max = childValue;
 								if (childValue < min)
-									min = childValue;
-								
-								if (max < 0) max = 0;
-								if (min < 0) min = 0;
+									min = childValue;								
 							}
-							float value = 0f;
-							if (childLinks > 0) {
-								value = total / childLinks;
-							}
-							metric.setValue(MetricModifier.NORM, outputtype, value);
+							
+							float percent = total / children.size();
+							if (percent < 0f) percent = 0f;
+							if (percent > 1f) percent = 1f;							
+							
+							if (max < 0) max = 0;
+							if (min < 0) min = 0;
+							
+							if (max > 1f) max = 1f;
+							if (min > 1f) min = 1f;
+							
+							metric.setValue(MetricModifier.NORM, outputtype, percent);
 							metric.setValue(MetricModifier.MAX, outputtype, max);
 							metric.setValue(MetricModifier.MIN, outputtype, min);
 						} else {
 							// We add up the metric values of our child locations
 							for (Link child : children) {
-								float childValue = child.getMetric(desc, LinkDirection.SRC_TO_DST).getValue(MetricModifier.NORM, outputtype).floatValue();
+								LinkDirection childDirection;
+								if (c.isAncestorOf(child, source)) {
+									childDirection = LinkDirection.SRC_TO_DST;
+								} else {
+									childDirection = LinkDirection.DST_TO_SRC;
+								}
+								float childValue = child.getMetric(desc, childDirection).getValue(MetricModifier.NORM, outputtype).floatValue();
 	
 								total += childValue;
 	
@@ -248,11 +243,15 @@ public class LinkImpl extends ElementImpl implements Link {
 								if (childValue < min)
 									min = childValue;
 								
-								if (max < 0) max = 0;
-								if (min < 0) min = 0;
-							}
-							metric.setValue(MetricModifier.NORM, outputtype,
-									total);
+							}						
+							
+							if (max < 0) max = 0;
+							if (min < 0) min = 0;
+							
+							if (max > 1f) max = 1f;
+							if (min > 1f) min = 1f;
+							
+							metric.setValue(MetricModifier.NORM, outputtype,total);
 							metric.setValue(MetricModifier.MAX, outputtype, max);
 							metric.setValue(MetricModifier.MIN, outputtype, min);
 						}
@@ -268,11 +267,12 @@ public class LinkImpl extends ElementImpl implements Link {
 							if (childValue > max)
 								max = childValue;
 							if (childValue < min)
-								min = childValue;
-							
-							if (max < 0) max = 0;
-							if (min < 0) min = 0;
+								min = childValue;							
 						}
+						
+						if (max < 0) max = 0;
+						if (min < 0) min = 0;
+						
 						metric.setValue(MetricModifier.NORM, outputtype, total);
 						metric.setValue(MetricModifier.MAX, outputtype, max);
 						metric.setValue(MetricModifier.MIN, outputtype, min);
@@ -291,101 +291,6 @@ public class LinkImpl extends ElementImpl implements Link {
 				impossible.printStackTrace();
 				logger.error("The impossible MetricNotAvailableException just happened anyway.");
 			}	
-		}
-		
-		//Aggregate 'Normal' Metrics from the children of this link, made during the linkHierarchy process
-		for (Entry<MetricDescription, Metric> data : dstToSrcMetrics.entrySet()) {
-			MetricDescription desc = data.getKey();
-			MetricImpl metric = (MetricImpl) data.getValue();
-
-			try {
-				ArrayList<MetricOutput> types = desc.getOutputTypes();
-	
-				for (MetricOutput outputtype : types) {
-					if (outputtype == MetricOutput.PERCENT || outputtype == MetricOutput.R || outputtype == MetricOutput.RPOS) {
-						float total = 0f, max = -10000000f, min = 10000000f;
-	
-						if (outputtype == MetricOutput.PERCENT) {
-							// We add up the metric values of our child locations,
-							// multiplied by their weight.
-							int childLinks = 0;
-							for (Link child : children) {
-								float childValue = child.getMetric(desc, LinkDirection.DST_TO_SRC).getValue(MetricModifier.NORM, outputtype).floatValue();
-	
-								childLinks += ((LinkImpl) child).getNumberOfDescendants();
-	
-								total += childValue * ((LinkImpl) child).getNumberOfDescendants();
-	
-								if (childValue > max)
-									max = childValue;
-								if (childValue < min)
-									min = childValue;
-								
-								if (max < 0) max = 0;
-								if (min < 0) min = 0;
-							}
-							float value = 0f;
-							if (childLinks > 0) {
-								value = total / childLinks;
-							}
-							metric.setValue(MetricModifier.NORM, outputtype, value);
-							metric.setValue(MetricModifier.MAX, outputtype, max);
-							metric.setValue(MetricModifier.MIN, outputtype, min);
-						} else {
-							// We add up the metric values of our child locations
-							for (Link child : children) {
-								float childValue = child.getMetric(desc, LinkDirection.DST_TO_SRC).getValue(MetricModifier.NORM, outputtype).floatValue();
-	
-								total += childValue;
-	
-								if (childValue > max)
-									max = childValue;
-								if (childValue < min)
-									min = childValue;
-								
-								if (max < 0) max = 0;
-								if (min < 0) min = 0;
-							}
-							metric.setValue(MetricModifier.NORM, outputtype,
-									total);
-							metric.setValue(MetricModifier.MAX, outputtype, max);
-							metric.setValue(MetricModifier.MIN, outputtype, min);
-						}
-					} else { // We are MetricOutput.N
-						long total = 0, max = 0, min = 1000000;
-	
-						// We add up the metric values of our child locations
-						for (Link child : children) {
-							long childValue = child.getMetric(desc, LinkDirection.DST_TO_SRC).getValue(MetricModifier.NORM, outputtype).longValue();
-	
-							total += childValue;
-	
-							if (childValue > max)
-								max = childValue;
-							if (childValue < min)
-								min = childValue;
-							
-							if (max < 0) max = 0;
-							if (min < 0) min = 0;
-						}
-						metric.setValue(MetricModifier.NORM, outputtype, total);
-						metric.setValue(MetricModifier.MAX, outputtype, max);
-						metric.setValue(MetricModifier.MIN, outputtype, min);
-					}
-				}
-			} catch (OutputUnavailableException impossible) {
-				// Impossible since we tested if it was available first.
-				impossible.printStackTrace();
-				logger.error("The impossible OutputUnavailableException just happened anyway.");
-			} catch (BeyondAllowedRangeException impossible) {
-				// Impossible unless one of the children has a value that is
-				// already bad
-				impossible.printStackTrace();
-				logger.debug("The impossible BeyondAllowedRangeException just happened anyway.");
-			} catch (MetricNotAvailableException impossible) {
-				impossible.printStackTrace();
-				logger.error("The impossible MetricNotAvailableException just happened anyway.");
-			}
 		}
 	}
 
@@ -465,6 +370,10 @@ public class LinkImpl extends ElementImpl implements Link {
 				.equals(that.destination))
 				|| (this.source.equals(that.destination) && this.destination
 						.equals(that.source));
+	}
+	
+	public void setNotUpdated() {
+		updatedThisCycle = false;
 	}
 
 	@Override

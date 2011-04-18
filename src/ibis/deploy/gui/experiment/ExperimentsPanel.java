@@ -44,10 +44,10 @@ public class ExperimentsPanel extends JPanel {
 
         if (gui.isReadOnly()) {
             horizontalSplitPane
-            .setDividerLocation((int) (GUI.DEFAULT_SCREEN_WIDTH * 0.5));
+                    .setDividerLocation((int) (GUI.DEFAULT_SCREEN_WIDTH * 0.5));
         } else {
             horizontalSplitPane
-            .setDividerLocation((int) (GUI.DEFAULT_SCREEN_WIDTH * 0.65));
+                    .setDividerLocation((int) (GUI.DEFAULT_SCREEN_WIDTH * 0.65));
         }
         // resize left and right evenly
         horizontalSplitPane.setResizeWeight(0.5);

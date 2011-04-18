@@ -56,7 +56,6 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 		
 		try {
 			currentValue = (Float) metric.getValue(MetricModifier.NORM, currentOutputMethod);
-//			System.out.println("---->"+currentValue);
 		} catch (OutputUnavailableException e) {
 			//This shouldn't happen if the metric is defined properly
 			e.printStackTrace();
@@ -476,7 +475,7 @@ public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
 				//Translate 'down' to center this object
 				gl.glTranslatef(0f, 0f, base+maxLength-fill);
 			}
-							
+			
 				//Make a new quadratic object
 				GLUquadric qobj = glu.gluNewQuadric();
 						
