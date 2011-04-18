@@ -134,19 +134,9 @@ public class MetricImpl implements Metric {
 
 	public void setValue(MetricModifier mod, MetricOutput outputmethod,
 			Number value) throws BeyondAllowedRangeException {
-		if (outputmethod == MetricOutput.PERCENT) {
-			if (value.floatValue() < 0f || value.floatValue() > 1f) {
-				throw new BeyondAllowedRangeException();
-			}
-		} else if (outputmethod == MetricOutput.N) {
-			if (value.longValue() < 0) {
-				throw new BeyondAllowedRangeException();
-			}
-		} else if (outputmethod == MetricOutput.RPOS) {
-			if (value.floatValue() < 0f) {
-				throw new BeyondAllowedRangeException();
-			}
-		}
+				
+		checkRange(value, outputmethod);
+		
 		if (mod == MetricModifier.NORM) {
 			values.put(outputmethod, value);
 		} else if (mod == MetricModifier.MAX) {
@@ -163,24 +153,9 @@ public class MetricImpl implements Metric {
 		
 		for (Map.Entry<IbisIdentifier, Number> entry : values.entrySet()) {
 			Element ibis = c.getIbis(entry.getKey());
-			Number value = 0;
-
-			if (outputmethod == MetricOutput.PERCENT) {
-				value = entry.getValue();
-				if (value.floatValue() < 0f || value.floatValue() > 1f) {
-					throw new BeyondAllowedRangeException();
-				}
-			} else if (outputmethod == MetricOutput.N) {
-				value = entry.getValue();
-				if (value.longValue() < 0) {
-					throw new BeyondAllowedRangeException();
-				}
-			} else if (outputmethod == MetricOutput.RPOS) {
-				value = entry.getValue();
-				if (value.floatValue() < 0f) {
-					throw new BeyondAllowedRangeException();
-				}
-			}
+			Number value = entry.getValue();
+			
+			checkRange(value, outputmethod);
 
 			result.put(ibis, value);
 		}
@@ -191,6 +166,22 @@ public class MetricImpl implements Metric {
 			maxLinkValues.put(outputmethod, result);
 		} else if (mod == MetricModifier.MIN) {
 			minLinkValues.put(outputmethod, result);
+		}
+	}
+	
+	private void checkRange(Number value, MetricOutput outputmethod) throws BeyondAllowedRangeException {
+		if (outputmethod == MetricOutput.PERCENT) {
+			if (value.floatValue() < 0f || value.floatValue() > 1f) {
+				throw new BeyondAllowedRangeException(value.floatValue() + " is not within the specified range for PERCENT.");
+			}
+		} else if (outputmethod == MetricOutput.N) {
+			if (value.longValue() < 0) {
+				throw new BeyondAllowedRangeException(value.floatValue() + " is not within the specified range for N.");
+			}
+		} else if (outputmethod == MetricOutput.RPOS) {
+			if (value.floatValue() < 0f) {
+				throw new BeyondAllowedRangeException(value.floatValue() + " is not within the specified range for RPOS.");
+			}
 		}
 	}
 

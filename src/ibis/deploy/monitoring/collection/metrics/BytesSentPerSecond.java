@@ -31,11 +31,11 @@ public class BytesSentPerSecond extends ibis.deploy.monitoring.collection.impl.M
 		color[1] = 156f/255f;
 		color[2] = 255f/255f;
 				
-		necessaryAttributes.add(new AttributeDescription("java.lang:type=Runtime", "Uptime"));
+		//necessaryAttributes.add(new AttributeDescription("java.lang:type=Runtime", "Uptime"));
 		necessaryAttributes.add(new AttributeDescription("ibis", "sentBytesPerIbis"));
 		
 		//outputTypes.add(MetricOutput.N);
-		outputTypes.add(MetricOutput.RPOS);
+		//outputTypes.add(MetricOutput.RPOS);
 		outputTypes.add(MetricOutput.PERCENT);
 	}
 		
@@ -48,12 +48,12 @@ public class BytesSentPerSecond extends ibis.deploy.monitoring.collection.impl.M
 		//	long upt_elapsed	= (Long)	results[1] - (Long) castMetric.getHelperVariable("upt_prev");
 		//}
 				
-		if (results[1] instanceof Map<?, ?>) {
+		if (results[0] instanceof Map<?, ?>) {
 			long time_now = System.currentTimeMillis();
 			long time_elapsed = time_now - (Long)castMetric.getHelperVariable(this.name+"_time_prev");					
 			castMetric.setHelperVariable(this.name+"_time_prev", time_now);
 			
-			for (Map.Entry<?,?> incoming : ((Map<?, ?>) results[1]).entrySet()) {
+			for (Map.Entry<?,?> incoming : ((Map<?, ?>) results[0]).entrySet()) {
 				if (incoming.getKey() instanceof IbisIdentifier && incoming.getValue() instanceof Long) {
 					@SuppressWarnings("unchecked") //we've just checked it!
 					Map.Entry<IbisIdentifier, Long> received = (Entry<IbisIdentifier, Long>) incoming;				
@@ -77,6 +77,7 @@ public class BytesSentPerSecond extends ibis.deploy.monitoring.collection.impl.M
 						
 						float percent = (float)perSec/MAX;
 						//float percent = (float)perSec/overall_max;
+						if (percent < 0f) percent = 0f;
 						if (percent > 1f) percent = 1f;
 						
 						percentResult.put(received.getKey(), percent);
@@ -93,7 +94,7 @@ public class BytesSentPerSecond extends ibis.deploy.monitoring.collection.impl.M
 		
 		try {
 			//castMetric.setValue(MetricModifier.NORM, MetricOutput.N, total);
-			castMetric.setValue(MetricModifier.NORM, MetricOutput.RPOS, result);
+			//castMetric.setValue(MetricModifier.NORM, MetricOutput.RPOS, result);
 			castMetric.setValue(MetricModifier.NORM, MetricOutput.PERCENT, percentResult);
 		} catch (BeyondAllowedRangeException e) {
 			logger.debug(name +" metric failed trying to set value out of bounds.");

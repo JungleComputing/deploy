@@ -209,19 +209,18 @@ public class LinkImpl extends ElementImpl implements Link {
 								if (childValue > max)
 									max = childValue;
 								if (childValue < min)
-									min = childValue;
-								
-								if (max < 0) max = 0;
-								if (min < 0) min = 0;
-								
-								if (max > 1f) max = 1f;
-								if (min > 1f) min = 1f;
+									min = childValue;								
 							}
 							
 							float percent = total / children.size();
-							if (percent > 1f) {
-								percent = 1f;
-							}
+							if (percent < 0f) percent = 0f;
+							if (percent > 1f) percent = 1f;							
+							
+							if (max < 0) max = 0;
+							if (min < 0) min = 0;
+							
+							if (max > 1f) max = 1f;
+							if (min > 1f) min = 1f;
 							
 							metric.setValue(MetricModifier.NORM, outputtype, percent);
 							metric.setValue(MetricModifier.MAX, outputtype, max);
@@ -244,9 +243,14 @@ public class LinkImpl extends ElementImpl implements Link {
 								if (childValue < min)
 									min = childValue;
 								
-								if (max < 0) max = 0;
-								if (min < 0) min = 0;
-							}
+							}						
+							
+							if (max < 0) max = 0;
+							if (min < 0) min = 0;
+							
+							if (max > 1f) max = 1f;
+							if (min > 1f) min = 1f;
+							
 							metric.setValue(MetricModifier.NORM, outputtype,total);
 							metric.setValue(MetricModifier.MAX, outputtype, max);
 							metric.setValue(MetricModifier.MIN, outputtype, min);
@@ -263,11 +267,12 @@ public class LinkImpl extends ElementImpl implements Link {
 							if (childValue > max)
 								max = childValue;
 							if (childValue < min)
-								min = childValue;
-							
-							if (max < 0) max = 0;
-							if (min < 0) min = 0;
+								min = childValue;							
 						}
+						
+						if (max < 0) max = 0;
+						if (min < 0) min = 0;
+						
 						metric.setValue(MetricModifier.NORM, outputtype, total);
 						metric.setValue(MetricModifier.MAX, outputtype, max);
 						metric.setValue(MetricModifier.MIN, outputtype, min);

@@ -22,7 +22,7 @@ Go.arguments = --size 4 --stones 3
 Go.libs = lib-server, ipl-apps/go.jar
 #Go.input.files =
 #Go.output.files =
-Go.system.properties = ibis.managementclient=true, ibis.bytescount=true, 
+Go.system.properties = ibis.managementclient=true,ibis.bytescount=true, 
 #Go.java.options =
 #Go.log4j.file =
 #Go.memory.size =
@@ -30,10 +30,10 @@ Go.system.properties = ibis.managementclient=true, ibis.bytescount=true,
 # Application "Hello"
 Hello.main.class = ibis.ipl.examples.Hello
 #Hello.arguments =
-Hello.libs = lib-server, ipl-apps/ipl-examples-2.2.jar
+Hello.libs = lib-server,ipl-apps/ipl-examples-2.2.jar
 #Hello.input.files =
 #Hello.output.files =
-Hello.system.properties = ibis.managementclient=true, ibis.bytescount=true, 
+Hello.system.properties = ibis.managementclient=true,ibis.bytescount=true, 
 #Hello.java.options =
 #Hello.log4j.file =
 #Hello.memory.size =
@@ -41,10 +41,10 @@ Hello.system.properties = ibis.managementclient=true, ibis.bytescount=true,
 # Application "OneToMany"
 OneToMany.main.class = ibis.ipl.examples.OneToMany
 #OneToMany.arguments =
-OneToMany.libs = lib-server, ipl-apps/ipl-examples-2.2.jar
+OneToMany.libs = lib-server,ipl-apps/ipl-examples-2.2.jar
 #OneToMany.input.files =
 #OneToMany.output.files =
-OneToMany.system.properties = ibis.managementclient=true, ibis.bytescount=true, 
+OneToMany.system.properties = ibis.managementclient=true,ibis.bytescount=true, 
 #OneToMany.java.options =
 #OneToMany.log4j.file =
 #OneToMany.memory.size =
@@ -52,10 +52,10 @@ OneToMany.system.properties = ibis.managementclient=true, ibis.bytescount=true,
 # Application "RegistryBenchmark"
 RegistryBenchmark.main.class = ibis.ipl.benchmarks.registry.Main
 RegistryBenchmark.arguments = --runtime 120
-RegistryBenchmark.libs = lib-server, ipl-apps/ipl-benchmarks-2.2.jar
+RegistryBenchmark.libs = lib-server,ipl-apps/ipl-benchmarks-2.2.jar
 #RegistryBenchmark.input.files =
 #RegistryBenchmark.output.files =
-RegistryBenchmark.system.properties = ibis.managementclient=true, ibis.bytescount=true, 
+RegistryBenchmark.system.properties = ibis.managementclient=true,ibis.bytescount=true, 
 #RegistryBenchmark.java.options =
 #RegistryBenchmark.log4j.file =
 #RegistryBenchmark.memory.size =
@@ -63,10 +63,10 @@ RegistryBenchmark.system.properties = ibis.managementclient=true, ibis.bytescoun
 # Application "RegistryUpcalls"
 RegistryUpcalls.main.class = ibis.ipl.examples.RegistryUpcalls
 #RegistryUpcalls.arguments =
-RegistryUpcalls.libs = lib-server, ipl-apps/ipl-examples-2.2.jar
+RegistryUpcalls.libs = lib-server,ipl-apps/ipl-examples-2.2.jar
 #RegistryUpcalls.input.files =
 #RegistryUpcalls.output.files =
-RegistryUpcalls.system.properties = ibis.managementclient=true, ibis.bytescount=true, 
+RegistryUpcalls.system.properties = ibis.managementclient=true,ibis.bytescount=true, 
 #RegistryUpcalls.java.options =
 #RegistryUpcalls.log4j.file =
 #RegistryUpcalls.memory.size =
