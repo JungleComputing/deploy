@@ -214,8 +214,8 @@ DAS4-MultimediaN.job.wrapper.script = das4.script
 DAS4-MultimediaN.nodes = 46
 DAS4-MultimediaN.cores = 92
 #DAS4-MultimediaN.memory = 
-DAS4-MultimediaN.latitude = 52.3561
-DAS4-MultimediaN.longitude = 4.953
+DAS4-MultimediaN.latitude = 52.35505
+DAS4-MultimediaN.longitude = 4.95583
 DAS4-MultimediaN.color = #FF0080
 DAS4-MultimediaN.location = DAS-4@MultimediaN
 
@@ -235,8 +235,8 @@ DAS4-UvA.job.wrapper.script = das4.script
 DAS4-UvA.nodes = 41
 DAS4-UvA.cores = 164
 #DAS4-UvA.memory = 
-DAS4-UvA.latitude = 52.3561
-DAS4-UvA.longitude = 4.953
+DAS4-UvA.latitude = 52.35505
+DAS4-UvA.longitude = 4.95583
 DAS4-UvA.color = #FF8080
 DAS4-UvA.location = DAS-4@UvA
 

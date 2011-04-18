@@ -190,12 +190,7 @@ public class Job implements Runnable {
     }
 
     public void waitUntilDeployed() throws Exception {
-        String location;
-        if (cluster.getLocation() == null) {
-            location = description.getName() + "@" + cluster.getName();
-        } else {
-            location = description.getName() + "@" + cluster.getLocation();
-        }
+        String location = description.getName();
 
         while (!isFinished()) {
             if (deploy.poolSizes().containsKey(description.getPoolName())) {
@@ -418,7 +413,7 @@ public class Job implements Runnable {
         }
 
         sd.addJavaSystemProperty(IbisProperties.LOCATION, description.getName()
-                + "@" + location);
+                + "@%HOSTNAME%@" + location);
         sd.addJavaSystemProperty(IbisProperties.LOCATION_COLOR,
                 Colors.color2colorCode(cluster.getColor()));
         sd.addJavaSystemProperty(IbisProperties.POOL_NAME,
