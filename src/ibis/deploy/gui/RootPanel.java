@@ -58,10 +58,11 @@ public class RootPanel extends JPanel {
 		deployVizTab = new DetachableTab("Connection Overview",
 				"images/gridvision.png", new DeployVizPanel(gui), tabs);
 		
-		GlobeVisualization globe = new GlobeVisualization();
+		//GlobeVisualization globe = new GlobeVisualization();
+		GlobePanel globePanel = new GlobePanel();
 		
 		globeTab = new DetachableTab("Global Overview",
-                        "images/gridvision.png", globe, tabs);
+                        "images/gridvision.png", globePanel, tabs);
 
 
 		if (!gui.isReadOnly()) {
@@ -69,7 +70,7 @@ public class RootPanel extends JPanel {
 					"images/gridvision.png", new GogglePanel(gui.getCollector()), tabs);
 		}
 		
-		MetricManager mgr = new MetricManager(gui.getCollector(), globe);
+		MetricManager mgr = new MetricManager(gui.getCollector(), globePanel.getGlobe());
 		add(tabs, BorderLayout.CENTER);
 	}
 }

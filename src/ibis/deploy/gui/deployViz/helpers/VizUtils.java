@@ -30,8 +30,8 @@ public class VizUtils {
     public static final int DEFAULT_TEXT_COLOR = ColorLib.gray(0);
     public static final int DEFAULT_ROOT_NODE_COLOR = ColorLib.gray(200);
 
-    public static long MAX_EDGE_WEIGHT = 1;
-    public static long MIN_EDGE_WEIGHT = Long.MAX_VALUE;
+    public static double MAX_EDGE_WEIGHT = 1;
+    public static double MIN_EDGE_WEIGHT = 1;
     public static final String GRAPH = "graph";
     public static final String NODES = "graph.nodes";
     public static final String EDGES = "graph.edges";
@@ -39,6 +39,7 @@ public class VizUtils {
     public static final String NODE_TYPE = "type";
     public static final String WEIGHT = "weight";
     public static final long DEFAULT_WEIGHT = 1;
+    private static boolean initialized = false;
 
     private static final String[] colors = { "#FF0000", "#FF8000", "#80FF00",
             "#00FF00", "#00FF80", "#00FFFF", "#007FFF", "#8000FF", "#FF0080",
@@ -75,6 +76,22 @@ public class VizUtils {
         }
     }
 
+    public static void updateMinMaxWeights(double value) {
+        if (!initialized) {
+            MIN_EDGE_WEIGHT = MAX_EDGE_WEIGHT = value;
+            initialized = true;
+        } else {
+
+            if (value > MAX_EDGE_WEIGHT) {
+                MAX_EDGE_WEIGHT = value;
+            }
+
+            if (value < MIN_EDGE_WEIGHT) {
+                MIN_EDGE_WEIGHT = value;
+            }
+        }
+    }
+
     public static String getRandomColor() {
         int idx = ((int) (Math.random() * 100)) % colors.length;
         return colors[idx];
@@ -106,7 +123,6 @@ public class VizUtils {
         if (rgb1[2] > 1) {
             rgb1[2] = 1;
         }
-
         return new Color(rgb1[0], rgb1[1], rgb1[2], alpha);
     }
 

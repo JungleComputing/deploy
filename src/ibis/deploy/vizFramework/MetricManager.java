@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import ibis.deploy.monitoring.collection.Collector;
 import ibis.deploy.monitoring.collection.Ibis;
 import ibis.deploy.monitoring.collection.Location;
+import ibis.deploy.vizFramework.globeViz.data.GlobeVizDataConvertor;
+import ibis.deploy.vizFramework.globeViz.data.IDataConvertor;
 import ibis.deploy.vizFramework.globeViz.viz.GlobeVisualization;
 
 public class MetricManager {
@@ -19,8 +21,7 @@ public class MetricManager {
         dataConvertors = new ArrayList<IDataConvertor>();
 
         // create the globe data convertor and add it to the array
-        dataConvertors
-                .add(new GlobeVizDataConvertor(globe));
+        dataConvertors.add(new GlobeVizDataConvertor(globe, collector.getRoot()));
 
         // Create update thread
         DataRefreshTimer updater = new DataRefreshTimer(this);
@@ -28,13 +29,9 @@ public class MetricManager {
     }
 
     public void update() {
-        
-        //only update the globe if something changed ?
-        //if (collector.change()) {
-            Location root = collector.getRoot();
-            for (IDataConvertor convertor : dataConvertors) {
-                convertor.updateData(root);
-        //    }
+        Location root = collector.getRoot();
+        for (IDataConvertor convertor : dataConvertors) {
+            convertor.updateData(root, collector.change());
         }
     }
 

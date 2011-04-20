@@ -178,7 +178,7 @@ public class BundledEdgeRenderer extends EdgeRenderer {
     // draw uniform cubic B-spline
     void drawCubicBSpline(Graphics g, EdgeItem item) {
         int nSteps = 10, ncurves;
-        float ratio = 0;
+        double ratio = 0;
         float alpha;
         Color color;
 

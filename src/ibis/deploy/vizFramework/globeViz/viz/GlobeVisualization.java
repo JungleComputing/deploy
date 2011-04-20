@@ -8,12 +8,10 @@ import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.AnnotationAttributes;
-import gov.nasa.worldwind.render.FrameFactory;
 import gov.nasa.worldwind.render.GlobeAnnotation;
-import gov.nasa.worldwind.render.PatternFactory;
 import gov.nasa.worldwind.render.Polyline;
 
-import ibis.deploy.vizFramework.globeViz.viz.utils.RandomDataGenerator;
+import ibis.deploy.vizFramework.globeViz.data.GlobeVizDataConvertor;
 import ibis.deploy.vizFramework.globeViz.viz.utils.UIConstants;
 
 import java.awt.BorderLayout;
@@ -26,10 +24,14 @@ import java.util.ArrayList;
 import javax.swing.JPanel;
 
 public class GlobeVisualization extends JPanel {
+    private static final long serialVersionUID = 1L;
+    
     private GlobeAnnotation tooltipAnnotation;
     private CircleAnnotation lastSelectedDot;
     private WorldWindowGLCanvas worldWindCanvas;
     private RenderableLayer annotationLayer;
+    private boolean followTerrain = false;
+    private GlobeVizDataConvertor convertor;
 
     public GlobeVisualization() {
 
@@ -43,8 +45,10 @@ public class GlobeVisualization extends JPanel {
         // initialize the annotation layer
         annotationLayer = new RenderableLayer();
         annotationLayer.setName("Locations");
-        buildDotLayer(annotationLayer);
         worldWindCanvas.getModel().getLayers().add(annotationLayer);
+
+        // only used when we want fake-fake data :P
+        // RandomDataGenerator.generateRandomDotsAndConnections(this);
 
         createTooltip();
 
@@ -131,71 +135,16 @@ public class GlobeVisualization extends JPanel {
         }
     }
 
-    public RenderableLayer buildDotLayer(RenderableLayer layer) {
-        Position pos;
-        CircleAnnotation annotation;
-        int i;
-
-        AnnotationAttributes dotAttributes = new AnnotationAttributes();
-        dotAttributes.setLeader(FrameFactory.LEADER_NONE);
-        dotAttributes.setDrawOffset(new Point(0, -16));
-        dotAttributes.setSize(new Dimension(15, 15));
-        dotAttributes.setBorderWidth(0);
-        dotAttributes.setCornerRadius(0);
-        dotAttributes.setImageSource(null);
-        dotAttributes.setBackgroundColor(new Color(0, 0, 0, 0));
-
-        ArrayList<Position> positionList = RandomDataGenerator
-                .generatePositionList(UIConstants.NPOSITIONS);
-
-        generateRandomConnections(positionList, layer);
-
-        for (i = 0; i < UIConstants.NPOSITIONS; i++) {
-            pos = positionList.get(i);
-
-            annotation = new CircleAnnotation(pos, dotAttributes, "Location "
-                    + i);
-            annotation.getAttributes().setImageSource(
-                    UIConstants.LOCATIONS_SHAPE_LIST[i % 7]);
-            annotation.getAttributes().setTextColor(
-                    UIConstants.LOCATION_COLOR_LIST[i % 7]);
-
-            layer.addRenderable(annotation);
-        }
-
-        return layer;
-    }
-
-    // generates a random list of connections between the locations in the
-    // positionList
-    private void generateRandomConnections(ArrayList<Position> positionList,
-            RenderableLayer layer) {
-
-        int i, j;
-
-        Position pos1, pos2;
-
-        for (i = 0; i < positionList.size(); i++) {
-            for (j = i + 1; j < positionList.size(); j++) {
-                if (Math.random() > 0.5) {
-                    pos1 = positionList.get(i);
-                    pos2 = positionList.get(j);
-                    layer.addRenderable(createArcBetween(pos1, pos2));
-                }
-            }
-        }
-    }
-
     // computes a polyline between the two locations
-    public Polyline createArcBetween(Position pos1, Position pos2) {
+    public Polyline createArcBetween(Position pos1, Position pos2, Color color) {
         Polyline polyline;
         ArrayList<Position> polylineList = new ArrayList<Position>();
 
         // add the control points to the list
-        polylineList.addAll(doTheSplits(pos1, pos2, 3, true));
+        polylineList.addAll(doTheSplits(pos1, pos2,
+                UIConstants.NUMBER_OF_CONTROL_POINTS, true));
 
         // add the points of the BSpline created using the control points.
-
         polylineList = BSpline.computePolyline(worldWindCanvas.getModel()
                 .getGlobe(), polylineList);
 
@@ -206,8 +155,9 @@ public class GlobeVisualization extends JPanel {
         polylineList.add(pos2);
 
         polyline = new Polyline(polylineList);
-        polyline.setColor(new Color(0, 255, 0, 150));
+        polyline.setColor(color);
         polyline.setLineWidth(3.0);
+        polyline.setFollowTerrain(followTerrain);
 
         return polyline;
     }
@@ -250,17 +200,36 @@ public class GlobeVisualization extends JPanel {
 
         return list;
     }
-    
-    public void clearAnnotationLayer(){
-        //clear everything
+
+    public void clearAnnotationLayer() {
+        // clear everything
         annotationLayer.removeAllRenderables();
-        
-        //add the tooltip back 
+
+        // add the tooltip back
         annotationLayer.addRenderable(tooltipAnnotation);
     }
+
     
-    public void drawArc(Position pos1, Position pos2){
-        annotationLayer.addRenderable(createArcBetween(pos1, pos2));
+    public void drawArc(Position pos1, Position pos2, Color color) {
+        annotationLayer.addRenderable(createArcBetween(pos1, pos2, color));
     }
 
+    public void drawArc(Polyline line, Color color) {
+        line.setColor(color);
+        annotationLayer.addRenderable(line);
+    }
+
+    public void redraw() {
+        worldWindCanvas.redraw();
+    }
+    
+    public void setFollowTerrain(boolean value){
+        followTerrain = value;
+        convertor.forceUpdate();
+        repaint();
+    }
+    
+    public void setDataConvertor(GlobeVizDataConvertor convertor){
+        this.convertor = convertor;
+    }
 }
