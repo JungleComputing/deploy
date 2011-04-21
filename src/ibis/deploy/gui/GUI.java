@@ -24,9 +24,21 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.zip.ZipEntry;
 
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
@@ -39,6 +51,12 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.UIManager;
+
+import ibis.deploy.monitoring.collection.Collector;
+import ibis.deploy.monitoring.simulator.FakeManagementService;
+import ibis.deploy.monitoring.simulator.FakeRegistryService;
+import ibis.ipl.server.ManagementServiceInterface;
+import ibis.ipl.server.RegistryServiceInterface;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,9 +89,13 @@ public class GUI {
 
     private RootPanel myRoot;
 
-    private final Mode mode;
+    private Mode mode;
+    
+    private Collector collector;
 
     // private Boolean sharedHubs;
+    
+    
 
     private static class Shutdown extends Thread {
         private final GUI gui;
@@ -95,26 +117,32 @@ public class GUI {
 
         final GUI gui = new GUI(args);
         Runtime.getRuntime().addShutdownHook(new Shutdown(gui));
-
+        
         // Schedule a job for the event-dispatching thread:
         // creating and showing this application's GUI.
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    gui.createAndShowGUI();
-                } catch (Exception e) {
-                    e.printStackTrace(System.err);
-                    System.exit(1);
-                }
-            }
-        });
-
+        
+        /* Turned off the invokeLater stuff, because it was interfering 
+         * with jogl. At first glance, this does not seem to have any 
+         * impact on the rest of deploy anyway, but if that is a wrong 
+         * assessment, please contact me. 
+         * - Maarten
+        */
+        //javax.swing.SwingUtilities.invokeLater(new Runnable() {
+        //    public void run() {
+            	try {
+                gui.createAndShowGUI();
+            	} catch (Exception e) {
+            		e.printStackTrace(System.err);
+            		System.exit(1);
+            	}
+        //    }
+        //});
     }
 
     private void close() {
         int choice = JOptionPane.showConfirmDialog(frame, "Really exit?",
                 "Exiting Ibis-Deploy", JOptionPane.YES_NO_OPTION);
-
+                
         if (choice == JOptionPane.YES_OPTION) {
             frame.dispose();
             System.exit(0);
@@ -168,8 +196,22 @@ public class GUI {
         this.menuBar = new JMenuBar();
         JMenu menu = new JMenu("File");
 
-        if (getMode() == Mode.MONITOR) {
+        if (isMonitoring()) {
+        	
             frame.setTitle("Ibis Deloy Monitoring");
+            
+            try {
+            	//File[] nativeLibs = getNativeLibTargets();
+            	loadNativeLibs();
+            } catch (UnsatisfiedLinkError e) {
+            	mode = Mode.NORMAL;
+            	System.err.println("Something went wrong while loading JOGL natives. Monitoring will be disabled.");
+            	System.err.println(e.getMessage());
+            } catch (IOException e) {
+            	mode = Mode.NORMAL;
+            	System.err.println("Your OS is not supported by JOGL. Monitoring will be disabled.");
+            	System.err.println(e.getMessage());
+            }
         }
 
         if (isReadOnly()) {
@@ -201,7 +243,7 @@ public class GUI {
         this.menuBar.add(menu);
 
         menu = new JMenu("Options");
-
+        
         menu.add(MapUtilities.getMapMenu());
 
         if (!isReadOnly()) {
@@ -222,7 +264,7 @@ public class GUI {
             subMenu.add(menuItem);
             menu.add(subMenu);
         }
-
+      
         this.menuBar.add(menu);
 
         menu = new JMenu("Help");
@@ -272,25 +314,28 @@ public class GUI {
         System.err.println("-k\t\tKeep sandboxes");
         System.err.println("-r\t\tRead only mode");
         System.err.println("-v\t\tVerbose mode");
+        System.err.println("-nomon\t\tDo not monitor running applications.");
+        System.err.println("-f\t\tSimulate a grid (for monitor testing).");
         System.err
                 .println("-p PORT\t\tLocal port number (defaults to random free port)");
         System.err.println("-h | --help\tThis message");
     }
 
-    public GUI(Deploy deploy, Workspace workspace, Mode mode, String... logos)
+	public GUI(Deploy deploy, Workspace workspace, Mode mode, String... logos)
             throws Exception {
         this.deploy = deploy;
         this.mode = mode;
         this.workspace = workspace;
         createAndShowGUI(logos);
     }
-
+    
     protected GUI(String[] arguments) {
         boolean verbose = false;
         boolean keepSandboxes = false;
+        boolean monitoringFakeData = false;
         String serverCluster = null;
         int port = 0;
-        Mode mode = Mode.NORMAL;
+        mode = Mode.MONITOR;
 
         try {
             for (int i = 0; i < arguments.length; i++) {
@@ -310,6 +355,10 @@ public class GUI {
                     System.exit(0);
                 } else if (arguments[i].equals("-r")) {
                     mode = Mode.READ_ONLY;
+                } else if (arguments[i].equals("-f")) {
+                    monitoringFakeData = true;
+                } else if (arguments[i].equals("-nomon")) {
+                	mode = Mode.NORMAL;
                 } else {
                     File file = new File(arguments[i]);
                     if (file.isDirectory()) {
@@ -335,11 +384,8 @@ public class GUI {
 
         } catch (Exception e) {
             System.err.println("Exception when loading setting files: " + e);
-            e.printStackTrace(System.err);
             System.exit(1);
         }
-
-        this.mode = mode;
 
         if (verbose) {
             System.err.println("DEPLOY: Workspace:");
@@ -373,7 +419,28 @@ public class GUI {
                 initWindow.remove();
 
             }
-
+               
+            if (isMonitoring()) {
+	            RegistryServiceInterface regInterface;
+	            ManagementServiceInterface manInterface;
+	            if (monitoringFakeData) {
+	            	logger.info("Monitor using simulated data.");
+	            	
+	            	//Ibis/JMX variables
+	            	regInterface = new FakeRegistryService();
+	            	manInterface = new FakeManagementService(regInterface);
+	            } else {
+	            	logger.info("Monitor using real data.");
+	            	regInterface = deploy.getServer().getRegistryService();
+	            	manInterface = deploy.getServer().getManagementService();
+	            }
+            
+            
+	            //Data interface
+	            collector = ibis.deploy.monitoring.collection.impl.CollectorImpl.getCollector(manInterface, regInterface);
+    			new Thread(collector).start();    		
+            }
+    		
         } catch (Exception e) {
             System.err.println("Could not initialize ibis-deploy: " + e);
             e.printStackTrace(System.err);
@@ -499,7 +566,11 @@ public class GUI {
     }
 
     public boolean isReadOnly() {
-        return mode == Mode.READ_ONLY || mode == Mode.MONITOR;
+        return mode == Mode.READ_ONLY;
+    }
+    
+    public boolean isMonitoring() {
+        return mode == Mode.MONITOR;
     }
 
     public JFrame getFrame() {
@@ -509,8 +580,128 @@ public class GUI {
     public RootPanel getRootPanel() {
         return myRoot;
     }
-
+    
     public Mode getMode() {
         return mode;
     }
+    
+    
+    public Collector getCollector() {
+    	return collector;
+    }	
+    
+    
+    //Methods to load native libraries depending on OS and architecture
+    private String arch() {
+        String a = System.getProperty("os.arch");
+        if("amd64".equals(a) || "x86_64".equals(a)) {
+            return "amd64";
+        }
+        return "i586";
+    }
+    
+    private String getNativeJarName(String os) {   
+    	String prefix = "-natives-";
+    	
+        if (os.indexOf("nt") >= 0 || os.indexOf("win") >= 0) {
+        	 return prefix+"windows-"+arch()+".jar";
+        }
+        if (os.indexOf( "mac" ) >= 0) {
+        	 return prefix+"macosx-universal.jar";
+        }
+        if (os.indexOf( "nix" ) >= 0 || os.indexOf( "nux" ) >= 0) {
+        	return prefix+"linux-"+arch()+".jar";
+        }
+       return null;
+    }
+
+    private String[] getNativeLibNames(File jarFile) throws IOException {    	
+    	JarFile jar = new JarFile(jarFile);	    
+	    Enumeration<JarEntry> entries = jar.entries(); 
+	    ArrayList<String> fileNames = new ArrayList<String>();
+	    
+	    while (entries.hasMoreElements()) {
+	    	ZipEntry z = entries.nextElement();
+	    	String entryName = z.getName();
+	    	
+	    	if (entryName.indexOf("META") < 0) {
+	    		fileNames.add(entryName);
+	    	}
+	    }
+        return fileNames.toArray(new String[0]);
+    }
+    
+    private File makeNativeDir() throws IOException {   	
+    	File tmpdir = new File(System.getProperty("user.dir")+System.getProperty("file.separator")+"lib"+System.getProperty("file.separator")+"natives");
+   	
+        if(!tmpdir.mkdir() && !tmpdir.exists()) {
+            throw new IOException("Could not create temp directory: " + tmpdir.getAbsolutePath());
+        }
+        
+        return tmpdir;
+    }
+    
+    
+    private void loadNativeLibs() throws IOException, URISyntaxException {
+    	String filesep = System.getProperty("file.separator");
+    	String os = System.getProperty("os.name").toLowerCase();
+    	String dirname = System.getProperty("user.dir") + filesep + "external" + filesep + "jogl";
+    	
+    	String[] prefixes = { "jogl", "gluegen-rt", "nativewindow", "newt" };
+    	    	
+    	File tmpdir = makeNativeDir();
+    	String tmpPath = String.format(tmpdir.getAbsolutePath());
+    	
+    	HashMap<File, File[]> jarStore = new HashMap<File, File[]>();
+    	
+    	for (String prefix : prefixes) {
+    		//Select the correct jar file based on OS and architecture    		
+	        String jarname = dirname + filesep + prefix + getNativeJarName(os); 
+	    	
+	        File nativeJar = new File(jarname);
+	        
+	        String[] nativeLibNames =  getNativeLibNames(nativeJar);
+	        File[] nativeLibs = new File[nativeLibNames.length];
+	        	        
+	        for (int i = 0; i < nativeLibNames.length; i++) {
+	        	nativeLibs[i] = new File(tmpPath + filesep + nativeLibNames[i]);
+	        }
+	        
+	        jarStore.put(nativeJar, nativeLibs);
+    	}
+    	
+    	for (Entry<File, File[]> entry : jarStore.entrySet()) {
+    		for (File file : entry.getValue()) {
+    			extractNativeLib(entry.getKey(), file);
+    		}		
+    	}        
+    }
+    
+    private void extractNativeLib(File file, File target) throws IOException, URISyntaxException { 
+    	JarFile jar = new JarFile(file);
+        ZipEntry z = jar.getEntry(target.getName());
+        if(z == null) {
+        	throw new UnsatisfiedLinkError("Could not find library: "+target.getName());
+        }
+
+        InputStream in = jar.getInputStream(z);
+        try {
+            OutputStream out = new BufferedOutputStream(
+                new FileOutputStream(target));
+            try {
+                byte[] buf = new byte[2048];
+                for(;;) {
+                    int n = in.read(buf);
+                    if(n < 0) {
+                        break;
+                    }
+                    out.write(buf, 0, n);
+                }
+            } finally {
+                out.close();
+            }
+        } finally {
+            in.close();
+        }
+	}    
 }

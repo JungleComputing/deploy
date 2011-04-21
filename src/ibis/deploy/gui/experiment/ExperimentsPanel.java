@@ -29,10 +29,9 @@ public class ExperimentsPanel extends JPanel {
 
         JPanel jobTable;
 
-        if (gui.getMode() == Mode.MONITOR) {
+        if (gui.getMode() == Mode.READ_ONLY) {
             jobTable = new JobMonitorPanel(gui, logos);
         } else {
-
             jobTable = new JobTablePanel(gui, jobTableModel);
         }
 
