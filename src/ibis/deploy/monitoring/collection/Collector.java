@@ -55,4 +55,12 @@ public interface Collector extends Runnable {
 	public void setRefreshrate(int newInterval);
 
 	
+	/**
+	 * Toggles the given metrics on or off
+	 * @param myDescs
+	 * 		the metric(descriptions) to be toggled
+	 */
+	public void toggleMetrics(MetricDescription[] myDescs);
+
+	
 }

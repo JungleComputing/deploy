@@ -18,12 +18,10 @@ public class JGUniverse extends JGVisualAbstract implements JGVisual {
 		locationColShape = CollectionShape.CITYSCAPE;
 		state = State.UNFOLDED;
 		
-		//goggles.registerVisual(root, this);
-		
 		ArrayList<Location> dataChildren = root.getChildren();
 		
 		for (Location datachild : dataChildren) {
 			locations.add(new JGLocation(goggles, this, glu, datachild, locationSeparation));
 		}
-	}	
+	}
 }

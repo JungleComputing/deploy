@@ -574,24 +574,47 @@ public class JungleGoggles implements GLEventListener {
 		universe.setMetricShape(newShape);
 	}
 	
+	public HashSet<MetricDescription> getAvailableMetricDescriptions() {
+		return collector.getAvailableMetrics();
+	}
+	
 	public MetricDescription getMetricDescription(String name) throws MetricDescriptionNotAvailableException {
-		HashSet<MetricDescription> bla = collector.getAvailableMetrics();
+		HashSet<MetricDescription> descriptions = collector.getAvailableMetrics();
 		
-		for (MetricDescription md : bla) {
-			if (md.getName().compareTo(name) == 0) {
+		for (MetricDescription md : descriptions) {
+			if (md.getVerboseName().compareTo(name) == 0 || md.getName().compareTo(name) == 0) {
 				return md;
 			}
 		}
 		
-		throw new MetricDescriptionNotAvailableException();
+		throw new MetricDescriptionNotAvailableException(name);
 	}
-	
+		
 	public int getRefreshrate() {
 		return collector.getRefreshrate();
 	}
 	
 	public void setRefreshrate(int newRate) {
 		collector.setRefreshrate(newRate);
+	}
+	
+	public void toggleMetrics(MetricDescription[] myDescs) {
+		collector.toggleMetrics(myDescs);		
+	}
+	
+	public void setLocationSpacing(int sliderSetting) {
+		universe.setLocationSeparation((float) sliderSetting);
+		doRepositioning();
+	}
+	
+	public void setIbisSpacing(float sliderSetting) {
+		universe.setIbisSeparation(sliderSetting);
+		doRepositioning();
+	}
+	
+	public void setMetricSpacing(float sliderSetting) {
+		universe.setMetricSeparation(sliderSetting);
+		doRepositioning();
 	}
 
 	/**
@@ -670,5 +693,11 @@ public class JungleGoggles implements GLEventListener {
 
 		return selection;
 	}
+
+	
+
+	
+
+	
 
 }

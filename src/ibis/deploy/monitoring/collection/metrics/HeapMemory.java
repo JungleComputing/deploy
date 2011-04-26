@@ -18,6 +18,7 @@ public class HeapMemory extends ibis.deploy.monitoring.collection.impl.MetricDes
 		super();
 		
 		name = "MEM_HEAP";	
+		verboseName = "Java Heap Memory Usage";
 		type = MetricType.NODE;
 				
 		color[0] = 255f/255f;

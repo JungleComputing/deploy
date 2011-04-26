@@ -16,6 +16,7 @@ public class CPUUsage extends ibis.deploy.monitoring.collection.impl.MetricDescr
 		super();
 		
 		name = "CPU";
+		verboseName = "CPU Usage";
 		type = MetricType.NODE;
 				
 		color[0] = 255f/255f;

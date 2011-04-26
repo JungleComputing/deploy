@@ -8,6 +8,9 @@ import javax.swing.JRadioButtonMenuItem;
 import ibis.deploy.monitoring.visualization.gridvision.JGVisual;
 import ibis.deploy.monitoring.visualization.gridvision.JGVisual.CollectionShape;
 import ibis.deploy.monitoring.visualization.gridvision.JGVisual.State;
+import ibis.deploy.monitoring.visualization.gridvision.swing.actions.GoggleAction;
+import ibis.deploy.monitoring.visualization.gridvision.swing.actions.SetCollapseAction;
+import ibis.deploy.monitoring.visualization.gridvision.swing.actions.SetCollectionFormAction;
 
 public class ContextSensitiveMenu extends JPopupMenu {
 	private static final long serialVersionUID = -2817492958876235518L;

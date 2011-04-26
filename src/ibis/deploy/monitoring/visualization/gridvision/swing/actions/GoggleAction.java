@@ -1,4 +1,4 @@
-package ibis.deploy.monitoring.visualization.gridvision.swing;
+package ibis.deploy.monitoring.visualization.gridvision.swing.actions;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

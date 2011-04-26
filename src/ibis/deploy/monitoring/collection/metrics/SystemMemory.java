@@ -16,6 +16,7 @@ public class SystemMemory extends ibis.deploy.monitoring.collection.impl.MetricD
 		super();
 		
 		name = "MEM_SYS";	
+		verboseName = "System Memory Usage";
 		type = MetricType.NODE;
 				
 		color[0] =   0f/255f;

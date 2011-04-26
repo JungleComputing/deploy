@@ -129,7 +129,7 @@ public abstract class JGVisualAbstract implements JGVisual {
 		}
 	}
 
-	private void setCityScape(List<JGVisual> children, float[] separation) {
+	protected void setCityScape(List<JGVisual> children, float[] separation) {
 		int childCount = children.size();
 		float maxWidth = maxWidth(children);
 
@@ -592,5 +592,37 @@ public abstract class JGVisualAbstract implements JGVisual {
 		}
 		return result;
 	}
-
+	
+	public void setLocationSeparation(float newSep) {
+		locationSeparation[0] = newSep;
+		locationSeparation[1] = newSep;
+		locationSeparation[2] = newSep;
+		
+		for (JGVisual child : locations) {			
+			((JGLocation)child).setLocationSeparation(newSep/2);
+		}
+	}
+	
+	public void setIbisSeparation(float newSep) {
+		ibisSeparation[0] = newSep;
+		ibisSeparation[1] = newSep;
+		ibisSeparation[2] = newSep;
+		
+		for (JGVisual child : locations) {			
+			((JGLocation)child).setIbisSeparation(newSep);
+		}
+	}
+	
+	public void setMetricSeparation(float newSep) {
+		metricSeparation[0] = newSep;
+		metricSeparation[1] = newSep;
+		metricSeparation[2] = newSep;
+		
+		for (JGVisual child : locations) {			
+			((JGLocation)child).setMetricSeparation(newSep);
+		}
+		for (JGVisual child : ibises) {			
+			((JGIbis)child).setMetricSeparation(newSep);
+		}
+	}
 }

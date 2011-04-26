@@ -1,6 +1,8 @@
 package ibis.deploy.monitoring.visualization.gridvision;
 
 import javax.media.opengl.GL2;
+import javax.media.opengl.glu.GLUquadric;
+import javax.media.opengl.glu.gl2.GLUgl2;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +17,8 @@ public class JGCombinedMetric extends JGVisualAbstract implements JGVisual {
 	private final float ALPHA = 0.1f;
 	private final float LINE_ALPHA = 0.4f;
 	private final float LINE_WIDTH = 0.8f;
+	private final int SIDES = 12;
+	private final float EDGE_SIZE = 0.01f;
 	
 	private enum MetricDisplay { TRANSPARANCY_ENABLED, SOLIDS_ONLY };
 	
@@ -24,6 +28,7 @@ public class JGCombinedMetric extends JGVisualAbstract implements JGVisual {
 	private float maxValue, usedValue;
 	private float[] solidValues, transparentValues;
 	
+	private GLUgl2 glu = new GLUgl2();
 	private int glName;
 	private int solidListPointer, transparentListPointer;
 	private boolean solidListBuilt, transparentListBuilt;
@@ -95,9 +100,56 @@ public class JGCombinedMetric extends JGVisualAbstract implements JGVisual {
 	}
 	
 	public void drawSolids(GL2 gl, int renderMode) {
-		if (renderMode == GL2.GL_SELECT) { gl.glLoadName(glName); }
+		if (renderMode == GL2.GL_SELECT) { gl.glLoadName(glName); }	
 		
-		if (mShape == MetricShape.BAR) {
+		//Save the current modelview matrix
+		gl.glPushMatrix();
+		
+		//Translate to the desired coordinates and rotate if desired
+		gl.glTranslatef(coordinates[0], coordinates[1], coordinates[2]);
+		gl.glRotatef(rotation[0], 1.0f, 0.0f, 0.0f);
+		gl.glRotatef(rotation[1], 0.0f, 1.0f, 0.0f);
+		gl.glRotatef(rotation[2], 0.0f, 0.0f, 1.0f);	
+		
+		if (solidListBuilt) {
+			gl.glCallList(solidListPointer);
+		} else {				
+			solidListPointer = gl.glGenLists(1);
+			
+			gl.glNewList(solidListPointer, GL2.GL_COMPILE_AND_EXECUTE);					
+				float bottom = -0.5f*height;
+				
+				float drawnPercentage = 0f;
+				
+				if (mShape == MetricShape.TUBE) {
+					gl.glRotatef(-90f, 1.0f, 0.0f, 0.0f);
+				}
+				
+				for (int i = 0; i < metrics.length; i++) {
+					float percentage = solidValues[i];
+					
+					gl.glColor4f(colors[i][0], colors[i][1], colors[i][2], 1f);
+					if (mShape == MetricShape.BAR) {
+						drawBarSolid(gl, bottom+drawnPercentage, percentage);
+					} else if (mShape == MetricShape.TUBE) {
+						drawTubeSolid(gl, bottom+drawnPercentage, percentage);
+					}
+					drawnPercentage += percentage;
+				}
+			gl.glEndList();
+			
+			solidListBuilt = true;
+		}			
+		
+		//Restore the old modelview matrix
+		gl.glPopMatrix();			
+				
+	}
+	
+	public void drawTransparents(GL2 gl, int renderMode) {
+		if (currentDisplay == MetricDisplay.TRANSPARANCY_ENABLED) {
+			if (renderMode == GL2.GL_SELECT) { gl.glLoadName(glName); }
+			
 			//Save the current modelview matrix
 			gl.glPushMatrix();
 			
@@ -106,75 +158,42 @@ public class JGCombinedMetric extends JGVisualAbstract implements JGVisual {
 			gl.glRotatef(rotation[0], 1.0f, 0.0f, 0.0f);
 			gl.glRotatef(rotation[1], 0.0f, 1.0f, 0.0f);
 			gl.glRotatef(rotation[2], 0.0f, 0.0f, 1.0f);	
-			
-			if (solidListBuilt) {
-				gl.glCallList(solidListPointer);
+		
+			if (transparentListBuilt) {
+				gl.glCallList(transparentListPointer);
 			} else {
-				solidListPointer = gl.glGenLists(1);
+				transparentListPointer = gl.glGenLists(1);
 				
-				gl.glNewList(solidListPointer, GL2.GL_COMPILE_AND_EXECUTE);					
+				gl.glNewList(transparentListPointer, GL2.GL_COMPILE_AND_EXECUTE);
 					float bottom = -0.5f*height;
-					
+				
 					float drawnPercentage = 0f;
+					
+					if (mShape == MetricShape.TUBE) {
+						gl.glRotatef(-90f, 1.0f, 0.0f, 0.0f);
+					}
+					
 					for (int i = 0; i < metrics.length; i++) {
-						float percentage = solidValues[i];
-						
-						gl.glColor4f(colors[i][0], colors[i][1], colors[i][2], 1f);
-						drawBarSolid(gl, bottom+drawnPercentage, percentage);
-						
+						float percentage = solidValues[i];							
+						drawnPercentage += percentage;
+					}
+					for (int i = metrics.length-1; i >= 0 ; i--) {
+						float percentage = transparentValues[i];
+						gl.glColor4f(colors[i][0], colors[i][1], colors[i][2], ALPHA);
+						if (mShape == MetricShape.BAR) {
+							drawBarTransparent(gl, bottom+drawnPercentage, percentage);
+						} else if (mShape == MetricShape.TUBE) {
+							drawTubeTransparency(gl, bottom+drawnPercentage, percentage);
+						}
 						drawnPercentage += percentage;
 					}
 				gl.glEndList();
 				
-				solidListBuilt = true;
+				transparentListBuilt = true;
 			}			
 			
 			//Restore the old modelview matrix
-			gl.glPopMatrix();			
-		}		
-	}
-	
-	public void drawTransparents(GL2 gl, int renderMode) {
-		if (currentDisplay == MetricDisplay.TRANSPARANCY_ENABLED) {
-			if (renderMode == GL2.GL_SELECT) { gl.glLoadName(glName); }
-			if (mShape == MetricShape.BAR) {
-				//Save the current modelview matrix
-				gl.glPushMatrix();
-				
-				//Translate to the desired coordinates and rotate if desired
-				gl.glTranslatef(coordinates[0], coordinates[1], coordinates[2]);
-				gl.glRotatef(rotation[0], 1.0f, 0.0f, 0.0f);
-				gl.glRotatef(rotation[1], 0.0f, 1.0f, 0.0f);
-				gl.glRotatef(rotation[2], 0.0f, 0.0f, 1.0f);	
-			
-				if (transparentListBuilt) {
-					gl.glCallList(transparentListPointer);
-				} else {
-					transparentListPointer = gl.glGenLists(1);
-					
-					gl.glNewList(transparentListPointer, GL2.GL_COMPILE_AND_EXECUTE);
-						float bottom = -0.5f*height;
-					
-						float drawnPercentage = 0f;
-						for (int i = 0; i < metrics.length; i++) {
-							float percentage = solidValues[i];							
-							drawnPercentage += percentage;
-						}
-						for (int i = metrics.length-1; i >= 0 ; i--) {
-							float percentage = transparentValues[i];
-							gl.glColor4f(colors[i][0], colors[i][1], colors[i][2], ALPHA);
-							drawBarTransparent(gl, bottom+drawnPercentage, percentage);
-							
-							drawnPercentage += percentage;
-						}
-					gl.glEndList();
-					
-					transparentListBuilt = true;
-				}			
-				
-				//Restore the old modelview matrix
-				gl.glPopMatrix();
-			}
+			gl.glPopMatrix();
 		}
 	}
 	
@@ -397,5 +416,84 @@ public class JGCombinedMetric extends JGVisualAbstract implements JGVisual {
 			gl.glVertex3f( Xp, Yf, Zn);
 			gl.glVertex3f( Xp, Yp, Zn);
 		gl.glEnd();
+	}
+	
+	protected void drawTubeSolid(GL2 gl, float bottom, float fill) {		
+		//Save the current modelview matrix
+		gl.glPushMatrix();
+		
+		float radius = width/2;
+				
+		//Translate 'down' to center
+		gl.glTranslatef(0f, 0f, bottom);
+					
+		//Make a new quadratic object
+		GLUquadric qobj = glu.gluNewQuadric();
+				
+		//The Solid Element, draw dynamically colored elements first				
+			//Bottom disk
+			glu.gluDisk(qobj, 0.0, radius, SIDES, 1);
+			
+			//Sides
+			glu.gluCylinder(qobj, radius, radius, fill, SIDES, 1);	
+			
+			//Translate 'up'
+			gl.glTranslatef(0f, 0f, fill);
+			
+			//Top disk
+			glu.gluDisk(qobj, 0.0, radius, SIDES, 1);
+			
+		//Now, draw the fixed color elements.			
+			gl.glColor3f(0.8f,0.8f,0.8f);
+			
+			glu.gluCylinder(qobj, radius, radius, EDGE_SIZE, SIDES, 1);	
+			
+			//Translate 'down'
+			gl.glTranslatef(0f, 0f, -fill);
+			
+			//Edge of bottom disk
+			gl.glColor3f(0.8f,0.8f,0.8f);
+			glu.gluCylinder(qobj, radius, radius, EDGE_SIZE, SIDES, 1);
+							
+		//Cleanup
+		glu.gluDeleteQuadric(qobj);		
+		
+		//Restore the old modelview matrix
+		gl.glPopMatrix();
+	}
+	
+	protected void drawTubeTransparency(GL2 gl, float bottom, float fill) {	
+		//Save the current modelview matrix
+		gl.glPushMatrix();
+		
+		float radius = width/2;
+				
+		//Make a new quadratic object
+		GLUquadric qobj = glu.gluNewQuadric();
+				
+		//Move away from the Solid Element
+		gl.glTranslatef(0f, 0f, bottom);
+		
+		//The shadow Element, draw dynamically colored elements first
+			//Bottom disk left out, since it's the top disk of the solid
+										
+			//Sides
+			glu.gluCylinder(qobj, radius, radius, fill, SIDES, 1);
+						
+			gl.glTranslatef(0f, 0f, fill);
+			
+			//Top disk
+			glu.gluDisk(qobj, 0.0, radius, SIDES, 1);
+			
+			//Edge of top disk
+			gl.glColor4f(0.8f,0.8f,0.8f, LINE_ALPHA);
+			
+			glu.gluCylinder(qobj, radius, radius, EDGE_SIZE, SIDES, 1);		
+		
+		//Cleanup
+		glu.gluDeleteQuadric(qobj);
+		
+		//Restore the old modelview matrix
+		gl.glPopMatrix();
 	}
 }

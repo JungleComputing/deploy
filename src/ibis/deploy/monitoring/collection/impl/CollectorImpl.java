@@ -61,7 +61,9 @@ public class CollectorImpl implements Collector, Runnable {
 
 	// Externally available
 	private Location root;
+	private HashSet<MetricDescription> availableDescriptions;
 	private HashSet<MetricDescription> descriptions;
+	
 	private boolean change = false;
 
 	private CollectorImpl(ManagementServiceInterface manInterface,
@@ -74,6 +76,7 @@ public class CollectorImpl implements Collector, Runnable {
 		locations = new HashMap<String, Location>();
 		parents = new HashMap<Element, Location>();
 		pools = new HashMap<String, Pool>();
+		availableDescriptions = new HashSet<MetricDescription>();
 		descriptions = new HashSet<MetricDescription>();
 		ibises = new HashMap<IbisIdentifier, Ibis>();
 		links = new HashSet<Link>();
@@ -88,15 +91,28 @@ public class CollectorImpl implements Collector, Runnable {
 		refreshrate = 1000;
 
 		// Set the default metrics
-		descriptions.add(new CPUUsage());
-		descriptions.add(new SystemMemory());
-		descriptions.add(new HeapMemory());
-		descriptions.add(new NonHeapMemory());
+		MetricDescription cpuDesc = new CPUUsage();
+		MetricDescription sysmemDesc = new SystemMemory();
+		MetricDescription heapmemDesc = new HeapMemory();
+		MetricDescription nonheapmemDesc = new NonHeapMemory();
+		MetricDescription bytespersecDesc = new BytesSentPerSecond();
+		
+		descriptions.add(cpuDesc);
+		descriptions.add(sysmemDesc);
+		descriptions.add(heapmemDesc);
+		descriptions.add(nonheapmemDesc);
 		// descriptions.add(new ThreadsMetric());
 		//descriptions.add(new BytesReceivedPerSecond());
-		descriptions.add(new BytesSentPerSecond());
+		descriptions.add(bytespersecDesc);
 		// descriptions.add(new BytesReceived());
 		// descriptions.add(new BytesSent());
+		
+		//Set the available metrics
+		availableDescriptions.add(cpuDesc);
+		availableDescriptions.add(sysmemDesc);
+		availableDescriptions.add(heapmemDesc);
+		availableDescriptions.add(nonheapmemDesc);
+		availableDescriptions.add(bytespersecDesc);
 	}
 
 	private void initWorkers() {
@@ -344,7 +360,7 @@ public class CollectorImpl implements Collector, Runnable {
 	}
 
 	public HashSet<MetricDescription> getAvailableMetrics() {
-		return descriptions;
+		return availableDescriptions;
 	}
 
 	public boolean change() {
@@ -360,6 +376,32 @@ public class CollectorImpl implements Collector, Runnable {
 	
 	public void setRefreshrate(int newInterval) {
 		refreshrate = newInterval;
+	}
+		
+	public void toggleMetrics(MetricDescription[] myDescs) {
+		synchronized (jobQueue) {
+			HashSet<MetricDescription> newDescriptions = new HashSet<MetricDescription>();
+			
+			//First, add all current metrics
+			for (MetricDescription desc : descriptions) {
+				newDescriptions.add(desc);
+			} 
+			
+			//Then deselect the ones that match the parameters, and add the ones that were not there yet
+			for (MetricDescription desc : myDescs) {
+				if (newDescriptions.contains(desc)) {
+					newDescriptions.remove(desc);
+				} else {
+					newDescriptions.add(desc);
+				}
+			}		
+			
+			descriptions = newDescriptions;
+			
+			initMetrics();
+			
+			this.change = true;
+		}
 	}
 
 	// Getters for the worker threads
@@ -448,6 +490,4 @@ public class CollectorImpl implements Collector, Runnable {
 			iterations++;
 		}
 	}
-
-	
 }

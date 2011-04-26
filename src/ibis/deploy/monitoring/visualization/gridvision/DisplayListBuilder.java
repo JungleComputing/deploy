@@ -10,9 +10,9 @@ public class DisplayListBuilder {
 	private static final int ACCURACY = 20;
 	private static final float LINE_ALPHA = 0.4f;
 	
-	private float LINE_WIDTH = 0.3f;
-	final int SIDES = 12;
-	final float EDGE_SIZE = 0.01f;
+	private final float LINE_WIDTH = 0.3f;
+	private final int SIDES = 12;
+	private final float EDGE_SIZE = 0.01f;
 	
 	private final float WIDTH = 0.25f;
 	private final float HEIGHT = 1.0f;
@@ -357,7 +357,7 @@ public class DisplayListBuilder {
 		
 		float 	radius 	=  0.5f*WIDTH,
 				length;
-				
+		
 		for (int i=0; i<(amount); i++) {
 			gl.glLoadIdentity();
 			

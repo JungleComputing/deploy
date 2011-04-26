@@ -25,6 +25,7 @@ public class BytesSentPerSecond extends ibis.deploy.monitoring.collection.impl.M
 		super();
 		
 		name = "Bytes_Sent_Per_Sec";
+		verboseName = "Bytes Sent Per Second";
 		type = MetricType.LINK;
 		
 		color[0] =  64f/255f;
@@ -37,7 +38,7 @@ public class BytesSentPerSecond extends ibis.deploy.monitoring.collection.impl.M
 		//outputTypes.add(MetricOutput.RPOS);
 		outputTypes.add(MetricOutput.PERCENT);
 		
-		maxForPercent = 512000;
+		maxForPercent = 102400;
 	}
 		
 	public void update(Object[] results, Metric metric)  throws IncorrectParametersException {

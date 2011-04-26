@@ -1,5 +1,6 @@
 package ibis.deploy.monitoring.collection;
 
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 
 import ibis.deploy.monitoring.collection.exceptions.*;
@@ -28,6 +29,7 @@ public interface MetricDescription {
 	
 	//Getters
 	public String getName();
+	public String getVerboseName();
 	
 	public MetricType getType();
 	
@@ -74,4 +76,6 @@ public interface MetricDescription {
 	 * 		the new maximum value to use in percentage calculations.
 	 */
 	public void setMaxForPercentages(int newMax);
+
+	
 }

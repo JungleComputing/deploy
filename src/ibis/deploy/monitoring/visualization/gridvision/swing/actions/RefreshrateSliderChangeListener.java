@@ -1,6 +1,7 @@
-package ibis.deploy.monitoring.visualization.gridvision.swing;
+package ibis.deploy.monitoring.visualization.gridvision.swing.actions;
 
 import ibis.deploy.monitoring.visualization.gridvision.JungleGoggles;
+import ibis.deploy.monitoring.visualization.gridvision.swing.GogglePanel;
 
 import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;

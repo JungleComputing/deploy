@@ -21,7 +21,7 @@ public abstract class MetricDescriptionImpl implements MetricDescription {
 	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.collection.impl.MetricDescription");
 
-	protected String name;
+	protected String name, verboseName;
 	protected MetricType type;
 	protected Float[] color;
 	protected ArrayList<MetricOutput> outputTypes;
@@ -40,6 +40,10 @@ public abstract class MetricDescriptionImpl implements MetricDescription {
 	// Getters
 	public String getName() {
 		return name;
+	}
+	
+	public String getVerboseName() {
+		return verboseName;
 	}
 
 	public MetricType getType() {

@@ -1,7 +1,8 @@
-package ibis.deploy.monitoring.visualization.gridvision.swing;
+package ibis.deploy.monitoring.visualization.gridvision.swing.actions;
 
 import java.awt.event.ActionEvent;
 
+import ibis.deploy.monitoring.visualization.gridvision.swing.GogglePanel;
 import ibis.deploy.monitoring.visualization.gridvision.swing.GogglePanel.TweakState;
 
 public class SetTweakStateAction implements GoggleAction {
