@@ -101,8 +101,7 @@ public class IbisImpl extends ElementImpl implements Ibis {
 							.getNecessaryAttributes());
 		}
 
-		AttributeDescription[] requestArray = (AttributeDescription[]) requestList
-				.toArray(new AttributeDescription[0]);
+		AttributeDescription[] requestArray = requestList.toArray(new AttributeDescription[0]);
 
 		try {
 			// Then, pass this array to the management service interface, and

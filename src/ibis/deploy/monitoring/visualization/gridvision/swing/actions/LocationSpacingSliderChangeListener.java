@@ -20,7 +20,7 @@ public class LocationSpacingSliderChangeListener implements ChangeListener {
 	public void stateChanged(ChangeEvent e) {
 		JSlider source = (JSlider)e.getSource();
 	    if (!source.getValueIsAdjusting()) {
-	    	int sliderSetting = (int)source.getValue();	    	
+	    	int sliderSetting = source.getValue();	    	
 	        	        
 	    	goggles.setLocationSpacing(sliderSetting);								
 			gp.setLocationSpacerText(sliderSetting);			

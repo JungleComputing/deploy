@@ -82,7 +82,7 @@ public class MetricImpl implements Metric {
 			if (helperVariables.containsKey(name)) {
 				return helperVariables.get(name);
 			} else {
-				return (Number) 0L;
+				return 0L;
 			}
 		}
 	}
@@ -122,7 +122,7 @@ public class MetricImpl implements Metric {
 			throw new OutputUnavailableException();
 		}
 		
-		Number result = (Number) 0;
+		Number result = 0;
 		if (resultMap != null) {
 			Number intermediate = resultMap.get(destination);
 			if (intermediate != null) {

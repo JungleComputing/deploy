@@ -20,8 +20,8 @@ public class MetricSpacingSliderChangeListener implements ChangeListener {
 	public void stateChanged(ChangeEvent e) {
 		JSlider source = (JSlider)e.getSource();
 	    if (!source.getValueIsAdjusting()) {	    	
-	    	int sliderSetting = (int)source.getValue();
-	    	float value = ((float)sliderSetting)/20f;
+	    	int sliderSetting = source.getValue();
+	    	float value = sliderSetting/20f;
 	    	
 	    	goggles.setMetricSpacing(value);								
 	    	gp.setMetricSpacerText(value);

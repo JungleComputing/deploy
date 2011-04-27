@@ -22,7 +22,7 @@ public class ThresholdSliderChangeListener implements ChangeListener {
 	public void stateChanged(ChangeEvent e) {
 		JSlider source = (JSlider)e.getSource();
 	    if (!source.getValueIsAdjusting()) {
-	    	int sliderSetting = (int)source.getValue();	    	
+	    	int sliderSetting = source.getValue();	    	
 	        int newMax = 0;
 	        
 	        if (sliderSetting == 0) {

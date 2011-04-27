@@ -20,7 +20,7 @@ public class RefreshrateSliderChangeListener implements ChangeListener {
 	public void stateChanged(ChangeEvent e) {
 		JSlider source = (JSlider)e.getSource();
 	    if (!source.getValueIsAdjusting()) {
-	        int newRate = (int)source.getValue();
+	        int newRate = source.getValue();
 	        
 	        goggles.setRefreshrate(newRate);
 	        gp.setRefreshrateText(newRate);

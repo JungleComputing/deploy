@@ -20,8 +20,8 @@ public class IbisSpacingSliderChangeListener implements ChangeListener {
 	public void stateChanged(ChangeEvent e) {
 		JSlider source = (JSlider)e.getSource();
 	    if (!source.getValueIsAdjusting()) {
-	    	int sliderSetting = (int)source.getValue();	    	
-	        float value = (float)sliderSetting / 10f;    
+	    	int sliderSetting = source.getValue();	    	
+	        float value = sliderSetting / 10f;    
 	        
 	        goggles.setIbisSpacing(value);								
 			gp.setIbisSpacerText(value);			

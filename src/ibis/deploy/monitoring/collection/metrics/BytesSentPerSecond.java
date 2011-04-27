@@ -58,13 +58,13 @@ public class BytesSentPerSecond extends ibis.deploy.monitoring.collection.impl.M
 					String id = received.getKey().name();				
 					
 					if (time_elapsed != 0) {
-						float time_seconds = (float)time_elapsed / 1000.0f;
+						float time_seconds = time_elapsed / 1000.0f;
 						
 						long sent_now = received.getValue();
 						long sent = sent_now - (Long)castMetric.getHelperVariable(this.name+"_"+id+"_sent_prev");					
 						castMetric.setHelperVariable(this.name+"_"+id+"_sent_prev", sent_now);
 						
-						long perSec = (long) ((float)sent / time_seconds);
+						long perSec = (long) (sent / time_seconds);
 						if (perSec < 0) perSec = 0;
 						result.put(received.getKey(), perSec);
 						

@@ -1,6 +1,5 @@
 package ibis.deploy.monitoring.collection;
 
-import java.nio.IntBuffer;
 import java.util.ArrayList;
 
 import ibis.deploy.monitoring.collection.exceptions.*;

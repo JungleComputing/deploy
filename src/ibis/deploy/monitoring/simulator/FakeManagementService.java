@@ -88,8 +88,7 @@ public class FakeManagementService implements ManagementServiceInterface, FakeSe
 					itemDescriptions[0] = "used";
 					itemDescriptions[1] = "maximum";
 					
-					@SuppressWarnings("rawtypes")
-					OpenType itemTypes[] = new OpenType[] {
+					OpenType<?> itemTypes[] = new OpenType<?>[] {
 							SimpleType.LONG, 
 							SimpleType.LONG};
 					
@@ -124,8 +123,7 @@ public class FakeManagementService implements ManagementServiceInterface, FakeSe
 					itemDescriptions[0] = "used";
 					itemDescriptions[1] = "maximum";
 					
-					@SuppressWarnings("rawtypes")
-					OpenType itemTypes[] = new OpenType[] {
+					OpenType<?> itemTypes[] = new OpenType<?>[] {
 							SimpleType.LONG, 
 							SimpleType.LONG};
 					

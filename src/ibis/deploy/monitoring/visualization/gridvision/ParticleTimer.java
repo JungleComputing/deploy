@@ -24,7 +24,7 @@ public class ParticleTimer implements Runnable {
 			long elapsed = currentTime - startTime;
 			startTime = currentTime;
 			
-			float fraction = (float)elapsed / 1000f;
+			float fraction = elapsed / 1000f;
 			goggles.doParticleMoves(fraction);
 			
 			try {

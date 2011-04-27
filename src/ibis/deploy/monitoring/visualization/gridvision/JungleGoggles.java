@@ -205,8 +205,8 @@ public class JungleGoggles implements GLEventListener {
 		gl.glLoadIdentity();
 
 		// Calculate and set the new perspective
-		this.width = (double) w;
-		this.height = (double) h;
+		this.width = w;
+		this.height = h;
 
 		aspect = this.width / this.height;
 
@@ -603,7 +603,7 @@ public class JungleGoggles implements GLEventListener {
 	}
 	
 	public void setLocationSpacing(int sliderSetting) {
-		universe.setLocationSeparation((float) sliderSetting);
+		universe.setLocationSeparation(sliderSetting);
 		doRepositioning();
 	}
 	
@@ -644,8 +644,8 @@ public class JungleGoggles implements GLEventListener {
 		gl.glLoadIdentity();
 
 		// create 5x5 pixel picking region near cursor location
-		glu.gluPickMatrix((double) pickPoint.x,
-				(double) (viewport[3] - pickPoint.y), 3.0, 3.0, viewport, 0);
+		glu.gluPickMatrix(pickPoint.x,
+				(viewport[3] - pickPoint.y), 3.0, 3.0, viewport, 0);
 
 		// Multiply by the perspective
 		glu.gluPerspective(fovy, aspect, zNear, zFar);

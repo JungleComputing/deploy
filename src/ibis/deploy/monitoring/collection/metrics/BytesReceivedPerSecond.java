@@ -53,7 +53,7 @@ public class BytesReceivedPerSecond extends ibis.deploy.monitoring.collection.im
 					long time_elapsed = time_now - (Long)castMetric.getHelperVariable(this.name+"_time_prev");
 					castMetric.setHelperVariable(this.name+"_time_prev", time_now);
 					
-					float time_seconds = (float)time_elapsed / 1000.0f;
+					float time_seconds = time_elapsed / 1000.0f;
 		
 					long value = received.getValue();
 					total += value;
@@ -69,7 +69,7 @@ public class BytesReceivedPerSecond extends ibis.deploy.monitoring.collection.im
 						max = max_prev;
 					}
 
-					float percent = (float)perSec/MAX; //(float)max;
+					float percent = perSec/MAX; //(float)max;
 					if (percent > 1f) percent = 1f;
 					
 					percentResult.put(received.getKey(), percent);					
