@@ -1,6 +1,5 @@
 package ibis.deploy.monitoring.visualization.gridvision.swing.actions;
 
-import ibis.deploy.monitoring.visualization.gridvision.JungleGoggles;
 import ibis.deploy.monitoring.visualization.gridvision.swing.GogglePanel;
 
 import javax.swing.JSlider;
@@ -9,11 +8,9 @@ import javax.swing.event.ChangeListener;
 
 public class MetricSpacingSliderChangeListener implements ChangeListener {
 	private GogglePanel gp;
-	private JungleGoggles goggles;
 	
 	public MetricSpacingSliderChangeListener(GogglePanel gp) {
-		this.gp = gp;
-		goggles = gp.getGoggles();		
+		this.gp = gp;		
 	}
 	
 	@Override
@@ -23,8 +20,7 @@ public class MetricSpacingSliderChangeListener implements ChangeListener {
 	    	int sliderSetting = source.getValue();
 	    	float value = sliderSetting/20f;
 	    	
-	    	goggles.setMetricSpacing(value);								
-	    	gp.setMetricSpacerText(value);
+	    	gp.setMetricSpacer(value);
 	    }
 	}
 }

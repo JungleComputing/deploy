@@ -13,9 +13,9 @@ public class ThresholdSliderChangeListener implements ChangeListener {
 	private GogglePanel gp;
 	private JungleGoggles goggles;
 	
-	public ThresholdSliderChangeListener(GogglePanel gp) {
+	public ThresholdSliderChangeListener(GogglePanel gp, JungleGoggles goggles) {
 		this.gp = gp;
-		goggles = gp.getGoggles();		
+		this.goggles = goggles;		
 	}
 	
 	@Override
@@ -52,7 +52,7 @@ public class ThresholdSliderChangeListener implements ChangeListener {
 				myDescription = goggles.getMetricDescription("Bytes_Sent_Per_Sec");
 				myDescription.setMaxForPercentages(newMax*1024);
 								
-				gp.setNetworkThresholdText(newMax);
+				gp.setNetworkThreshold(newMax);
 			} catch (MetricDescriptionNotAvailableException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();

@@ -1,6 +1,4 @@
-package ibis.deploy.monitoring.visualization.gridvision.swing;
-
-import ibis.deploy.monitoring.collection.MetricDescription;
+package ibis.deploy.monitoring.visualization.gridvision.swing.util;
 
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
@@ -15,15 +13,15 @@ public class ColorIcon extends ImageIcon {
 	
 	BufferedImage image;	
 	
-	public ColorIcon(MetricDescription desc) {
+	public ColorIcon(Float[] color) {
 		super();
-		
-		Float[] color = desc.getColor();
 		
 		makeImage(color);
 	}
 
 	public ColorIcon(int i, int j, int k) {
+		super();
+		
 		Float[] color = {(float)i, (float)j, (float)k};
 		makeImage(color);
 	}	

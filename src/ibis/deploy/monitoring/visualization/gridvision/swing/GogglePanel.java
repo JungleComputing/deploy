@@ -9,6 +9,7 @@ import ibis.deploy.monitoring.visualization.gridvision.JungleGoggles;
 import ibis.deploy.monitoring.visualization.gridvision.KeyHandler;
 import ibis.deploy.monitoring.visualization.gridvision.MouseHandler;
 import ibis.deploy.monitoring.visualization.gridvision.exceptions.MetricDescriptionNotAvailableException;
+import ibis.deploy.monitoring.visualization.gridvision.swing.actions.ExitListener;
 import ibis.deploy.monitoring.visualization.gridvision.swing.actions.GoggleAction;
 import ibis.deploy.monitoring.visualization.gridvision.swing.actions.GoggleListener;
 import ibis.deploy.monitoring.visualization.gridvision.swing.actions.IbisSpacingSliderChangeListener;
@@ -20,6 +21,7 @@ import ibis.deploy.monitoring.visualization.gridvision.swing.actions.SetNetworkF
 import ibis.deploy.monitoring.visualization.gridvision.swing.actions.SetTweakStateAction;
 import ibis.deploy.monitoring.visualization.gridvision.swing.actions.LocationSpacingSliderChangeListener;
 import ibis.deploy.monitoring.visualization.gridvision.swing.actions.ThresholdSliderChangeListener;
+import ibis.deploy.monitoring.visualization.gridvision.swing.util.GoggleSwing;
 
 import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLProfile;
@@ -29,31 +31,25 @@ import javax.swing.JPanel;
 import com.jogamp.opengl.util.FPSAnimator;
 
 import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JRadioButtonMenuItem;
-import javax.swing.JSlider;
-import javax.swing.Box;
 import javax.swing.BoxLayout;
-import java.awt.Component;
 import javax.swing.JLabel;
-import javax.swing.JRadioButton;
-import javax.swing.border.LineBorder;
-import java.awt.Color;
-import java.util.ArrayList;
+import javax.swing.event.ChangeListener;
 
 public class GogglePanel extends JPanel {
 	private static final long serialVersionUID = 4754345291079348455L;
-	public static enum TweakState { NONE, GLOBAL, METRICS, NETWORK };
+	public static enum TweakState { NONE, GATHERING, METRICS, NETWORK, VISUAL };
 
 	private JungleGoggles goggles;
 	private GLJPanel gljpanel;
 	
 	private JPanel tweakPanel;
-	private JPanel globalTweaks;
+	private JPanel gatheringTweaks;
 	private JPanel networkTweaks;
 	private JPanel metricTweaks;
+	private JPanel visualTweaks;
 	
 	private TweakState currentTweakState = TweakState.NONE;
 	
@@ -115,15 +111,20 @@ public class GogglePanel extends JPanel {
 		networkTweaks.setMinimumSize(tweakPanel.getPreferredSize());
 		createNetworkTweakPanel();
 		
-		globalTweaks = new JPanel();
-		globalTweaks.setLayout(new BoxLayout(globalTweaks, BoxLayout.Y_AXIS));
-		globalTweaks.setMinimumSize(tweakPanel.getPreferredSize());
+		gatheringTweaks = new JPanel();
+		gatheringTweaks.setLayout(new BoxLayout(gatheringTweaks, BoxLayout.Y_AXIS));
+		gatheringTweaks.setMinimumSize(tweakPanel.getPreferredSize());
 		createGlobalTweakPanel();
 		
 		metricTweaks = new JPanel();
 		metricTweaks.setLayout(new BoxLayout(metricTweaks, BoxLayout.Y_AXIS));
 		metricTweaks.setMinimumSize(tweakPanel.getPreferredSize());
 		createMetricTweakPanel();	
+		
+		visualTweaks = new JPanel();
+		visualTweaks.setLayout(new BoxLayout(visualTweaks, BoxLayout.Y_AXIS));
+		visualTweaks.setMinimumSize(tweakPanel.getPreferredSize());
+		createVisualTweakPanel();	
 		
 		// Set up the window
 		add(gljpanel, BorderLayout.CENTER);
@@ -134,7 +135,7 @@ public class GogglePanel extends JPanel {
 	
 	private void createMenus() {
 		JMenuBar menuBar = new JMenuBar();		
-				String[] tweakItems = {"None" , "Global", "Metrics", "Network"};
+				String[] tweakItems = {"None" , "Gathering", "Metrics", "Network", "Visual"};
 				ButtonGroup tweakGroup = new ButtonGroup();
 				GoggleAction al0 = new SetTweakStateAction(this, "None");
 			menuBar.add(makeRadioMenu("Tweaks", tweakGroup, tweakItems, "None", al0));
@@ -143,185 +144,85 @@ public class GogglePanel extends JPanel {
 	}
 	
 	private void createGlobalTweakPanel() {
-		ArrayList<Component> components = new ArrayList<Component>();		
-				JLabel thresholdlabel = new JLabel("Refreshrate");
-			components.add(thresholdlabel);
+			GoggleListener listener = new ExitListener(this);
+		gatheringTweaks.add(GoggleSwing.titleBox("Gathering Tweaks", listener));
 		
-				JSlider slider = new JSlider();			
-				slider.setMinimum(100);
-				slider.setMaximum(5000);				
-				slider.setMinorTickSpacing(100);				
-				slider.setPaintTicks(true);
-				slider.setSnapToTicks(true);					
-				slider.setValue(500);				
-				slider.addChangeListener(new RefreshrateSliderChangeListener(this));
-			components.add(slider);
-		
-				refreshrateText = new JLabel("Refreshing every 500 ms");
-			components.add(refreshrateText);		
-		createBoxedComponents(globalTweaks, components);
-		
-			Component verticalStrut = Box.createVerticalStrut(5);
-		globalTweaks.add(verticalStrut);
-		
-		ArrayList<Component> components2 = new ArrayList<Component>();		
-				JLabel locationSpacingLabel = new JLabel("Location spacing");
-			components2.add(locationSpacingLabel);
-		
-				JSlider slider2 = new JSlider();			
-				slider2.setMinimum(1);
-				slider2.setMaximum(32);				
-				slider2.setMinorTickSpacing(1);				
-				slider2.setPaintTicks(true);
-				slider2.setSnapToTicks(true);					
-				slider2.setValue(16);				
-				slider2.addChangeListener(new LocationSpacingSliderChangeListener(this));
-			components2.add(slider2);
-		
-				locationSpacerText = new JLabel("Location spacing at 16 units");
-			components2.add(locationSpacerText);		
-		createBoxedComponents(globalTweaks, components2);
-		
-			Component verticalStrut2 = Box.createVerticalStrut(5);
-		globalTweaks.add(verticalStrut2);
-		
-		ArrayList<Component> components3 = new ArrayList<Component>();		
-				JLabel ibisSpacingLabel = new JLabel("Ibis spacing");
-			components3.add(ibisSpacingLabel);
-		
-				JSlider slider3 = new JSlider();			
-				slider3.setMinimum(0);
-				slider3.setMaximum(20);				
-				slider3.setMinorTickSpacing(1);				
-				slider3.setPaintTicks(true);
-				slider3.setSnapToTicks(true);					
-				slider3.setValue(12);				
-				slider3.addChangeListener(new IbisSpacingSliderChangeListener(this));
-			components3.add(slider3);
-		
-				ibisSpacerText = new JLabel("Ibis spacing at 1.2 units");
-			components3.add(ibisSpacerText);		
-		createBoxedComponents(globalTweaks, components3);
-		
-			Component verticalStrut3 = Box.createVerticalStrut(5);
-		globalTweaks.add(verticalStrut3);
-		
-		ArrayList<Component> components4 = new ArrayList<Component>();		
-				JLabel metricSpacingLabel = new JLabel("Metrics spacing");
-			components4.add(metricSpacingLabel);
-		
-				JSlider slider4 = new JSlider();			
-				slider4.setMinimum(0);
-				slider4.setMaximum(20);				
-				slider4.setMinorTickSpacing(1);
-				slider4.setPaintTicks(true);
-				slider4.setSnapToTicks(true);					
-				slider4.setValue(1);				
-				slider4.addChangeListener(new MetricSpacingSliderChangeListener(this));
-			components4.add(slider4);
-		
-				metricSpacerText = new JLabel("Metrics spacing at 0.05 units");
-			components4.add(metricSpacerText);		
-		createBoxedComponents(globalTweaks, components4);
+			ChangeListener listener2 = new RefreshrateSliderChangeListener(this);
+			refreshrateText = new JLabel("Refreshing every 500 ms");
+		gatheringTweaks.add(GoggleSwing.sliderBox("Refreshing every 500 ms", listener2, 100, 5000, 100, 500, refreshrateText));
 	}
 	
-	private void createNetworkTweakPanel() {		
-		ButtonGroup linkMetricGroup = new ButtonGroup();
-		String[] metricLabels = {"Particles", "AlphaTubes", "Tubes"};
-		GoggleAction templateAction = new SetNetworkFormAction(goggles, "Particles");
-		createRadioBox(networkTweaks, "Network metrics display method", metricLabels, linkMetricGroup, templateAction);
+	private void createNetworkTweakPanel() {
+		GoggleListener listener = new ExitListener(this);
+		networkTweaks.add(GoggleSwing.titleBox("Network Tweaks", listener));
 		
-			Component verticalStrut = Box.createVerticalStrut(5);
-		networkTweaks.add(verticalStrut);
+			String[] linkLabels = {"Particles", "AlphaTubes", "Tubes"};
+			GoggleAction templateAction = new SetNetworkFormAction(goggles, "Particles");
+			GoggleAction[] actions = new GoggleAction[linkLabels.length];			
+			for (int i=0; i< linkLabels.length; i++) {
+				actions[i] = templateAction.clone(linkLabels[i]);				
+			}			
+		networkTweaks.add(GoggleSwing.radioBox("Node metrics display method", linkLabels, actions));
 		
-		ArrayList<Component> components = new ArrayList<Component>();		
-				JLabel thresholdlabel = new JLabel("Network bandwidth threshold.");
-			components.add(thresholdlabel);
-			
-				JSlider slider = new JSlider();
-				slider.setMinimum(0);
-				slider.setMaximum(9);
-				slider.setMinorTickSpacing(1);				
-				slider.setPaintTicks(true);
-				slider.setSnapToTicks(true);					
-				slider.setValue(4);	
-				slider.addChangeListener(new ThresholdSliderChangeListener(this));	
-			components.add(slider);
-			
-				thresholdText = new JLabel("100 kb/s");
-			components.add(thresholdText);		
-		createBoxedComponents(networkTweaks, components);
+		networkTweaks.add(GoggleSwing.verticalStrut(5));
+		
+			ChangeListener listener2 = new ThresholdSliderChangeListener(this, goggles);
+			thresholdText = new JLabel("100 kb/s");
+		networkTweaks.add(GoggleSwing.sliderBox("Network bandwidth threshold.", listener2, 0, 9, 1, 4, thresholdText));		
 	}
 	
-	private void createMetricTweakPanel() {		
-		ButtonGroup metricGroup = new ButtonGroup();
-		String[] metricLabels = {"Bars", "Tubes"};
-		GoggleAction barsAction = new SetMetricFormAction(goggles, "Bars");
-		createRadioBox(metricTweaks, "Node metrics display method", metricLabels, metricGroup, barsAction);
-		
-			Component verticalStrut = Box.createVerticalStrut(5);
-		metricTweaks.add(verticalStrut);
-		
-		String[] toBeSelectedMetrics = {"CPU Usage", "System Memory Usage", "Java Heap Memory Usage", "Java Nonheap Memory Usage"};
-		boolean[] selections = {true, true};
-		GoggleListener selectionListener = new MetricListener(goggles, "");
-		
-		try {
-			createCheckboxBox(metricTweaks, "Selected metrics", toBeSelectedMetrics, selections, selectionListener);
-		} catch (MetricDescriptionNotAvailableException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	private void createRadioBox(JPanel parent, String name, String[] labels, ButtonGroup group, GoggleAction actionTemplate) {		
-		ArrayList<Component> components = new ArrayList<Component>();		
-			components.add(new JLabel(name));
-			
-			for (int i=0; i< labels.length; i++) {				
-				JRadioButton btn = new JRadioButton(labels[i]);
-				group.add(btn);
-				GoggleAction action = actionTemplate.clone(labels[i]);
-				btn.addActionListener(action);		
-				if (i ==0 ) btn.setSelected(true);
-				components.add(btn);
-			}		
-		createBoxedComponents(parent, components);
-	}
-	
-	private void createCheckboxBox(JPanel parent, String name, String[] labels, boolean[] selections, GoggleListener listenerTemplate) throws MetricDescriptionNotAvailableException {		
-		ArrayList<Component> components = new ArrayList<Component>();		
-			components.add(new JLabel(name));
-			
-			for (int i=0; i< labels.length; i++) {
-				MetricDescription desc = goggles.getMetricDescription(labels[i]);				
-				JCheckBox btn = new JCheckBox(labels[i], true);
-				btn.setSelectedIcon(new ColorIcon(desc));
-				btn.setIcon(new ColorIcon(0,0,0));
-				GoggleListener listener = listenerTemplate.clone(labels[i]);
-				btn.addItemListener(listener);
-				components.add(btn);
-			}		
-		createBoxedComponents(parent, components);
-	}
-	
-	private void createBoxedComponents(JPanel parent, ArrayList<Component> components) {
-		Box hrzBox = Box.createHorizontalBox();
-			Box vrtBox = Box.createVerticalBox();
+	private void createMetricTweakPanel() {	
+			GoggleListener listener = new ExitListener(this);
+		metricTweaks.add(GoggleSwing.titleBox("Metric Tweaks", listener));
 				
-				vrtBox.setBorder(new LineBorder(new Color(0, 0, 0)));
-				vrtBox.setAlignmentY(Component.TOP_ALIGNMENT);
+			String[] metricLabels = {"Bars", "Tubes"};
+			GoggleAction barsAction = new SetMetricFormAction(goggles, "Bars");
+			GoggleAction[] actions = new GoggleAction[metricLabels.length];			
+			for (int i=0; i< metricLabels.length; i++) {
+				actions[i] = barsAction.clone(metricLabels[i]);				
+			}			
+		metricTweaks.add(GoggleSwing.radioBox("Node metrics display method", metricLabels, actions));
+		
+		metricTweaks.add(GoggleSwing.verticalStrut(5));
+		
+			String[] toBeSelectedMetrics = {"CPU Usage", "System Memory Usage", "Java Heap Memory Usage", "Java Nonheap Memory Usage"};
+			boolean[] selections = {true, true, true, true};
+			GoggleListener selectionListener = new MetricListener(goggles, "");
+			Float[][] colors = new Float[toBeSelectedMetrics.length][3];
+			GoggleListener[] listeners = new GoggleListener[toBeSelectedMetrics.length];
+			
+			try {				
+				for (int i=0; i< toBeSelectedMetrics.length; i++) {
+					MetricDescription desc = goggles.getMetricDescription(toBeSelectedMetrics[i]);
+					colors[i] = desc.getColor();
+					listeners[i] = selectionListener.clone(toBeSelectedMetrics[i]);
+				}					
 				
-				Component verticalStrut = Box.createVerticalStrut(5);
-				vrtBox.add(verticalStrut);
-				
-				for (int i=0; i<components.size(); i++) {
-					Component current = components.get(i);
+			} catch (MetricDescriptionNotAvailableException e) {
+				e.printStackTrace();
+			}
+		metricTweaks.add(GoggleSwing.checkboxBox("Selected Metrics", toBeSelectedMetrics, colors, selections, listeners));
+	}
+	
+	private void createVisualTweakPanel() {	
+			GoggleListener listener = new ExitListener(this);
+		visualTweaks.add(GoggleSwing.titleBox("Visual Tweaks", listener));				
 					
-					vrtBox.add(current);
-				}
-			
-			hrzBox.add(vrtBox);	
-		parent.add(hrzBox);
+			ChangeListener listener2 = new LocationSpacingSliderChangeListener(this);		
+			locationSpacerText = new JLabel("Location spacing at 16 units");
+		visualTweaks.add(GoggleSwing.sliderBox("Location spacing", listener2, 1, 32, 1, 16, locationSpacerText));
+		
+		visualTweaks.add(GoggleSwing.verticalStrut(5));		
+				
+			ChangeListener listener3 = new IbisSpacingSliderChangeListener(this);		
+			ibisSpacerText = new JLabel("Ibis spacing at 1.2 units");
+		visualTweaks.add(GoggleSwing.sliderBox("Ibis spacing", listener3, 0, 20, 1, 12, ibisSpacerText));
+		
+		visualTweaks.add(GoggleSwing.verticalStrut(5));
+		
+			ChangeListener listener4 = new MetricSpacingSliderChangeListener(this);		
+			metricSpacerText = new JLabel("Metrics spacing at 0.05 units");
+		visualTweaks.add(GoggleSwing.sliderBox("Metrics spacing", listener4, 0, 20, 1, 1, metricSpacerText));
 	}
 	
 	public GLJPanel getPanel() {
@@ -346,52 +247,57 @@ public class GogglePanel extends JPanel {
 		return result;
 	}
 	
+	//Callback methods for the various ui actions and listeners
 	public void setTweakState(TweakState newState) {
 		tweakPanel.setVisible(false);
-		tweakPanel.remove(globalTweaks);
+		tweakPanel.remove(gatheringTweaks);
 		tweakPanel.remove(networkTweaks);
 		tweakPanel.remove(metricTweaks);
+		tweakPanel.remove(visualTweaks);
 		
 		currentTweakState = newState;		
 		
 		if (currentTweakState == TweakState.NONE) {
-		} else if (currentTweakState == TweakState.GLOBAL) {
+		} else if (currentTweakState == TweakState.GATHERING) {
 			tweakPanel.setVisible(true);
-			tweakPanel.add(globalTweaks, BorderLayout.WEST);
+			tweakPanel.add(gatheringTweaks, BorderLayout.WEST);
 		} else if (currentTweakState == TweakState.METRICS) {
 			tweakPanel.setVisible(true);
 			tweakPanel.add(metricTweaks, BorderLayout.WEST);
 		} else if (currentTweakState == TweakState.NETWORK) {
 			tweakPanel.setVisible(true);
 			tweakPanel.add(networkTweaks, BorderLayout.WEST);
+		} else if (currentTweakState == TweakState.VISUAL) {
+			tweakPanel.setVisible(true);
+			tweakPanel.add(visualTweaks, BorderLayout.WEST);
 		}
 	}
-	
-	public JungleGoggles getGoggles() {
-		return goggles;
-	}
 
-	public void setNetworkThresholdText(int newMax) {		
+	public void setNetworkThreshold(int newMax) {		
 		String text = String.valueOf(newMax);
 		thresholdText.setText(text + " kb/s");
 	}
 	
-	public void setRefreshrateText(int newRate) {
+	public void setRefreshrate(int newRate) {
+		goggles.setRefreshrate(newRate);
 		String text = String.valueOf(newRate);
 		refreshrateText.setText("Refreshing every " +text+ " ms");
 	}
 
-	public void setLocationSpacerText(int sliderSetting) {
+	public void setLocationSpacer(int sliderSetting) {
+		goggles.setLocationSpacing(sliderSetting);
 		String text = String.valueOf(sliderSetting);
 		locationSpacerText.setText("Location spacing at "+text+" units");
 	}
 	
-	public void setIbisSpacerText(float sliderSetting) {
+	public void setIbisSpacer(float sliderSetting) {
+		goggles.setIbisSpacing(sliderSetting);
 		String text = String.valueOf(sliderSetting);
 		ibisSpacerText.setText("Ibis spacing at "+text+" units");
 	}
 	
-	public void setMetricSpacerText(float sliderSetting) {
+	public void setMetricSpacer(float sliderSetting) {
+		goggles.setMetricSpacing(sliderSetting);
 		String text = String.valueOf(sliderSetting);
 		metricSpacerText.setText("Metrics spacing at "+text+" units");
 	}
