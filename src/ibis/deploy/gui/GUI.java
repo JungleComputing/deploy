@@ -645,7 +645,7 @@ public class GUI {
     private void loadNativeLibs() throws IOException, URISyntaxException {
     	String filesep = System.getProperty("file.separator");
     	String os = System.getProperty("os.name").toLowerCase();
-    	String dirname = System.getProperty("user.dir") + filesep + "external" + filesep + "jogl";
+    	String dirname = System.getProperty("user.dir") + filesep + "lib";
     	
     	String[] prefixes = { "jogl", "gluegen-rt", "nativewindow", "newt" };
     	    	
