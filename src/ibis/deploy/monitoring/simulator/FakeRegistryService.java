@@ -15,8 +15,8 @@ public class FakeRegistryService implements ibis.ipl.server.RegistryServiceInter
 	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.simulator.FakeRegistryService");
 
 	public enum State { ALIVE, FAILING, DEAD };	
-	double	CHANCE_OF_IBIS_FAILURE  = 0.001;
-	double 	CHANCE_OF_IBIS_JOIN  	= 0.001;
+	double	CHANCE_OF_IBIS_FAILURE  = 0.000000001;
+	double 	CHANCE_OF_IBIS_JOIN  	= 0.000000001;
 	double 	CHANCE_OF_IBIS_RECOVERY = 0.01;
 	int 	MAX_FAILRATE 			= 10;
 

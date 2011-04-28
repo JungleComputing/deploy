@@ -35,7 +35,8 @@ public class CollectorImpl implements Collector, Runnable {
 			new String[0]);
 	private static final int workercount = 8;
 
-	private static CollectorImpl ref = null;
+	private static CollectorImpl ref = null;	
+	private boolean skipParent = false, forceUpdate = false;
 
 	// Interfaces to the IPL
 	private ManagementServiceInterface manInterface;
@@ -65,6 +66,7 @@ public class CollectorImpl implements Collector, Runnable {
 	private HashSet<MetricDescription> descriptions;
 	
 	private boolean change = false;
+	
 
 	private CollectorImpl(ManagementServiceInterface manInterface,
 			RegistryServiceInterface regInterface) {
@@ -154,7 +156,7 @@ public class CollectorImpl implements Collector, Runnable {
 		// Check if there was a change in the pool sizes
 		boolean change = initPools();
 
-		if (change) {
+		if (change || forceUpdate) {			
 			// Rebuild the world
 			initLocations();
 			initLinks();
@@ -171,6 +173,7 @@ public class CollectorImpl implements Collector, Runnable {
 			// once all updating is finished, signal the visualizations that a
 			// change has occurred.
 			this.change = true;
+			this.forceUpdate = false;
 		}
 	}
 
@@ -236,7 +239,12 @@ public class CollectorImpl implements Collector, Runnable {
 				// for all ibises
 				for (IbisIdentifier ibisid : poolIbises) {
 					// Get the lowest location
-					ibis.ipl.Location ibisLocation = ibisid.location().getParent();
+					ibis.ipl.Location ibisLocation;
+					if (skipParent) {
+						ibisLocation = ibisid.location().getParent();
+					} else {
+						ibisLocation = ibisid.location();
+					}
 					String locationName = ibisLocation.toString();
 
 					Location current;
@@ -403,6 +411,11 @@ public class CollectorImpl implements Collector, Runnable {
 			this.change = true;
 		}
 	}
+		
+	public void toggleParentSkip() {
+		skipParent = !skipParent;
+		forceUpdate = true;
+	}
 
 	// Getters for the worker threads
 	public Element getWork(Worker w) throws InterruptedException {
@@ -489,5 +502,5 @@ public class CollectorImpl implements Collector, Runnable {
 			}
 			iterations++;
 		}
-	}
+	}	
 }

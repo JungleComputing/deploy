@@ -262,8 +262,18 @@ public abstract class JGVisualAbstract implements JGVisual {
 		rotation[1] = newRotation[1];
 		rotation[2] = newRotation[2];
 	}
+	
+	public void setLocationCollectionShape(CollectionShape newShape) {
+		locationColShape = newShape;		
+		goggles.doRepositioning();
+	}
+	
+	public void setIbisCollectionShape(CollectionShape newShape) {		
+		ibisColShape = newShape;		
+		goggles.doRepositioning();
+	}
 
-	public void setCollectionShape(CollectionShape newShape) {
+	public void setAllCollectionsShape(CollectionShape newShape) {
 		locationColShape = newShape;
 		ibisColShape = newShape;
 		

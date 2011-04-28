@@ -20,6 +20,7 @@ import ibis.deploy.monitoring.collection.Collector;
 import ibis.deploy.monitoring.collection.Element;
 import ibis.deploy.monitoring.collection.Link;
 import ibis.deploy.monitoring.collection.MetricDescription;
+import ibis.deploy.monitoring.visualization.gridvision.JGVisual.CollectionShape;
 import ibis.deploy.monitoring.visualization.gridvision.JGVisual.MetricShape;
 import ibis.deploy.monitoring.visualization.gridvision.exceptions.AllInUseException;
 import ibis.deploy.monitoring.visualization.gridvision.exceptions.MetricDescriptionNotAvailableException;
@@ -569,6 +570,26 @@ public class JungleGoggles implements GLEventListener {
 		}
 	}
 	
+	public void setLocationCollectionForm(CollectionShape newShape) {		
+		universe.setLocationCollectionShape(newShape);
+		
+		for (Entry<Element, JGVisual> entry : visualRegistry.entrySet()) {
+			JGVisual visualElement = entry.getValue();
+			
+			visualElement.setLocationCollectionShape(newShape);
+		}
+	}
+	
+	public void setIbisCollectionForm(CollectionShape newShape) {		
+		universe.setIbisCollectionShape(newShape);
+		
+		for (Entry<Element, JGVisual> entry : visualRegistry.entrySet()) {
+			JGVisual visualElement = entry.getValue();
+			
+			visualElement.setIbisCollectionShape(newShape);
+		}
+	}
+	
 	public void setMetricForm(MetricShape newShape) {
 		currentMetricForm = newShape;
 		universe.setMetricShape(newShape);
@@ -600,6 +621,10 @@ public class JungleGoggles implements GLEventListener {
 	
 	public void toggleMetrics(MetricDescription[] myDescs) {
 		collector.toggleMetrics(myDescs);		
+	}
+	
+	public void toggleParentSkip() {
+		collector.toggleParentSkip();
 	}
 	
 	public void setLocationSpacing(int sliderSetting) {
@@ -693,6 +718,8 @@ public class JungleGoggles implements GLEventListener {
 
 		return selection;
 	}
+
+	
 
 	
 

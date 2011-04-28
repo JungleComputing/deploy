@@ -20,7 +20,7 @@ public class SetCollectionFormAction implements GoggleAction {
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		caller.setCollectionShape(myShape);
+		caller.setAllCollectionsShape(myShape);
 	}
 	
 	public GoggleAction clone(String label) {

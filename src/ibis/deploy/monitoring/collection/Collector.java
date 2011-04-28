@@ -62,5 +62,10 @@ public interface Collector extends Runnable {
 	 */
 	public void toggleMetrics(MetricDescription[] myDescs);
 
+	/**
+	 * Toggle whether or not the first parent of an Ibis is skipped when determining its location
+	 */
+	public void toggleParentSkip();
+
 	
 }

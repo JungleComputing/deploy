@@ -1,4 +1,4 @@
-package ibis.deploy.monitoring.visualization.gridvision.swing.actions;
+package ibis.deploy.monitoring.visualization.gridvision.swing.listeners;
 
 import ibis.deploy.monitoring.collection.MetricDescription;
 import ibis.deploy.monitoring.visualization.gridvision.JungleGoggles;

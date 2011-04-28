@@ -1,5 +1,6 @@
 package ibis.deploy.monitoring.visualization.gridvision;
 
+
 import javax.media.opengl.GL2;
 
 public interface JGVisual {
@@ -12,7 +13,7 @@ public interface JGVisual {
 	public void setCoordinates(float[] newCoordinates);
 	public void setRotation(float[] newRotation);
 	
-	public void setCollectionShape(CollectionShape newShape);
+	public void setAllCollectionsShape(CollectionShape newShape);
 	public CollectionShape getCollectionShape();
 		
 	public void setState(State myState);
@@ -33,5 +34,8 @@ public interface JGVisual {
 	public void drawSolids(GL2 gl, int renderMode);
 	public void drawTransparents(GL2 gl, int renderMode);
 	public void drawSelectionCube(GL2 gl);
+
+	public void setLocationCollectionShape(CollectionShape newShape);
+	public void setIbisCollectionShape(CollectionShape newShape);
 
 }
