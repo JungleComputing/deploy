@@ -189,6 +189,17 @@ public class Job implements Runnable {
         forwarder.waitUntilFinished();
     }
 
+    /**
+     * Waits until this Job is deployed. This is detected by checking that
+     * there is a pool with the poolname of the job, which contains a location
+     * whose name starts with the name of the job description. Awful hack,
+     * since this means that ibis.location cannot be redefined, or at least
+     * only be redefined such that it starts with the name of the job description.
+     * TODO: Fix! But how? --Ceriel
+     * 
+     * @throws Exception
+     * 		in case an error occurs.
+     */
     public void waitUntilDeployed() throws Exception {
         String location = description.getName();
 
