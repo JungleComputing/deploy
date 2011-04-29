@@ -126,7 +126,7 @@ public class CommandLine {
 			Cluster cluster = null;
 			if (serverCluster == null) {
 				logger.info("Initializing Command Line Ibis Deploy"
-						+ ", using build-in server");
+						+ ", using built-in server");
 				cluster = null;
 			} else {
 				logger

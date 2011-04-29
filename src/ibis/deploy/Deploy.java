@@ -199,9 +199,9 @@ public class Deploy {
     }
 
     /**
-     * Returns the address of the build-in root hub.
+     * Returns the address of the built-in root hub.
      * 
-     * @return the address of the build-in root hub.
+     * @return the address of the built-in root hub.
      * @throws Exception
      *             if ibis-deploy has not been initialized yet.
      */
@@ -210,9 +210,9 @@ public class Deploy {
     }
 
     /**
-     * Returns the build-in root hub.
+     * Returns the built-in root hub.
      * 
-     * @return the build-in root hub.
+     * @return the built-in root hub.
      * @throws Exception
      *             if ibis-deploy has not been initialized yet.
      */
@@ -221,9 +221,9 @@ public class Deploy {
     }
 
     /**
-     * Returns the build-in root hub.
+     * Returns the built-in server.
      * 
-     * @return the build-in root hub.
+     * @return the built-in server.
      * @throws Exception
      *             if ibis-deploy has not been initialized yet.
      */

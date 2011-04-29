@@ -198,7 +198,7 @@ public class GUI {
 
         if (isMonitoring()) {
         	
-            frame.setTitle("Ibis Deloy Monitoring");
+            frame.setTitle("Ibis Deploy Monitoring");
             
             try {
             	//File[] nativeLibs = getNativeLibTargets();
@@ -394,9 +394,9 @@ public class GUI {
 
         try {
             if (serverCluster == null) {
-                logger.info("Initializing Ibis Deploy, using build-in server");
+                logger.info("Initializing Ibis Deploy, using built-in server");
 
-                // init with build-in server
+                // init with built-in server
 
                 deploy = new Deploy(null, verbose, keepSandboxes, port, null,
                         null, true);

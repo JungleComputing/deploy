@@ -29,9 +29,9 @@ public class LocalServer implements Server {
         this.isServer = isServer;
 
         if (isServer) {
-            logger.debug("Starting build-in server");
+            logger.debug("Starting built-in server");
         } else {
-            logger.debug("Starting build-in hub");
+            logger.debug("Starting built-in hub");
         }
 
         Properties properties = new Properties();
