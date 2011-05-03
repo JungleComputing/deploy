@@ -84,9 +84,16 @@ public class CollectorImpl implements Collector, Runnable {
 
         // Create a universe (location root)
         Float[] color = { 0f, 0f, 0f };
-        root = new LocationImpl("root", color,
-                RandomDataGenerator.generateRandomLatitude(),
-                RandomDataGenerator.generateRandomLongitude());
+
+        if (locations.get("root") == null) {
+            root = new LocationImpl("root", color,
+                    RandomDataGenerator.generateRandomLatitude(),
+                    RandomDataGenerator.generateRandomLongitude());
+
+            locations.put("root", root);
+        } else {
+            root = locations.get("root");
+        }
 
         // Set the default refreshrate
         refreshrate = 1000;
@@ -205,13 +212,22 @@ public class CollectorImpl implements Collector, Runnable {
 
     private void initLocations() {
         ibises.clear();
-        locations.clear();
+        
+        //TODO - maybe don't clear - locations usually remain the same
+        //locations.clear();
         parents.clear();
 
         Float[] color = { 0f, 0f, 0f };
-        root = new LocationImpl("root", color,
-                RandomDataGenerator.generateRandomLatitude(),
-                RandomDataGenerator.generateRandomLongitude());
+
+        if (locations.get("root") == null) {
+            root = new LocationImpl("root", color,
+                    RandomDataGenerator.generateRandomLatitude(),
+                    RandomDataGenerator.generateRandomLongitude());
+            locations.put("root", root);
+        } else {
+            root = locations.get("root");
+        }
+
         parents.put(root, null);
 
         // For all pools

@@ -3,13 +3,13 @@ package ibis.deploy.vizFramework.globeViz.data;
 import java.awt.Color;
 
 import ibis.deploy.vizFramework.globeViz.viz.GlobeVisualization;
+import ibis.deploy.vizFramework.globeViz.viz.UnclippablePolyline;
 import gov.nasa.worldwind.geom.Position;
-import gov.nasa.worldwind.render.Polyline;
 
 public class GlobeEdge {
 
     private final Position pos1, pos2;
-    private Polyline polyline;
+    private UnclippablePolyline polyline;
 
     // pos1 and pos2 need to be non-null
     public GlobeEdge(Position pos1, Position pos2) {

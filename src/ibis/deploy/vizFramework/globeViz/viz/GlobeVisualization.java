@@ -9,9 +9,10 @@ import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.AnnotationAttributes;
 import gov.nasa.worldwind.render.GlobeAnnotation;
-import gov.nasa.worldwind.render.Polyline;
-
+import gov.nasa.worldwind.render.Renderable;
+import ibis.deploy.gui.worldmap.helpers.ClusterWaypoint;
 import ibis.deploy.vizFramework.globeViz.data.GlobeVizDataConvertor;
+import ibis.deploy.vizFramework.globeViz.viz.utils.RandomDataGenerator;
 import ibis.deploy.vizFramework.globeViz.viz.utils.UIConstants;
 
 import java.awt.BorderLayout;
@@ -20,12 +21,22 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
 import javax.swing.JPanel;
+import org.jdesktop.swingx.mapviewer.Waypoint;
 
 public class GlobeVisualization extends JPanel {
     private static final long serialVersionUID = 1L;
-    
+
     private GlobeAnnotation tooltipAnnotation;
     private CircleAnnotation lastSelectedDot;
     private WorldWindowGLCanvas worldWindCanvas;
@@ -50,10 +61,13 @@ public class GlobeVisualization extends JPanel {
         // only used when we want fake-fake data :P
         // RandomDataGenerator.generateRandomDotsAndConnections(this);
 
+        //RandomDataGenerator.generateFixedLocations(annotationLayer, this);
+
         createTooltip();
 
         // create a listener for displaying the tooltip
         worldWindCanvas.addSelectListener(new SelectListener() {
+
             public void selected(SelectEvent event) {
                 if (event.getEventAction().equals(SelectEvent.ROLLOVER))
                     highlight(event.getTopObject());
@@ -136,8 +150,9 @@ public class GlobeVisualization extends JPanel {
     }
 
     // computes a polyline between the two locations
-    public Polyline createArcBetween(Position pos1, Position pos2, Color color) {
-        Polyline polyline;
+    public UnclippablePolyline createArcBetween(Position pos1, Position pos2,
+            Color color) {
+        UnclippablePolyline polyline;
         ArrayList<Position> polylineList = new ArrayList<Position>();
 
         // add the control points to the list
@@ -154,7 +169,7 @@ public class GlobeVisualization extends JPanel {
         polylineList.add(0, pos1);
         polylineList.add(pos2);
 
-        polyline = new Polyline(polylineList);
+        polyline = new UnclippablePolyline(polylineList);
         polyline.setColor(color);
         polyline.setLineWidth(3.0);
         polyline.setFollowTerrain(followTerrain);
@@ -209,12 +224,11 @@ public class GlobeVisualization extends JPanel {
         annotationLayer.addRenderable(tooltipAnnotation);
     }
 
-    
     public void drawArc(Position pos1, Position pos2, Color color) {
         annotationLayer.addRenderable(createArcBetween(pos1, pos2, color));
     }
 
-    public void drawArc(Polyline line, Color color) {
+    public void drawArc(UnclippablePolyline line, Color color) {
         line.setColor(color);
         annotationLayer.addRenderable(line);
     }
@@ -222,14 +236,147 @@ public class GlobeVisualization extends JPanel {
     public void redraw() {
         worldWindCanvas.redraw();
     }
-    
-    public void setFollowTerrain(boolean value){
-        followTerrain = value;
-        convertor.forceUpdate();
-        repaint();
+
+    public void setFollowTerrain(boolean value) {
+        if (convertor != null) {
+            followTerrain = value;
+            convertor.forceUpdate();
+            repaint();
+        }
     }
-    
-    public void setDataConvertor(GlobeVizDataConvertor convertor){
+
+    public void setDataConvertor(GlobeVizDataConvertor convertor) {
         this.convertor = convertor;
     }
+
+    // /**
+    // * Creates piecharts from the clusters that overlap. It first creates an
+    // * undirected graph - every pair of clusters that overlap represents two
+    // * nodes connected by an edge. After this, the connected components of
+    // this
+    // * graph are computed using DFS. Each connected component is either a
+    // single
+    // * cluster or a group of clusters represented by means of a pie chart.
+    // */
+    // private void regroupClusters() {
+    // HashMap<CircleAnnotation, HashSet<CircleAnnotation>> adjacencyList = new
+    // HashMap<CircleAnnotation, HashSet<CircleAnnotation>>();
+    // // will be used durinf DFS
+    // HashMap<CircleAnnotation, Boolean> visited = new
+    // HashMap<CircleAnnotation, Boolean>();
+    // Set<CircleAnnotation> visibleWaypoints = new HashSet<CircleAnnotation>();
+    //
+    // double distance, minDistance;
+    //
+    // Iterable<Renderable> renderables = annotationLayer.getRenderables();
+    // for (Renderable renderable : renderables) {
+    // if (renderable instanceof CircleAnnotation) {
+    // visibleWaypoints.add((CircleAnnotation) renderable);
+    // }
+    // }
+    //
+    // System.out.println("No of circles: " + visibleWaypoints.size());
+    //
+    // for (CircleAnnotation waypoint : visibleWaypoints) {
+    // adjacencyList.put(waypoint, new HashSet<CircleAnnotation>());
+    // visited.put(waypoint, false);
+    // }
+    //
+    // // create adjacency lists for all visible clusters (build the graph)
+    // for (CircleAnnotation waypoint : visibleWaypoints) {
+    // // waypoint.show = true;
+    //
+    // for (CircleAnnotation secondWaypoint : visibleWaypoints) {
+    // if (secondWaypoint != waypoint) {
+    // distance = waypoint.computeDistance(secondWaypoint,
+    // worldWindCanvas);
+    //
+    // minDistance = 2 * UIConstants.LOCATION_CIRCLE_SIZE;
+    //
+    // if (distance <= minDistance) { // the two clusters overlap
+    // adjacencyList.get(waypoint).add(secondWaypoint);
+    // adjacencyList.get(secondWaypoint).add(waypoint);
+    // // System.out.println(waypoint.getLocationName() + "-->"
+    // // + secondWaypoint.getLocationName() + " " + distance);
+    // }
+    // }
+    // }
+    // }
+    //
+    // ArrayList<CircleAnnotation> connectedComponent = new
+    // ArrayList<CircleAnnotation>();
+    // Set<CircleAnnotation> pieChartWaypointSet = new
+    // HashSet<CircleAnnotation>();
+    //
+    // CircleAnnotation pieChart, oldPieChartWp;
+    // Iterator<CircleAnnotation> iter;
+    // // WaypointPainter<JXMapViewer> pieChartClusterPainter =
+    // // getPieChartPainter();
+    //
+    // Set<CircleAnnotation> oldPieCharts = visibleWaypoints;
+    //
+    // for (CircleAnnotation waypoint : visibleWaypoints) {
+    // connectedComponent.clear(); // reuse the same structure
+    //
+    // // compute the connected component for each unvisited node
+    // if (!visited.get(waypoint)) {
+    // DFS(waypoint, adjacencyList, visited, connectedComponent);
+    // }
+    //
+    // // the component does not consist of a single cluster
+    // if (connectedComponent.size() > 1) {
+    // pieChart = null;
+    // for (CircleAnnotation wp : oldPieCharts) {
+    // oldPieChartWp = wp;
+    // if (oldPieChartWp
+    // .containsSameClustersAs(connectedComponent)) {
+    // // we can reuse the existing pie chart
+    // pieChart = oldPieChartWp;
+    // break;
+    // }
+    // }
+    //
+    // // that pie chart doesn't exist yet, we need to create it
+    // // TODO - attributes might be wrong
+    // if (pieChart == null) {
+    // pieChart = new CircleAnnotation(connectedComponent,
+    // new AnnotationAttributes());
+    // }
+    // pieChartWaypointSet.add(pieChart);
+    //
+    // // iter = connectedComponent.iterator();
+    //
+    // // // don't display the waypoints for the clusters in the pie
+    // // while (iter.hasNext()) {
+    // // iter.next().show = false;
+    // // }
+    // } else {
+    // pieChartWaypointSet.add(waypoint);
+    // }
+    //
+    // }
+    //
+    // annotationLayer.removeAllRenderables();
+    // createTooltip();
+    // annotationLayer.addRenderables(pieChartWaypointSet);
+    // }
+    //
+    // // recursive depth-first search
+    // private void DFS(CircleAnnotation node,
+    // HashMap<CircleAnnotation, HashSet<CircleAnnotation>> graph,
+    // HashMap<CircleAnnotation, Boolean> visited,
+    // ArrayList<CircleAnnotation> component) {
+    // if (visited.get(node)) {
+    // return;
+    // }
+    //
+    // component.add(node); // add the node to the current connected component
+    // visited.put(node, true);
+    //
+    // for (CircleAnnotation neighbour : graph.get(node)) {
+    // if (!visited.get(neighbour)) {
+    // DFS(neighbour, graph, visited, component);
+    // }
+    // }
+    // }
 }

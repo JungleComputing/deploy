@@ -28,5 +28,9 @@ public class UIConstants {
 	public static int NPOSITIONS = 10;
 	public static int ARC_HEIGHT = 8000;
 	public static int NUMBER_OF_CONTROL_POINTS = 3;
-	public static int LOCATION_CIRCLE_SIZE = 30;
+	public static int LOCATION_CIRCLE_SIZE = 22;
+	
+	public static double increment = 2*Math.PI/50;
+	
+	public static int LEVELS = 3;
 }

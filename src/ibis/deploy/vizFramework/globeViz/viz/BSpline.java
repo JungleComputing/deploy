@@ -1,5 +1,4 @@
 package ibis.deploy.vizFramework.globeViz.viz;
-import gov.nasa.worldwind.geom.Matrix;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.globes.Globe;
