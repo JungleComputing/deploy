@@ -631,8 +631,8 @@ public class GUI {
         return fileNames.toArray(new String[0]);
     }
     
-    private File makeNativeDir() throws IOException {   	
-    	File tmpdir = new File(System.getProperty("user.dir")+System.getProperty("file.separator")+"lib"+System.getProperty("file.separator")+"natives");
+    private File makeNativeDir() throws IOException {    	
+    	File tmpdir = new File(deploy.getHome().getAbsolutePath()+System.getProperty("file.separator")+"lib"+System.getProperty("file.separator")+"natives");
    	
         if(!tmpdir.mkdir() && !tmpdir.exists()) {
             throw new IOException("Could not create temp directory: " + tmpdir.getAbsolutePath());
@@ -645,7 +645,7 @@ public class GUI {
     private void loadNativeLibs() throws IOException, URISyntaxException {
     	String filesep = System.getProperty("file.separator");
     	String os = System.getProperty("os.name").toLowerCase();
-    	String dirname = System.getProperty("user.dir") + filesep + "lib";
+    	String dirname = deploy.getHome().getAbsolutePath() + filesep + "lib";
     	
     	String[] prefixes = { "jogl", "gluegen-rt", "nativewindow", "newt" };
     	    	
