@@ -105,8 +105,8 @@ public class UnclippablePolyline extends Polyline {
             View view = dc.getView();
             Matrix projection = Matrix.fromPerspective(view.getFieldOfView(),
                             view.getViewport().getWidth(), view.getViewport ().getHeight(),
-                            view.getNearClipDistance(), view.getFarClipDistance());
-//                            view.getNearClipDistance(), 1.08*view.getFarClipDistance());
+                            //view.getNearClipDistance(), view.getFarClipDistance());
+                            view.getNearClipDistance(), 1.08*view.getFarClipDistance());
             double[] matrixArray = new double[16];
             projection.toArray(matrixArray, 0, false);
             gl.glMatrixMode(GL2.GL_PROJECTION);

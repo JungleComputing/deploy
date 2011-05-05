@@ -23,19 +23,24 @@ public class GlobeEdge {
     }
 
     // the polyline is calculated only once, otherwise its color is changed
-    public void updateAssociatedPolyline(GlobeVisualization globe, Color color) {
+    public void updateAssociatedPolyline(GlobeVisualization globe, Color color,
+            boolean forceEdgeRedraw) {
         if (polyline == null) {
             polyline = globe.createArcBetween(pos1, pos2, color);
             globe.drawArc(polyline, color);
         } else {
-            polyline.setColor(color);
-            //System.out.println("redraw");
+            if (forceEdgeRedraw) {
+                globe.drawArc(polyline, color);
+            } else {
+                polyline.setColor(color);
+            }
+            // System.out.println("redraw");
         }
     }
 
     @Override
     public boolean equals(Object other) {
-        if (other instanceof GlobeEdge) {
+        if (other != null && other instanceof GlobeEdge) {
             GlobeEdge secondEdge = (GlobeEdge) other;
             if ((GlobeEdge.positionsEqual(pos1, secondEdge.getFirstPosition()) && GlobeEdge
                     .positionsEqual(pos2, secondEdge.getSecondPosition()))

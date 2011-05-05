@@ -3,6 +3,7 @@ package ibis.deploy.monitoring.collection.impl;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import ibis.deploy.monitoring.collection.Element;
 import ibis.deploy.monitoring.collection.Link;
@@ -25,11 +26,11 @@ public abstract class ElementImpl implements Element {
 
 	Element parent;
 	HashMap<MetricDescription, Metric> metrics;
-	HashMap<ElementImpl, Link> links;
+	ConcurrentHashMap<ElementImpl, Link> links;
 
 	public ElementImpl() {
 		metrics = new HashMap<MetricDescription, Metric>();
-		links = new HashMap<ElementImpl, Link>();
+		links = new ConcurrentHashMap<ElementImpl, Link>();
 	}
 
 	// getters

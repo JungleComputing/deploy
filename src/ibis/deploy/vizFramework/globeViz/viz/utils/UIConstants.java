@@ -32,5 +32,5 @@ public class UIConstants {
 	
 	public static double increment = 2*Math.PI/50;
 	
-	public static int LEVELS = 3;
+	public static int LEVELS = 2;
 }

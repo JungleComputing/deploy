@@ -41,6 +41,7 @@ public class GlobeVisualization extends JPanel {
     private CircleAnnotation lastSelectedDot;
     private WorldWindowGLCanvas worldWindCanvas;
     private RenderableLayer annotationLayer;
+    private RenderableLayer polylineLayer;
     private boolean followTerrain = false;
     private GlobeVizDataConvertor convertor;
 
@@ -57,6 +58,11 @@ public class GlobeVisualization extends JPanel {
         annotationLayer = new RenderableLayer();
         annotationLayer.setName("Locations");
         worldWindCanvas.getModel().getLayers().add(annotationLayer);
+        
+        // initialize the polylineLayer layer
+        polylineLayer = new RenderableLayer();
+        polylineLayer.setName("Locations");
+        worldWindCanvas.getModel().getLayers().add(polylineLayer);
 
         // only used when we want fake-fake data :P
         // RandomDataGenerator.generateRandomDotsAndConnections(this);
@@ -141,7 +147,7 @@ public class GlobeVisualization extends JPanel {
         if (o != null && o instanceof CircleAnnotation) {
             lastSelectedDot = (CircleAnnotation) o;
             lastSelectedDot.getAttributes().setHighlighted(true);
-            tooltipAnnotation.setText("<p>" + lastSelectedDot.getLocationName()
+            tooltipAnnotation.setText("<p>" + lastSelectedDot.getName()
                     + "</p>");
             tooltipAnnotation.setPosition(lastSelectedDot.getPosition());
             tooltipAnnotation.getAttributes().setVisible(true);
@@ -225,12 +231,16 @@ public class GlobeVisualization extends JPanel {
     }
 
     public void drawArc(Position pos1, Position pos2, Color color) {
-        annotationLayer.addRenderable(createArcBetween(pos1, pos2, color));
+        polylineLayer.addRenderable(createArcBetween(pos1, pos2, color));
     }
 
     public void drawArc(UnclippablePolyline line, Color color) {
         line.setColor(color);
-        annotationLayer.addRenderable(line);
+        polylineLayer.addRenderable(line);
+    }
+    
+    public void clearPolylineLayer(){
+        polylineLayer.removeAllRenderables();
     }
 
     public void redraw() {

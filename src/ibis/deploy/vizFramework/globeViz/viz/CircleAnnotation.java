@@ -189,7 +189,7 @@ public class CircleAnnotation extends GlobeAnnotation {
         locationName = name;
     }
 
-    public String getLocationName() {
+    public String getName() {
         return locationName;
     }
 

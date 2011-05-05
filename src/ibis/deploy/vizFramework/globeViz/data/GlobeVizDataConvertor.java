@@ -6,11 +6,13 @@ import java.awt.Point;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.sun.corba.se.impl.ior.OldPOAObjectKeyTemplate;
 
@@ -37,33 +39,25 @@ import ibis.deploy.vizFramework.globeViz.viz.utils.Utils;
 
 public class GlobeVizDataConvertor implements IDataConvertor {
 
-    private AnnotationAttributes dotAttributes;
-    private GlobeVisualization globeViz;
-    private HashMap<String, Position> positionList;
+    private final GlobeVisualization globeViz;
+    private ConcurrentHashMap<String, Position> positionList;
 
     private double maximum = Double.MIN_VALUE;
-    private HashMap<GlobeEdge, Double> globeEdges;
+    private ConcurrentHashMap<GlobeEdge, Double> globeEdges;
     private final Location root;
     private Set<CircleAnnotation> pieChartWaypointSet;
 
-    public GlobeVizDataConvertor(GlobeVisualization globeViz, Location rootV) {
+    public GlobeVizDataConvertor(GlobeVisualization globeVizRef,
+            Location rootRef) {
 
-        this.globeViz = globeViz;
+        this.globeViz = globeVizRef;
         globeViz.setDataConvertor(this);
-        this.root = rootV;
+        this.root = rootRef;
 
-        // initialize attributes
-        dotAttributes = new AnnotationAttributes();
-        dotAttributes.setDrawOffset(new Point(0, -16));
-        dotAttributes.setSize(new Dimension(15, 15));
-        dotAttributes.setBorderWidth(0);
-        dotAttributes.setCornerRadius(0);
-        dotAttributes.setBackgroundColor(new Color(0, 0, 0, 0));
-        dotAttributes.setImageSource(null);
-
-        positionList = new HashMap<String, Position>();
-        globeEdges = new HashMap<GlobeEdge, Double>();
-        pieChartWaypointSet = new HashSet<CircleAnnotation>();
+        positionList = new ConcurrentHashMap<String, Position>();
+        globeEdges = new ConcurrentHashMap<GlobeEdge, Double>();
+        pieChartWaypointSet = Collections
+                .synchronizedSet(new HashSet<CircleAnnotation>());
 
         globeViz.getVisualization().getInputHandler()
                 .addMouseWheelListener(new MouseWheelListener() {
@@ -78,67 +72,77 @@ public class GlobeVizDataConvertor implements IDataConvertor {
                             // wheel moved down - zoom out
                             groupPieCharts();
                         }
-
-                        // connectClusters(root, UIConstants.LEVELS, false);
+                        globeEdges.clear();
+                        globeViz.clearPolylineLayer();
+//                        connectClusters(root, UIConstants.LEVELS, false);
+//                        redrawEdges(false);
                     }
                 });
 
-        generateFixedLocations(globeViz.getAnnotationLayer(), globeViz);
+        // generateFixedLocations(globeViz.getAnnotationLayer(), globeViz);
     }
 
-    public void updateData(Location root, boolean structureChanged) {
-        // createAnnotation(root);
+    public synchronized void updateData(Location root, boolean structureChanged) {
+        boolean pieChartsChanged = false;
 
         // TODO - de refacut incat sa fie refolosit locationlist, de hotarat
         // daca resetez maximul de fiecare data sau nu
-        // TODO - piechartwaypointset - trebuie updatat
         if (structureChanged) {
             positionList.clear();
             globeViz.clearAnnotationLayer();
-            globeEdges.clear();
 
             // displays clusters
             generateLocationsAndConnections(root, " ", UIConstants.LEVELS,
                     structureChanged);
-            redrawEdges();
 
-            try {
-                groupPieCharts();
-            } catch (Exception e) {
-                System.err.print(e.getMessage());
-                // a nullpointerexception is thrown on the first update because
-                // the
-                // view isn't completely initialized
-            }
-        } else {
-
-            // displays clusters
-            generateLocationsAndConnections(root, " ", UIConstants.LEVELS,
-                    structureChanged);
-            redrawEdges();
+            pieChartsChanged = groupPieCharts();
         }
+        try {
+
+            if (pieChartsChanged) {
+                globeEdges.clear();
+                globeViz.clearPolylineLayer();
+            }
+            //connectClusters(root, UIConstants.LEVELS, pieChartsChanged);
+        } catch (Exception e) {
+            System.err.print(e.getMessage());
+            // a nullpointerexception is thrown on the first update because
+            // the view isn't completely initialized
+        }
+
+        // TODO si aici trebuie true - de fapt trebuie verificat daca s-a
+        // modificat ceva sau nu
+        //redrawEdges(pieChartsChanged);
     }
 
-    private void redrawEdges() {
+    private void redrawEdges(boolean forceEdgeRedraw) {
         Color newColor;
 
         maximum = Double.MIN_VALUE;
 
-        for (Double value : globeEdges.values()) {
-            updateMax(value);
-        }
+        if (globeEdges != null) {
+            for (Double value : globeEdges.values()) {
+                updateMax(value);
+            }
 
-        for (GlobeEdge edge : globeEdges.keySet()) {
-            double ratio = globeEdges.get(edge) / maximum;
-            newColor = VizUtils.blend(Color.red, Color.green, ratio, 0.7f);
-            edge.updateAssociatedPolyline(globeViz, newColor);
-        }
+            for (GlobeEdge edge : globeEdges.keySet()) {
+                if (edge != null) {
+                    if (globeEdges.get(edge) != null) {
+                        double ratio = globeEdges.get(edge) / maximum;
+                        newColor = VizUtils.blend(Color.red, Color.green,
+                                ratio, 0.7f);
+                        edge.updateAssociatedPolyline(globeViz, newColor,
+                                forceEdgeRedraw);
+                    }
+                }
+            }
 
-        globeViz.redraw();
+            globeViz.redraw();
+        }
     }
 
-    private void generateLocationsAndConnections(Location root, String spacer,
-            int level, boolean structureChanged) {
+    private synchronized void generateLocationsAndConnections(Location root,
+            String spacer, int level, boolean structureChanged) {
         ArrayList<Location> dataChildren = root.getChildren();
         if (dataChildren == null || dataChildren.size() == 0) {
             // ArrayList<Ibis> ibises = root.getAllIbises();
@@ -149,7 +153,7 @@ public class GlobeVizDataConvertor implements IDataConvertor {
                 if (structureChanged) {
                     createAnnotation(loc, null);
                 }
-                generateConnections(loc);
+                // generateConnections(loc);
             }
 
             generateLocationsAndConnections(loc, spacer.concat("  "),
@@ -163,7 +167,7 @@ public class GlobeVizDataConvertor implements IDataConvertor {
         Position pos = new Position(LatLon.fromDegrees(
                 finalLocation.getLatitude(), finalLocation.getLongitude()), 0);
 
-        annotation = new CircleAnnotation(pos, dotAttributes,
+        annotation = new CircleAnnotation(pos, new AnnotationAttributes(),
                 finalLocation.getName());
         if (color == null) {
             annotation.getAttributes().setTextColor(
@@ -178,53 +182,53 @@ public class GlobeVizDataConvertor implements IDataConvertor {
         pieChartWaypointSet.add(annotation);
     }
 
-    private void generateConnections(Location loc) {
-        Link[] links = loc.getLinks();
-        String startLocation, stopLocation;
-        Position pos1, pos2;
-        double value = 0;
+    // private synchronized void generateConnections(Location loc) {
+    // Link[] links = loc.getLinks();
+    // String startLocation, stopLocation;
+    // Position pos1, pos2;
+    // double value = 0;
+    //
+    // for (Link link : links) {
+    //
+    // // only create arcs between locations
+    // if ((link.getSource() instanceof LocationImpl)
+    // && (link.getDestination() instanceof LocationImpl)) {
+    // startLocation = ((LocationImpl) link.getSource()).getName();
+    // stopLocation = ((LocationImpl) link.getDestination()).getName();
+    //
+    // pos1 = positionList.get(startLocation);
+    // pos2 = positionList.get(stopLocation);
+    //
+    // for (Metric metric : link.getMetrics(LinkDirection.SRC_TO_DST)) {
+    // try {
+    // value = (Float) metric.getValue(MetricModifier.NORM,
+    // MetricOutput.PERCENT);
+    //
+    // } catch (OutputUnavailableException e) {
+    // e.printStackTrace();
+    // }
+    // }
+    //
+    // for (Metric metric : link.getMetrics(LinkDirection.DST_TO_SRC)) {
+    // try {
+    // value = (Float) metric.getValue(MetricModifier.NORM,
+    // MetricOutput.PERCENT);
+    // } catch (OutputUnavailableException e) {
+    // e.printStackTrace();
+    // }
+    // }
+    //
+    // if (pos1 != null && pos2 != null) {
+    // GlobeEdge edge = new GlobeEdge(pos1, pos2);
+    // // if the edge is already in the map, this just updates the
+    // // value
+    // globeEdges.put(edge, value);
+    // }
+    // }
+    // }
+    // }
 
-        for (Link link : links) {
-
-            // only create arcs between locations
-            if ((link.getSource() instanceof LocationImpl)
-                    && (link.getDestination() instanceof LocationImpl)) {
-                startLocation = ((LocationImpl) link.getSource()).getName();
-                stopLocation = ((LocationImpl) link.getDestination()).getName();
-
-                pos1 = positionList.get(startLocation);
-                pos2 = positionList.get(stopLocation);
-
-                for (Metric metric : link.getMetrics(LinkDirection.SRC_TO_DST)) {
-                    try {
-                        value = (Float) metric.getValue(MetricModifier.NORM,
-                                MetricOutput.PERCENT);
-
-                    } catch (OutputUnavailableException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                for (Metric metric : link.getMetrics(LinkDirection.DST_TO_SRC)) {
-                    try {
-                        value = (Float) metric.getValue(MetricModifier.NORM,
-                                MetricOutput.PERCENT);
-                    } catch (OutputUnavailableException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                if (pos1 != null && pos2 != null) {
-                    GlobeEdge edge = new GlobeEdge(pos1, pos2);
-                    // if the edge is already in the map, this just updates the
-                    // value
-                    globeEdges.put(edge, value);
-                }
-            }
-        }
-    }
-
-    private void splitPieCharts() {
+    private synchronized void splitPieCharts() {
         HashMap<String, HashSet<String>> adjacencyList = new HashMap<String, HashSet<String>>();
         HashMap<String, Boolean> visited = new HashMap<String, Boolean>();
         HashMap<String, Position> positionsInPieChart = new HashMap<String, Position>();
@@ -285,7 +289,7 @@ public class GlobeVizDataConvertor implements IDataConvertor {
         }
     }
 
-    private void groupPieCharts() {
+    private synchronized boolean groupPieCharts() {
         HashMap<String, HashSet<String>> adjacencyList = new HashMap<String, HashSet<String>>();
         HashMap<String, Boolean> visited = new HashMap<String, Boolean>();
         HashMap<String, Position> positionsInPieChart = new HashMap<String, Position>();
@@ -304,11 +308,12 @@ public class GlobeVizDataConvertor implements IDataConvertor {
             if (renderable instanceof CircleAnnotation) {
 
                 CircleAnnotation oldPieChart = (CircleAnnotation) renderable;
-
+                
                 visiblePieChartWaypointSet.add(oldPieChart);
-
-                visited.put(oldPieChart.getLocationName(), false);
-                positionsInPieChart.put(oldPieChart.getLocationName(),
+                
+                visited.put(oldPieChart.getName(), false);
+                
+                positionsInPieChart.put(oldPieChart.getName(),
                         oldPieChart.getPosition());
 
                 Vec4 vecPos = globeViz.getVisualization().getModel().getGlobe()
@@ -316,11 +321,11 @@ public class GlobeVizDataConvertor implements IDataConvertor {
 
                 if (globeViz.getVisualization().getView()
                         .getFrustumInModelCoordinates().contains(vecPos)) {
-                    System.out.println(oldPieChart.getLocationName()
-                            + " is visible");
+                    // System.out.println(oldPieChart.getLocationName()
+                    // + " is visible");
                 } else {
-                    System.out.println(oldPieChart.getLocationName()
-                            + " is hidden --->");
+                    // System.out.println(oldPieChart.getLocationName()
+                    // + " is hidden --->");
 
                     // don't take hidden pie charts into consideration
                     invisiblePieCharts.add(oldPieChart);
@@ -362,8 +367,8 @@ public class GlobeVizDataConvertor implements IDataConvertor {
             connectedComponent.clear(); // reuse the same structure
 
             // compute the connected component for each unvisited node
-            if (!visited.get(waypoint.getLocationName())) {
-                DFS(waypoint.getLocationName(), adjacencyList, visited,
+            if (!visited.get(waypoint.getName())) {
+                DFS(waypoint.getName(), adjacencyList, visited,
                         connectedComponent);
 
                 // the component does not consist of a single cluster
@@ -389,6 +394,8 @@ public class GlobeVizDataConvertor implements IDataConvertor {
                         }
                         newPieChart = new CircleAnnotation(connectedComponent,
                                 positions, new AnnotationAttributes());
+
+                        pieChartsChanged = true;
                     }
 
                     pieChartsToAdd.add(newPieChart);
@@ -412,11 +419,13 @@ public class GlobeVizDataConvertor implements IDataConvertor {
             globeViz.clearAnnotationLayer();
             globeViz.getAnnotationLayer().addRenderables(pieChartWaypointSet);
         }
+
+        return pieChartsChanged;
     }
 
     private Position retrievePositionFromPieList(String name) {
         for (CircleAnnotation annotation : pieChartWaypointSet) {
-            if (annotation.getLocationName().equals(name)) {
+            if (annotation.getName().equals(name)) {
                 return annotation.getPosition();
             }
         }
@@ -546,7 +555,7 @@ public class GlobeVizDataConvertor implements IDataConvertor {
         }
     }
 
-    private void connectClusters(Location root, int level,
+    private synchronized void connectClusters(Location root, int level,
             boolean structureChanged) {
         ArrayList<Location> dataChildren = root.getChildren();
         if (dataChildren == null || dataChildren.size() == 0) {
@@ -562,7 +571,7 @@ public class GlobeVizDataConvertor implements IDataConvertor {
         }
     }
 
-    private void generatePieChartConnections(Location loc) {
+    private synchronized void generatePieChartConnections(Location loc) {
         Link[] links = loc.getLinks();
         String startLocation, stopLocation;
         Position pos1, pos2;
