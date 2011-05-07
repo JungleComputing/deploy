@@ -11,6 +11,7 @@ import gov.nasa.worldwind.render.FrameFactory;
 import gov.nasa.worldwind.render.GlobeAnnotation;
 import ibis.deploy.util.Colors;
 import ibis.deploy.vizFramework.globeViz.viz.utils.UIConstants;
+import ibis.deploy.vizFramework.globeViz.viz.utils.Utils;
 
 import java.awt.Color;
 import java.nio.DoubleBuffer;
@@ -44,7 +45,6 @@ public class CircleAnnotation extends GlobeAnnotation {
         clusterColors = new ArrayList<Color>();
         clusterColors.add(Colors.fromLocation(name));
         connections = new HashMap<CircleAnnotation, Double>();
-
     }
 
     // public CircleAnnotation(ArrayList<CircleAnnotation> clusterAnnotations,
@@ -77,7 +77,7 @@ public class CircleAnnotation extends GlobeAnnotation {
     // }
 
     public CircleAnnotation(ArrayList<String> clusterNames,
-            ArrayList<Position> positions, AnnotationAttributes defaults) {
+            ArrayList<Position> positions, AnnotationAttributes defaults, WorldWindowGLCanvas canvas) {
         super(clusterNames.toString(), Position.ZERO, defaults);
 
         // there might be compound names, so split them before using them
@@ -101,17 +101,37 @@ public class CircleAnnotation extends GlobeAnnotation {
             if (positions.size() == 1) {
                 setPosition(positions.get(0));
             } else {
-                Position intermediate = Position.interpolate(0.5,
-                        positions.get(0), positions.get(1));
+//                Position intermediate = Position.interpolateGreatCircle(0.5,
+//                        positions.get(0), positions.get(1));
+//
+//                for (int i = 1; i < positions.size(); i++) {
+//                    intermediate = Position.interpolateGreatCircle(0.5, intermediate,
+//                            positions.get(i));
+//                }
 
-                for (int i = 1; i < positions.size(); i++) {
-                    intermediate = Position.interpolate(0.5, intermediate,
-                            positions.get(i));
+//                setPosition(intermediate);
+                
+                //find the mid-point of the Position list by doing an average of the screen positions
+                
+                ArrayList<Vec4> points = new ArrayList<Vec4>();
+                for(Position pos:positions){
+                    points.add(Utils.fromPositionToScreen(pos, canvas.getModel().getGlobe(), canvas.getView()));
                 }
-
-                setPosition(intermediate);
+                
+                double x = 0, y = 0, z = 0;
+                for(Vec4 point: points){
+                    x+= point.getX();
+                    y+= point.getY();
+                    z+= point.getZ();
+                }
+                
+                x/= points.size();
+                y/= points.size();
+                z/= points.size();
+                
+                setPosition(Utils.fromScreenToPosition(x, y,z, canvas.getModel().getGlobe(), canvas.getView()));
             }
-
+            
             for (String cluster : finalClusterNames) {
                 clusterColors.add(Colors.fromLocation(cluster));
             }

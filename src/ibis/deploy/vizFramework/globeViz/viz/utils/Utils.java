@@ -30,4 +30,17 @@ public class Utils {
 
         return -1;
     }
+
+    public static Vec4 fromPositionToScreen(Position pos, Globe globe, View view) {
+        Vec4 vecPos;
+        vecPos = globe.computePointFromPosition(pos);
+        return view.project(vecPos);
+    }
+    
+    public static Position fromScreenToPosition(double x, double y, double z, Globe globe, View view){
+        Vec4 vecpos = view.unProject(new Vec4(x, y, z));
+        Position pos = globe.computePositionFromPoint(vecpos);
+        return new Position(pos.getLatitude(), pos.getLongitude(), 0);
+        //return globe.computePositionFromPoint(temp);
+    }
 }
