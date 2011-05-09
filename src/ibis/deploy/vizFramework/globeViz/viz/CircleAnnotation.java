@@ -25,7 +25,6 @@ import java.util.StringTokenizer;
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 
-//TODO - maybe adjust circle size according to location size
 public class CircleAnnotation extends GlobeAnnotation {
     private String locationName;
 
@@ -111,7 +110,7 @@ public class CircleAnnotation extends GlobeAnnotation {
 
 //                setPosition(intermediate);
                 
-                //find the mid-point of the Position list by doing an average of the screen positions
+                //find the mid-point of the Position list by computing an average of the screen positions
                 
                 ArrayList<Vec4> points = new ArrayList<Vec4>();
                 for(Position pos:positions){

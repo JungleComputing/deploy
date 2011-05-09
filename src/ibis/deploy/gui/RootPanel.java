@@ -59,7 +59,7 @@ public class RootPanel extends JPanel {
 				"images/gridvision.png", new DeployVizPanel(gui), tabs);
 		
 		//GlobeVisualization globe = new GlobeVisualization();
-		GlobePanel globePanel = new GlobePanel();
+		GlobePanel globePanel = new GlobePanel(gui);
 		
 		globeTab = new DetachableTab("Global Overview",
                         "images/gridvision.png", globePanel, tabs);

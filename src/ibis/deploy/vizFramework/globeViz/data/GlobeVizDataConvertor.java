@@ -3,6 +3,9 @@ package ibis.deploy.vizFramework.globeViz.data;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
@@ -22,6 +25,7 @@ import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.AnnotationAttributes;
 import gov.nasa.worldwind.render.Renderable;
+import ibis.deploy.gui.GUI;
 import ibis.deploy.gui.deployViz.helpers.VizUtils;
 import ibis.deploy.monitoring.collection.Location;
 import ibis.deploy.monitoring.collection.Link;
@@ -46,6 +50,7 @@ public class GlobeVizDataConvertor implements IDataConvertor {
     private ConcurrentHashMap<GlobeEdge, Double> globeEdges;
     private final Location root;
     private Set<CircleAnnotation> pieChartWaypointSet;
+    private GUI gui;
 
     public GlobeVizDataConvertor(GlobeVisualization globeVizRef,
             Location rootRef) {
@@ -78,6 +83,43 @@ public class GlobeVizDataConvertor implements IDataConvertor {
                         // redrawEdges(false);
                     }
                 });
+        
+        globeViz.getVisualization().addMouseMotionListener(new MouseMotionListener() {
+            @Override
+            public void mouseMoved(MouseEvent arg0) {
+                
+                //TODO - decide whether to group them or not on drag
+                groupPieCharts();
+            }
+            
+            @Override
+            public void mouseDragged(MouseEvent arg0) {
+            }
+        });
+        globeViz.getVisualization().addMouseListener(new MouseListener() {
+            
+            @Override
+            public void mouseReleased(MouseEvent arg0) {
+            }
+            
+            @Override
+            public void mousePressed(MouseEvent arg0) {
+              //TODO - decide whether to group them or not on press
+                groupPieCharts();
+            }
+            
+            @Override
+            public void mouseExited(MouseEvent arg0) {
+            }
+            
+            @Override
+            public void mouseEntered(MouseEvent arg0) {
+            }
+            
+            @Override
+            public void mouseClicked(MouseEvent arg0) {
+            }
+        });
 
         //generateFixedLocations(globeViz.getAnnotationLayer(), globeViz);
     }
@@ -152,6 +194,7 @@ public class GlobeVizDataConvertor implements IDataConvertor {
             if (level == 0) {
                 if (structureChanged) {
                     createAnnotation(loc, null);
+                  
                 }
                 // generateConnections(loc);
             }
@@ -177,6 +220,8 @@ public class GlobeVizDataConvertor implements IDataConvertor {
         }
 
         globeViz.getAnnotationLayer().addRenderable(annotation);
+        
+        System.out.println(loc.getName() + " at " + pos.toString());
 
         positionList.put(loc.getName(), pos);
         pieChartWaypointSet.add(annotation);
@@ -822,5 +867,9 @@ public class GlobeVizDataConvertor implements IDataConvertor {
         positionList.put("Location3@Location3@ASD", pos3);
 
         pieChartWaypointSet.add(annotation);
+    }
+    
+    public void setGUI(GUI gui){
+        this.gui = gui;
     }
 }

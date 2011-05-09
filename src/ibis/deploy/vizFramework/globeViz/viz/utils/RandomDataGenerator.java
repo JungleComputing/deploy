@@ -5,6 +5,8 @@ import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.AnnotationAttributes;
 
+import ibis.deploy.Cluster;
+import ibis.deploy.gui.GUI;
 import ibis.deploy.vizFramework.globeViz.viz.CircleAnnotation;
 import ibis.deploy.vizFramework.globeViz.viz.GlobeVisualization;
 
@@ -14,6 +16,35 @@ import java.awt.Point;
 import java.util.ArrayList;
 
 public class RandomDataGenerator {
+
+    private static GUI gui;
+    private static Cluster[] clusters;
+    private static int currentIdx;
+
+    // Bucharest, Barcelona, Tokyo, Los Angeles, Athens, Sydney, Amsterdam,
+    // Delft, Leiden
+    private static double[] latitudes = { 44.433, 41.38, 35.68, 34.05, 37.98,
+            -33.9, 52.35, 52, 52.15 };
+    private static double[] longitudes = { 26.1, 2.18, 139.75, -118.24, 23.73,
+            151.2, 4.91, 4.36, 4.5 };
+
+    public static void setGUI(GUI guiRef) {
+        gui = guiRef;
+        clusters = gui.getGrid().getClusters();
+        currentIdx = 0;
+    }
+
+    private static Cluster getClusterByName(String name) {
+        if (name != null) {
+            for (Cluster c : clusters) {
+                if (c.getName().equals(name)) {
+                    return c;
+                }
+            }
+        }
+
+        return null;
+    }
 
     // generates a list with nPoints random locations
     public static ArrayList<Position> generatePositionList(int nPoints) {
@@ -28,18 +59,36 @@ public class RandomDataGenerator {
     // generates one random geographic location
     public static Position generateRandomPosition() {
         double lat, longit;
-        lat = generateRandomLatitude();
-        longit = generateRandomLongitude();
+        lat = generateRandomLatitude(false, null);
+        longit = generateRandomLongitude(false, null);
         LatLon pos1 = LatLon.fromDegrees(lat, longit);
 
         return new Position(pos1, 0);
     }
 
-    public static double generateRandomLatitude() {
+    public static double generateRandomLatitude(boolean useClusterData,
+            String name) {
+        if (useClusterData && currentIdx < latitudes.length) {
+            System.out.println(latitudes[currentIdx]);
+            return latitudes[currentIdx];
+        } else {
+            Cluster c = getClusterByName(name);
+            if (c != null) {
+                return c.getLatitude();
+            }
+        }
         return (Math.random() * 1000) % 180 - 90;
     }
 
-    public static double generateRandomLongitude() {
+    public static double generateRandomLongitude(boolean useClusterData, String name) {
+        if (useClusterData && currentIdx < longitudes.length) {
+            return longitudes[currentIdx++];
+        } else {
+            Cluster c = getClusterByName(name);
+            if (c != null) {
+                return c.getLongitude();
+            }
+        }
         return (Math.random() * 1000) % 360 - 180;
     }
 
@@ -103,7 +152,7 @@ public class RandomDataGenerator {
 
         Position pos1, pos2;
         CircleAnnotation annotation;
-        
+
         AnnotationAttributes dotAttributes = new AnnotationAttributes();
         dotAttributes.setDrawOffset(new Point(0, -16));
         dotAttributes.setSize(new Dimension(15, 15));
@@ -111,19 +160,19 @@ public class RandomDataGenerator {
         dotAttributes.setCornerRadius(0);
         dotAttributes.setImageSource(null);
         dotAttributes.setBackgroundColor(new Color(0, 0, 0, 0));
-        
+
         pos1 = Position.ZERO;
         pos2 = new Position(LatLon.fromDegrees(0, 10), 0);
-        
-        annotation = new CircleAnnotation(pos1, dotAttributes, "Location1@Location1@ASD");
-        annotation.getAttributes().setTextColor(
-                Color.blue);
+
+        annotation = new CircleAnnotation(pos1, dotAttributes,
+                "Location1@Location1@ASD");
+        annotation.getAttributes().setTextColor(Color.blue);
         layer.addRenderable(annotation);
-        
-        annotation = new CircleAnnotation(pos2, dotAttributes, "Location2@Location2@ASD");
-        annotation.getAttributes().setTextColor(
-                Color.blue);
+
+        annotation = new CircleAnnotation(pos2, dotAttributes,
+                "Location2@Location2@ASD");
+        annotation.getAttributes().setTextColor(Color.blue);
         layer.addRenderable(annotation);
-        
+
     }
 }

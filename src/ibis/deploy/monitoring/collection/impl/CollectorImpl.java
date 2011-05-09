@@ -13,6 +13,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import ibis.deploy.gui.GUI;
 import ibis.deploy.monitoring.collection.Collector;
 import ibis.deploy.monitoring.collection.Element;
 import ibis.deploy.monitoring.collection.Ibis;
@@ -38,6 +39,8 @@ public class CollectorImpl implements Collector, Runnable {
     private static final int workercount = 8;
 
     private static CollectorImpl ref = null;
+
+    private static GUI gui = null;
 
     // Interfaces to the IPL
     private ManagementServiceInterface manInterface;
@@ -87,8 +90,8 @@ public class CollectorImpl implements Collector, Runnable {
 
         if (locations.get("root") == null) {
             root = new LocationImpl("root", color,
-                    RandomDataGenerator.generateRandomLatitude(),
-                    RandomDataGenerator.generateRandomLongitude());
+                    RandomDataGenerator.generateRandomLatitude(false, null),
+                    RandomDataGenerator.generateRandomLongitude(false, null));
 
             locations.put("root", root);
         } else {
@@ -127,10 +130,11 @@ public class CollectorImpl implements Collector, Runnable {
 
     public static CollectorImpl getCollector(
             ManagementServiceInterface manInterface,
-            RegistryServiceInterface regInterface) {
+            RegistryServiceInterface regInterface, GUI gui) {
         if (ref == null) {
             ref = new CollectorImpl(manInterface, regInterface);
             ref.initWorkers();
+            RandomDataGenerator.setGUI(gui);
             // ref.initUniverse();
         }
         return ref;
@@ -212,17 +216,17 @@ public class CollectorImpl implements Collector, Runnable {
 
     private void initLocations() {
         ibises.clear();
-        
-        //TODO - maybe don't clear - locations usually remain the same
-        //locations.clear();
+
+        // TODO - maybe don't clear - locations usually remain the same
+        // locations.clear();
         parents.clear();
 
         Float[] color = { 0f, 0f, 0f };
 
         if (locations.get("root") == null) {
             root = new LocationImpl("root", color,
-                    RandomDataGenerator.generateRandomLatitude(),
-                    RandomDataGenerator.generateRandomLongitude());
+                    RandomDataGenerator.generateRandomLatitude(false, null),
+                    RandomDataGenerator.generateRandomLongitude(false, null));
             locations.put("root", root);
         } else {
             root = locations.get("root");
@@ -249,9 +253,20 @@ public class CollectorImpl implements Collector, Runnable {
                     if (locations.containsKey(locationName)) {
                         current = locations.get(locationName);
                     } else {
-                        current = new LocationImpl(locationName, color,
-                                RandomDataGenerator.generateRandomLatitude(),
-                                RandomDataGenerator.generateRandomLongitude());
+
+                        if (locationName.startsWith("cluster")) {
+                            current = new LocationImpl(locationName, color,
+                                    RandomDataGenerator
+                                            .generateRandomLatitude(true, locationName),
+                                    RandomDataGenerator
+                                            .generateRandomLongitude(true, locationName));
+                        } else {
+                            current = new LocationImpl(locationName, color,
+                                    RandomDataGenerator
+                                            .generateRandomLatitude(false, locationName),
+                                    RandomDataGenerator
+                                            .generateRandomLongitude(false, locationName));
+                        }
                         locations.put(locationName, current);
                     }
 
@@ -274,11 +289,19 @@ public class CollectorImpl implements Collector, Runnable {
                         if (locations.containsKey(name)) {
                             parent = locations.get(name);
                         } else {
-                            parent = new LocationImpl(name, color,
-                                    RandomDataGenerator
-                                            .generateRandomLatitude(),
-                                    RandomDataGenerator
-                                            .generateRandomLongitude());
+                            if (name.contains("cluster")) {
+                                parent = new LocationImpl(name, color,
+                                        RandomDataGenerator
+                                                .generateRandomLatitude(true, name),
+                                        RandomDataGenerator
+                                                .generateRandomLongitude(true, name));
+                            } else {
+                                parent = new LocationImpl(name, color,
+                                        RandomDataGenerator
+                                                .generateRandomLatitude(false, name),
+                                        RandomDataGenerator
+                                                .generateRandomLongitude(false, name));
+                            }
                             locations.put(name, parent);
                         }
 

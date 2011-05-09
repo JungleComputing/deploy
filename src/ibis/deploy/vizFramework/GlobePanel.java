@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import ibis.deploy.gui.GUI;
 import ibis.deploy.gui.deployViz.helpers.VizUtils;
 import ibis.deploy.monitoring.collection.Collector;
 import ibis.deploy.vizFramework.globeViz.viz.GlobeVisualization;
@@ -19,9 +20,9 @@ import javax.swing.JRadioButton;
 public class GlobePanel extends JPanel {
     private static final long serialVersionUID = 4754345291079348455L;
 
-    GlobeVisualization globe = new GlobeVisualization();
+    GlobeVisualization globe;
 
-    public GlobePanel() {
+    public GlobePanel(GUI gui) {
         setLayout(new BorderLayout(5, 5));
 
         JPanel leftPanel = new JPanel();
@@ -29,6 +30,8 @@ public class GlobePanel extends JPanel {
                 BoxLayout.PAGE_AXIS);
         leftPanel.setLayout(verticalLayout);
 
+        globe = new GlobeVisualization(gui);
+        
         leftPanel.add(new JLabel("Edge type:    "));
         
         // radio buttons for switching between layouts

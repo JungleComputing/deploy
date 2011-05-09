@@ -78,8 +78,8 @@ public class GUI {
 
     private RootPanel myRoot;
 
-     private final Mode mode;
-    
+    private final Mode mode;
+
     private Collector collector;
 
     // private Boolean sharedHubs;
@@ -107,29 +107,29 @@ public class GUI {
 
         // Schedule a job for the event-dispatching thread:
         // creating and showing this application's GUI.
-        
-        /* Turned off the invokeLater stuff, because it was interfering 
-         * with jogl. At first glance, this does not seem to have any 
-         * impact on the rest of deploy anyway, but if that is a wrong 
-         * assessment, please contact me. 
-         * - Maarten
-        */
-        //javax.swing.SwingUtilities.invokeLater(new Runnable() {
-        //    public void run() {
-            	try {
-                gui.createAndShowGUI();
-            	} catch (Exception e) {
-            		e.printStackTrace(System.err);
-            		System.exit(1);
-            	}
-        //    }
-        //});
+
+        /*
+         * Turned off the invokeLater stuff, because it was interfering with
+         * jogl. At first glance, this does not seem to have any impact on the
+         * rest of deploy anyway, but if that is a wrong assessment, please
+         * contact me. - Maarten
+         */
+        // javax.swing.SwingUtilities.invokeLater(new Runnable() {
+        // public void run() {
+        try {
+            gui.createAndShowGUI();
+        } catch (Exception e) {
+            e.printStackTrace(System.err);
+            System.exit(1);
+        }
+        // }
+        // });
     }
 
     private void close() {
         int choice = JOptionPane.showConfirmDialog(frame, "Really exit?",
                 "Exiting Ibis-Deploy", JOptionPane.YES_NO_OPTION);
-                
+
         if (choice == JOptionPane.YES_OPTION) {
             frame.dispose();
             System.exit(0);
@@ -143,15 +143,15 @@ public class GUI {
 
         JOptionPane options = new JOptionPane(
                 "Exiting ibis-deploy. Save workspace to \"" + location + "\"?",
-                JOptionPane.QUESTION_MESSAGE,
-                JOptionPane.YES_NO_CANCEL_OPTION, null, new Object[] {"Yes", "No", "Cancel"}, "No");
-        
+                JOptionPane.QUESTION_MESSAGE, JOptionPane.YES_NO_CANCEL_OPTION,
+                null, new Object[] { "Yes", "No", "Cancel" }, "No");
+
         JDialog dialog = options.createDialog(frame, "Save Workspace?");
-        
+
         dialog.setVisible(true);
-        
+
         Object choice = options.getValue();
-        
+
         if (choice != null && choice.equals("Yes")) {
             try {
                 saveWorkspace();
@@ -216,7 +216,7 @@ public class GUI {
         this.menuBar.add(menu);
 
         menu = new JMenu("Options");
-        
+
         menu.add(MapUtilities.getMapMenu());
 
         if (!isReadOnly()) {
@@ -237,7 +237,7 @@ public class GUI {
             subMenu.add(menuItem);
             menu.add(subMenu);
         }
-      
+
         this.menuBar.add(menu);
 
         menu = new JMenu("Help");
@@ -292,14 +292,14 @@ public class GUI {
         System.err.println("-h | --help\tThis message");
     }
 
-	public GUI(Deploy deploy, Workspace workspace, Mode mode, String... logos)
+    public GUI(Deploy deploy, Workspace workspace, Mode mode, String... logos)
             throws Exception {
         this.deploy = deploy;
         this.mode = mode;
         this.workspace = workspace;
         createAndShowGUI(logos);
     }
-    
+
     protected GUI(String[] arguments) {
         boolean verbose = false;
         boolean keepSandboxes = false;
@@ -390,25 +390,26 @@ public class GUI {
                 initWindow.remove();
 
             }
-                        
+
             RegistryServiceInterface regInterface;
             ManagementServiceInterface manInterface;
             if (fakeData) {
-            	logger.info("Monitor using simulated data.");
-            	
-            	//Ibis/JMX variables
-            	regInterface = new FakeRegistryService();
-            	manInterface = new FakeManagementService(regInterface);
+                logger.info("Monitor using simulated data.");
+
+                // Ibis/JMX variables
+                regInterface = new FakeRegistryService();
+                manInterface = new FakeManagementService(regInterface);
             } else {
-            	logger.info("Monitor using real data.");
-            	regInterface = deploy.getServer().getRegistryService();
-            	manInterface = deploy.getServer().getManagementService();
+                logger.info("Monitor using real data.");
+                regInterface = deploy.getServer().getRegistryService();
+                manInterface = deploy.getServer().getManagementService();
             }
-            
-            //Data interface
-            collector = ibis.deploy.monitoring.collection.impl.CollectorImpl.getCollector(manInterface, regInterface);
-    		new Thread(collector).start();
-    		
+
+            // Data interface
+            collector = ibis.deploy.monitoring.collection.impl.CollectorImpl
+                    .getCollector(manInterface, regInterface, this);
+            new Thread(collector).start();
+
         } catch (Exception e) {
             System.err.println("Could not initialize ibis-deploy: " + e);
             e.printStackTrace(System.err);
@@ -544,13 +545,12 @@ public class GUI {
     public RootPanel getRootPanel() {
         return myRoot;
     }
-    
+
     public Mode getMode() {
         return mode;
     }
-    
-    
+
     public Collector getCollector() {
-    	return collector;
+        return collector;
     }
 }

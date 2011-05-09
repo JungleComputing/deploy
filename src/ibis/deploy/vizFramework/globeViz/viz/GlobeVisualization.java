@@ -10,6 +10,7 @@ import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.AnnotationAttributes;
 import gov.nasa.worldwind.render.GlobeAnnotation;
 import gov.nasa.worldwind.render.Renderable;
+import ibis.deploy.gui.GUI;
 import ibis.deploy.gui.worldmap.helpers.ClusterWaypoint;
 import ibis.deploy.vizFramework.globeViz.data.GlobeVizDataConvertor;
 import ibis.deploy.vizFramework.globeViz.viz.utils.RandomDataGenerator;
@@ -44,9 +45,12 @@ public class GlobeVisualization extends JPanel {
     private RenderableLayer polylineLayer;
     private boolean followTerrain = false;
     private GlobeVizDataConvertor convertor;
+    private GUI gui;
 
-    public GlobeVisualization() {
+    public GlobeVisualization(GUI gui) {
 
+        this.gui = gui;
+        
         // create a WorldWind main object
         worldWindCanvas = new WorldWindowGLCanvas();
         worldWindCanvas.setModel(new BasicModel());
@@ -79,6 +83,8 @@ public class GlobeVisualization extends JPanel {
                     highlight(event.getTopObject());
             }
         });
+        
+        
 
         // //temporarily disable some layers for debugging - TODO - remove
         // for (Layer layer : worldWindCanvas.getModel().getLayers()) {
@@ -257,6 +263,7 @@ public class GlobeVisualization extends JPanel {
 
     public void setDataConvertor(GlobeVizDataConvertor convertor) {
         this.convertor = convertor;
+        convertor.setGUI(gui);
     }
 
     // /**
