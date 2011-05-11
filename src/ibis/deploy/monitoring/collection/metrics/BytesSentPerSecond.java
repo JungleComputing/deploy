@@ -72,7 +72,7 @@ public class BytesSentPerSecond extends ibis.deploy.monitoring.collection.impl.M
 						
 						if (perSec > overall_max) {
 							overall_max = perSec;
-							System.out.println("Overall max now: " + overall_max);							
+							//System.out.println("Overall max now: " + overall_max);							
 						}
 						
 						float percent = (float)perSec/MAX;

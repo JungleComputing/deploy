@@ -7,12 +7,12 @@ import java.util.Map;
 public class Colors {
 
     // colors used for clusters
-    private static final String[] colors = { "#8080FF", "#BF80FF", "#FF80FF",
+    private static final String[] colors = { "#8080FF", "#FF80BF", "#008080",
+            "#004080", "#000080", "#800000", "#804000", "#BF80FF", "#FF80FF",
             "#FF0000", "#FF8000", "#FFFF00", "#80FF00", "#00FFFF", "#007FFF",
-            "#0000FF", "#8000FF", "#FF00FF", "#808000", "#00FF00", "#408000",
-            "#FF0080", "#FF8080", "#FFBF80", "#FFFF80", "#BFFF80", "#80FF80",
-            "#80FFBF", "#80FFFF", "#80BFFF", "#FF80BF", "#800000", "#804000",
-            "#008000", "#008040", "#008080", "#004080", "#000080", "#400080",
+            "#0000FF", "#808000", "#00FF00", "#408000", "#FF0080", "#FF8080",
+            "#FFBF80", "#FFFF80", "#BFFF80", "#80FF80", "#80FFBF", "#80FFFF",
+            "#80BFFF", "#8000FF", "#FF00FF", "#008000", "#008040", "#400080",
             "#00FF80", "#800080", "#800040" };
 
     // red, reserved for local

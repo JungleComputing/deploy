@@ -78,7 +78,8 @@ public class CustomFrameFactory extends FrameFactory {
             if (!dc.isPickingMode()) {
                 //TODO - restore colors
                 clusterColors.get(i).getColorComponents(color);
-                color[3] = 0.5f;
+                //color[3] = 0.5f; - transparent
+                color[3] = 0.75f;
                 gl.glColor4fv(color, 0);
                 
                 //gl.glColor3f(0, 0, 0);

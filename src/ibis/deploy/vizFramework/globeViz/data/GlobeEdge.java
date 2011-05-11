@@ -10,9 +10,10 @@ public class GlobeEdge {
 
     private final Position pos1, pos2;
     private UnclippablePolyline polyline;
+    private final String name;
 
     // pos1 and pos2 need to be non-null
-    public GlobeEdge(Position pos1, Position pos2) {
+    public GlobeEdge(Position pos1, Position pos2, String name) {
         if (pos1 != null && pos2 != null) {
             this.pos1 = pos1;
             this.pos2 = pos2;
@@ -20,6 +21,7 @@ public class GlobeEdge {
             this.pos1 = Position.ZERO;
             this.pos2 = Position.ZERO;
         }
+        this.name = name;
     }
 
     // the polyline is calculated only once, otherwise its color is changed
@@ -34,7 +36,6 @@ public class GlobeEdge {
             } else {
                 polyline.setColor(color);
             }
-            // System.out.println("redraw");
         }
     }
 
@@ -64,7 +65,11 @@ public class GlobeEdge {
         // hash = hash * 31 + (pos2 == null ? 0 : pos2.hashCode());
         // return hash;
 
-        return (41 * (41 + pos1.hashCode()) + pos2.hashCode());
+        // We pulled this trick so that we can obtain the same hash code, no
+        // matter what the edge direction is
+        int hash1 = (41 * (41 + pos1.hashCode()) + pos2.hashCode());
+        int hash2 = (41 * (41 + pos2.hashCode()) + pos1.hashCode());
+        return Math.max(hash1, hash2);
     }
 
     public Position getFirstPosition() {
@@ -83,5 +88,10 @@ public class GlobeEdge {
             return true;
         }
         return false;
+    }
+
+    public String getName() {
+        // return name;
+        return pos1.toString() + " -> " + pos2.toString();
     }
 }

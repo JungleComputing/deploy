@@ -114,9 +114,6 @@ public class UnclippablePolyline extends Polyline {
             gl.glLoadMatrixd(matrixArray, 0);
             gl.glMatrixMode(GL2.GL_MODELVIEW);
             
-            
-            
-            
             for (ArrayList<Vec4> span : this.currentSpans)
             {
                 if (span == null)

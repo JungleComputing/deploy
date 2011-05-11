@@ -21,12 +21,12 @@ public class RandomDataGenerator {
     private static Cluster[] clusters;
     private static int currentIdx;
 
-    // Bucharest, Barcelona, Tokyo, Los Angeles, Athens, Sydney, Amsterdam,
-    // Delft, Leiden
+    // Bucharest, Barcelona, Tokyo, Los Angeles, Athens, Amsterdam,
+    // Delft, Leiden, Copenhagen, Moscow, Sydney
     private static double[] latitudes = { 44.433, 41.38, 35.68, 34.05, 37.98,
-            -33.9, 52.35, 52, 52.15 };
+             52.35, 52, 52.15, 55.75, 55.66, -33.9};
     private static double[] longitudes = { 26.1, 2.18, 139.75, -118.24, 23.73,
-            151.2, 4.91, 4.36, 4.5 };
+            4.91, 4.36, 4.5, 37.61, 12.58, 151.2};
 
     public static void setGUI(GUI guiRef) {
         gui = guiRef;
@@ -69,7 +69,6 @@ public class RandomDataGenerator {
     public static double generateRandomLatitude(boolean useClusterData,
             String name) {
         if (useClusterData && currentIdx < latitudes.length) {
-            System.out.println(latitudes[currentIdx]);
             return latitudes[currentIdx];
         } else {
             Cluster c = getClusterByName(name);
@@ -80,7 +79,8 @@ public class RandomDataGenerator {
         return (Math.random() * 1000) % 180 - 90;
     }
 
-    public static double generateRandomLongitude(boolean useClusterData, String name) {
+    public static double generateRandomLongitude(boolean useClusterData,
+            String name) {
         if (useClusterData && currentIdx < longitudes.length) {
             return longitudes[currentIdx++];
         } else {
