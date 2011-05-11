@@ -47,6 +47,7 @@ public class Cluster {
         out.println("# job.wrapper.script  If specified, the given script is copied to the cluster");
         out.println("#                     and run instead of java");
         out.println("# user.name           User name used for authentication at cluster");
+        out.println("# password            Password used for authentication at cluster. Only use for testing!");
         out.println("# user.key            User keyfile used for authentication at cluster (only when user.name is set)");
         out.println("# cache.dir           Directory on cluster used to cache pre-stage files");
         out.println("#                     (updated using rsync)");
@@ -89,6 +90,8 @@ public class Cluster {
 
     // user name to authenticate user with
     private String userName;
+    
+    private String password;
 
     // Key file for user authentication
     private String keyFile;
@@ -168,6 +171,7 @@ public class Cluster {
         javaPath = null;
         jobWrapperScript = null;
         userName = null;
+        password = null;
         keyFile = null;
         cacheDir = null;
         serverOutputFiles = null;
@@ -205,6 +209,7 @@ public class Cluster {
         javaPath = null;
         jobWrapperScript = null;
         userName = null;
+        password = null;
         keyFile = null;
         cacheDir = null;
         serverOutputFiles = null;
@@ -244,6 +249,7 @@ public class Cluster {
 
         jobWrapperScript = original.jobWrapperScript;
         userName = original.userName;
+        password = original.password;
         keyFile = original.keyFile;
 
         cacheDir = original.cacheDir;
@@ -311,6 +317,11 @@ public class Cluster {
         if (properties.getProperty(prefix + "user.name") != null) {
             userName = properties.getProperty(prefix + "user.name");
         }
+        
+        if (properties.getProperty(prefix + "password") != null) {
+            password = properties.getProperty(prefix + "password");
+        }
+        
         if (properties.getProperty(prefix + "user.key") != null) {
             keyFile = properties.getProperty(prefix + "user.key");
         }
@@ -358,7 +369,7 @@ public class Cluster {
         return serverAdaptor == null && serverURI == null
                 && serverOutputFiles == null && jobAdaptor == null
                 && jobURI == null && fileAdaptors == null && javaPath == null
-                && jobWrapperScript == null && userName == null
+                && jobWrapperScript == null && userName == null && password == null
                 && keyFile == null && cacheDir == null
                 && serverOutputFiles == null && serverSystemProperties == null
                 && nodes == 0 && cores == 0 && memory == 0 && latitude == 0
@@ -405,6 +416,10 @@ public class Cluster {
 
             if (other.userName != null && userName == null) {
                 userName = other.userName;
+            }
+            
+            if (other.password != null && password == null) {
+                password = other.password;
             }
 
             if (other.keyFile != null && keyFile == null) {
@@ -705,6 +720,25 @@ public class Cluster {
      */
     public void setUserName(String userName) {
         this.userName = userName;
+    }
+    
+    /**
+     * Returns Password used to authenticate at this cluster
+     * 
+     * @return Password used to authenticate at this cluster
+     */
+    public String getPassword() {
+        return password;
+    }
+
+    /**
+     * Sets Password used to authenticate at this cluster
+     * 
+     * @param Password
+     *            Password used to authenticate at this cluster
+     */
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     /**
@@ -1074,6 +1108,14 @@ public class Cluster {
         } else if (printComments) {
             out.println("#" + dotPrefix + "user.name = ");
         }
+        
+
+        if (password != null) {
+            out.println(dotPrefix + "password = " + password);
+            empty = false;
+        } else if (printComments) {
+            out.println("#" + dotPrefix + "password = ");
+        }
 
         if (keyFile != null) {
             out.println(dotPrefix + "user.key = " + keyFile);
@@ -1189,6 +1231,7 @@ public class Cluster {
         result += " Java path = " + getJavaPath() + "\n";
         result += " Wrapper Script = " + getJobWrapperScript() + "\n";
         result += " User name = " + getUserName() + "\n";
+        result += " Password = " + "A secret! :-)" + "\n";
         result += " User keyfile = " + getKeyFile() + "\n";
         result += " Cache dir = " + getCacheDir() + "\n";
         result += " Server output files = "

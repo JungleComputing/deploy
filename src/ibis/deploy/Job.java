@@ -21,6 +21,7 @@ import org.gridlab.gat.resources.JavaSoftwareDescription;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.security.CertificateSecurityContext;
+import org.gridlab.gat.security.PasswordSecurityContext;
 import org.gridlab.gat.security.SecurityContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -268,7 +269,8 @@ public class Job implements Runnable {
             String keyFile = cluster.getKeyFile();
             SecurityContext securityContext = new CertificateSecurityContext(
                     keyFile == null ? null : new URI(keyFile), null,
-                    cluster.getUserName(), null);
+                    cluster.getUserName(), cluster.getPassword());
+            
             context.addSecurityContext(securityContext);
         }
 
@@ -413,7 +415,7 @@ public class Job implements Runnable {
         }
 
         sd.addJavaSystemProperty(IbisProperties.LOCATION, description.getName()
-                + "@%HOSTNAME%@" + location);
+                + "@" + location);
         sd.addJavaSystemProperty(IbisProperties.LOCATION_COLOR,
                 Colors.color2colorCode(cluster.getColor()));
         sd.addJavaSystemProperty(IbisProperties.POOL_NAME,

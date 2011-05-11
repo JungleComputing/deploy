@@ -23,6 +23,7 @@ import org.gridlab.gat.resources.JavaSoftwareDescription;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.security.CertificateSecurityContext;
+import org.gridlab.gat.security.PasswordSecurityContext;
 import org.gridlab.gat.security.SecurityContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,8 +112,9 @@ public class RemoteServer implements Runnable, Server {
             String keyFile = cluster.getKeyFile();
             SecurityContext securityContext = new CertificateSecurityContext(
                     keyFile == null ? null : new URI(keyFile), null,
-                    cluster.getUserName(), null);
+                    cluster.getUserName(), cluster.getPassword());
             context.addSecurityContext(securityContext);
+           
         }
         // ensure files are readable on the other side
         context.addPreference("file.chmod", "0755");
