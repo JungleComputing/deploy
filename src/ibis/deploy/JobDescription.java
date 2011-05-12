@@ -90,19 +90,19 @@ public class JobDescription {
         application.setName(applicationName);
         application.setFromProperties(properties, prefix + "application");
 
-        processCount = properties.getIntProperty(prefix + "process.count", 0);
+        processCount = properties.getIntProperty(prefix + "process.count", processCount);
 
         String clusterName = properties.getProperty(prefix + "cluster.name");
         cluster.setName(clusterName);
         cluster.loadFromProperties(properties, prefix + "cluster");
 
-        resourceCount = properties.getIntProperty(prefix + "resource.count", 0);
+        resourceCount = properties.getIntProperty(prefix + "resource.count", resourceCount);
 
-        runtime = properties.getIntProperty(prefix + "runtime", 0);
+        runtime = properties.getIntProperty(prefix + "runtime", runtime);
 
-        poolName = properties.getProperty(prefix + "pool.name");
+        poolName = properties.getProperty(prefix + "pool.name", poolName);
 
-        poolSize = properties.getIntProperty(prefix + "pool.size", 0);
+        poolSize = properties.getIntProperty(prefix + "pool.size", poolSize);
 
     }
 
