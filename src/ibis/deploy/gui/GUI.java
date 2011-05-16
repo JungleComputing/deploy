@@ -297,7 +297,7 @@ public class GUI {
         System.err.println("-k\t\tKeep sandboxes");
         System.err.println("-r\t\tRead only mode");
         System.err.println("-v\t\tVerbose mode");
-        System.err.println("-nomon\t\tDo not monitor running applications.");
+        System.err.println("-collecting\tCollect performance data from running applications.");
         System.err.println("-f\t\tSimulate a grid (for monitor testing).");
         System.err
                 .println("-p PORT\t\tLocal port number (defaults to random free port)");
