@@ -82,6 +82,13 @@ public class GogglePanel extends JPanel {
 	}
 
 	public void initialize(GUI gui, Collector collector) {
+	    
+	    if (collector == null) {
+		JOptionPane.showMessageDialog(this, "No 3D visualization: data collection is disabled",
+                        "Error", JOptionPane.ERROR_MESSAGE);
+        	return;
+	    }
+	    
 	    boolean ok = false;
             try {
             	//File[] nativeLibs = getNativeLibTargets();
@@ -96,7 +103,7 @@ public class GogglePanel extends JPanel {
             }
             
             if (! ok) {
-        	JOptionPane.showMessageDialog(this, "Initialization of JOGL failed",
+        	JOptionPane.showMessageDialog(this, "No 3D visualization: native library initialization failed",
                         "Error", JOptionPane.ERROR_MESSAGE);
         	return;
             }

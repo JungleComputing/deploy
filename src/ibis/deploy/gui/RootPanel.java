@@ -55,7 +55,7 @@ public class RootPanel extends JPanel {
 				"images/gridvision.png", new DeployVizPanel(gui), tabs);
 
 		
-		if (gui.isMonitoring() && !gui.isReadOnly()) {
+		if (gui.isCollecting()) {
 			gridVisionTab = new DetachableTab("3D Visualization", 
 					"images/gridvision.png", new GogglePanel(gui, gui.getCollector()), tabs);
 		}

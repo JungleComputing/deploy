@@ -93,6 +93,8 @@ public class GUI {
     
     private Collector collector;
     
+    private boolean isCollecting = false;
+    
     private boolean nativeLoaded = false;
 
     // private Boolean sharedHubs;
@@ -191,7 +193,7 @@ public class GUI {
         this.menuBar = new JMenuBar();
         JMenu menu = new JMenu("File");
 
-        if (isMonitoring()) {      	
+        if (isCollecting()) {      	
             frame.setTitle("Ibis Deploy Monitoring");
         }
 
@@ -316,7 +318,7 @@ public class GUI {
         boolean monitoringFakeData = false;
         String serverCluster = null;
         int port = 0;
-        mode = Mode.MONITOR;
+        mode = Mode.NORMAL;
 
         try {
             for (int i = 0; i < arguments.length; i++) {
@@ -338,8 +340,8 @@ public class GUI {
                     mode = Mode.READ_ONLY;
                 } else if (arguments[i].equals("-f")) {
                     monitoringFakeData = true;
-                } else if (arguments[i].equals("-nomon")) {
-                	mode = Mode.NORMAL;
+                } else if (arguments[i].equals("-collecting")) {
+                	isCollecting = true;
                 } else {
                     File file = new File(arguments[i]);
                     if (file.isDirectory()) {
@@ -401,17 +403,17 @@ public class GUI {
 
             }
                
-            if (isMonitoring()) {
+            if (isCollecting()) {
 	            RegistryServiceInterface regInterface;
 	            ManagementServiceInterface manInterface;
 	            if (monitoringFakeData) {
-	            	logger.info("Monitor using simulated data.");
+	            	logger.info("Collecting simulated data.");
 	            	
 	            	//Ibis/JMX variables
 	            	regInterface = new FakeRegistryService();
 	            	manInterface = new FakeManagementService(regInterface);
 	            } else {
-	            	logger.info("Monitor using real data.");
+	            	logger.info("Collecting real data.");
 	            	regInterface = deploy.getServer().getRegistryService();
 	            	manInterface = deploy.getServer().getManagementService();
 	            }
@@ -419,7 +421,7 @@ public class GUI {
             
 	            //Data interface
 	            collector = ibis.deploy.monitoring.collection.impl.CollectorImpl.getCollector(manInterface, regInterface);
-    			new Thread(collector).start();    		
+	            new Thread(collector).start();    		
             }
     		
         } catch (Exception e) {
@@ -550,8 +552,8 @@ public class GUI {
         return mode == Mode.READ_ONLY;
     }
     
-    public boolean isMonitoring() {
-        return mode == Mode.MONITOR;
+    public boolean isCollecting() {
+        return isCollecting;
     }
 
     public JFrame getFrame() {
