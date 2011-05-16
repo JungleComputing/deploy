@@ -72,6 +72,8 @@ public class Job implements Runnable {
     private final StateListener hubListener;
 
     private boolean killed = false;
+    
+    private boolean collecting = false;
 
     /**
      * Creates a job object from the given description.
@@ -94,7 +96,7 @@ public class Job implements Runnable {
             StateListener hubListener, LocalServer rootHub, boolean verbose,
             File deployHome, String serverAddress,
 
-            Deploy deploy) throws Exception {
+            Deploy deploy, boolean collecting) throws Exception {
         this.description = description;
         this.cluster = description.getCluster();
         this.application = description.getApplication();
@@ -107,6 +109,7 @@ public class Job implements Runnable {
         this.deployHome = deployHome;
         this.serverAddress = serverAddress;
         this.deploy = deploy;
+        this.collecting = collecting;
 
         this.context = createGATContext();
 
@@ -438,6 +441,10 @@ public class Job implements Runnable {
         sd.addJavaSystemProperty("ibis.deploy.job.id", description.getName());
         sd.addJavaSystemProperty("ibis.deploy.job.size",
                 Integer.toString(description.getProcessCount()));
+        if (collecting) {
+            sd.addJavaSystemProperty("ibis.managementclient", "true");
+            sd.addJavaSystemProperty("ibis.bytescount", "true");
+        }
 
         // add hub list to software description
         sd.addJavaSystemProperty(IbisProperties.HUB_ADDRESSES, hubList);

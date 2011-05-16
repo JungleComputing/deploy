@@ -256,12 +256,20 @@ public class Deploy {
             StateListener jobListener, StateListener hubListener)
             throws Exception {
 
+	return submitJob(description, applicationSet, grid, jobListener, hubListener, false);
+    }
+    
+    public synchronized Job submitJob(JobDescription description,
+            ApplicationSet applicationSet, Grid grid,
+            StateListener jobListener, StateListener hubListener, boolean collecting)
+            throws Exception {
+  
         Application application = applicationSet.getApplication(description
                 .getApplication().getName());
         Cluster cluster = grid.getCluster(description.getCluster().getName());
 
         return submitJob(description, application, cluster, jobListener,
-                hubListener);
+                hubListener, collecting);
     }
 
     /**
@@ -286,7 +294,7 @@ public class Deploy {
      */
     public synchronized Job submitJob(JobDescription description,
             Application application, Cluster cluster,
-            StateListener jobListener, StateListener hubListener)
+            StateListener jobListener, StateListener hubListener, boolean collecting)
             throws Exception {
         if (remoteServer != null && !remoteServer.isRunning()) {
             throw new Exception("Cannot submit job (yet), server \""
@@ -316,7 +324,7 @@ public class Deploy {
         // start job
         Job job = new Job(resolvedDescription, hubPolicy, hub, keepSandboxes,
                 jobListener, hubListener, localServer, verbose, home,
-                getServerAddress(), this);
+                getServerAddress(), this, collecting);
 
         jobs.add(job);
 

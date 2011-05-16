@@ -190,7 +190,7 @@ public class JobRow {
                                     });
                         }
 
-                    });
+                    }, gui.isCollecting());
 
             jobDescription = job.getDescription();
         } catch (Exception e) {
