@@ -6,13 +6,17 @@ import gov.nasa.worldwind.event.SelectEvent;
 import gov.nasa.worldwind.event.SelectListener;
 import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.layers.Layer;
+import gov.nasa.worldwind.layers.MarkerLayer;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.AnnotationAttributes;
 import gov.nasa.worldwind.render.GlobeAnnotation;
 import gov.nasa.worldwind.render.Renderable;
+import gov.nasa.worldwind.render.markers.Marker;
 import ibis.deploy.gui.GUI;
 import ibis.deploy.gui.worldmap.helpers.ClusterWaypoint;
 import ibis.deploy.vizFramework.globeViz.data.GlobeVizDataConvertor;
+import ibis.deploy.vizFramework.globeViz.viz.markers.MovingMarker;
 import ibis.deploy.vizFramework.globeViz.viz.utils.RandomDataGenerator;
 import ibis.deploy.vizFramework.globeViz.viz.utils.UIConstants;
 
@@ -31,6 +35,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.Vector;
 
 import javax.swing.JPanel;
 import org.jdesktop.swingx.mapviewer.Waypoint;
@@ -43,6 +48,7 @@ public class GlobeVisualization extends JPanel {
     private WorldWindowGLCanvas worldWindCanvas;
     private RenderableLayer annotationLayer;
     private RenderableLayer polylineLayer;
+    private MarkerLayer markerLayer;
     private boolean followTerrain = false;
     private GlobeVizDataConvertor convertor;
     private GUI gui;
@@ -50,7 +56,7 @@ public class GlobeVisualization extends JPanel {
     public GlobeVisualization(GUI gui) {
 
         this.gui = gui;
-        
+
         // create a WorldWind main object
         worldWindCanvas = new WorldWindowGLCanvas();
         worldWindCanvas.setModel(new BasicModel());
@@ -62,16 +68,21 @@ public class GlobeVisualization extends JPanel {
         annotationLayer = new RenderableLayer();
         annotationLayer.setName("Locations");
         worldWindCanvas.getModel().getLayers().add(annotationLayer);
-        
+
         // initialize the polylineLayer layer
         polylineLayer = new RenderableLayer();
-        polylineLayer.setName("Locations");
+        polylineLayer.setName("Edges");
         worldWindCanvas.getModel().getLayers().add(polylineLayer);
+        
+        markerLayer = new MarkerLayer();
+        markerLayer.setName("Markers");
+        markerLayer.setKeepSeparated(false);
+        worldWindCanvas.getModel().getLayers().add(markerLayer);
 
         // only used when we want fake-fake data :P
         // RandomDataGenerator.generateRandomDotsAndConnections(this);
 
-        //RandomDataGenerator.generateFixedLocations(annotationLayer, this);
+        // RandomDataGenerator.generateFixedLocations(annotationLayer, this);
 
         createTooltip();
 
@@ -83,19 +94,14 @@ public class GlobeVisualization extends JPanel {
                     highlight(event.getTopObject());
             }
         });
-        
-        
 
         // //temporarily disable some layers for debugging - TODO - remove
-        // for (Layer layer : worldWindCanvas.getModel().getLayers()) {
-        // if (layer.getName()
-        // .equals(
-        // "NASA Blue Marble Image")
-        // || layer.getName().equals(
-        // "Blue Marble (WMS) 2004")) {
-        // layer.setEnabled(false);
-        // }
-        // }
+        for (Layer layer : worldWindCanvas.getModel().getLayers()) {
+            if (layer.getName().equals("NASA Blue Marble Image")
+                    || layer.getName().equals("Blue Marble (WMS) 2004")) {
+                layer.setEnabled(false);
+            }
+        }
 
     }
 
@@ -103,6 +109,10 @@ public class GlobeVisualization extends JPanel {
         return annotationLayer;
     }
 
+//    public MarkerLayer getMarkerLayer(){
+//        return markerLayer;
+//    }
+    
     public WorldWindowGLCanvas getVisualization() {
         return worldWindCanvas;
     }
@@ -166,6 +176,8 @@ public class GlobeVisualization extends JPanel {
             Color color) {
         UnclippablePolyline polyline;
         ArrayList<Position> polylineList = new ArrayList<Position>();
+        
+        double distance = LatLon.greatCircleDistance(pos1, pos2).degrees;
 
         // add the control points to the list
         polylineList.addAll(doTheSplits(pos1, pos2,
@@ -174,7 +186,6 @@ public class GlobeVisualization extends JPanel {
         // add the points of the BSpline created using the control points.
         polylineList = BSpline.computePolyline(worldWindCanvas.getModel()
                 .getGlobe(), polylineList);
-
         // The BSpline doesn't pass through the control points, so to force the
         // polyline to pass through the two locations we have to add them
         // separately to the list
@@ -244,8 +255,8 @@ public class GlobeVisualization extends JPanel {
         line.setColor(color);
         polylineLayer.addRenderable(line);
     }
-    
-    public void clearPolylineLayer(){
+
+    public void clearPolylineLayer() {
         polylineLayer.removeAllRenderables();
     }
 
@@ -266,6 +277,22 @@ public class GlobeVisualization extends JPanel {
         convertor.setGUI(gui);
     }
 
+    public Vector<Marker> getMarkerVector(){
+        Vector<Marker> markerSet = (Vector<Marker>) markerLayer.getMarkers();
+        if(markerSet == null){
+            markerSet = new Vector<Marker>();
+        }
+        return markerSet;
+    }
+    
+    public void setMarkerVector(Vector<Marker> m){
+        markerLayer.setMarkers(m);
+    }
+    
+    public void removeMarkers(Vector<MovingMarker> set){
+        ((Vector<Marker>) markerLayer.getMarkers()).removeAll(set);
+    }
+    
     // /**
     // * Creates piecharts from the clusters that overlap. It first creates an
     // * undirected graph - every pair of clusters that overlap represents two

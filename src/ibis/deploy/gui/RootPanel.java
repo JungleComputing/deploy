@@ -6,8 +6,8 @@ import ibis.deploy.gui.deployViz.DeployVizPanel;
 import ibis.deploy.gui.experiment.ExperimentsPanel;
 import ibis.deploy.gui.misc.Utils;
 import ibis.deploy.monitoring.visualization.gridvision.swing.GogglePanel;
-import ibis.deploy.vizFramework.GlobePanel;
 import ibis.deploy.vizFramework.MetricManager;
+import ibis.deploy.vizFramework.globeViz.GlobePanel;
 import ibis.deploy.vizFramework.globeViz.viz.GlobeVisualization;
 import ibis.smartsockets.viz.SmartsocketsViz;
 
@@ -65,10 +65,10 @@ public class RootPanel extends JPanel {
                         "images/gridvision.png", globePanel, tabs);
 
 
-		if (!gui.isReadOnly()) {
-			gridVisionTab = new DetachableTab("3D Visualization", 
-					"images/gridvision.png", new GogglePanel(gui.getCollector()), tabs);
-		}
+//		if (!gui.isReadOnly()) {
+//			gridVisionTab = new DetachableTab("3D Visualization", 
+//					"images/gridvision.png", new GogglePanel(gui.getCollector()), tabs);
+//		}
 		
 		MetricManager mgr = new MetricManager(gui.getCollector(), globePanel.getGlobe());
 		add(tabs, BorderLayout.CENTER);

@@ -1,16 +1,11 @@
-package ibis.deploy.vizFramework;
+package ibis.deploy.vizFramework.globeViz;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import ibis.deploy.gui.GUI;
-import ibis.deploy.gui.deployViz.helpers.VizUtils;
-import ibis.deploy.monitoring.collection.Collector;
 import ibis.deploy.vizFramework.globeViz.viz.GlobeVisualization;
-
-import javax.media.opengl.awt.GLJPanel;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JLabel;

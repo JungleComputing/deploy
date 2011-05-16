@@ -12,7 +12,8 @@ public class Main {
 
         // build Java swing interface
 
-        GlobeVisualization globe = new GlobeVisualization();
+        //TODO this will very likely not work. I'll remove it at some point
+        GlobeVisualization globe = new GlobeVisualization(null);
 
         JFrame frame = new JFrame("World Wind");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

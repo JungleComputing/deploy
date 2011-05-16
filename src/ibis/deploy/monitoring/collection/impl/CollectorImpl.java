@@ -127,6 +127,12 @@ public class CollectorImpl implements Collector, Runnable {
             w.start();
         }
     }
+    
+    public static CollectorImpl getCollector(
+            ManagementServiceInterface manInterface,
+            RegistryServiceInterface regInterface) {
+        return getCollector(manInterface, regInterface, null);
+    }
 
     public static CollectorImpl getCollector(
             ManagementServiceInterface manInterface,
