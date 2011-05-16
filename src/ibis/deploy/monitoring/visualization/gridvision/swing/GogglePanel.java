@@ -2,7 +2,11 @@ package ibis.deploy.monitoring.visualization.gridvision.swing;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
 
+import ibis.deploy.gui.GUI;
 import ibis.deploy.monitoring.collection.Collector;
 import ibis.deploy.monitoring.collection.MetricDescription;
 import ibis.deploy.monitoring.visualization.gridvision.JGVisual.CollectionShape;
@@ -35,8 +39,10 @@ import javax.swing.JPanel;
 import com.jogamp.opengl.util.FPSAnimator;
 
 import javax.swing.ButtonGroup;
+import javax.swing.JButton;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
+import javax.swing.JOptionPane;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
@@ -63,7 +69,38 @@ public class GogglePanel extends JPanel {
 	private JLabel ibisSpacerText;
 	private JLabel metricSpacerText;
 
-	public GogglePanel(final Collector collector) {
+	public GogglePanel(final GUI gui, final Collector collector) {
+	    final JButton initButton = new JButton("Initialize 3D Visualization");
+	    add(initButton);
+	    initButton.addActionListener(new ActionListener() {
+
+		public void actionPerformed(ActionEvent e) {
+		    removeAll();
+		    initialize(gui, collector);
+		}
+	    });
+	}
+
+	public void initialize(GUI gui, Collector collector) {
+	    boolean ok = false;
+            try {
+            	//File[] nativeLibs = getNativeLibTargets();
+            	gui.loadNativeLibs();
+            	ok = true;
+            } catch (IOException e) {
+             	System.err.println("Your OS is not supported by JOGL. 3D visualization will be disabled.");
+            	System.err.println(e.getMessage());
+            } catch (Throwable e) {
+            	System.err.println("Something went wrong while loading JOGL natives. 3D visualization will be disabled.");
+            	System.err.println(e.getMessage());
+            }
+            
+            if (! ok) {
+        	JOptionPane.showMessageDialog(this, "Initialization of JOGL failed",
+                        "Error", JOptionPane.ERROR_MESSAGE);
+        	return;
+            }
+
 		setLayout(new BorderLayout(0, 0));
 
 		// Make the GLEventListener

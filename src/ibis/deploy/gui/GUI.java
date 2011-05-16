@@ -92,6 +92,8 @@ public class GUI {
     private Mode mode;
     
     private Collector collector;
+    
+    private boolean nativeLoaded = false;
 
     // private Boolean sharedHubs;
     
@@ -120,23 +122,16 @@ public class GUI {
         
         // Schedule a job for the event-dispatching thread:
         // creating and showing this application's GUI.
-        
-        /* Turned off the invokeLater stuff, because it was interfering 
-         * with jogl. At first glance, this does not seem to have any 
-         * impact on the rest of deploy anyway, but if that is a wrong 
-         * assessment, please contact me. 
-         * - Maarten
-        */
-        //javax.swing.SwingUtilities.invokeLater(new Runnable() {
-        //    public void run() {
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
             	try {
                 gui.createAndShowGUI();
             	} catch (Exception e) {
             		e.printStackTrace(System.err);
             		System.exit(1);
             	}
-        //    }
-        //});
+            }
+        });
     }
 
     private void close() {
@@ -196,22 +191,8 @@ public class GUI {
         this.menuBar = new JMenuBar();
         JMenu menu = new JMenu("File");
 
-        if (isMonitoring()) {
-        	
+        if (isMonitoring()) {      	
             frame.setTitle("Ibis Deploy Monitoring");
-            
-            try {
-            	//File[] nativeLibs = getNativeLibTargets();
-            	loadNativeLibs();
-            } catch (UnsatisfiedLinkError e) {
-            	mode = Mode.NORMAL;
-            	System.err.println("Something went wrong while loading JOGL natives. Monitoring will be disabled.");
-            	System.err.println(e.getMessage());
-            } catch (IOException e) {
-            	mode = Mode.NORMAL;
-            	System.err.println("Your OS is not supported by JOGL. Monitoring will be disabled.");
-            	System.err.println(e.getMessage());
-            }
         }
 
         if (isReadOnly()) {
@@ -642,7 +623,7 @@ public class GUI {
     }
     
     
-    private void loadNativeLibs() throws IOException, URISyntaxException {
+    public void loadNativeLibs() throws IOException, URISyntaxException {
     	String filesep = System.getProperty("file.separator");
     	String os = System.getProperty("os.name").toLowerCase();
     	String dirname = deploy.getHome().getAbsolutePath() + filesep + "lib";
@@ -674,7 +655,8 @@ public class GUI {
     		for (File file : entry.getValue()) {
     			extractNativeLib(entry.getKey(), file);
     		}		
-    	}        
+    	} 
+    	nativeLoaded = true;
     }
     
     private void extractNativeLib(File file, File target) throws IOException, URISyntaxException { 
