@@ -131,8 +131,12 @@ public class JobMonitorTableModel extends AbstractTableModel implements Runnable
                     logger.error("Error while adding job", e);
                 }
             }
+            try {
+        	Thread.sleep(1000);
+            } catch(Throwable e) {
+        	// ignored.
+            }
         }
-
     }
 
     private void addJob(Job job) throws Exception {
