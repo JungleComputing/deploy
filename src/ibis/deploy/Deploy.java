@@ -271,6 +271,13 @@ public class Deploy {
         return submitJob(description, application, cluster, jobListener,
                 hubListener, collecting);
     }
+    
+    public synchronized Job submitJob(JobDescription description,
+            Application application, Cluster cluster,
+            StateListener jobListener, StateListener hubListener)
+            throws Exception {
+	return submitJob(description, application, cluster, jobListener, hubListener, false);
+    }
 
     /**
      * Submit a new job.
