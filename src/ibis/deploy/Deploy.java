@@ -52,6 +52,8 @@ public class Deploy {
     private boolean verbose;
 
     private boolean keepSandboxes;
+    
+    private boolean collecting = false;
 
     // submitted jobs
     private List<Job> jobs;
@@ -131,10 +133,49 @@ public class Deploy {
     public Deploy(File home, boolean verbose, boolean keepSandboxes, int port,
             Cluster serverCluster, StateListener listener, boolean blocking)
             throws Exception {
+	this(home, verbose, keepSandboxes, false, port, serverCluster, listener, blocking);
+    }
+    
+    /**
+     * Create a new deployment interface. Also deploys the server, either
+     * locally or remotely.
+     * 
+     * @param home
+     *            "home" directory of ibis-deploy. If null, the default location
+     *            is used from the "ibis.deploy.home" system property. If this
+     *            property is unspecified, final default value is the current
+     *            working directory.
+     * @param verbose
+     *            If true, start Ibis-Deploy in verbose mode
+     * @param keepSandboxes
+     *            If true, will keep sandboxes of servers and jobs
+     * @param collecting
+     * 		  If true, set collecting system properties for the application.
+     * @param port
+     *            port used to bind local hub/server to. Defaults to
+     *            automatically allocated free port.
+     * @param serverCluster
+     *            cluster where the server should be started, or null for a
+     *            server embedded in this JVM.
+     * @param listener
+     *            callback object for status of server
+     * @param blocking
+     *            if true, will block until the server is running
+     * @throws Exception
+     *             if required files cannot be found in home, or the server
+     *             cannot be started.
+     * 
+     */
+    public Deploy(File home, boolean verbose, boolean keepSandboxes, boolean collecting, int port,
+            Cluster serverCluster, StateListener listener, boolean blocking)
+            throws Exception {
+    
+    
         logger.debug("Initializing deploy");
 
         this.verbose = verbose;
         this.keepSandboxes = keepSandboxes;
+        this.collecting = collecting;
 
         jobs = new ArrayList<Job>();
         hubs = new HashMap<String, Server>();
@@ -165,6 +206,14 @@ public class Deploy {
 
         logger.info("Ibis Deploy initialized, root hub address is "
                 + localServer.getAddress());
+    }
+
+    /**
+     * Returns whether the collecting flag is set.
+     * @return the collecting flag.
+     */
+    public boolean isCollecting() {
+        return collecting;
     }
 
     /**
@@ -250,18 +299,10 @@ public class Deploy {
             return remoteServer.getAddress();
         }
     }
-
+  
     public synchronized Job submitJob(JobDescription description,
             ApplicationSet applicationSet, Grid grid,
             StateListener jobListener, StateListener hubListener)
-            throws Exception {
-
-	return submitJob(description, applicationSet, grid, jobListener, hubListener, false);
-    }
-    
-    public synchronized Job submitJob(JobDescription description,
-            ApplicationSet applicationSet, Grid grid,
-            StateListener jobListener, StateListener hubListener, boolean collecting)
             throws Exception {
   
         Application application = applicationSet.getApplication(description
@@ -269,14 +310,7 @@ public class Deploy {
         Cluster cluster = grid.getCluster(description.getCluster().getName());
 
         return submitJob(description, application, cluster, jobListener,
-                hubListener, collecting);
-    }
-    
-    public synchronized Job submitJob(JobDescription description,
-            Application application, Cluster cluster,
-            StateListener jobListener, StateListener hubListener)
-            throws Exception {
-	return submitJob(description, application, cluster, jobListener, hubListener, false);
+                hubListener);
     }
 
     /**
@@ -301,7 +335,7 @@ public class Deploy {
      */
     public synchronized Job submitJob(JobDescription description,
             Application application, Cluster cluster,
-            StateListener jobListener, StateListener hubListener, boolean collecting)
+            StateListener jobListener, StateListener hubListener)
             throws Exception {
         if (remoteServer != null && !remoteServer.isRunning()) {
             throw new Exception("Cannot submit job (yet), server \""

@@ -193,10 +193,6 @@ public class GUI {
         this.menuBar = new JMenuBar();
         JMenu menu = new JMenu("File");
 
-        if (isCollecting()) {      	
-            frame.setTitle("Ibis Deploy Monitoring");
-        }
-
         if (isReadOnly()) {
             menuItem = new JMenuItem("Exit");
             menuItem.addActionListener(new ActionListener() {
@@ -304,13 +300,31 @@ public class GUI {
         System.err.println("-h | --help\tThis message");
     }
 
-	public GUI(Deploy deploy, Workspace workspace, Mode mode, String... logos)
-            throws Exception {
+    public GUI(Deploy deploy, Workspace workspace, Mode mode, final String... logos) throws Exception {
+	this(deploy, workspace, mode, deploy.isCollecting(), logos);
+    }
+    
+    public GUI(Deploy deploy, Workspace workspace, Mode mode, boolean collecting, final String... logos)
+    throws Exception {
         this.deploy = deploy;
         this.mode = mode;
         this.workspace = workspace;
+        this.isCollecting = collecting;
+        
+        if (isCollecting()) {
+            RegistryServiceInterface regInterface;
+            ManagementServiceInterface manInterface;
+            logger.info("Collecting real data.");
+            regInterface = deploy.getServer().getRegistryService();
+            manInterface = deploy.getServer().getManagementService();
+
+            //Data interface
+            collector = ibis.deploy.monitoring.collection.impl.CollectorImpl.getCollector(manInterface, regInterface);
+            new Thread(collector).start();    		
+        }
         createAndShowGUI(logos);
     }
+    
     
     protected GUI(String[] arguments) {
         boolean verbose = false;
@@ -381,7 +395,7 @@ public class GUI {
 
                 // init with built-in server
 
-                deploy = new Deploy(null, verbose, keepSandboxes, port, null,
+                deploy = new Deploy(null, verbose, keepSandboxes, isCollecting(), port, null,
                         null, true);
             } else {
                 logger.info("Initializing Ibis Deploy"
@@ -396,7 +410,7 @@ public class GUI {
                 }
 
                 InitializationFrame initWindow = new InitializationFrame();
-                deploy = new Deploy(null, verbose, keepSandboxes, port,
+                deploy = new Deploy(null, verbose, keepSandboxes, isCollecting(), port,
                         cluster, initWindow, true);
                 // will call dispose in the Swing thread
                 initWindow.remove();
