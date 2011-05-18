@@ -20,9 +20,7 @@ public class GlobeEdge {
     private UnclippablePolyline polyline;
     private final String name;
     private Color edgeColor = Color.green;
-    //private ArrayList<MovingMarker> markers;
     private BasicMarkerAttributes attributes;
-    private int currentIndex;
     private MarkerPool markerPool;
 
     // pos1 and pos2 need to be non-null
@@ -35,17 +33,15 @@ public class GlobeEdge {
             this.pos2 = Position.ZERO;
         }
         this.name = name;
-        //markers = new ArrayList<MovingMarker>();
         attributes = new BasicMarkerAttributes(new Material(Color.GREEN),
                 BasicMarkerShape.SPHERE, 0.5);
-        // attributes.setMinMarkerSize(1);
         attributes.setMarkerPixels(8);
-        currentIndex = 0;
 
         markerPool = new MarkerPool();
     }
 
-    // the polyline is calculated only once, otherwise its color is changed
+    // the polyline is calculated only once. If the polyline is already
+    // calculated, only the color is changed.
     public void updateAssociatedPolyline(GlobeVisualization globe, Color color,
             boolean forceEdgeRedraw) {
         edgeColor = color;
@@ -88,7 +84,8 @@ public class GlobeEdge {
         // return hash;
 
         // We pulled this trick so that we can obtain the same hash code, no
-        // matter what the edge direction is
+        // matter what the edge direction is. TODO - if at some point edge
+        // direction matters, change this
         int hash1 = (41 * (41 + pos1.hashCode()) + pos2.hashCode());
         int hash2 = (41 * (41 + pos2.hashCode()) + pos1.hashCode());
         return Math.max(hash1, hash2);
@@ -113,7 +110,6 @@ public class GlobeEdge {
     }
 
     public String getName() {
-        // return name;
         return pos1.toString() + " -> " + pos2.toString();
     }
 
@@ -125,11 +121,10 @@ public class GlobeEdge {
         return edgeColor;
     }
 
-    public Marker createMarker(Position position) {
+    public Marker addMarkerToEdge(Position position) {
 
         MovingMarker marker = null;
         marker = markerPool.getMarker(position, attributes);
-        //markers.add(marker);
         return marker;
     }
 
@@ -141,7 +136,7 @@ public class GlobeEdge {
         return attributes;
     }
 
-    public void moveMarkers(Position pos, Vector<Marker> markerVector) {
+    public void moveMarkers(GlobeVisualization globeViz) {
 
         MovingMarker marker;
         int idx;
@@ -149,14 +144,14 @@ public class GlobeEdge {
         if (edgeColor != null) {
             attributes.setMaterial(new Material(edgeColor));
         }
-
+        
         for (int i = 0; i < markerPool.getActiveMarkers().size(); i++) {
             marker = markerPool.getActiveMarkers().get(i);
             idx = marker.move();
             if (idx >= ((ArrayList<Position>) polyline.getPositions()).size()) {
                 marker.resetIndex();
                 // remove marker from layer
-                markerVector.remove(marker);
+                globeViz.getMarkerLayer().removeMarker(marker);
                 // return the marker to the pool
                 markerPool.returnMarkerToPool(marker);
 
@@ -166,9 +161,5 @@ public class GlobeEdge {
             }
         }
 
-    }
-
-    public int getCurrentIndex() {
-        return currentIndex;
     }
 }

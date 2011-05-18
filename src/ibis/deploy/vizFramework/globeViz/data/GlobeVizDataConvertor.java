@@ -3,6 +3,8 @@ package ibis.deploy.vizFramework.globeViz.data;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseWheelEvent;
@@ -15,6 +17,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
+
+import javax.swing.Timer;
 
 import gov.nasa.worldwind.event.RenderingEvent;
 import gov.nasa.worldwind.event.RenderingListener;
@@ -57,6 +61,7 @@ public class GlobeVizDataConvertor implements IDataConvertor {
     // visible pie charts
     private Set<CircleAnnotation> pieChartWaypointSet;
     private GUI gui;
+    private final Timer timer;
 
     private boolean initialized = false;
 
@@ -96,14 +101,13 @@ public class GlobeVizDataConvertor implements IDataConvertor {
                         if (!initialized) {
                             refreshClusterData(false, true);
                             initialized = true;
-                            // moveParticles();
                         }
 
                     }
                 });
 
-        MarkerMovementThread mTimer = new MarkerMovementThread(this);
-        new Thread(mTimer).start();
+        // MarkerMovementThread mTimer = new MarkerMovementThread(this);
+        // new Thread(mTimer).start();
 
         globeViz.getVisualization().addMouseListener(new MouseListener() {
 
@@ -128,6 +132,28 @@ public class GlobeVizDataConvertor implements IDataConvertor {
             public void mouseClicked(MouseEvent arg0) {
             }
         });
+
+        timer = new Timer(200, new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                moveMarkers();
+            }
+        });
+        timer.start();
+
+        Timer particleReleaseTimer = new Timer(400, new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                double d = Math.random();
+                if (d > 0.5) {
+                    launchMarkerOnEachEdge();
+                }
+            }
+        });
+        particleReleaseTimer.start();
+
         // generateFixedLocations(globeViz.getAnnotationLayer(), globeViz);
     }
 
@@ -146,10 +172,11 @@ public class GlobeVizDataConvertor implements IDataConvertor {
         }
         try {
             if (pieChartsChanged) {
-                globeEdges.clear();
+                // TODO - if there are any problems with edge caching, look here
+                // globeEdges.clear();
                 globeViz.clearPolylineLayer();
-                globeViz.setMarkerVector(null);
-                System.out.println("Changes!");
+                // clear existing markers
+                globeViz.getMarkerLayer().clearMarkers();
             }
             tempEdges.clear();
             connectClusters(root, UIConstants.LEVELS, pieChartsChanged);
@@ -159,42 +186,32 @@ public class GlobeVizDataConvertor implements IDataConvertor {
         }
     }
 
-    private void launchMarkerOnEachEdge() {
+    private synchronized void launchMarkerOnEachEdge() {
         for (GlobeEdge edge : globeEdges.keySet()) {
             launchMarker(edge);
         }
     }
 
-    private void launchMarker(GlobeEdge edge) {
-        Vector<Marker> markerVector = (Vector<Marker>) globeViz
-                .getMarkerVector();
+    private synchronized void launchMarker(GlobeEdge edge) {
         ArrayList<Position> positions = (ArrayList<Position>) edge
                 .getPolyline().getPositions();
-        Marker marker = edge.createMarker(positions.get(0));
-        markerVector.add(marker);
+        Marker marker = edge.addMarkerToEdge(positions.get(0));
+        globeViz.getMarkerLayer().addMarker(marker);
     }
 
-    public void moveParticles() {
-        Vector<Marker> markerVector = (Vector<Marker>) globeViz
-                .getMarkerVector();
+    public synchronized void moveMarkers() {
+        // Vector<Marker> markerVector = (Vector<Marker>) globeViz
+        // .getMarkerVector();
 
         for (GlobeEdge edge : globeEdges.keySet()) {
             if (edge.getPolyline() != null) {
-                ArrayList<Position> positions = (ArrayList<Position>) edge
-                        .getPolyline().getPositions();
                 // this forces a color change and translation for all the edge
                 // markers
-                edge.moveMarkers(positions.get(edge.getCurrentIndex()),
-                        markerVector);
+                edge.moveMarkers(globeViz);
             }
-            // for(Marker m:markerSet){
-            // if(!positionIsVisible(m.getPosition())){
-            // System.out.println("Invisible marker");
-            // }
-            // }
         }
-
-        globeViz.setMarkerVector(markerVector);
+        // force a redraw after every update, otherwise the particles won't move
+        // until the next update
         globeViz.redraw();
     }
 
@@ -207,10 +224,10 @@ public class GlobeVizDataConvertor implements IDataConvertor {
                     structureChanged);
         }
         refreshClusterData(false, structureChanged);
-        launchMarkerOnEachEdge();
+        //launchMarkerOnEachEdge();
     }
 
-    private void redrawEdges(boolean forceEdgeRedraw) {
+    private synchronized void redrawEdges(boolean pieChartsChanged) {
         Color newColor;
 
         maximum = Double.MIN_VALUE;
@@ -234,7 +251,7 @@ public class GlobeVizDataConvertor implements IDataConvertor {
             // remove edges which no longer exist
             for (GlobeEdge edge : edgesToRemove) {
                 globeEdges.remove(edge);
-                globeViz.removeMarkers(edge.getMarkers());
+                // globeViz.removeMarkers(edge.getMarkers());
             }
 
             // update existing edges
@@ -251,11 +268,15 @@ public class GlobeVizDataConvertor implements IDataConvertor {
                         newColor = VizUtils.blend(Color.red, Color.green,
                                 ratio, 0.7f);
                         edge.updateAssociatedPolyline(globeViz, newColor,
-                                forceEdgeRedraw);
+                                pieChartsChanged);
+
+                        if (pieChartsChanged) {
+                            globeViz.getMarkerLayer().addAllMarkers(
+                                    edge.getMarkers());
+                        }
                     }
                 }
             }
-
             globeViz.redraw();
         }
     }
@@ -302,7 +323,7 @@ public class GlobeVizDataConvertor implements IDataConvertor {
         pieChartWaypointSet.add(annotation);
     }
 
-    private synchronized boolean splitPieCharts() {
+    private boolean splitPieCharts() {
         HashMap<String, HashSet<String>> adjacencyList = new HashMap<String, HashSet<String>>();
         HashMap<String, Boolean> visited = new HashMap<String, Boolean>();
         HashMap<String, Position> positionsInPieChart = new HashMap<String, Position>();
@@ -366,7 +387,7 @@ public class GlobeVizDataConvertor implements IDataConvertor {
         return pieChartsChanged;
     }
 
-    private synchronized boolean groupPieCharts() {
+    private boolean groupPieCharts() {
         HashMap<String, HashSet<String>> adjacencyList = new HashMap<String, HashSet<String>>();
         HashMap<String, Boolean> visited = new HashMap<String, Boolean>();
         HashMap<String, Position> positionsForPieCharts = new HashMap<String, Position>();
@@ -523,7 +544,7 @@ public class GlobeVizDataConvertor implements IDataConvertor {
         }
     }
 
-    private synchronized void connectClusters(Location root, int level,
+    private void connectClusters(Location root, int level,
             boolean structureChanged) {
         ArrayList<Location> dataChildren = root.getChildren();
         if (dataChildren == null || dataChildren.size() == 0) {
@@ -652,11 +673,11 @@ public class GlobeVizDataConvertor implements IDataConvertor {
         }
     }
 
-    public void forceUpdate() {
+    public synchronized void forceUpdate() {
         updateData(root, true);
     }
 
-    //TODO - remove this, it's used only for low level testing
+    // TODO - remove this, it's used only for low level testing
     public void generateFixedLocations(RenderableLayer layer,
             GlobeVisualization globe) {
 

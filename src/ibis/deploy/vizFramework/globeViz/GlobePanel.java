@@ -8,6 +8,7 @@ import ibis.deploy.gui.GUI;
 import ibis.deploy.vizFramework.globeViz.viz.GlobeVisualization;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -57,6 +58,18 @@ public class GlobePanel extends JPanel {
             }
         });
         leftPanel.add(terrainRadio);
+        
+        //Change polyline visibility
+        JCheckBox cb = new JCheckBox("Polylines visible");
+        cb.setSelected(true);
+        cb.addActionListener(new ActionListener() {
+            
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                globe.setPolylinesEnabled(((JCheckBox)event.getSource()).isSelected());
+            }
+        });
+        leftPanel.add(cb);
 
         // Set up the window
         add(globe, BorderLayout.CENTER);

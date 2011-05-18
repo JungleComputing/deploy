@@ -7,18 +7,18 @@ import java.util.Vector;
 
 public class MarkerPool {
 
-    private Vector<MovingMarker> markerPool;
+    private Vector<MovingMarker> passiveMarkers;
     private Vector<MovingMarker> activeMarkers;
     
     public MarkerPool(){
-        markerPool = new Vector<MovingMarker>();
+        passiveMarkers = new Vector<MovingMarker>();
         activeMarkers = new Vector<MovingMarker>();
     }
     
     public MovingMarker getMarker(Position pos, BasicMarkerAttributes attrs){
         MovingMarker marker;
-        if(markerPool.size() > 0){
-            marker = markerPool.remove(0);
+        if(passiveMarkers.size() > 0){
+            marker = passiveMarkers.remove(0);
             marker.setAttributes(attrs);
             marker.setPosition(pos);
         } else {
@@ -31,7 +31,7 @@ public class MarkerPool {
     
     public void returnMarkerToPool(MovingMarker marker){
         activeMarkers.remove(marker);
-        markerPool.add(marker);
+        passiveMarkers.add(marker);
     }
     
     public Vector<MovingMarker> getActiveMarkers(){

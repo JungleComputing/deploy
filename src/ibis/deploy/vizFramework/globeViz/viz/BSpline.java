@@ -22,11 +22,11 @@ public class BSpline {
         int[] yPoints;
         int[] zPoints;
 
-        //the number of segments depends on the length of the arc        
+        // the number of segments depends on the length of the arc
         if (controlPoints.size() >= 2) {
             double dist = LatLon.greatCircleDistance(controlPoints.get(0),
                     controlPoints.get(controlPoints.size() - 1)).degrees;
-            nSteps = (int)dist / 10; 
+            nSteps = (int) dist / 10;
         }
 
         ArrayList<Position> polylineKnots;
@@ -125,6 +125,13 @@ public class BSpline {
             // System.out.println(polylineKnots.get(i).elevation);
         }
         // polylineKnots.add(controlPoints.get(controlPoints.size() - 1));
+
+        
+        // The BSpline doesn't pass through the control points, so to force the
+        // polyline to pass through the two locations we have to add them
+        // separately to the list  
+        polylineKnots.add(0, controlPoints.get(0));
+        polylineKnots.add(controlPoints.get(controlPoints.size() - 1));
 
         return polylineKnots;
     }

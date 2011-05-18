@@ -1,5 +1,7 @@
 package ibis.deploy.vizFramework.globeViz.viz.markers;
 
+import javax.swing.SwingUtilities;
+
 import ibis.deploy.vizFramework.globeViz.data.GlobeVizDataConvertor;
 
 public class MarkerMovementThread implements Runnable {
@@ -29,7 +31,11 @@ public class MarkerMovementThread implements Runnable {
             float fraction = (float) elapsed / 1000f;
 
             // TODO - do refresh here
-           convertor.moveParticles();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    convertor.moveMarkers();
+                }
+            });
 
             try {
                 if (waitTime - elapsed > 0) {

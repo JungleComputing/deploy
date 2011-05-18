@@ -2,6 +2,7 @@ package ibis.deploy.monitoring.collection.impl;
 
 import java.util.concurrent.TimeoutException;
 
+import ibis.deploy.monitoring.collection.exceptions.MetricNotAvailableException;
 import ibis.deploy.monitoring.collection.exceptions.SingletonObjectNotInstantiatedException;
 
 import org.slf4j.Logger;
