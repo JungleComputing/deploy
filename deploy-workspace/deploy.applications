@@ -18,7 +18,7 @@
 
 # Application "Go"
 Go.main.class = go.dac.Main
-Go.arguments = --size 4 --stones 3
+Go.arguments = --size 5 --stones 12
 Go.libs = lib-server, ipl-apps/go.jar
 #Go.input.files =
 #Go.output.files =
