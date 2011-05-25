@@ -508,27 +508,77 @@ public class Deploy {
 
         for (Job job : jobs) {
             logger.info("killing job " + job);
-            job.kill();
+            (new Killer(job)).start();
         }
+        
+        Killer.waitForKillers();
 
         for (Server hub : hubs.values()) {
             logger.info("killing Hub " + hub);
-            hub.kill();
+            (new Killer(hub)).start();
         }
 
         if (remoteServer != null) {
             logger.info("killing Server " + remoteServer);
-            remoteServer.kill();
+            (new Killer(remoteServer)).start();
         }
 
         if (localServer != null) {
-            localServer.kill();
-        }
+            (new Killer(localServer)).start();
+        }        
+        
+        Killer.waitForKillers();
 
         logger.info("ending GAT");
 
         GAT.end();
         logger.info("ending ibis-deploy engine DONE :)");
+    }
+    
+    private static class Killer extends Thread {
+	
+	static int count = 0;
+	
+	Job job = null;
+	Server server = null;
+	
+	public Killer(Job job) {
+	    synchronized(Killer.class) {
+		count++;
+	    }
+	    this.job = job;
+	}
+	
+	public Killer(Server server) {
+	    synchronized(Killer.class) {
+		count++;
+	    }
+	    this.server = server;
+	}
+	
+	public void run() {
+	    if (job != null) {
+		job.kill();
+	    } else if (server != null) {
+		server.kill();
+	    }
+	    synchronized(Killer.class) {
+		count--;
+		if (count == 0) {
+		    Killer.class.notifyAll();
+		}
+	    }
+	}
+	
+	public synchronized static void waitForKillers() {
+	    while (count != 0) {
+		try {
+		    Killer.class.wait();
+		} catch(InterruptedException e) {
+		    // ignored
+		}
+	    }
+	}
     }
 
 }
