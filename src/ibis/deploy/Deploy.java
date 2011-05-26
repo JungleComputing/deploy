@@ -498,12 +498,18 @@ public class Deploy {
 
     /**
      * Ends all jobs and closes all open connections.
+     * Parameter indicates whether a message is to be printed (yes when
+     * using GUI, no when CLI).
      */
     public synchronized void end() {
         logger.info("ending ibis-deploy engine");
 
         if (poolSizePrinter != null) {
             poolSizePrinter.end();
+        }
+        
+        if (jobs.size() > 0 || hubs.size() > 0 || remoteServer != null || localServer != null) {
+            logger.info("Killing jobs and/or servers, this may take a couple of seconds ...");
         }
 
         for (Job job : jobs) {
@@ -524,6 +530,7 @@ public class Deploy {
         }
 
         if (localServer != null) {
+            logger.info("killing Server " + localServer);
             (new Killer(localServer)).start();
         }        
         
@@ -538,7 +545,7 @@ public class Deploy {
     private static class Killer extends Thread {
 	
 	static int count = 0;
-	
+
 	Job job = null;
 	Server server = null;
 	
