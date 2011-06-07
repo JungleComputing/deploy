@@ -1,12 +1,13 @@
 package ibis.deploy.vizFramework.globeViz.viz.utils;
 
+import ibis.deploy.vizFramework.globeViz.viz.GlobeVisualization;
 import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.globes.Globe;
 
 public class Utils {
-
+    
     public static double computeDistance(Position p1, Position p2, Globe globe,
             View view) {
 

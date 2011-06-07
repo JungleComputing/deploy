@@ -4,11 +4,15 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Vector;
 
+import com.sun.org.apache.bcel.internal.generic.NEW;
+
 import ibis.deploy.vizFramework.globeViz.viz.GlobeVisualization;
 import ibis.deploy.vizFramework.globeViz.viz.UnclippablePolyline;
 import ibis.deploy.vizFramework.globeViz.viz.markers.MarkerPool;
 import ibis.deploy.vizFramework.globeViz.viz.markers.MovingMarker;
+import ibis.deploy.vizFramework.globeViz.viz.utils.UIConstants;
 import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.render.Material;
 import gov.nasa.worldwind.render.markers.BasicMarkerAttributes;
 import gov.nasa.worldwind.render.markers.BasicMarkerShape;
@@ -20,8 +24,10 @@ public class GlobeEdge {
     private UnclippablePolyline polyline;
     private final String name;
     private Color edgeColor = Color.green;
-    private BasicMarkerAttributes attributes;
+    private Color particleColor = Color.green;
+    // private BasicMarkerAttributes attributes;
     private MarkerPool markerPool;
+    //private ArrayList<Position> knots = new ArrayList<Position>();
 
     // pos1 and pos2 need to be non-null
     public GlobeEdge(Position pos1, Position pos2, String name) {
@@ -33,9 +39,9 @@ public class GlobeEdge {
             this.pos2 = Position.ZERO;
         }
         this.name = name;
-        attributes = new BasicMarkerAttributes(new Material(Color.GREEN),
-                BasicMarkerShape.SPHERE, 0.5);
-        attributes.setMarkerPixels(8);
+        // attributes = new BasicMarkerAttributes(new Material(Color.GREEN),
+        // BasicMarkerShape.SPHERE, 0.5);
+        // attributes.setMarkerPixels(8);
 
         markerPool = new MarkerPool();
     }
@@ -43,19 +49,29 @@ public class GlobeEdge {
     // the polyline is calculated only once. If the polyline is already
     // calculated, only the color is changed.
     public void updateAssociatedPolyline(GlobeVisualization globe, Color color,
-            boolean forceEdgeRedraw) {
-        edgeColor = color;
-        if (polyline == null) {
-            polyline = globe.createArcBetween(pos1, pos2, color);
-            globe.drawArc(polyline, color);
+            boolean forceEdgeRedraw, boolean showParticles) {
+        int size;
+        particleColor = color;
+        if (!showParticles) {
+            edgeColor = color;
+            size = UIConstants.EDGE_WITHOUT_PARTICLE_SIZE;
         } else {
-            if (forceEdgeRedraw) {
-                globe.drawArc(polyline, color);
-            } else {
-                polyline.setColor(color);
-            }
+            edgeColor = UIConstants.EDGE_WITH_PARTICLES_COLOR;
+            size = UIConstants.EDGE_WITH_PARTICLE_SIZE;
+        }
+
+        if (polyline == null || forceEdgeRedraw) {
+            polyline = globe.createArcBetween(pos1, pos2, edgeColor, size);
+            globe.drawArc(polyline, edgeColor);
+        } else {
+            polyline.setColor(edgeColor);
         }
     }
+    
+//    //this must be called after the polyline is rendered ...
+//    public void updateKnots(){
+//        knots = polyline.getKnots();
+//    }
 
     @Override
     public boolean equals(Object other) {
@@ -121,10 +137,19 @@ public class GlobeEdge {
         return edgeColor;
     }
 
+    public Marker addMarkerToEdge() {
+        MovingMarker marker = null;
+        if (((ArrayList<Position>) polyline.getPositions()).size() > 0) {
+            marker = markerPool.getMarker(((ArrayList<Position>) polyline
+                    .getPositions()).get(0), particleColor);
+        }
+        return marker;
+    }
+
     public Marker addMarkerToEdge(Position position) {
 
         MovingMarker marker = null;
-        marker = markerPool.getMarker(position, attributes);
+        marker = markerPool.getMarker(position, particleColor);
         return marker;
     }
 
@@ -132,19 +157,31 @@ public class GlobeEdge {
         return markerPool.getActiveMarkers();
     }
 
-    public BasicMarkerAttributes getAttributes() {
-        return attributes;
-    }
-
     public void moveMarkers(GlobeVisualization globeViz) {
 
         MovingMarker marker;
         int idx;
 
-        if (edgeColor != null) {
-            attributes.setMaterial(new Material(edgeColor));
-        }
-        
+        // if (edgeColor != null) {
+        // attributes.setMaterial(new Material(edgeColor));
+        // }
+
+        // for (int i = 0; i < markerPool.getActiveMarkers().size(); i++) {
+        // marker = markerPool.getActiveMarkers().get(i);
+        // idx = marker.move();
+        // if (idx >= ((ArrayList<Position>) polyline.getPositions()).size()) {
+        // marker.resetIndex();
+        // // remove marker from layer
+        // globeViz.getMarkerLayer().removeMarker(marker);
+        // // return the marker to the pool
+        // markerPool.returnMarkerToPool(marker);
+        //
+        // } else {
+        // marker.setPosition(((ArrayList<Position>) polyline
+        // .getPositions()).get(idx));
+        // }
+        // }
+
         for (int i = 0; i < markerPool.getActiveMarkers().size(); i++) {
             marker = markerPool.getActiveMarkers().get(i);
             idx = marker.move();

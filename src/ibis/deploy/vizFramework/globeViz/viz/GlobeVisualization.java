@@ -6,6 +6,7 @@ import gov.nasa.worldwind.event.SelectEvent;
 import gov.nasa.worldwind.event.SelectListener;
 import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.AnnotationAttributes;
 import gov.nasa.worldwind.render.GlobeAnnotation;
@@ -25,10 +26,10 @@ import javax.swing.JPanel;
 
 public class GlobeVisualization extends JPanel {
     private static final long serialVersionUID = 1L;
+    private static WorldWindowGLCanvas worldWindCanvas;
 
     private GlobeAnnotation tooltipAnnotation;
     private CircleAnnotation lastSelectedDot;
-    private WorldWindowGLCanvas worldWindCanvas;
     private RenderableLayer annotationLayer;
     private RenderableLayer polylineLayer;
     private SynchronizedMarkerLayer markerLayer;
@@ -79,12 +80,12 @@ public class GlobeVisualization extends JPanel {
         });
 
         // //temporarily disable some layers for debugging - TODO - remove
-        // for (Layer layer : worldWindCanvas.getModel().getLayers()) {
-        // if (layer.getName().equals("NASA Blue Marble Image")
-        // || layer.getName().equals("Blue Marble (WMS) 2004")) {
-        // layer.setEnabled(false);
-        // }
-        // }
+        for (Layer layer : worldWindCanvas.getModel().getLayers()) {
+            if (layer.getName().equals("NASA Blue Marble Image")
+                    || layer.getName().equals("Blue Marble (WMS) 2004")) {
+                layer.setEnabled(false);
+            }
+        }
 
     }
 
@@ -92,7 +93,7 @@ public class GlobeVisualization extends JPanel {
         return annotationLayer;
     }
 
-    public WorldWindowGLCanvas getVisualization() {
+    public static WorldWindowGLCanvas getVisualization() {
         return worldWindCanvas;
     }
 
@@ -152,29 +153,31 @@ public class GlobeVisualization extends JPanel {
 
     // computes a polyline between the two locations
     public UnclippablePolyline createArcBetween(Position pos1, Position pos2,
-            Color color) {
+            Color color, int lineWidth) {
         UnclippablePolyline polyline;
         ArrayList<Position> polylineList = new ArrayList<Position>();
 
         // add the control points to the list
         polylineList.addAll(doTheSplits(pos1, pos2,
-                UIConstants.NUMBER_OF_CONTROL_POINTS, true));
+                UIConstants.NUMBER_OF_CONTROL_POINTS, !followTerrain));
 
         // add the points of the BSpline created using the control points.
         polylineList = BSpline.computePolyline(worldWindCanvas.getModel()
                 .getGlobe(), polylineList);
 
-        //this is to add more knots in the straight part of the edge
+        // //this is to add more knots in the straight part of the edge
+        Position tempPos = polylineList.remove(0); 
         polylineList.addAll(0,
-                doTheSplits(polylineList.get(0), polylineList.get(1), 2, true));
+                doTheSplits(tempPos, polylineList.get(0), 2, true));
 
+        tempPos = polylineList.remove(polylineList.size() - 1);
         polylineList.addAll(doTheSplits(
-                polylineList.get(polylineList.size() - 2),
-                polylineList.get(polylineList.size() - 1), 2, true));
+                polylineList.get(polylineList.size() - 1),
+                tempPos, 2, true));
 
         polyline = new UnclippablePolyline(polylineList);
         polyline.setColor(color);
-        polyline.setLineWidth(3.0);
+        polyline.setLineWidth(lineWidth);
         polyline.setFollowTerrain(followTerrain);
 
         return polyline;
@@ -227,8 +230,10 @@ public class GlobeVisualization extends JPanel {
         annotationLayer.addRenderable(tooltipAnnotation);
     }
 
-    public void drawArc(Position pos1, Position pos2, Color color) {
-        polylineLayer.addRenderable(createArcBetween(pos1, pos2, color));
+    // TODO - maybe remove this one if it's unused
+    public void drawArc(Position pos1, Position pos2, Color color, int lineWidth) {
+        polylineLayer.addRenderable(createArcBetween(pos1, pos2, color,
+                lineWidth));
     }
 
     public void drawArc(UnclippablePolyline line, Color color) {
@@ -248,7 +253,14 @@ public class GlobeVisualization extends JPanel {
         if (convertor != null) {
             followTerrain = value;
             convertor.forceUpdate();
-            repaint();
+            worldWindCanvas.repaint();
+        }
+    }
+
+    public void setShowParticles(boolean value) {
+        if (convertor != null) {
+            convertor.setShowParticles(value);
+            worldWindCanvas.repaint();
         }
     }
 

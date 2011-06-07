@@ -4,5 +4,5 @@ import ibis.deploy.monitoring.collection.Location;
 
 public interface IDataConvertor {
 
-    public void updateData(Location root, boolean structureChanged);
+    public void updateData(Location root, boolean structureChanged, boolean forced);
 }

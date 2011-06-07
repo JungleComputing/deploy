@@ -1,5 +1,7 @@
 package ibis.deploy.vizFramework.globeViz.viz;
 
+import ibis.deploy.vizFramework.globeViz.viz.utils.Utils;
+
 import java.awt.Color;
 import java.util.ArrayList;
 
@@ -12,17 +14,22 @@ import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.geom.Matrix;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Vec4;
+import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.Polyline;
 
 public class UnclippablePolyline extends Polyline {
 
+    private ArrayList<Position> knots = new ArrayList<Position>();
+    private boolean knotsUninitialized = true;
+
     public UnclippablePolyline() {
         super();
+        knots = new ArrayList<Position>();
     }
-    
-    public ArrayList<ArrayList<Vec4>> getCurrentSpans(){
-        return currentSpans;
+
+    public ArrayList<Position> getKnots() {
+        return knots;
     }
 
     public UnclippablePolyline(Iterable<? extends Position> positions) {
@@ -173,9 +180,17 @@ public class UnclippablePolyline extends Polyline {
                 gl.glBegin(primType);
                 for (Vec4 p : span) {
                     gl.glVertex3d(p.x, p.y, p.z);
+                    
+                    if(knotsUninitialized){
+                    Globe globe = GlobeVisualization.getVisualization().getModel().getGlobe();
+                    
+                    knots.add(globe.computePositionFromPoint(p));
+                    }
                 }
                 gl.glEnd();
             }
+            
+            knotsUninitialized = false;
 
             if (this.highlighted) {
                 if (!dc.isPickingMode()) {

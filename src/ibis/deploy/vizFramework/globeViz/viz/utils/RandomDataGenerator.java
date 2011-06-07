@@ -141,7 +141,7 @@ public class RandomDataGenerator {
                     pos1 = positionList.get(i);
                     pos2 = positionList.get(j);
                     layer.addRenderable(globe.createArcBetween(pos1, pos2,
-                            new Color(0, 255, 0, 150)));
+                            new Color(0, 255, 0, 150), UIConstants.EDGE_WITHOUT_PARTICLE_SIZE));
                 }
             }
         }

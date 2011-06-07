@@ -46,7 +46,7 @@ public class MetricManager {
     public void update() {
         Location root = collector.getRoot();
         for (IDataConvertor convertor : dataConvertors) {
-            convertor.updateData(root, collector.change());
+            convertor.updateData(root, collector.change(), false);
         }
     }
 

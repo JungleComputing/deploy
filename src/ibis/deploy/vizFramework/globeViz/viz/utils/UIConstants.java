@@ -24,6 +24,8 @@ public class UIConstants {
 					Color.BLACK), };
 	public static Color LOCATION_COLOR_LIST[] = { Color.RED, Color.ORANGE, Color.YELLOW,
 			Color.GREEN, Color.BLUE, Color.GRAY, Color.BLACK, };
+	
+	public static Color EDGE_WITH_PARTICLES_COLOR = Color.GRAY;
 
 	public static int NPOSITIONS = 10;
 	public static int ARC_HEIGHT = 8000;
@@ -33,4 +35,9 @@ public class UIConstants {
 	public static double increment = 2*Math.PI/50;
 	
 	public static int LEVELS = 2;
+	
+	public static int MARKER_SIZE = 6;
+	
+	public static int EDGE_WITH_PARTICLE_SIZE = 1;
+	public static int EDGE_WITHOUT_PARTICLE_SIZE = 2;
 }
