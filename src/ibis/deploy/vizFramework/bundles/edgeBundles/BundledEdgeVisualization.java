@@ -1,4 +1,4 @@
-package ibis.deploy.gui.deployViz.edgeBundles;
+package ibis.deploy.vizFramework.bundles.edgeBundles;
 
 import prefuse.Visualization;
 import prefuse.data.Graph;

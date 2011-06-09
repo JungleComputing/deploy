@@ -1,4 +1,4 @@
-package ibis.deploy.gui.deployViz;
+package ibis.deploy.vizFramework.bundles;
 
 import ibis.deploy.gui.GUI;
 import java.awt.BorderLayout;
@@ -28,10 +28,14 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import ibis.deploy.gui.deployViz.data.DataCollector;
-import ibis.deploy.gui.deployViz.data.GraphGenerator;
-import ibis.deploy.gui.deployViz.edgeBundles.*;
-import ibis.deploy.gui.deployViz.helpers.*;
+import ibis.deploy.vizFramework.IVisualization;
+import ibis.deploy.vizFramework.bundles.data.DataCollector;
+import ibis.deploy.vizFramework.bundles.data.GraphGenerator;
+import ibis.deploy.vizFramework.bundles.edgeBundles.BundledEdgeRenderer;
+import ibis.deploy.vizFramework.bundles.edgeBundles.BundledEdgeVisualization;
+import ibis.deploy.vizFramework.bundles.edgeBundles.DisplayControlAdapter;
+import ibis.deploy.vizFramework.globeViz.viz.utils.UIConstants;
+import ibis.deploy.vizFramework.globeViz.viz.utils.Utils;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
 
@@ -62,7 +66,7 @@ import prefuse.visual.VisualItem;
 import prefuse.visual.expression.InGroupPredicate;
 import prefuse.visual.sort.TreeDepthItemSorter;
 
-public class DeployVizPanel extends JPanel {
+public class BundlesVisualization extends JPanel implements IVisualization {
 	
     private static final long serialVersionUID = 1L;
 
@@ -90,10 +94,10 @@ public class DeployVizPanel extends JPanel {
     private RegistryServiceInterface regInterface;
     private ManagementServiceInterface manInterface;
 
-    private DataCollector dataCollector;
+    //private DataCollector dataCollector;
     private GraphGenerator generator;
 
-    public DeployVizPanel(GUI gui) {
+    public BundlesVisualization(GUI gui) {
 
 //        // Add the option to enable this feature to the Ibis Deploy menu bar
 //        JMenuBar menuBar = gui.getMenuBar();
@@ -145,19 +149,19 @@ public class DeployVizPanel extends JPanel {
         }
 
         // create the data collecting thread
-        dataCollector = new DataCollector(manInterface, regInterface, this);
-        dataCollector.start();
-        dataCollector.setCollectingState(false);
+        //dataCollector = new DataCollector(manInterface, regInterface, this);
+        //dataCollector.start();
+        //dataCollector.setCollectingState(false);
 
         add(vizPanel, BorderLayout.CENTER);
     }
 
     public void setCollectData(boolean collect) {
-        dataCollector.setCollectingState(collect);
+        //dataCollector.setCollectingState(collect);
     }
 
     public void updateVisualization(HashMap<String, Set<String>> ibisesPerSite,
-            HashMap<String, HashMap<String, Long>> edgesPerIbis) {
+            HashMap<String, HashMap<String, Double>> edgesPerIbis) {
         // try to update the graph, and only redo the visualization if changes
         // have occurred in the meanwhile
         int result = generator.updatePrefuseGraph(ibisesPerSite, edgesPerIbis,
@@ -181,32 +185,32 @@ public class DeployVizPanel extends JPanel {
         public RadialGraphDisplay() {
 
             super(vis);
-            m_vis.setInteractive(VizUtils.EDGES, null, false);
+            m_vis.setInteractive(UIConstants.EDGES, null, false);
 
             // draw the "name" label for NodeItems
-            m_nodeRenderer = new LabelRenderer(VizUtils.NODE_NAME);
+            m_nodeRenderer = new LabelRenderer(UIConstants.NODE_NAME);
             m_nodeRenderer
                     .setRenderType(AbstractShapeRenderer.RENDER_TYPE_DRAW_AND_FILL);
             m_nodeRenderer.setRoundedCorner(7, 7);
 
-            edgeRenderer = new BundledEdgeRenderer(VizUtils.BSPLINE_EDGE_TYPE);
+            edgeRenderer = new BundledEdgeRenderer(UIConstants.BSPLINE_EDGE_TYPE);
 
             DefaultRendererFactory rf = new DefaultRendererFactory(
                     m_nodeRenderer);
-            rf.add(new InGroupPredicate(VizUtils.EDGES), edgeRenderer);
+            rf.add(new InGroupPredicate(UIConstants.EDGES), edgeRenderer);
             m_vis.setRendererFactory(rf);
 
             // create stroke for drawing nodes
-            ColorAction nStroke = new ColorAction(VizUtils.NODES,
+            ColorAction nStroke = new ColorAction(UIConstants.NODES,
                     VisualItem.STROKECOLOR, ColorLib.gray(100));
 
             // use black for node text
-            ColorAction text = new ColorAction(VizUtils.NODES,
-                    VisualItem.TEXTCOLOR, VizUtils.DEFAULT_TEXT_COLOR);
+            ColorAction text = new ColorAction(UIConstants.NODES,
+                    VisualItem.TEXTCOLOR, UIConstants.DEFAULT_TEXT_COLOR);
 
             // use this to color the root node
-            ColorAction fill = new ColorAction(VizUtils.NODES,
-                    VisualItem.FILLCOLOR, VizUtils.DEFAULT_ROOT_NODE_COLOR);
+            ColorAction fill = new ColorAction(UIConstants.NODES,
+                    VisualItem.FILLCOLOR, UIConstants.DEFAULT_ROOT_NODE_COLOR);
 
             // create an action list containing all color assignments
             ActionList initialColor = new ActionList();
@@ -217,12 +221,12 @@ public class DeployVizPanel extends JPanel {
             m_vis.putAction("color", nStroke);
 
             // create the radial tree layout action
-            radialTreeLayout = new RadialTreeLayout(VizUtils.GRAPH);
+            radialTreeLayout = new RadialTreeLayout(UIConstants.GRAPH);
             m_vis.putAction(RADIAL_TREE_LAYOUT, radialTreeLayout);
             lastSelectedLayout = radialTreeLayout;
 
             // create the tree layout action
-            treeLayout = new NodeLinkTreeLayout(VizUtils.GRAPH,
+            treeLayout = new NodeLinkTreeLayout(UIConstants.GRAPH,
                     Constants.ORIENT_TOP_BOTTOM, 200, 3, 15);
             m_vis.putAction(TREE_LAYOUT, treeLayout);
 
@@ -255,7 +259,7 @@ public class DeployVizPanel extends JPanel {
     public void computeVisualParameters(BundledEdgeRenderer edgeRenderer,
             boolean redoLayout) {
 
-        TupleSet ts = vis.getGroup(VizUtils.GRAPH);
+        TupleSet ts = vis.getGroup(UIConstants.GRAPH);
 
         if (ts instanceof Graph) {
             Graph g = (Graph) ts;
@@ -281,7 +285,7 @@ public class DeployVizPanel extends JPanel {
                 }
 
                 // compute alphas for the edges, according to their length
-                VizUtils.computeEdgeAlphas(vis, tree);
+                Utils.computeEdgeAlphas(vis, tree);
 
                 // if the graph structure changed, it's necessary to update the
                 // selections also
@@ -298,7 +302,7 @@ public class DeployVizPanel extends JPanel {
         try {
             if (vis == null) {
                 vis = new BundledEdgeVisualization();
-                vis.addGraph(VizUtils.GRAPH, generator.getGraph());
+                vis.addGraph(UIConstants.GRAPH, generator.getGraph());
             }
 
         } catch (IllegalArgumentException exc) {
@@ -316,8 +320,8 @@ public class DeployVizPanel extends JPanel {
         radialGraphDisplay.addControlListener(new ControlAdapter() {
             public void itemEntered(VisualItem item, MouseEvent e) {
                 if (item instanceof NodeItem) {
-                    if (item.canGetString(VizUtils.NODE_NAME)) {
-                        title.setText(item.getString(VizUtils.NODE_NAME));
+                    if (item.canGetString(UIConstants.NODE_NAME)) {
+                        title.setText(item.getString(UIConstants.NODE_NAME));
                     }
                 }
             }
@@ -364,7 +368,7 @@ public class DeployVizPanel extends JPanel {
             @Override
             public void stateChanged(ChangeEvent arg0) {
                 edgeRenderer.setRemoveSharedAncestor(cbox.isSelected());
-                VizUtils.forceEdgeUpdate(vis);
+                Utils.forceEdgeUpdate(vis);
                 vis.repaint();
             }
         });
@@ -375,7 +379,7 @@ public class DeployVizPanel extends JPanel {
         panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         panel.add(new JLabel("Start color:"));
         buttonStart = new JButton("  ");
-        buttonStart.setBackground(VizUtils.DEFAULT_START_COLOR);
+        buttonStart.setBackground(UIConstants.DEFAULT_START_COLOR);
         buttonStart.setFocusPainted(false);
         buttonStart.addActionListener(new ButtonActionListener());
         buttonStart.setToolTipText("Click to select color");
@@ -384,7 +388,7 @@ public class DeployVizPanel extends JPanel {
         // color picker for edge stop color
         panel.add(new JLabel("Stop color:"));
         buttonStop = new JButton("  ");
-        buttonStop.setBackground(VizUtils.DEFAULT_STOP_COLOR);
+        buttonStop.setBackground(UIConstants.DEFAULT_STOP_COLOR);
         buttonStop.setFocusPainted(false);
         buttonStop.addActionListener(new ButtonActionListener());
         buttonStop.setToolTipText("Click to select color");
@@ -399,13 +403,13 @@ public class DeployVizPanel extends JPanel {
 
             @Override
             public void actionPerformed(ActionEvent arg0) {
-                if (dataCollector.isCollecting()) {
-                    dataCollector.setCollectingState(false);
-                    refreshDataButton.setText("Start monitoring");
-                } else {
-                    dataCollector.setCollectingState(true);
-                    refreshDataButton.setText("Stop monitoring");
-                }
+//                if (dataCollector.isCollecting()) {
+//                    dataCollector.setCollectingState(false);
+//                    refreshDataButton.setText("Start monitoring");
+//                } else {
+//                    dataCollector.setCollectingState(true);
+//                    refreshDataButton.setText("Stop monitoring");
+//                }
             }
         });
 
@@ -426,13 +430,13 @@ public class DeployVizPanel extends JPanel {
         panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         panel.add(new JLabel("Change bundling factor:"));
         slider = new JSlider(0, 20,
-                (int) (20 * VizUtils.INITIAL_BUNDLING_FACTOR));
+                (int) (20 * UIConstants.INITIAL_BUNDLING_FACTOR));
         slider.addChangeListener(new ChangeListener() {
 
             @Override
             public void stateChanged(ChangeEvent event) {
                 edgeRenderer.setBundlingFactor(slider.getValue() / 20.0);
-                VizUtils.forceEdgeUpdate(vis);
+                Utils.forceEdgeUpdate(vis);
                 vis.repaint();
             }
         });
@@ -457,7 +461,7 @@ public class DeployVizPanel extends JPanel {
                 } catch (ClassCastException exc) {
                     exc.printStackTrace();
                 }
-                VizUtils.forceEdgeUpdate(vis);
+                Utils.forceEdgeUpdate(vis);
                 vis.repaint();
             }
         });
@@ -472,7 +476,7 @@ public class DeployVizPanel extends JPanel {
             public void actionPerformed(ActionEvent arg0) {
                 vis.run(TREE_LAYOUT);
                 lastSelectedLayout = treeLayout;
-                VizUtils.forceEdgeUpdate(vis);
+                Utils.forceEdgeUpdate(vis);
                 vis.repaint();
             }
         });

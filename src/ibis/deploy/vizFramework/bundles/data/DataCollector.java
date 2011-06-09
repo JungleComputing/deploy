@@ -1,4 +1,4 @@
-package ibis.deploy.gui.deployViz.data;
+package ibis.deploy.vizFramework.bundles.data;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -10,8 +10,8 @@ import javax.swing.SwingUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ibis.deploy.gui.deployViz.DeployVizPanel;
-import ibis.deploy.gui.deployViz.helpers.VizUtils;
+import ibis.deploy.vizFramework.bundles.BundlesVisualization;
+import ibis.deploy.vizFramework.globeViz.viz.utils.Utils;
 import ibis.ipl.support.management.AttributeDescription;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.server.ManagementServiceInterface;
@@ -25,11 +25,11 @@ public class DataCollector extends Thread {
     private ManagementServiceInterface manInterface;
     private RegistryServiceInterface regInterface;
     private int refreshrate = 3000;
-    private final DeployVizPanel vizPanel;
+    private final BundlesVisualization vizPanel;
     private boolean collecting = true;
 
     private HashMap<String, Set<String>> ibisesPerSite = new HashMap<String, Set<String>>();
-    private HashMap<String, HashMap<String, Long>> connectionsPerIbis = new HashMap<String, HashMap<String, Long>>();
+    private HashMap<String, HashMap<String, Double>> connectionsPerIbis = new HashMap<String, HashMap<String, Double>>();
 
     private static final AttributeDescription sentBytesPerIbis = new AttributeDescription(
             "ibis", "sentBytesPerIbis");
@@ -38,7 +38,7 @@ public class DataCollector extends Thread {
             "ibis", "receivedBytesPerIbis");
 
     public DataCollector(ManagementServiceInterface manInterface,
-            RegistryServiceInterface regInterface, DeployVizPanel vPanel) {
+            RegistryServiceInterface regInterface, BundlesVisualization vPanel) {
 
         this.manInterface = manInterface;
         this.regInterface = regInterface;
@@ -153,10 +153,10 @@ public class DataCollector extends Thread {
                 }
 
                 Object[] tempResult;
-                HashMap<IbisIdentifier, Long> sentBytes;
+                HashMap<IbisIdentifier, Double> sentBytes;
                 // HashMap<IbisIdentifier, Long> receivedBytes;
-                HashMap<String, Long> totalBytes;
-                long sum = 0;
+                HashMap<String, Double> totalBytes;
+                double sum = 0;
 
                 // retrieve the connections per ibis
                 for (IbisIdentifier ibis : ibises) {
@@ -165,7 +165,7 @@ public class DataCollector extends Thread {
 
                     // retrieve the connection hashmap for this ibis
                     if (connectionsPerIbis.get(ibisName) == null) {
-                        totalBytes = new HashMap<String, Long>();
+                        totalBytes = new HashMap<String, Double>();
                     } else {
                         totalBytes = connectionsPerIbis.get(ibisName);
                         totalBytes.clear();
@@ -176,7 +176,7 @@ public class DataCollector extends Thread {
                         // get the number of bytes sent to every connected ibis
                         tempResult = manInterface.getAttributes(ibis,
                                 sentBytesPerIbis);
-                        sentBytes = (HashMap<IbisIdentifier, Long>) tempResult[0];
+                        sentBytes = (HashMap<IbisIdentifier, Double>) tempResult[0];
 
                         // get the number of bytes received from every connected
                         // ibis
@@ -232,7 +232,7 @@ public class DataCollector extends Thread {
             }
         }
 
-        VizUtils.updateMinMaxWeights(connectionsPerIbis);
+        Utils.updateMinMaxWeights(connectionsPerIbis);
     }
 
     // this can be used for testing
@@ -252,10 +252,10 @@ public class DataCollector extends Thread {
 
                     String startIbis = sitename + "ibis" + j;
 
-                    HashMap<String, Long> tempedge = connectionsPerIbis
+                    HashMap<String, Double> tempedge = connectionsPerIbis
                             .get(startIbis);
                     if (tempedge == null) {
-                        tempedge = new HashMap<String, Long>();
+                        tempedge = new HashMap<String, Double>();
                     } else {
                         tempedge.clear();
                     }
@@ -268,7 +268,7 @@ public class DataCollector extends Thread {
                             if (k != j) {
 
                                 tempedge.put(stopIbis,
-                                        (long) (Math.random() * 100));
+                                        Math.random());
                                 connectionsPerIbis.put(startIbis, tempedge);
                             }
                         }

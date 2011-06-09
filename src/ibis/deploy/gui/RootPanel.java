@@ -2,17 +2,20 @@ package ibis.deploy.gui;
 
 import ibis.deploy.gui.applications.ApplicationEditorPanel;
 import ibis.deploy.gui.clusters.ClusterEditorPanel;
-import ibis.deploy.gui.deployViz.DeployVizPanel;
 import ibis.deploy.gui.experiment.ExperimentsPanel;
 import ibis.deploy.gui.misc.Utils;
 import ibis.deploy.monitoring.visualization.gridvision.swing.GogglePanel;
+import ibis.deploy.vizFramework.IVisualization;
 import ibis.deploy.vizFramework.MetricManager;
+import ibis.deploy.vizFramework.bundles.BundlesVisualization;
 import ibis.deploy.vizFramework.globeViz.GlobePanel;
 import ibis.deploy.vizFramework.globeViz.viz.GlobeVisualization;
 import ibis.smartsockets.viz.SmartsocketsViz;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.util.ArrayList;
+
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
@@ -55,8 +58,10 @@ public class RootPanel extends JPanel {
                         Color.WHITE, false, true, false, gui.getDeploy()
 						.getRootHubAddress()), tabs);
 
+		BundlesVisualization bundlePanel = new BundlesVisualization(gui);
+		
 		deployVizTab = new DetachableTab("Connection Overview",
-				"images/gridvision.png", new DeployVizPanel(gui), tabs);
+				"images/gridvision.png", bundlePanel, tabs);
 		
 		//GlobeVisualization globe = new GlobeVisualization();
 		GlobePanel globePanel = new GlobePanel(gui);
@@ -70,7 +75,11 @@ public class RootPanel extends JPanel {
 //					"images/gridvision.png", new GogglePanel(gui.getCollector()), tabs);
 //		}
 		
-		MetricManager mgr = new MetricManager(gui.getCollector(), globePanel.getGlobe());
+		ArrayList<IVisualization> visualizations = new ArrayList<IVisualization>();
+		visualizations.add(globePanel.getGlobe());
+		visualizations.add(bundlePanel);
+		
+		MetricManager mgr = new MetricManager(gui.getCollector(), visualizations);
 		add(tabs, BorderLayout.CENTER);
 	}
 }

@@ -11,7 +11,8 @@ import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.AnnotationAttributes;
 import gov.nasa.worldwind.render.GlobeAnnotation;
 import ibis.deploy.gui.GUI;
-import ibis.deploy.vizFramework.globeViz.data.GlobeVizDataConvertor;
+import ibis.deploy.vizFramework.IVisualization;
+import ibis.deploy.vizFramework.globeViz.data.GlobeDataConvertor;
 import ibis.deploy.vizFramework.globeViz.viz.markers.SynchronizedMarkerLayer;
 import ibis.deploy.vizFramework.globeViz.viz.utils.UIConstants;
 
@@ -24,7 +25,7 @@ import java.awt.Point;
 import java.util.ArrayList;
 import javax.swing.JPanel;
 
-public class GlobeVisualization extends JPanel {
+public class GlobeVisualization extends JPanel implements IVisualization {
     private static final long serialVersionUID = 1L;
     private static WorldWindowGLCanvas worldWindCanvas;
 
@@ -34,7 +35,7 @@ public class GlobeVisualization extends JPanel {
     private RenderableLayer polylineLayer;
     private SynchronizedMarkerLayer markerLayer;
     private boolean followTerrain = false;
-    private GlobeVizDataConvertor convertor;
+    private GlobeDataConvertor convertor;
     private GUI gui;
 
     public GlobeVisualization(GUI gui) {
@@ -162,7 +163,7 @@ public class GlobeVisualization extends JPanel {
                 UIConstants.NUMBER_OF_CONTROL_POINTS, !followTerrain));
 
         // add the points of the BSpline created using the control points.
-        polylineList = BSpline.computePolyline(worldWindCanvas.getModel()
+        polylineList = BSpline3D.computePolyline(worldWindCanvas.getModel()
                 .getGlobe(), polylineList);
 
         // //this is to add more knots in the straight part of the edge
@@ -264,7 +265,7 @@ public class GlobeVisualization extends JPanel {
         }
     }
 
-    public void setDataConvertor(GlobeVizDataConvertor convertor) {
+    public void setDataConvertor(GlobeDataConvertor convertor) {
         this.convertor = convertor;
         convertor.setGUI(gui);
     }

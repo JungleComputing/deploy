@@ -1,6 +1,7 @@
-package ibis.deploy.gui.deployViz.edgeBundles;
+package ibis.deploy.vizFramework.bundles.edgeBundles;
 
-import ibis.deploy.gui.deployViz.helpers.VizUtils;
+import ibis.deploy.vizFramework.globeViz.viz.utils.UIConstants;
+import ibis.deploy.vizFramework.globeViz.viz.utils.Utils;
 
 import java.awt.event.MouseEvent;
 import java.util.Iterator;
@@ -20,7 +21,7 @@ public class DisplayControlAdapter extends ControlAdapter {
 
     public DisplayControlAdapter(Visualization vis) {
         this.vis = vis;
-        graph = (Graph) vis.getGroup(VizUtils.GRAPH);
+        graph = (Graph) vis.getGroup(UIConstants.GRAPH);
     }
 
     public void itemClicked(VisualItem item, MouseEvent e) {
@@ -63,28 +64,28 @@ public class DisplayControlAdapter extends ControlAdapter {
 
             resetPreviousSelection(node);
 
-            node.setFillColor(VizUtils.SELECTED_FILL_COLOR);
-            node.setTextColor(VizUtils.SELECTED_TEXT_COLOR);
+            node.setFillColor(UIConstants.SELECTED_FILL_COLOR);
+            node.setTextColor(UIConstants.SELECTED_TEXT_COLOR);
 
             while (edgeIter.hasNext()) {
                 try {
                     edge = (BSplineEdgeItem) edgeIter.next();
-                    edge.setStartFillColor(VizUtils.SELECTED_FILL_COLOR);
-                    edge.setEndFillColor(VizUtils.SELECTED_FILL_COLOR);
+                    edge.setStartFillColor(UIConstants.SELECTED_FILL_COLOR);
+                    edge.setEndFillColor(UIConstants.SELECTED_FILL_COLOR);
                     edge.setSelected(true);
                     edge.setHighlighted(true);
 
                     NodeItem nitem = edge.getAdjacentItem(node);
 
                     // change color of the adjacent nodes
-                    nitem.setFillColor(VizUtils.SELECTED_FILL_COLOR);
-                    nitem.setTextColor(VizUtils.SELECTED_TEXT_COLOR);
+                    nitem.setFillColor(UIConstants.SELECTED_FILL_COLOR);
+                    nitem.setTextColor(UIConstants.SELECTED_TEXT_COLOR);
                 } catch (IllegalArgumentException exc) {
                     System.err.println(exc.getMessage());
                 }
             }
 
-            VizUtils.forceEdgeUpdate(vis);
+            Utils.forceEdgeUpdate(vis);
 
         } else if (lastSelectedNode != null) {
             // if the selection is for something else other than a node, just
@@ -97,7 +98,7 @@ public class DisplayControlAdapter extends ControlAdapter {
     @SuppressWarnings("unchecked")
     private void resetPreviousSelection(NodeItem newNode) {
 
-        Iterator<NodeItem> nodes = vis.visibleItems(VizUtils.NODES);
+        Iterator<NodeItem> nodes = vis.visibleItems(UIConstants.NODES);
         NodeItem node;
 
         // just reset colors for all the nodes and edges in the graph
@@ -108,15 +109,15 @@ public class DisplayControlAdapter extends ControlAdapter {
                 if (node.getParent() != null) {
                     node.setFillColor(node.getStartFillColor());
                 } else {
-                    node.setFillColor(VizUtils.DEFAULT_ROOT_NODE_COLOR);
+                    node.setFillColor(UIConstants.DEFAULT_ROOT_NODE_COLOR);
                 }
-                node.setTextColor(VizUtils.DEFAULT_TEXT_COLOR);
+                node.setTextColor(UIConstants.DEFAULT_TEXT_COLOR);
             } catch (IllegalArgumentException exc) {
                 System.err.println(exc.getMessage());
             }
         }
 
-        Iterator<EdgeItem> edges = vis.visibleItems(VizUtils.EDGES);
+        Iterator<EdgeItem> edges = vis.visibleItems(UIConstants.EDGES);
         BSplineEdgeItem edge;
 
         while (edges.hasNext()) {

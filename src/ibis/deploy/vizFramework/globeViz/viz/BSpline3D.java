@@ -6,14 +6,16 @@ import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.globes.Globe;
 import java.util.ArrayList;
 
-public class BSpline {
-    public BSpline() {
+public class BSpline3D {
+    public BSpline3D() {
     }
 
     public static ArrayList<Position> computePolyline(Globe globe,
             ArrayList<Position> controlPoints) {
 
         int nSteps = 50, index, ncurves, i, j;
+        
+        //TODO - find a more compact way to perform these computations, some matrix operations
         double xA, yA, zA, xB, yB, zB, xC, yC, zC, xD, yD, zD;
         double a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3;
         double x = 0, y = 0, z = 0, t;

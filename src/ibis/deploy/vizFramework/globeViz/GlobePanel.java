@@ -96,6 +96,7 @@ public class GlobePanel extends JPanel {
                 globe.setShowParticles(true);
             }
         });
+        showParticlesRadio.setSelected(true);
         leftPanel.add(showParticlesRadio);
         
         JRadioButton showArcsRadio = new JRadioButton("Show colored edges");
@@ -111,7 +112,6 @@ public class GlobePanel extends JPanel {
                 }
             }
         });
-        showArcsRadio.setSelected(true);
         leftPanel.add(showArcsRadio);    
         
         leftPanel.add(Box.createHorizontalGlue());

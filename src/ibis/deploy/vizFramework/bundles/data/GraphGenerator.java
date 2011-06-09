@@ -1,8 +1,11 @@
-package ibis.deploy.gui.deployViz.data;
+package ibis.deploy.vizFramework.bundles.data;
 
 import ibis.deploy.Grid;
 import ibis.deploy.gui.GUI;
-import ibis.deploy.gui.deployViz.helpers.VizUtils;
+import ibis.deploy.util.Colors;
+import ibis.deploy.vizFramework.globeViz.viz.utils.UIConstants;
+import ibis.deploy.vizFramework.globeViz.viz.utils.Utils;
+
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,9 +40,9 @@ public class GraphGenerator {
 
     public GraphGenerator(GUI gui) {
         // initialize the schemas
-        NAME_SCHEMA.addColumn(VizUtils.NODE_NAME, String.class, "");
-        TYPE_SCHEMA.addColumn(VizUtils.NODE_TYPE, String.class, "");
-        WEIGHT_SCHEMA.addColumn(VizUtils.WEIGHT, long.class, 0);
+        NAME_SCHEMA.addColumn(UIConstants.NODE_NAME, String.class, "");
+        TYPE_SCHEMA.addColumn(UIConstants.NODE_TYPE, String.class, "");
+        WEIGHT_SCHEMA.addColumn(UIConstants.WEIGHT, long.class, 0);
 
         internalGraph = new Graph();
         internalGraph.getNodeTable().addColumns(NAME_SCHEMA);
@@ -49,9 +52,9 @@ public class GraphGenerator {
         // create root node - any graph will have this, including an empty
         // one
         root = internalGraph.addNode();
-        root.set(VizUtils.NODE_NAME, "Ibis Deploy");
-        root.set(VizUtils.NODE_TYPE, VizUtils.NODE_TYPE_ROOT_NODE);
-        nodeMap.put("Ibis Deploy", root);
+        root.set(UIConstants.NODE_NAME, "IbisDeploy");
+        root.set(UIConstants.NODE_TYPE, UIConstants.NODE_TYPE_ROOT_NODE);
+        nodeMap.put("IbisDeploy", root);
 
         grid = gui.getWorkSpace().getGrid();
     }
@@ -61,7 +64,7 @@ public class GraphGenerator {
     }
 
     public int updatePrefuseGraph(HashMap<String, Set<String>> ibisesPerSite,
-            HashMap<String, HashMap<String, Long>> edgesPerIbis,
+            HashMap<String, HashMap<String, Double>> edgesPerIbis,
             Visualization vis) {
 
         Node siteNode, ibisNode, startNode, stopNode;
@@ -83,7 +86,7 @@ public class GraphGenerator {
                     currentSituation = UPDATE_REDO_LAYOUT;
 
                     siteNode = addNodeToGraph(site, root,
-                            VizUtils.NODE_TYPE_SITE_NODE);
+                            UIConstants.NODE_TYPE_SITE_NODE);
                     assignNodeColor(siteNode, null, vis);
 
                 } else {
@@ -97,7 +100,7 @@ public class GraphGenerator {
                             currentSituation = UPDATE_REDO_LAYOUT;
 
                             ibisNode = addNodeToGraph(ibisName, siteNode,
-                                    VizUtils.NODE_TYPE_IBIS_NODE);
+                                    UIConstants.NODE_TYPE_IBIS_NODE);
                             assignNodeColor(ibisNode, siteNode, vis);
                         }
                     }
@@ -105,7 +108,7 @@ public class GraphGenerator {
             }
         }
 
-        HashMap<String, Long> neighbours;
+        HashMap<String, Double> neighbours;
         HashMap<String, Edge> tempHash;
         Edge newEdge;
         boolean edgesChanged = false;
@@ -165,7 +168,7 @@ public class GraphGenerator {
 
                                 if (newEdge != null
                                         && internalGraph.containsTuple(newEdge)) {
-                                    newEdge.setLong(VizUtils.WEIGHT, neighbours
+                                    newEdge.setLong(UIConstants.WEIGHT, neighbours
                                             .get(stopNodeName).longValue());
                                     
                                     edgesChanged = true;
@@ -197,8 +200,8 @@ public class GraphGenerator {
             tempNode = nodeMap.get(nodeName);
 
             // when we're dealing with a site node
-            if (tempNode.getString(VizUtils.NODE_TYPE).equals(
-                    VizUtils.NODE_TYPE_SITE_NODE)) {
+            if (tempNode.getString(UIConstants.NODE_TYPE).equals(
+                    UIConstants.NODE_TYPE_SITE_NODE)) {
                 if (!ibisesPerSite.containsKey(nodeName)) {
                     nodesToRemove.add(nodeName);
 
@@ -206,10 +209,10 @@ public class GraphGenerator {
                     while (nodeIter.hasNext()) {
                         try {
                             neighbourNode = nodeIter.next();
-                            if (neighbourNode.getString(VizUtils.NODE_TYPE)
-                                    .equals(VizUtils.NODE_TYPE_IBIS_NODE)) {
+                            if (neighbourNode.getString(UIConstants.NODE_TYPE)
+                                    .equals(UIConstants.NODE_TYPE_IBIS_NODE)) {
                                 nodesToRemove.add(neighbourNode
-                                        .getString(VizUtils.NODE_NAME));
+                                        .getString(UIConstants.NODE_NAME));
                             }
                         } catch (IllegalArgumentException exc) {
                             System.err.println(exc.getMessage());
@@ -219,14 +222,14 @@ public class GraphGenerator {
                 
             } else {
                 // when we're dealing with a Ibis node
-                if (tempNode.getString(VizUtils.NODE_TYPE).equals(
-                        VizUtils.NODE_TYPE_IBIS_NODE)) {
+                if (tempNode.getString(UIConstants.NODE_TYPE).equals(
+                        UIConstants.NODE_TYPE_IBIS_NODE)) {
                     
                     // get the name of the location - that's the name of the
                     // parent node
                     if (tempNode.getParent() != null) {
                         siteName = tempNode.getParent().getString(
-                                VizUtils.NODE_NAME);
+                                UIConstants.NODE_NAME);
                         
                         if (ibisesPerSite.get(siteName) == null
                                 || !ibisesPerSite.get(siteName).contains(
@@ -265,7 +268,7 @@ public class GraphGenerator {
     // from the internalgraph
     private boolean removeAllAdjacentEdges(Node node) {
         if (node != null) {
-            String nodeName = node.getString(VizUtils.NODE_NAME);
+            String nodeName = node.getString(UIConstants.NODE_NAME);
             String neighbourName;
             Edge reverseEdge;
             if (edgeMap.get(nodeName) != null
@@ -276,7 +279,7 @@ public class GraphGenerator {
                         // check if the edge is also present in the map for the
                         // adjacent node and remove it if it is
                         neighbourName = edge.getAdjacentNode(node).getString(
-                                VizUtils.NODE_NAME);
+                                UIConstants.NODE_NAME);
 
                         if (edgeMap.get(neighbourName) != null) {
                             reverseEdge = edgeMap.get(neighbourName).remove(
@@ -303,7 +306,7 @@ public class GraphGenerator {
     }
 
     private boolean removeOldEdges(String startNodeName,
-            HashMap<String, Long> neighbours) {
+            HashMap<String, Double> neighbours) {
         ArrayList<String> dataToRemove = new ArrayList<String>();
         boolean edgesChanged = false;
         Edge edgeToRemove;
@@ -338,11 +341,11 @@ public class GraphGenerator {
         Edge edge;
 
         newNode = internalGraph.addNode();
-        newNode.set(VizUtils.NODE_NAME, name);
-        newNode.set(VizUtils.NODE_TYPE, type);
+        newNode.set(UIConstants.NODE_NAME, name);
+        newNode.set(UIConstants.NODE_TYPE, type);
         nodeMap.put(name, newNode);
         edge = internalGraph.addEdge(parent, newNode);
-        edge.setLong(VizUtils.WEIGHT, VizUtils.DEFAULT_WEIGHT);
+        edge.setLong(UIConstants.WEIGHT, UIConstants.DEFAULT_WEIGHT);
 
         return newNode;
     }
@@ -352,43 +355,45 @@ public class GraphGenerator {
         Color colorCode;
         int color;
 
-        visualItem = (NodeItem) vis.getVisualItem(VizUtils.NODES, node);
+        visualItem = (NodeItem) vis.getVisualItem(UIConstants.NODES, node);
 
-        if (visualItem.getString(VizUtils.NODE_TYPE).equals(
-                VizUtils.NODE_TYPE_SITE_NODE)) {
-            if (grid.getCluster(visualItem.getString(VizUtils.NODE_NAME)) != null) {
+        if (visualItem.getString(UIConstants.NODE_TYPE).equals(
+                UIConstants.NODE_TYPE_SITE_NODE)) {
+            if (grid.getCluster(visualItem.getString(UIConstants.NODE_NAME)) != null) {
                 colorCode = grid.getCluster(
-                        visualItem.getString(VizUtils.NODE_NAME))
+                        visualItem.getString(UIConstants.NODE_NAME))
                         .getColor();
                 color = colorCode.getRGB();
             } else {
-                color = Color.decode(VizUtils.getRandomColor()).getRGB();
+                color = Colors.fromLocation(visualItem.getString(UIConstants.NODE_NAME)).getRGB();
+                //color = Color.decode(Utils.getRandomColor()).getRGB();
             }
 
             visualItem.setFillColor(color);
             visualItem.setStartFillColor(color);
-            visualItem.setTextColor(VizUtils.DEFAULT_TEXT_COLOR);
-        } else if (visualItem.getString(VizUtils.NODE_TYPE).equals(
-                VizUtils.NODE_TYPE_IBIS_NODE)) {
+            visualItem.setTextColor(UIConstants.DEFAULT_TEXT_COLOR);
+        } else if (visualItem.getString(UIConstants.NODE_TYPE).equals(
+                UIConstants.NODE_TYPE_IBIS_NODE)) {
             // we've already received the parent as a parameter, no need to
             // retrieve it again
             if (parent != null) {
-                if (grid.getCluster(parent.getString(VizUtils.NODE_NAME)) != null) {
+                if (grid.getCluster(parent.getString(UIConstants.NODE_NAME)) != null) {
                     colorCode = grid.getCluster(
-                            parent.getString(VizUtils.NODE_NAME))
+                            parent.getString(UIConstants.NODE_NAME))
                             .getColor();
                     color = colorCode.getRGB();
                 } else {
-                    color = Color.decode(VizUtils.getRandomColor()).getRGB();
+                    color = Colors.fromLocation(parent.getString(UIConstants.NODE_NAME)).getRGB();
+                    //color = Color.decode(Utils.getRandomColor()).getRGB();
                 }
                 visualItem.setFillColor(color);
                 visualItem.setStartFillColor(color);
-                visualItem.setTextColor(VizUtils.DEFAULT_TEXT_COLOR);
+                visualItem.setTextColor(UIConstants.DEFAULT_TEXT_COLOR);
             }
         } else {
             visualItem.setFillColor(ColorLib.gray(200));
             visualItem.setStartFillColor(ColorLib.gray(200));
-            visualItem.setTextColor(VizUtils.DEFAULT_TEXT_COLOR);
+            visualItem.setTextColor(UIConstants.DEFAULT_TEXT_COLOR);
         }
 
     }

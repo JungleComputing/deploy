@@ -161,13 +161,14 @@ public class FakeManagementService implements ManagementServiceInterface, FakeSe
 					IbisIdentifier iArray[] = reg.getMembers(myPool);					                                             
 					
 					Map<IbisIdentifier, Long> resultMap = new HashMap<IbisIdentifier, Long>();
-					int destinations = (int) (Math.random()*iArray.length);
+					int destinations = ((int) (Math.random()*100))%iArray.length;
 					int j = 0;
 					while (j<destinations) {
 						
 						IbisIdentifier randomIbis = iArray[(int)(Math.random()*iArray.length)];
 						while (resultMap.containsKey(randomIbis)) {
 							randomIbis = iArray[(int)(Math.random()*iArray.length)];
+							
 						}
 						resultMap.put(randomIbis, (long) (Math.random()*5000+currentIteration*5000));
 						j++;
@@ -180,7 +181,7 @@ public class FakeManagementService implements ManagementServiceInterface, FakeSe
 					IbisIdentifier iArray[] = reg.getMembers(myPool);					                                             
 					
 					Map<IbisIdentifier, Long> resultMap = new HashMap<IbisIdentifier, Long>();
-					int destinations = (int) (Math.random()*iArray.length);
+					int destinations = ((int) (Math.random()*100))%iArray.length;
 					int j = 0;
 					while (j<destinations) {
 						

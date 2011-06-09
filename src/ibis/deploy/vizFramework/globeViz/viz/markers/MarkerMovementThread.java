@@ -2,16 +2,16 @@ package ibis.deploy.vizFramework.globeViz.viz.markers;
 
 import javax.swing.SwingUtilities;
 
-import ibis.deploy.vizFramework.globeViz.data.GlobeVizDataConvertor;
+import ibis.deploy.vizFramework.globeViz.data.GlobeDataConvertor;
 
 public class MarkerMovementThread implements Runnable {
     private static final int APS = 8;
 
     private long startTime = 0;
     private int waitTime;
-    private GlobeVizDataConvertor convertor;
+    private GlobeDataConvertor convertor;
 
-    public MarkerMovementThread(GlobeVizDataConvertor convertor) {
+    public MarkerMovementThread(GlobeDataConvertor convertor) {
         waitTime = 1000 / APS;
         this.convertor = convertor;
         startTime = System.currentTimeMillis();

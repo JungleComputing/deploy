@@ -1,6 +1,8 @@
-package ibis.deploy.gui.deployViz.edgeBundles;
+package ibis.deploy.vizFramework.bundles.edgeBundles;
 
-import ibis.deploy.gui.deployViz.helpers.VizUtils;
+import ibis.deploy.vizFramework.globeViz.viz.utils.UIConstants;
+import ibis.deploy.vizFramework.globeViz.viz.utils.Utils;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -33,10 +35,10 @@ public class BundledEdgeRenderer extends EdgeRenderer {
 
     public BundledEdgeRenderer(int edgeType) {
         super(edgeType);
-        bfactor = VizUtils.INITIAL_BUNDLING_FACTOR;
+        bfactor = UIConstants.INITIAL_BUNDLING_FACTOR;
         removeSharedAncestor = false;
-        startColor = VizUtils.DEFAULT_START_COLOR;
-        stopColor = VizUtils.DEFAULT_STOP_COLOR;
+        startColor = UIConstants.DEFAULT_START_COLOR;
+        stopColor = UIConstants.DEFAULT_STOP_COLOR;
     }
 
     public void setSpanningTree(Tree tree) {
@@ -80,7 +82,7 @@ public class BundledEdgeRenderer extends EdgeRenderer {
                     "The spanning tree needs to be initialized!");
         }
 
-        if (m_edgeType == VizUtils.BSPLINE_EDGE_TYPE) {
+        if (m_edgeType == UIConstants.BSPLINE_EDGE_TYPE) {
             BSplineEdgeItem edge = (BSplineEdgeItem) item;
             if (!edge.isUpdated()) {
                 edge.computeControlPoints(removeSharedAncestor, bfactor,
@@ -157,7 +159,7 @@ public class BundledEdgeRenderer extends EdgeRenderer {
                     n2x, n2y);
             shape = m_cubic;
             break;
-        case VizUtils.BSPLINE_EDGE_TYPE:
+        case UIConstants.BSPLINE_EDGE_TYPE:
             // this is an approximation, it works for the moment
             // see if you can use a different type of curve here at some point
             // TODO
@@ -206,8 +208,8 @@ public class BundledEdgeRenderer extends EdgeRenderer {
             // if the encoding is by weight, then the entire edge has the same
             // color
             if (colorEncodingWeight) {
-                ratio = item.getLong(VizUtils.WEIGHT) * 1.0f / VizUtils.MAX_EDGE_WEIGHT;
-                color = VizUtils.blend(startColor, stopColor, ratio,
+                ratio = item.getLong(UIConstants.WEIGHT) * 1.0f / Utils.MAX_EDGE_WEIGHT;
+                color = Utils.blend(startColor, stopColor, ratio,
                         ((BSplineEdgeItem) item).getAlpha());
                 g.setColor(color);
             } else {
@@ -244,7 +246,7 @@ public class BundledEdgeRenderer extends EdgeRenderer {
     @Override
     public void setEdgeType(int type) {
         if (type < 0
-                || (type != VizUtils.BSPLINE_EDGE_TYPE && type >= Constants.EDGE_TYPE_COUNT))
+                || (type != UIConstants.BSPLINE_EDGE_TYPE && type >= Constants.EDGE_TYPE_COUNT))
             throw new IllegalArgumentException("Unrecognized edge curve type: "
                     + type);
         m_edgeType = type;

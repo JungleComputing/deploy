@@ -167,4 +167,8 @@ public class IbisImpl extends ElementImpl implements Ibis {
 
 		return result;
 	}
+	
+	public String getName(){
+	    return ibisid.name() + "-" + ibisid.location();
+	}
 }

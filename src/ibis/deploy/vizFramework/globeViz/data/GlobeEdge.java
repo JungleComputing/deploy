@@ -27,7 +27,6 @@ public class GlobeEdge {
     private Color particleColor = Color.green;
     // private BasicMarkerAttributes attributes;
     private MarkerPool markerPool;
-    //private ArrayList<Position> knots = new ArrayList<Position>();
 
     // pos1 and pos2 need to be non-null
     public GlobeEdge(Position pos1, Position pos2, String name) {
@@ -67,22 +66,17 @@ public class GlobeEdge {
             polyline.setColor(edgeColor);
         }
     }
-    
-//    //this must be called after the polyline is rendered ...
-//    public void updateKnots(){
-//        knots = polyline.getKnots();
-//    }
 
     @Override
     public boolean equals(Object other) {
         if (other != null && other instanceof GlobeEdge) {
             GlobeEdge secondEdge = (GlobeEdge) other;
             if ((GlobeEdge.positionsEqual(pos1, secondEdge.getFirstPosition()) && GlobeEdge
-                    .positionsEqual(pos2, secondEdge.getSecondPosition()))
-                    || (GlobeEdge.positionsEqual(pos2,
-                            secondEdge.getFirstPosition()) && GlobeEdge
-                            .positionsEqual(pos1,
-                                    secondEdge.getSecondPosition()))) {
+                    .positionsEqual(pos2, secondEdge.getSecondPosition()))){
+//                    || (GlobeEdge.positionsEqual(pos2,
+//                            secondEdge.getFirstPosition()) && GlobeEdge
+//                            .positionsEqual(pos1,
+//                                    secondEdge.getSecondPosition()))) {
                 return true;
             }
 
@@ -103,8 +97,8 @@ public class GlobeEdge {
         // matter what the edge direction is. TODO - if at some point edge
         // direction matters, change this
         int hash1 = (41 * (41 + pos1.hashCode()) + pos2.hashCode());
-        int hash2 = (41 * (41 + pos2.hashCode()) + pos1.hashCode());
-        return Math.max(hash1, hash2);
+        //int hash2 = (41 * (41 + pos2.hashCode()) + pos1.hashCode());
+        return hash1; //Math.max(hash1, hash2);
     }
 
     public Position getFirstPosition() {
@@ -126,7 +120,8 @@ public class GlobeEdge {
     }
 
     public String getName() {
-        return pos1.toString() + " -> " + pos2.toString();
+        //return pos1.toString() + " -> " + pos2.toString();
+        return name;
     }
 
     public UnclippablePolyline getPolyline() {

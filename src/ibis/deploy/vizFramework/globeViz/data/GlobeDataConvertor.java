@@ -28,8 +28,8 @@ import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.AnnotationAttributes;
 import gov.nasa.worldwind.render.Renderable;
 import gov.nasa.worldwind.render.markers.Marker;
+import ibis.deploy.Cluster;
 import ibis.deploy.gui.GUI;
-import ibis.deploy.gui.deployViz.helpers.VizUtils;
 import ibis.deploy.monitoring.collection.Location;
 import ibis.deploy.monitoring.collection.Link;
 import ibis.deploy.monitoring.collection.Link.LinkDirection;
@@ -44,7 +44,7 @@ import ibis.deploy.vizFramework.globeViz.viz.GlobeVisualization;
 import ibis.deploy.vizFramework.globeViz.viz.utils.UIConstants;
 import ibis.deploy.vizFramework.globeViz.viz.utils.Utils;
 
-public class GlobeVizDataConvertor implements IDataConvertor {
+public class GlobeDataConvertor implements IDataConvertor {
 
     private final GlobeVisualization globeViz;
     private ConcurrentHashMap<String, Position> positionList;
@@ -60,12 +60,10 @@ public class GlobeVizDataConvertor implements IDataConvertor {
     private Set<CircleAnnotation> pieChartWaypointSet;
     private GUI gui;
     private final Timer particleMovementTimer; // , particleReleaseTimer;
-
     private boolean initialized = false;
     private boolean showParticles = true;
-    private boolean edgesChanged = true;
 
-    public GlobeVizDataConvertor(GlobeVisualization globeVizRef,
+    public GlobeDataConvertor(GlobeVisualization globeVizRef,
             Location rootRef) {
 
         this.globeViz = globeVizRef;
@@ -102,17 +100,18 @@ public class GlobeVizDataConvertor implements IDataConvertor {
                             refreshClusterData(false, true);
                             initialized = true;
                         }
-                        
-//                        if(edgesChanged){
-//                         // we can update the knots only now, because they are computed
-//                            // once the edges are redrawn
-//                            for (GlobeEdge edge : globeEdges.keySet()) {
-//                                if (edge != null) {
-//                                    edge.updateKnots();
-//                                }
-//                            }
-//                            edgesChanged = false;
-//                        }
+
+                        // if(edgesChanged){
+                        // // we can update the knots only now, because they are
+                        // computed
+                        // // once the edges are redrawn
+                        // for (GlobeEdge edge : globeEdges.keySet()) {
+                        // if (edge != null) {
+                        // edge.updateKnots();
+                        // }
+                        // }
+                        // edgesChanged = false;
+                        // }
                     }
                 });
 
@@ -233,7 +232,7 @@ public class GlobeVizDataConvertor implements IDataConvertor {
             positionList.clear();
             globeViz.clearAnnotationLayer();
 
-            generateInitialLocationAnnotations(root, " ", UIConstants.LEVELS,
+            generateInitialLocationAnnotations(root, UIConstants.LEVELS,
                     structureChanged);
         }
         refreshClusterData(false, structureChanged);
@@ -272,16 +271,18 @@ public class GlobeVizDataConvertor implements IDataConvertor {
             // update existing edges
             for (GlobeEdge edge : tempEdges.keySet()) {
                 value = tempEdges.get(edge);
+                //System.out.println(edge.getName());
                 updateMax(value);
                 globeEdges.put(edge, value);
             }
+            //System.out.println("---------------------------------->");
 
             for (GlobeEdge edge : globeEdges.keySet()) {
                 if (edge != null) {
                     if (globeEdges.get(edge) != null) {
                         double ratio = globeEdges.get(edge) / maximum;
-                        newColor = VizUtils.blend(Color.red, Color.green,
-                                ratio, 0.7f);
+                        newColor = Utils.blend(Color.red, Color.green, ratio,
+                                0.7f);
                         edge.updateAssociatedPolyline(globeViz, newColor,
                                 pieChartsChanged, showParticles);
 
@@ -293,14 +294,13 @@ public class GlobeVizDataConvertor implements IDataConvertor {
                 }
             }
             globeViz.redraw();
-            edgesChanged = pieChartsChanged;
         }
     }
 
     // creates an annotation for each existing cluster. These will later be
     // grouped into pie charts.
     private synchronized void generateInitialLocationAnnotations(Location root,
-            String spacer, int level, boolean structureChanged) {
+            int level, boolean structureChanged) {
         ArrayList<Location> dataChildren = root.getChildren();
         if (dataChildren == null || dataChildren.size() == 0) {
             return;
@@ -313,8 +313,7 @@ public class GlobeVizDataConvertor implements IDataConvertor {
                 }
             }
 
-            generateInitialLocationAnnotations(loc, spacer.concat("  "),
-                    level - 1, structureChanged);
+            generateInitialLocationAnnotations(loc, level - 1, structureChanged);
         }
     }
 
@@ -327,8 +326,16 @@ public class GlobeVizDataConvertor implements IDataConvertor {
         annotation = new CircleAnnotation(pos, new AnnotationAttributes(),
                 finalLocation.getName());
         if (color == null) {
-            annotation.getAttributes().setTextColor(
-                    Colors.fromLocation(loc.getName()));
+            Cluster cluster = gui.getWorkSpace().getGrid()
+                    .getCluster(loc.getName());
+            if (cluster != null) {
+                annotation.getAttributes().setTextColor(
+                        gui.getWorkSpace().getGrid().getCluster(loc.getName())
+                                .getColor());
+            } else {
+                annotation.getAttributes().setTextColor(
+                        Colors.fromLocation(loc.getName()));
+            }
         } else {
             annotation.getAttributes().setTextColor(color);
         }
@@ -623,15 +630,15 @@ public class GlobeVizDataConvertor implements IDataConvertor {
                         }
                     }
 
-                    for (Metric metric : link
-                            .getMetrics(LinkDirection.DST_TO_SRC)) {
-                        try {
-                            value2 = (Float) metric.getValue(
-                                    MetricModifier.NORM, MetricOutput.PERCENT);
-                        } catch (OutputUnavailableException e) {
-                            System.out.println(e.getMessage());
-                        }
-                    }
+//                    for (Metric metric : link
+//                            .getMetrics(LinkDirection.DST_TO_SRC)) {
+//                        try {
+//                            value2 = (Float) metric.getValue(
+//                                    MetricModifier.NORM, MetricOutput.PERCENT);
+//                        } catch (OutputUnavailableException e) {
+//                            System.out.println(e.getMessage());
+//                        }
+//                    }
 
                     pos1 = startPie.getPosition();
                     pos2 = stopPie.getPosition();

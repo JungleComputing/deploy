@@ -1,4 +1,4 @@
-package ibis.deploy.gui.deployViz.edgeBundles;
+package ibis.deploy.vizFramework.bundles.edgeBundles;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
