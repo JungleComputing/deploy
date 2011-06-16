@@ -42,7 +42,7 @@ public class GraphGenerator {
         // initialize the schemas
         NAME_SCHEMA.addColumn(UIConstants.NODE_NAME, String.class, "");
         TYPE_SCHEMA.addColumn(UIConstants.NODE_TYPE, String.class, "");
-        WEIGHT_SCHEMA.addColumn(UIConstants.WEIGHT, long.class, 0);
+        WEIGHT_SCHEMA.addColumn(UIConstants.WEIGHT, double.class, 0);
 
         internalGraph = new Graph();
         internalGraph.getNodeTable().addColumns(NAME_SCHEMA);
@@ -168,8 +168,8 @@ public class GraphGenerator {
 
                                 if (newEdge != null
                                         && internalGraph.containsTuple(newEdge)) {
-                                    newEdge.setLong(UIConstants.WEIGHT, neighbours
-                                            .get(stopNodeName).longValue());
+                                    newEdge.setDouble(UIConstants.WEIGHT, neighbours
+                                            .get(stopNodeName).doubleValue());
                                     
                                     edgesChanged = true;
                                 }
@@ -345,7 +345,7 @@ public class GraphGenerator {
         newNode.set(UIConstants.NODE_TYPE, type);
         nodeMap.put(name, newNode);
         edge = internalGraph.addEdge(parent, newNode);
-        edge.setLong(UIConstants.WEIGHT, UIConstants.DEFAULT_WEIGHT);
+        edge.setDouble(UIConstants.WEIGHT, UIConstants.DEFAULT_WEIGHT);
 
         return newNode;
     }

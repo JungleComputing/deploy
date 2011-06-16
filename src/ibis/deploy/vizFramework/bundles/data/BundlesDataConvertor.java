@@ -39,6 +39,7 @@ public class BundlesDataConvertor implements IDataConvertor {
             connectionsPerIbis.clear();
         }
         updateLocations(root, UIConstants.LEVELS, structureChanged || ibisesPerSite.size() == 0);
+         
         Utils.updateMinMaxWeights(connectionsPerIbis);
 
         // update the UI
@@ -107,7 +108,8 @@ public class BundlesDataConvertor implements IDataConvertor {
                                     new HashMap<String, Double>());
                         }
                         connectionsPerIbis.get(startLocation).put(
-                                stopLocation, value1 + value2);
+                                stopLocation, (value1 + value2) / 2); // since we're displaying percentages ...
+                       //System.out.println(connectionsPerIbis.get(startLocation).get(stopLocation));
                     }
 
                 }

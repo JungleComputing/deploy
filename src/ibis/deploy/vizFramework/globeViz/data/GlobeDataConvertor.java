@@ -54,6 +54,8 @@ public class GlobeDataConvertor implements IDataConvertor {
     private ConcurrentHashMap<GlobeEdge, Double> globeEdges;
     // hash map used for storing edges temporarily on update
     private ConcurrentHashMap<GlobeEdge, Double> tempEdges;
+    
+    private ConcurrentHashMap<GlobeEdge, Integer> numberOfSubedgesPerEdge;
     // the starting point of the Location tree, used for retrieving data
     private final Location root;
     // visible pie charts
@@ -73,6 +75,8 @@ public class GlobeDataConvertor implements IDataConvertor {
         positionList = new ConcurrentHashMap<String, Position>();
         globeEdges = new ConcurrentHashMap<GlobeEdge, Double>();
         tempEdges = new ConcurrentHashMap<GlobeEdge, Double>();
+        numberOfSubedgesPerEdge = new ConcurrentHashMap<GlobeEdge, Integer>();
+        
         pieChartWaypointSet = Collections
                 .synchronizedSet(new HashSet<CircleAnnotation>());
 
@@ -189,6 +193,7 @@ public class GlobeDataConvertor implements IDataConvertor {
                 globeViz.getMarkerLayer().clearMarkers();
             }
             tempEdges.clear();
+            numberOfSubedgesPerEdge.clear();
             connectClusters(root, UIConstants.LEVELS, pieChartsChanged);
 
             redrawEdges(pieChartsChanged);
@@ -270,12 +275,14 @@ public class GlobeDataConvertor implements IDataConvertor {
 
             // update existing edges
             for (GlobeEdge edge : tempEdges.keySet()) {
-                value = tempEdges.get(edge);
+                //System.out.println("** " + tempEdges.get(edge) + "  " + numberOfSubedgesPerEdge.get(edge));
+                value = tempEdges.get(edge) / numberOfSubedgesPerEdge.get(edge);
+                //System.out.println(value);
                 //System.out.println(edge.getName());
                 updateMax(value);
                 globeEdges.put(edge, value);
             }
-            //System.out.println("---------------------------------->");
+            System.out.println("---------------------------------->");
 
             for (GlobeEdge edge : globeEdges.keySet()) {
                 if (edge != null) {
@@ -624,7 +631,6 @@ public class GlobeDataConvertor implements IDataConvertor {
                         try {
                             value1 = (Float) metric.getValue(
                                     MetricModifier.NORM, MetricOutput.PERCENT);
-
                         } catch (OutputUnavailableException e) {
                             System.out.println(e.getMessage());
                         }
@@ -649,10 +655,14 @@ public class GlobeDataConvertor implements IDataConvertor {
                         // if the edge is already in the map, this just updates
                         // the value
                         if (tempEdges.get(edge) != null) {
+                            //System.out.println(tempEdges.get(edge) + "  " + value1);
                             tempEdges.put(edge, tempEdges.get(edge) + value1
                                     + value2);
+                            numberOfSubedgesPerEdge.put(edge, numberOfSubedgesPerEdge.get(edge) + 1);
                         } else {
+                            //System.out.println(tempEdges.get(edge) + "  " + value1);
                             tempEdges.put(edge, value1 + value2);
+                            numberOfSubedgesPerEdge.put(edge, 1);
                         }
                     }
                 }

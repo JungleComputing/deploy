@@ -208,7 +208,7 @@ public class BundledEdgeRenderer extends EdgeRenderer {
             // if the encoding is by weight, then the entire edge has the same
             // color
             if (colorEncodingWeight) {
-                ratio = item.getLong(UIConstants.WEIGHT) * 1.0f / Utils.MAX_EDGE_WEIGHT;
+                ratio = item.getDouble(UIConstants.WEIGHT) * 1.0f / Utils.MAX_EDGE_WEIGHT;
                 color = Utils.blend(startColor, stopColor, ratio,
                         ((BSplineEdgeItem) item).getAlpha());
                 g.setColor(color);

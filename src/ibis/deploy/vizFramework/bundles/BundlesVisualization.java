@@ -99,34 +99,6 @@ public class BundlesVisualization extends JPanel implements IVisualization {
 
     public BundlesVisualization(GUI gui) {
 
-//        // Add the option to enable this feature to the Ibis Deploy menu bar
-//        JMenuBar menuBar = gui.getMenuBar();
-//        JMenu menu = null;
-//
-//        Action menuAction = new DeployVizAction(gui, this);
-//
-//        for (int i = 0; i < menuBar.getMenuCount(); i++) {
-//            if (menuBar.getMenu(i).getText().equals("View")) {
-//                menu = menuBar.getMenu(i);
-//            }
-//        }
-//        if (menu == null) {
-//            menu = new JMenu("View");
-//            menu.add(menuAction);
-//            menuBar.add(menu, Math.max(0, menuBar.getMenuCount() - 1));
-//        } else {
-//            boolean found = false;
-//            for (int i = 0; i < menu.getComponentCount(); i++) {
-//                if (menu.getComponent(i) == menuAction) {
-//                    found = true;
-//                    break;
-//                }
-//            }
-//            if (!found) {
-//                menu.add(menuAction);
-//            }
-//        }
-
         setLayout(new BorderLayout());
         vizPanel = new JPanel(new BorderLayout());
 
