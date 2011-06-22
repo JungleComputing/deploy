@@ -252,9 +252,8 @@ public class GogglePanel extends JPanel {
 		metricTweaks.add(GoggleSwing.radioBox("Node metrics display method", metricLabels, actions));
 		
 		metricTweaks.add(GoggleSwing.verticalStrut(5));
-		
-			String[] toBeSelectedMetrics = {"CPU Usage", "System Memory Usage", "Java Heap Memory Usage", "Java Nonheap Memory Usage"};
-			boolean[] selections = {true, true, true, true};
+			String[] toBeSelectedMetrics = {"CPU Usage", "System Load Average", "System Memory Usage", "Java Heap Memory Usage", "Java Nonheap Memory Usage"};
+			boolean[] selections = {true, false, true, true, true};
 			GoggleListener selectionListener = new MetricListener(goggles, "");
 			Float[][] colors = new Float[toBeSelectedMetrics.length][3];
 			GoggleListener[] listeners = new GoggleListener[toBeSelectedMetrics.length];

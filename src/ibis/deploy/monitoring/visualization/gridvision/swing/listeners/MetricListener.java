@@ -14,21 +14,25 @@ public class MetricListener implements GoggleListener {
 	public MetricListener(JungleGoggles goggles, String label) {		
 		this.goggles = goggles;
 				
-		myDescs = new MetricDescription[5];
+		myDescs = new MetricDescription[6];
 		try {
 			myDescs[0] = goggles.getMetricDescription("CPU");
-			myDescs[1] = goggles.getMetricDescription("MEM_SYS");
-			myDescs[2] = goggles.getMetricDescription("MEM_HEAP");
-			myDescs[3] = goggles.getMetricDescription("MEM_NONHEAP");
-			myDescs[4] = goggles.getMetricDescription("Bytes_Sent_Per_Sec");
+			myDescs[1] = goggles.getMetricDescription("Load");
+			myDescs[2] = goggles.getMetricDescription("MEM_SYS");
+			myDescs[3] = goggles.getMetricDescription("MEM_HEAP");
+			myDescs[4] = goggles.getMetricDescription("MEM_NONHEAP");
+			myDescs[5] = goggles.getMetricDescription("Bytes_Sent_Per_Sec");
 		} catch (MetricDescriptionNotAvailableException e) {
 			e.printStackTrace();
 		}
 		
 		try {
-			if (label.compareTo("CPU Usage")		== 0) {
+			if (label.compareTo("CPU Usage") == 0) {
 				myDescs = new MetricDescription[1];
 				myDescs[0] = goggles.getMetricDescription("CPU");			
+			} else if (label.compareTo("System Load Average")== 0) {
+				myDescs = new MetricDescription[1];
+				myDescs[0] = goggles.getMetricDescription("Load");
 			} else if (label.compareTo("System Memory Usage")== 0) {
 				myDescs = new MetricDescription[1];
 				myDescs[0] = goggles.getMetricDescription("MEM_SYS");
