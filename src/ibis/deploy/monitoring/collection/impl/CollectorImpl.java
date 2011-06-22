@@ -94,6 +94,7 @@ public class CollectorImpl implements Collector, Runnable {
 
 		// Set the default metrics
 		MetricDescription cpuDesc = new CPUUsage();
+		MetricDescription load = new Load();
 		MetricDescription sysmemDesc = new SystemMemory();
 		MetricDescription heapmemDesc = new HeapMemory();
 		MetricDescription nonheapmemDesc = new NonHeapMemory();
@@ -111,6 +112,7 @@ public class CollectorImpl implements Collector, Runnable {
 		
 		//Set the available metrics
 		availableDescriptions.add(cpuDesc);
+		availableDescriptions.add(load);
 		availableDescriptions.add(sysmemDesc);
 		availableDescriptions.add(heapmemDesc);
 		availableDescriptions.add(nonheapmemDesc);
