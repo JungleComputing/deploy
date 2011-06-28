@@ -563,7 +563,7 @@ public class GUI {
     }
 
     public boolean isReadOnly() {
-        return mode == Mode.READ_ONLY;
+        return mode == Mode.READ_ONLY || mode == Mode.MONITOR;
     }
     
     public boolean isCollecting() {
