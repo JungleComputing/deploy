@@ -50,6 +50,22 @@ public class Utils {
         return view.project(vecPos);
     }
     
+    public static Position fromScreenToPosition(Vec4 screen, Globe globe, View view) {
+        //double yInGLCoords = viewport.height - y - 1;
+        Vec4 vecPos = view.unProject(screen);
+        return globe.computePositionFromPoint(vecPos);
+    }
+    
+    public static Vec4 fromPositionTo3DCoords(Position pos, Globe globe) {
+        Vec4 vecPos;
+        vecPos = globe.computePointFromPosition(pos);
+        return vecPos;
+    }
+    
+    public static Position from3DCoordsToPosition(Vec4 pos, Globe globe) {
+        return globe.computePositionFromPoint(pos);
+    }
+    
     public static Position fromScreenToPosition(double x, double y, double z, Globe globe, View view){
         Vec4 vecpos = view.unProject(new Vec4(x, y, z));
         Position pos = globe.computePositionFromPoint(vecpos);

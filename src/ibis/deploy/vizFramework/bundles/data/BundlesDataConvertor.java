@@ -38,17 +38,18 @@ public class BundlesDataConvertor implements IDataConvertor {
             ibisesPerSite.clear();
             connectionsPerIbis.clear();
         }
-        updateLocations(root, UIConstants.LEVELS, structureChanged || ibisesPerSite.size() == 0);
-         
+        updateLocations(root, UIConstants.LEVELS, structureChanged
+                || ibisesPerSite.size() == 0);
+
         Utils.updateMinMaxWeights(connectionsPerIbis);
 
         // update the UI
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
+//        SwingUtilities.invokeLater(new Runnable() {
+//            public void run() {
                 bundlesViz.updateVisualization(ibisesPerSite,
                         connectionsPerIbis);
-            }
-        });
+        // }
+        // });
     }
 
     // creates an annotation for each existing cluster. These will later be
@@ -61,8 +62,13 @@ public class BundlesDataConvertor implements IDataConvertor {
             for (Ibis dataIbis : dataIbises) {
                 IbisImpl ibis = (IbisImpl) dataIbis;
                 String ibisName = ibis.getName();
-                String locationName = ibisName
-                        .substring(ibisName.indexOf("@") + 1);
+                
+                String locationName = extractLocationName(ibisName);
+
+                // String locationName = ibisName
+                // .substring(ibisName.indexOf("@") + 1);
+
+                ibisName = extractIbisName(ibisName);
 
                 if (structureChanged) {
                     ibisesPerSite.get(locationName).add(ibisName);
@@ -70,15 +76,17 @@ public class BundlesDataConvertor implements IDataConvertor {
                 Link[] links = dataIbis.getLinks();
                 String startLocation = null, stopLocation = null;
                 double value1 = 0, value2 = 0;
-                
+
                 for (Link link : links) {
                     // only create arcs between locations
                     if ((link.getSource() instanceof IbisImpl)
                             && (link.getDestination() instanceof IbisImpl)) {
-                        startLocation = ((IbisImpl) link.getSource())
-                                .getName();
+                        startLocation = ((IbisImpl) link.getSource()).getName();
+                        startLocation = extractIbisName(startLocation);
+                        
                         stopLocation = ((IbisImpl) link.getDestination())
                                 .getName();
+                        stopLocation = extractIbisName(stopLocation);
 
                         for (Metric metric : link
                                 .getMetrics(LinkDirection.SRC_TO_DST)) {
@@ -107,9 +115,11 @@ public class BundlesDataConvertor implements IDataConvertor {
                             connectionsPerIbis.put(startLocation,
                                     new HashMap<String, Double>());
                         }
-                        connectionsPerIbis.get(startLocation).put(
-                                stopLocation, (value1 + value2) / 2); // since we're displaying percentages ...
-                       //System.out.println(connectionsPerIbis.get(startLocation).get(stopLocation));
+                        connectionsPerIbis.get(startLocation).put(stopLocation,
+                                (value1 + value2) / 2); // since we're
+                                                        // displaying
+                                                        // percentages ...
+                        // System.out.println(connectionsPerIbis.get(startLocation).get(stopLocation));
                     }
 
                 }
@@ -118,10 +128,23 @@ public class BundlesDataConvertor implements IDataConvertor {
         }
         for (Location loc : dataChildren) {
             if (level == 0 && structureChanged) {
-                ibisesPerSite.put(loc.getName(), new HashSet<String>());
+                String locationName = extractLocationName(loc.getName());
+                ibisesPerSite.put(locationName, new HashSet<String>());
+                // ibisesPerSite.put(loc.getName(), new
+                // HashSet<String>());//TODO
             }
 
             updateLocations(loc, level - 1, structureChanged);
         }
+    }
+
+    private String extractLocationName(String name) {
+        return "cluster" + name.substring(name.lastIndexOf("@"));
+    }
+    
+    private String extractIbisName(String ibisName){
+        String locationName = extractLocationName(ibisName);
+        return ibisName.substring(0, ibisName.indexOf("-")) + "@"
+                + locationName;
     }
 }

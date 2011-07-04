@@ -11,7 +11,7 @@ import prefuse.visual.VisualTable;
 import prefuse.visual.tuple.TableNodeItem;
 
 //altered visualization -> to customize the edge items
-public class BundledEdgeVisualization extends Visualization {
+public class BundlesPrefuseVisualization extends Visualization {
 
     @Override
     public synchronized VisualGraph addGraph(String group, Graph graph,

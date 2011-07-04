@@ -71,7 +71,7 @@ public class LocationImpl extends ElementImpl implements Location {
 		return name;
 	}
 
-	public Metric[] getMetrics() {
+	public synchronized Metric[] getMetrics() {
 		ArrayList<Metric> result = new ArrayList<Metric>();
 		for (Metric metric : metrics.values()) {
 			if (metric.getDescription().getType() == MetricType.NODE) {
@@ -85,11 +85,11 @@ public class LocationImpl extends ElementImpl implements Location {
 		return color;
 	}
 
-	public ArrayList<Ibis> getIbises() {
+	public synchronized ArrayList<Ibis> getIbises() {
 		return ibises;
 	}
 
-	public ArrayList<Ibis> getAllIbises() {
+	public synchronized ArrayList<Ibis> getAllIbises() {
 		ArrayList<Ibis> result = new ArrayList<Ibis>();
 		result.addAll(ibises);
 
@@ -100,11 +100,11 @@ public class LocationImpl extends ElementImpl implements Location {
 		return result;
 	}
 
-	public ArrayList<Location> getChildren() {
+	public synchronized ArrayList<Location> getChildren() {
 		return children;
 	}
 
-	public ArrayList<Link> getLinks(MetricDescription metric,
+	public synchronized ArrayList<Link> getLinks(MetricDescription metric,
 			MetricOutput outputmethod, float minimumValue, float maximumValue) {
 		ArrayList<Link> result = new ArrayList<Link>();
 
@@ -144,7 +144,7 @@ public class LocationImpl extends ElementImpl implements Location {
 		return result;
 	}
 
-	public int getNumberOfDescendants() {
+	public synchronized int getNumberOfDescendants() {
 		int result = ibises.size();
 
 		for (Location child : children) {
@@ -155,25 +155,25 @@ public class LocationImpl extends ElementImpl implements Location {
 	}
 
 	// Setters
-	public void addIbis(Ibis ibis) {
+	public synchronized void addIbis(Ibis ibis) {
 		ibises.add(ibis);
 	}
 
-	public void removeIbis(Ibis ibis) {
+	public synchronized void removeIbis(Ibis ibis) {
 		ibises.remove(ibis);
 	}
 
-	public void addChild(Location location) {
+	public synchronized void addChild(Location location) {
 		if (!children.contains(location)) {
 			children.add(location);
 		}
 	}
 
-	public void removeChild(Location location) {
+	public synchronized void removeChild(Location location) {
 		children.remove(location);
 	}
 
-	public void setMetrics(Set<MetricDescription> descriptions) {
+	public synchronized void setMetrics(Set<MetricDescription> descriptions) {
 		for (Ibis ibis : ibises) {
 			((IbisImpl) ibis).setMetrics(descriptions);
 		}
@@ -206,7 +206,7 @@ public class LocationImpl extends ElementImpl implements Location {
 		}
 	}
 
-	public void makeLinkHierarchy() {
+	public synchronized void makeLinkHierarchy() {
 		//We make the hierarchy bottom-up, so we start with the children
 		for (Location child : children) {
 			((LocationImpl) child).makeLinkHierarchy();
@@ -266,7 +266,7 @@ public class LocationImpl extends ElementImpl implements Location {
 		}		
 	}
 
-	public void update() {
+	public synchronized void update() {
 		// make sure the children are updated first
 		for (Location child : children) {
 			((LocationImpl) child).update();

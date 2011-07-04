@@ -1,13 +1,10 @@
 package ibis.deploy.vizFramework.globeViz.viz;
 
-import ibis.deploy.vizFramework.globeViz.viz.utils.Utils;
-
 import java.awt.Color;
 import java.util.ArrayList;
 
 import javax.media.opengl.GL2;
 import javax.media.opengl.glu.GLU;
-import javax.media.opengl.glu.GLUquadric;
 
 import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.geom.LatLon;

@@ -4,8 +4,11 @@ import gov.nasa.worldwind.BasicModel;
 import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
 import gov.nasa.worldwind.event.SelectEvent;
 import gov.nasa.worldwind.event.SelectListener;
+import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.geom.Vec4;
+import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.AnnotationAttributes;
@@ -15,6 +18,7 @@ import ibis.deploy.vizFramework.IVisualization;
 import ibis.deploy.vizFramework.globeViz.data.GlobeDataConvertor;
 import ibis.deploy.vizFramework.globeViz.viz.markers.SynchronizedMarkerLayer;
 import ibis.deploy.vizFramework.globeViz.viz.utils.UIConstants;
+import ibis.deploy.vizFramework.globeViz.viz.utils.Utils;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -81,12 +85,12 @@ public class GlobeVisualization extends JPanel implements IVisualization {
         });
 
         // //temporarily disable some layers for debugging - TODO - remove
-        for (Layer layer : worldWindCanvas.getModel().getLayers()) {
-            if (layer.getName().equals("NASA Blue Marble Image")
-                    || layer.getName().equals("Blue Marble (WMS) 2004")) {
-                layer.setEnabled(false);
-            }
-        }
+//        for (Layer layer : worldWindCanvas.getModel().getLayers()) {
+//            if (layer.getName().equals("NASA Blue Marble Image")
+//                    || layer.getName().equals("Blue Marble (WMS) 2004")) {
+//                layer.setEnabled(false);
+//            }
+//        }
 
     }
 
@@ -154,27 +158,29 @@ public class GlobeVisualization extends JPanel implements IVisualization {
 
     // computes a polyline between the two locations
     public UnclippablePolyline createArcBetween(Position pos1, Position pos2,
-            Color color, int lineWidth) {
+            Color color, int lineWidth, boolean applyOffset) {
         UnclippablePolyline polyline;
         ArrayList<Position> polylineList = new ArrayList<Position>();
 
         // add the control points to the list
         polylineList.addAll(doTheSplits(pos1, pos2,
-                UIConstants.NUMBER_OF_CONTROL_POINTS, !followTerrain));
+                UIConstants.NUMBER_OF_CONTROL_POINTS, !followTerrain, applyOffset));
 
-        // add the points of the BSpline created using the control points.
+        // create the points of the BSpline using the control points.
         polylineList = BSpline3D.computePolyline(worldWindCanvas.getModel()
                 .getGlobe(), polylineList);
 
         // //this is to add more knots in the straight part of the edge
-        Position tempPos = polylineList.remove(0); 
-        polylineList.addAll(0,
-                doTheSplits(tempPos, polylineList.get(0), 2, true));
+        Position tempPos = polylineList.remove(0);
+        polylineList
+                .addAll(0,
+                        doTheSplits(tempPos, polylineList.get(0), 2, true,
+                                applyOffset));
 
         tempPos = polylineList.remove(polylineList.size() - 1);
         polylineList.addAll(doTheSplits(
-                polylineList.get(polylineList.size() - 1),
-                tempPos, 2, true));
+                polylineList.get(polylineList.size() - 1), tempPos, 2, true,
+                applyOffset));
 
         polyline = new UnclippablePolyline(polylineList);
         polyline.setColor(color);
@@ -186,12 +192,18 @@ public class GlobeVisualization extends JPanel implements IVisualization {
 
     // calculates the interpolation point for pos1 and pos2
     private Position getMidPoint(Position pos1, Position pos2,
-            boolean adjustHeight) {
+            boolean adjustHeight, boolean applyOffset) {
 
         Position pos3 = Position.interpolateGreatCircle(0.5, pos1, pos2);
         if (adjustHeight) {
-            double newHeight = LatLon.greatCircleDistance(pos1, pos2).degrees
-                    * UIConstants.ARC_HEIGHT;
+            double newHeight;
+            if (!applyOffset) {
+                newHeight = LatLon.greatCircleDistance(pos1, pos2).degrees
+                        * UIConstants.ARC_HEIGHT;
+            } else {
+                newHeight = LatLon.greatCircleDistance(pos1, pos2).degrees
+                        * UIConstants.ARC_SECOND_HEIGHT;
+            }
             pos3 = new Position(pos3.latitude, pos3.longitude, newHeight);
         }
 
@@ -199,9 +211,23 @@ public class GlobeVisualization extends JPanel implements IVisualization {
     }
 
     private ArrayList<Position> doTheSplits(Position pos1, Position pos2,
-            int depth, boolean adjustHeight) {
+            int depth, boolean adjustHeight, boolean applyOffset) {
 
         ArrayList<Position> l1, l2, list = new ArrayList<Position>();
+
+//        if (applyOffset) {
+//            Globe globe = worldWindCanvas.getModel().getGlobe();
+//            // Vec4 pos = Utils.fromPositionToScreen(pos1, globe,
+//            // worldWindCanvas.getView());
+//            // pos = new Vec4(pos.x + 1000, pos.y + 1000, pos.z);
+//            // pos1 = Utils.fromScreenToPosition(pos, globe,
+//            // worldWindCanvas.getView());
+//
+//            Vec4 pos = Utils.fromPositionTo3DCoords(pos2, globe);
+//            // System.out.println(worldWindCanvas.getView().getEyePosition().getElevation());
+//            pos = new Vec4(pos.x + 1000, pos.y + 1000, pos.z);
+//            pos2 = Utils.from3DCoordsToPosition(pos, globe);
+//        }
 
         if (depth == 0) {
             list.add(pos1);
@@ -209,10 +235,10 @@ public class GlobeVisualization extends JPanel implements IVisualization {
             return list;
         }
 
-        Position pos3 = getMidPoint(pos1, pos2, adjustHeight);
+        Position pos3 = getMidPoint(pos1, pos2, adjustHeight, applyOffset);
 
-        l1 = doTheSplits(pos1, pos3, depth - 1, false);
-        l2 = doTheSplits(pos3, pos2, depth - 1, false);
+        l1 = doTheSplits(pos1, pos3, depth - 1, false, false);
+        l2 = doTheSplits(pos3, pos2, depth - 1, false, false);
 
         l1.remove(l1.size() - 1); // remove the last element, otherwise we'll
         // have the midpoint two times in the final list
@@ -234,7 +260,7 @@ public class GlobeVisualization extends JPanel implements IVisualization {
     // TODO - maybe remove this one if it's unused
     public void drawArc(Position pos1, Position pos2, Color color, int lineWidth) {
         polylineLayer.addRenderable(createArcBetween(pos1, pos2, color,
-                lineWidth));
+                lineWidth, false));
     }
 
     public void drawArc(UnclippablePolyline line, Color color) {

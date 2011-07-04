@@ -27,9 +27,10 @@ public class GlobeEdge {
     private Color particleColor = Color.green;
     // private BasicMarkerAttributes attributes;
     private MarkerPool markerPool;
+    private boolean isSecondEdge;
 
     // pos1 and pos2 need to be non-null
-    public GlobeEdge(Position pos1, Position pos2, String name) {
+    public GlobeEdge(Position pos1, Position pos2, String name, boolean isSecondEdge) {
         if (pos1 != null && pos2 != null) {
             this.pos1 = pos1;
             this.pos2 = pos2;
@@ -38,6 +39,7 @@ public class GlobeEdge {
             this.pos2 = Position.ZERO;
         }
         this.name = name;
+        this.isSecondEdge = isSecondEdge;
         // attributes = new BasicMarkerAttributes(new Material(Color.GREEN),
         // BasicMarkerShape.SPHERE, 0.5);
         // attributes.setMarkerPixels(8);
@@ -60,7 +62,7 @@ public class GlobeEdge {
         }
 
         if (polyline == null || forceEdgeRedraw) {
-            polyline = globe.createArcBetween(pos1, pos2, edgeColor, size);
+            polyline = globe.createArcBetween(pos1, pos2, edgeColor, size, isSecondEdge);
             globe.drawArc(polyline, edgeColor);
         } else {
             polyline.setColor(edgeColor);

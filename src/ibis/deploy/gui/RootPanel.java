@@ -20,66 +20,67 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
 public class RootPanel extends JPanel {
-	JTabbedPane tabs;
+    JTabbedPane tabs;
 
-	DetachableTab applicationTab;
-	DetachableTab clusterTab;
-	DetachableTab smartSocketsTab;
-	DetachableTab gridVisionTab;
-	DetachableTab deployVizTab;
-	DetachableTab globeTab;
+    DetachableTab applicationTab;
+    DetachableTab clusterTab;
+    DetachableTab smartSocketsTab;
+    DetachableTab gridVisionTab;
+    DetachableTab deployVizTab;
+    DetachableTab globeTab;
 
-	private static final long serialVersionUID = 2685960743908025422L;
+    private static final long serialVersionUID = 2685960743908025422L;
 
-	public RootPanel(GUI gui, String[] logos) throws Exception {
-		setLayout(new BorderLayout());
-		tabs = new JTabbedPane();
+    public RootPanel(GUI gui, String[] logos) throws Exception {
+        setLayout(new BorderLayout());
+        tabs = new JTabbedPane();
 
-		tabs.addTab("Experiments", Utils.createImageIcon(
-				"images/utilities-system-monitor.png", "Experiments Tab"),
-				new ExperimentsPanel(gui, logos));
+        tabs.addTab("Experiments", Utils.createImageIcon(
+                "images/utilities-system-monitor.png", "Experiments Tab"),
+                new ExperimentsPanel(gui, logos));
 
-		// experimentTab = new DetachableTab("Experiments",
-		// "images/utilities-system-monitor.png",
-		// new ExperimentsPanel(gui), tabs);
+        // experimentTab = new DetachableTab("Experiments",
+        // "images/utilities-system-monitor.png",
+        // new ExperimentsPanel(gui), tabs);
 
-		if (!gui.isReadOnly()) {
-			applicationTab = new DetachableTab("Applications",
-					"images/applications-other.png",
-					new ApplicationEditorPanel(gui), tabs);
+        if (!gui.isReadOnly()) {
+            applicationTab = new DetachableTab("Applications",
+                    "images/applications-other.png",
+                    new ApplicationEditorPanel(gui), tabs);
 
-			clusterTab = new DetachableTab("Clusters",
-					"images/network-transmit-receive.png",
-					new ClusterEditorPanel(gui), tabs);
-		}
+            clusterTab = new DetachableTab("Clusters",
+                    "images/network-transmit-receive.png",
+                    new ClusterEditorPanel(gui), tabs);
+        }
 
-		smartSocketsTab = new DetachableTab("Network Overlay",
+        smartSocketsTab = new DetachableTab("Network Overlay",
                 "images/gridvision.png", new SmartsocketsViz(Color.BLACK,
                         Color.WHITE, false, true, false, gui.getDeploy()
-						.getRootHubAddress()), tabs);
+                                .getRootHubAddress()), tabs);
 
-		BundlesVisualization bundlePanel = new BundlesVisualization(gui);
-		
-		deployVizTab = new DetachableTab("Connection Overview",
-				"images/gridvision.png", bundlePanel, tabs);
-		
-		//GlobeVisualization globe = new GlobeVisualization();
-		GlobePanel globePanel = new GlobePanel(gui);
-		
-		globeTab = new DetachableTab("Global Overview",
-                        "images/gridvision.png", globePanel, tabs);
+//        if (!gui.isReadOnly()) {
+//            gridVisionTab = new DetachableTab("3D Visualization",
+//                    "images/gridvision.png",
+//                    new GogglePanel(gui.getCollector()), tabs);
+//        }
 
+        BundlesVisualization bundlePanel = new BundlesVisualization(gui);
 
-//		if (!gui.isReadOnly()) {
-//			gridVisionTab = new DetachableTab("3D Visualization", 
-//					"images/gridvision.png", new GogglePanel(gui.getCollector()), tabs);
-//		}
-		
-		ArrayList<IVisualization> visualizations = new ArrayList<IVisualization>();
-		visualizations.add(globePanel.getGlobe());
-		visualizations.add(bundlePanel);
-		
-		MetricManager mgr = new MetricManager(gui.getCollector(), visualizations);
-		add(tabs, BorderLayout.CENTER);
-	}
+        deployVizTab = new DetachableTab("Connection Overview",
+                "images/gridvision.png", bundlePanel, tabs);
+
+        // GlobeVisualization globe = new GlobeVisualization();
+        GlobePanel globePanel = new GlobePanel(gui);
+
+        globeTab = new DetachableTab("Global Overview",
+                "images/gridvision.png", globePanel, tabs);
+
+        ArrayList<IVisualization> visualizations = new ArrayList<IVisualization>();
+        visualizations.add(globePanel.getGlobe());
+        visualizations.add(bundlePanel);
+
+        MetricManager mgr = new MetricManager(gui.getCollector(),
+                visualizations);
+        add(tabs, BorderLayout.CENTER);
+    }
 }

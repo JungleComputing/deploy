@@ -7,7 +7,10 @@ import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
+import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
+import javax.media.opengl.glu.GLU;
+import javax.media.opengl.glu.GLUquadric;
 
 import com.jogamp.common.nio.Buffers;
 
@@ -39,120 +42,56 @@ public class CustomFrameFactory extends FrameFactory {
         int count = verts.remaining() / 2;
 
         GL2 gl = dc.getGL().getGL2();
-        // Set up
-        // gl.glPushClientAttrib(GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
-        // gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
-        //
-        // gl.glVertexPointer(2, GL2.GL_DOUBLE, 0, verts);
-        //
-        // //TODO - pentru colorare custom se activeaza asta, dar daca e activat
-        // nu mai e activat picking
-        // gl.glEnableClientState(GL2.GL_COLOR_ARRAY);
-        // if (colorBuffer != null) {
-        // gl.glColorPointer(4, GL2.GL_FLOAT, 0, colorBuffer);
-        // }
-        // // Draw
-        // gl.glDrawArrays(mode, 0, count);
-        //
-        // gl.glDisableClientState(GL2.GL_COLOR_ARRAY);
-        //
-        // //gl.glColor4f(0.5f, 0.5f, 1, 0.7f);
-        //
-        // // Restore
-        // gl.glPopClientAttrib();
+        GLU glu = dc.getGLU();
 
         gl.glPushClientAttrib(GL2.GL_CLIENT_VERTEX_ARRAY_BIT);
-        // gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
-        // gl.glVertexPointer(2, GL2.GL_DOUBLE, 0, verts);
-        // gl.glTranslated(-UIConstants.LOCATION_CIRCLE_SIZE / 2,
-        // -UIConstants.LOCATION_CIRCLE_SIZE / 2, 0);
 
-        double cx = UIConstants.LOCATION_CIRCLE_SIZE / 2;
-        double cy = UIConstants.LOCATION_CIRCLE_SIZE / 2;
+        float cx = UIConstants.LOCATION_CIRCLE_SIZE / 2;
+        float cy = UIConstants.LOCATION_CIRCLE_SIZE / 2;
 
-        double currentAngle = 0;
-        double step = 2 * Math.PI / clusterColors.size();
+        float currentAngle = 0;
+        float step = 360 / clusterColors.size();
+
+       
+        gl.glTranslatef(cx, cy, 0);
+        
+        float[] color = new float[4];
+        float gap = (UIConstants.LOCATION_GAP * clusterColors.size());
+        GLUquadric quad;
 
         for (int i = 0; i < clusterColors.size(); i++) {
-            float[] color = new float[4];
             if (!dc.isPickingMode()) {
-                //TODO - restore colors
                 clusterColors.get(i).getColorComponents(color);
-                //color[3] = 0.5f; - transparent
                 color[3] = 0.75f;
                 gl.glColor4fv(color, 0);
-                
-                //gl.glColor3f(0, 0, 0);
             }
 
-            for (double angle = currentAngle; angle < currentAngle + step; angle += UIConstants.increment) {
-                gl.glBegin(GL2.GL_POLYGON);
+            gl.glRotatef(-currentAngle, 0, 0, 1);
+            gl.glTranslatef(0, gap, 0);
 
-                // One vertex of each triangle is at center of circle
-                gl.glVertex2d(cx, cy);
-                // Other two vertices form the periphery of the circle
-                gl.glVertex2d(cx + Math.cos(angle)
-                        * UIConstants.LOCATION_CIRCLE_SIZE,
-                        cy + Math.sin(angle) * UIConstants.LOCATION_CIRCLE_SIZE);
-                gl.glVertex2d(cx + Math.cos(angle + UIConstants.increment)
-                        * UIConstants.LOCATION_CIRCLE_SIZE,
-                        cy + Math.sin(angle + UIConstants.increment)
-                                * UIConstants.LOCATION_CIRCLE_SIZE);
-                gl.glEnd();
+            //draw pie chart slice
+            quad = glu.gluNewQuadric();
+            glu.gluPartialDisk(quad, 0, UIConstants.LOCATION_CIRCLE_SIZE, 32,
+                    32, -step / 2, step);
+
+            if (!dc.isPickingMode()) {
+                color[0] = color[1] = color[2] = 0;
+                color[3] = 0.8f;
+                gl.glColor4fv(color, 0);
             }
+            
+            //draw pie chart contour
+            quad = glu.gluNewQuadric();
+            glu.gluQuadricDrawStyle(quad, GLU.GLU_SILHOUETTE);
+            glu.gluPartialDisk(quad, 0, UIConstants.LOCATION_CIRCLE_SIZE, 32,
+                    32, -step / 2, step);
+
+            gl.glTranslatef(0, -gap, 0);
+            gl.glRotatef(currentAngle, 0, 0, 1);
 
             currentAngle += step;
         }
-
-        //drawCircle(cx, cy, UIConstants.LOCATION_CIRCLE_SIZE, 50, gl);
-        
-        //drawArc(cx, cy, UIConstants.LOCATION_CIRCLE_SIZE, 0, 2* Math.PI, 50, gl);
-        
-        // if(!dc.isPickingMode()){
-        // gl.glColor4f(0.5f, 0.5f, 1, 0.8f);
-        // }
-        //
-        // // Draw
-        // for (double angle = 0; angle < Math.PI; angle +=
-        // UIConstants.increment) {
-        // gl.glBegin(gl.GL_POLYGON);
-        //
-        // // One vertex of each triangle is at center of circle
-        // gl.glVertex2d(cx, cy);
-        // // Other two vertices form the periphery of the circle
-        // gl.glVertex2d(cx + Math.cos(angle)
-        // * UIConstants.LOCATION_CIRCLE_SIZE, cy + Math.sin(angle)
-        // * UIConstants.LOCATION_CIRCLE_SIZE);
-        // gl.glVertex2d(cx + Math.cos(angle + UIConstants.increment)
-        // * UIConstants.LOCATION_CIRCLE_SIZE,
-        // cy + Math.sin(angle + UIConstants.increment)
-        // * UIConstants.LOCATION_CIRCLE_SIZE);
-        // gl.glEnd();
-        // }
-        //
-        // if(!dc.isPickingMode()){
-        // gl.glColor4f(1f, 0.5f, 0.5f, 0.8f);
-        // }
-        //
-        // // Draw second half
-        // for (double angle = Math.PI; angle < 2*Math.PI; angle +=
-        // UIConstants.increment) {
-        // gl.glBegin(gl.GL_POLYGON);
-        //
-        // // One vertex of each triangle is at center of circle
-        // gl.glVertex2d(cx, cy);
-        // // Other two vertices form the periphery of the circle
-        // gl.glVertex2d(cx + Math.cos(angle)
-        // * UIConstants.LOCATION_CIRCLE_SIZE, cy + Math.sin(angle)
-        // * UIConstants.LOCATION_CIRCLE_SIZE);
-        // gl.glVertex2d(cx + Math.cos(angle + UIConstants.increment)
-        // * UIConstants.LOCATION_CIRCLE_SIZE,
-        // cy + Math.sin(angle + UIConstants.increment)
-        // * UIConstants.LOCATION_CIRCLE_SIZE);
-        // gl.glEnd();
-        // }
-        // gl.glDrawArrays(mode, 0, count);
-        // Restore
+        gl.glTranslatef(-cx, -cy, 0);
 
         gl.glPopClientAttrib();
     }
@@ -193,7 +132,7 @@ public class CustomFrameFactory extends FrameFactory {
         gl.glColor4f(0, 0, 0, 1);
 
         gl.glBegin(GL2.GL_LINE_LOOP);// since the arc is not a closed curve,
-                                       // this is a strip now
+                                     // this is a strip now
         gl.glVertex2f((float) cx, (float) cy);
         for (int ii = 0; ii < num_segments; ii++) {
             gl.glVertex2f((float) (x + cx), (float) (y + cy));

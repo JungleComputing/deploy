@@ -183,7 +183,7 @@ public class GraphGenerator {
                 currentSituation = UPDATE_JUST_REPAINT;
             }
         }
-
+        
         return currentSituation;
     }
 

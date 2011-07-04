@@ -29,10 +29,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import ibis.deploy.vizFramework.IVisualization;
-import ibis.deploy.vizFramework.bundles.data.DataCollector;
+import ibis.deploy.vizFramework.bundles.data.BundlesDataConvertor;
 import ibis.deploy.vizFramework.bundles.data.GraphGenerator;
 import ibis.deploy.vizFramework.bundles.edgeBundles.BundledEdgeRenderer;
-import ibis.deploy.vizFramework.bundles.edgeBundles.BundledEdgeVisualization;
+import ibis.deploy.vizFramework.bundles.edgeBundles.BundlesPrefuseVisualization;
 import ibis.deploy.vizFramework.bundles.edgeBundles.DisplayControlAdapter;
 import ibis.deploy.vizFramework.globeViz.viz.utils.UIConstants;
 import ibis.deploy.vizFramework.globeViz.viz.utils.Utils;
@@ -58,6 +58,7 @@ import prefuse.data.Tree;
 import prefuse.data.tuple.TupleSet;
 import prefuse.render.AbstractShapeRenderer;
 import prefuse.render.DefaultRendererFactory;
+import prefuse.render.EdgeRenderer;
 import prefuse.render.LabelRenderer;
 import prefuse.util.ColorLib;
 import prefuse.util.ui.JFastLabel;
@@ -67,7 +68,7 @@ import prefuse.visual.expression.InGroupPredicate;
 import prefuse.visual.sort.TreeDepthItemSorter;
 
 public class BundlesVisualization extends JPanel implements IVisualization {
-	
+
     private static final long serialVersionUID = 1L;
 
     private static Visualization vis;
@@ -76,7 +77,7 @@ public class BundlesVisualization extends JPanel implements IVisualization {
     public static final String TREE_LAYOUT = "treeLayout";
     public static final String RADIAL_TREE_LAYOUT = "radialTreeLayout";
 
-    private BundledEdgeRenderer edgeRenderer;
+    private EdgeRenderer edgeRenderer;
     private JSlider slider;
     private JCheckBox cbox;
     private JColorChooser chooser = null;
@@ -94,7 +95,7 @@ public class BundlesVisualization extends JPanel implements IVisualization {
     private RegistryServiceInterface regInterface;
     private ManagementServiceInterface manInterface;
 
-    //private DataCollector dataCollector;
+    // private DataCollector dataCollector;
     private GraphGenerator generator;
 
     public BundlesVisualization(GUI gui) {
@@ -121,23 +122,29 @@ public class BundlesVisualization extends JPanel implements IVisualization {
         }
 
         // create the data collecting thread
-        //dataCollector = new DataCollector(manInterface, regInterface, this);
-        //dataCollector.start();
-        //dataCollector.setCollectingState(false);
+        // dataCollector = new DataCollector(manInterface, regInterface, this);
+        // dataCollector.start();
+        // dataCollector.setCollectingState(false);
 
         add(vizPanel, BorderLayout.CENTER);
     }
 
     public void setCollectData(boolean collect) {
-        //dataCollector.setCollectingState(collect);
+        // dataCollector.setCollectingState(collect);
     }
 
-    public void updateVisualization(HashMap<String, Set<String>> ibisesPerSite,
+    public synchronized void updateVisualization(
+            HashMap<String, Set<String>> ibisesPerSite,
             HashMap<String, HashMap<String, Double>> edgesPerIbis) {
         // try to update the graph, and only redo the visualization if changes
         // have occurred in the meanwhile
-        int result = generator.updatePrefuseGraph(ibisesPerSite, edgesPerIbis,
-                vis);
+        int result;
+        synchronized (vis) { // synchronize on the visualization to make sure
+                             // that the layout computation and the graph update
+                             // don't occur at the same time
+            result = generator.updatePrefuseGraph(ibisesPerSite, edgesPerIbis,
+                    vis);
+        }
         if (result > GraphGenerator.UPDATE_NONE) {
             if (result == GraphGenerator.UPDATE_REDO_LAYOUT) {
                 computeVisualParameters(edgeRenderer, true);
@@ -148,87 +155,9 @@ public class BundlesVisualization extends JPanel implements IVisualization {
         }
     }
 
-    class RadialGraphDisplay extends Display {
-
-        private static final long serialVersionUID = 1L;
-        private LabelRenderer m_nodeRenderer;
-        private DisplayControlAdapter displayAdaptor;
-
-        public RadialGraphDisplay() {
-
-            super(vis);
-            m_vis.setInteractive(UIConstants.EDGES, null, false);
-
-            // draw the "name" label for NodeItems
-            m_nodeRenderer = new LabelRenderer(UIConstants.NODE_NAME);
-            m_nodeRenderer
-                    .setRenderType(AbstractShapeRenderer.RENDER_TYPE_DRAW_AND_FILL);
-            m_nodeRenderer.setRoundedCorner(7, 7);
-
-            edgeRenderer = new BundledEdgeRenderer(UIConstants.BSPLINE_EDGE_TYPE);
-
-            DefaultRendererFactory rf = new DefaultRendererFactory(
-                    m_nodeRenderer);
-            rf.add(new InGroupPredicate(UIConstants.EDGES), edgeRenderer);
-            m_vis.setRendererFactory(rf);
-
-            // create stroke for drawing nodes
-            ColorAction nStroke = new ColorAction(UIConstants.NODES,
-                    VisualItem.STROKECOLOR, ColorLib.gray(100));
-
-            // use black for node text
-            ColorAction text = new ColorAction(UIConstants.NODES,
-                    VisualItem.TEXTCOLOR, UIConstants.DEFAULT_TEXT_COLOR);
-
-            // use this to color the root node
-            ColorAction fill = new ColorAction(UIConstants.NODES,
-                    VisualItem.FILLCOLOR, UIConstants.DEFAULT_ROOT_NODE_COLOR);
-
-            // create an action list containing all color assignments
-            ActionList initialColor = new ActionList();
-            initialColor.add(text);
-            initialColor.add(fill);
-
-            m_vis.putAction("initialColor", initialColor);
-            m_vis.putAction("color", nStroke);
-
-            // create the radial tree layout action
-            radialTreeLayout = new RadialTreeLayout(UIConstants.GRAPH);
-            m_vis.putAction(RADIAL_TREE_LAYOUT, radialTreeLayout);
-            lastSelectedLayout = radialTreeLayout;
-
-            // create the tree layout action
-            treeLayout = new NodeLinkTreeLayout(UIConstants.GRAPH,
-                    Constants.ORIENT_TOP_BOTTOM, 200, 3, 15);
-            m_vis.putAction(TREE_LAYOUT, treeLayout);
-
-            // initialize the display
-            setAlignmentX(SwingConstants.CENTER);
-            setAlignmentY(SwingConstants.CENTER);
-            setHighQuality(true);
-            setItemSorter(new TreeDepthItemSorter());
-            addControlListener(new DragControl());
-            addControlListener(new ZoomToFitControl());
-            addControlListener(new ZoomControl());
-            addControlListener(new PanControl());
-            setDamageRedraw(false);
-            addControlListener(new HoverActionControl("repaint"));
-            addControlListener(displayAdaptor = new DisplayControlAdapter(m_vis));
-
-            computeVisualParameters(edgeRenderer, true);
-            // color the graph and perform layout
-            m_vis.run("initialColor");
-
-        }
-
-        public void forceSelectedNodeUpdate() {
-            displayAdaptor.forceSelectedNodeUpdate();
-        }
-    }
-
     // redoes the layout and assigns edge colors and alphas.
     // It is called when the graph structure changes
-    public void computeVisualParameters(BundledEdgeRenderer edgeRenderer,
+    public synchronized void computeVisualParameters(EdgeRenderer edgeRenderer,
             boolean redoLayout) {
 
         TupleSet ts = vis.getGroup(UIConstants.GRAPH);
@@ -240,20 +169,28 @@ public class BundlesVisualization extends JPanel implements IVisualization {
             if (g.getNodeCount() > 0) {
                 vis.run("color"); // assign the colors
                 if (redoLayout) {
-                    if (lastSelectedLayout == radialTreeLayout) {
-                        vis.run(RADIAL_TREE_LAYOUT); // start up the tree layout
-                    } else {
-                        vis.run(TREE_LAYOUT);
-                    }
+                    synchronized (vis) { // make sure that this section is
+                                         // synchnorized
+                        if (lastSelectedLayout == radialTreeLayout) {
+                            vis.run(RADIAL_TREE_LAYOUT); // start up the tree
+                                                         // layout
+                        } else {
+                            vis.run(TREE_LAYOUT);
+                        }
 
-                    // recompute spanning tree based on the new layout
-                    if (g.getNodeCount() > 0) {
-                        tree = g.getSpanningTree();
-                    }
+                        // recompute spanning tree based on the new layout
+                        if (g.getNodeCount() > 0) {
+                            tree = g.getSpanningTree();
+                        }
 
-                    // pass the new spanning tree reference to the renderer for
-                    // later use
-                    edgeRenderer.setSpanningTree(tree);
+                        // pass the new spanning tree reference to the renderer
+                        // for
+                        // later use
+                        if (edgeRenderer instanceof BundledEdgeRenderer) {
+                            ((BundledEdgeRenderer) edgeRenderer)
+                                    .setSpanningTree(tree);
+                        }
+                    }
                 }
 
                 // compute alphas for the edges, according to their length
@@ -273,7 +210,7 @@ public class BundlesVisualization extends JPanel implements IVisualization {
 
         try {
             if (vis == null) {
-                vis = new BundledEdgeVisualization();
+                vis = new BundlesPrefuseVisualization();
                 vis.addGraph(UIConstants.GRAPH, generator.getGraph());
             }
 
@@ -339,7 +276,10 @@ public class BundlesVisualization extends JPanel implements IVisualization {
 
             @Override
             public void stateChanged(ChangeEvent arg0) {
-                edgeRenderer.setRemoveSharedAncestor(cbox.isSelected());
+                if (edgeRenderer instanceof BundledEdgeRenderer) {
+                    ((BundledEdgeRenderer) edgeRenderer)
+                            .setRemoveSharedAncestor(cbox.isSelected());
+                }
                 Utils.forceEdgeUpdate(vis);
                 vis.repaint();
             }
@@ -368,25 +308,25 @@ public class BundlesVisualization extends JPanel implements IVisualization {
 
         verticalpaJPanel.add(panel);
 
-        panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        // button for managing simulation
-        final JButton refreshDataButton = new JButton("Start monitoring");
-        refreshDataButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-//                if (dataCollector.isCollecting()) {
-//                    dataCollector.setCollectingState(false);
-//                    refreshDataButton.setText("Start monitoring");
-//                } else {
-//                    dataCollector.setCollectingState(true);
-//                    refreshDataButton.setText("Stop monitoring");
-//                }
-            }
-        });
-
-        panel.add(refreshDataButton);
-        verticalpaJPanel.add(panel);
+        // panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        // // button for managing simulation
+        // final JButton refreshDataButton = new JButton("Start monitoring");
+        // refreshDataButton.addActionListener(new ActionListener() {
+        //
+        // @Override
+        // public void actionPerformed(ActionEvent arg0) {
+        // // if (dataCollector.isCollecting()) {
+        // // dataCollector.setCollectingState(false);
+        // // refreshDataButton.setText("Start monitoring");
+        // // } else {
+        // // dataCollector.setCollectingState(true);
+        // // refreshDataButton.setText("Stop monitoring");
+        // // }
+        // }
+        // });
+        //
+        // panel.add(refreshDataButton);
+        // verticalpaJPanel.add(panel);
 
         // the left panel is initialized, so add it to the main panel
         topPanel.add(verticalpaJPanel);
@@ -407,7 +347,10 @@ public class BundlesVisualization extends JPanel implements IVisualization {
 
             @Override
             public void stateChanged(ChangeEvent event) {
-                edgeRenderer.setBundlingFactor(slider.getValue() / 20.0);
+                if (edgeRenderer instanceof BundledEdgeRenderer) {
+                    ((BundledEdgeRenderer) edgeRenderer)
+                            .setBundlingFactor(slider.getValue() / 20.0);
+                }
                 Utils.forceEdgeUpdate(vis);
                 vis.repaint();
             }
@@ -428,7 +371,9 @@ public class BundlesVisualization extends JPanel implements IVisualization {
             @Override
             public void actionPerformed(ActionEvent arg0) {
                 try {
-                    vis.run(RADIAL_TREE_LAYOUT); // start up the tree layout
+                    synchronized (vis) {
+                        vis.run(RADIAL_TREE_LAYOUT); // start up the tree layout
+                    }
                     lastSelectedLayout = radialTreeLayout;
                 } catch (ClassCastException exc) {
                     exc.printStackTrace();
@@ -446,7 +391,9 @@ public class BundlesVisualization extends JPanel implements IVisualization {
 
             @Override
             public void actionPerformed(ActionEvent arg0) {
-                vis.run(TREE_LAYOUT);
+                synchronized (vis) {
+                    vis.run(TREE_LAYOUT);
+                }
                 lastSelectedLayout = treeLayout;
                 Utils.forceEdgeUpdate(vis);
                 vis.repaint();
@@ -467,7 +414,9 @@ public class BundlesVisualization extends JPanel implements IVisualization {
 
             @Override
             public void actionPerformed(ActionEvent arg0) {
-                edgeRenderer.setColorEncoding(true);
+                if (edgeRenderer instanceof BundledEdgeRenderer) {
+                    ((BundledEdgeRenderer) edgeRenderer).setColorEncoding(true);
+                }
                 vis.repaint();
             }
         });
@@ -480,7 +429,10 @@ public class BundlesVisualization extends JPanel implements IVisualization {
 
             @Override
             public void actionPerformed(ActionEvent arg0) {
-                edgeRenderer.setColorEncoding(false);
+                if (edgeRenderer instanceof BundledEdgeRenderer) {
+                    ((BundledEdgeRenderer) edgeRenderer)
+                            .setColorEncoding(false);
+                }
                 vis.repaint();
             }
         });
@@ -510,10 +462,14 @@ public class BundlesVisualization extends JPanel implements IVisualization {
         @Override
         public void actionPerformed(ActionEvent event) {
             lastSelectedButton = (JButton) event.getSource();
-            if (lastSelectedButton == buttonStart) {
-                showColorChooser(edgeRenderer.getStartColor());
-            } else {
-                showColorChooser(edgeRenderer.getStopColor());
+            if (edgeRenderer instanceof BundledEdgeRenderer) {
+                if (lastSelectedButton == buttonStart) {
+                    showColorChooser(((BundledEdgeRenderer) edgeRenderer)
+                            .getStartColor());
+                } else {
+                    showColorChooser(((BundledEdgeRenderer) edgeRenderer)
+                            .getStopColor());
+                }
             }
         }
     }
@@ -526,11 +482,100 @@ public class BundlesVisualization extends JPanel implements IVisualization {
             Color newcolor = chooser.getColor();
             lastSelectedButton.setBackground(newcolor);
             if (lastSelectedButton == buttonStart) {
-                edgeRenderer.setStartColor(newcolor);
+                if (edgeRenderer instanceof BundledEdgeRenderer) {
+                    ((BundledEdgeRenderer) edgeRenderer)
+                            .setStartColor(newcolor);
+                }
             } else {
-                edgeRenderer.setStopColor(newcolor);
+                if (edgeRenderer instanceof BundledEdgeRenderer) {
+                    ((BundledEdgeRenderer) edgeRenderer).setStopColor(newcolor);
+                }
             }
             vis.repaint();
+        }
+    }
+
+    class RadialGraphDisplay extends Display {
+
+        private static final long serialVersionUID = 1L;
+        private LabelRenderer m_nodeRenderer;
+        private DisplayControlAdapter displayAdaptor;
+
+        public RadialGraphDisplay() {
+
+            super(vis);
+            m_vis.setInteractive(UIConstants.EDGES, null, false);
+
+            // draw the "name" label for NodeItems
+            m_nodeRenderer = new LabelRenderer(UIConstants.NODE_NAME);
+            m_nodeRenderer
+                    .setRenderType(AbstractShapeRenderer.RENDER_TYPE_DRAW_AND_FILL);
+            m_nodeRenderer.setRoundedCorner(7, 7);
+
+            edgeRenderer = new BundledEdgeRenderer(
+                    UIConstants.BSPLINE_EDGE_TYPE);
+            // new EdgeRenderer(Constants.EDGE_TYPE_CURVE);
+
+            DefaultRendererFactory rf = new DefaultRendererFactory(
+                    m_nodeRenderer);
+            rf.add(new InGroupPredicate(UIConstants.EDGES), edgeRenderer);
+            m_vis.setRendererFactory(rf);
+
+            // create stroke for drawing nodes
+            ColorAction nStroke = new ColorAction(UIConstants.NODES,
+                    VisualItem.STROKECOLOR, ColorLib.gray(100));
+
+            // use black for node text
+            ColorAction text = new ColorAction(UIConstants.NODES,
+                    VisualItem.TEXTCOLOR, UIConstants.DEFAULT_TEXT_COLOR);
+
+            // use this to color the root node
+            ColorAction fill = new ColorAction(UIConstants.NODES,
+                    VisualItem.FILLCOLOR, UIConstants.DEFAULT_ROOT_NODE_COLOR);
+
+            ColorAction edges = new ColorAction(UIConstants.EDGES,
+                    VisualItem.STROKECOLOR, ColorLib.hex("00FF00"));
+
+            // create an action list containing all color assignments
+            ActionList initialColor = new ActionList();
+            initialColor.add(text);
+            initialColor.add(fill);
+            // initialColor.add(edges);
+
+            m_vis.putAction("initialColor", initialColor);
+            m_vis.putAction("color", nStroke);
+
+            // create the radial tree layout action
+            radialTreeLayout = new RadialTreeLayout(UIConstants.GRAPH);
+            m_vis.putAction(RADIAL_TREE_LAYOUT, radialTreeLayout);
+            lastSelectedLayout = radialTreeLayout;
+
+            // create the tree layout action
+            treeLayout = new NodeLinkTreeLayout(UIConstants.GRAPH,
+                    Constants.ORIENT_TOP_BOTTOM, 200, 3, 3);
+            m_vis.putAction(TREE_LAYOUT, treeLayout);
+
+            // initialize the display
+            setAlignmentX(SwingConstants.CENTER);
+            setAlignmentY(SwingConstants.CENTER);
+            setHighQuality(true);
+            setItemSorter(new TreeDepthItemSorter());
+            addControlListener(new DragControl());
+            addControlListener(new ZoomToFitControl());
+            addControlListener(new ZoomControl());
+            addControlListener(new PanControl());
+            setDamageRedraw(false);
+            addControlListener(new HoverActionControl("repaint"));
+            addControlListener(displayAdaptor = new DisplayControlAdapter(m_vis));
+
+            computeVisualParameters(edgeRenderer, true);
+            // color the graph and perform layout
+            m_vis.run("initialColor");
+
+        }
+
+        public void forceSelectedNodeUpdate() {
+            displayAdaptor.forceSelectedNodeUpdate();
         }
     }
 }

@@ -29,8 +29,10 @@ public class UIConstants {
     public static Color EDGE_WITH_PARTICLES_COLOR = Color.GRAY;
     public static int NPOSITIONS = 10;
     public static int ARC_HEIGHT = 8000;
+    public static int ARC_SECOND_HEIGHT = 16000;
     public static int NUMBER_OF_CONTROL_POINTS = 3;
-    public static int LOCATION_CIRCLE_SIZE = 22;
+    public static int LOCATION_CIRCLE_SIZE = 25;
+    public static float LOCATION_GAP = 0.3f;
     public static double increment = 2 * Math.PI / 50;
     public static int LEVELS = 2;
     public static int MARKER_SIZE = 6;
@@ -57,11 +59,12 @@ public class UIConstants {
     public static final long DEFAULT_WEIGHT = 0;
     public static boolean initialized = false;
     public static final String[] colors = { "#FF0000", "#FF8000", "#80FF00",
-            "#00FF00", "#00FF80", "#00FFFF", "#007FFF", "#8000FF", "#FF0080",
+            "#00FF80", "#00FFFF", "#007FFF", "#8000FF", "#FF0080",
             "#FF8080", "#FFBF80", "#FFFF80", "#BFFF80", "#80FF80", "#80FFBF",
             "#80FFFF", "#80BFFF", "#8080FF", "#BF80FF", "#FF80FF", "#FF80BF",
-            "#008040", "#008080" };
+            "#008040", "#008080", "#00FF00" };
     public static int colorIndex = 0;
     public static double minAlpha = 0.4;
     public static double maxAlpha = 0.9;
+    public static int offset = 1000;
 }
