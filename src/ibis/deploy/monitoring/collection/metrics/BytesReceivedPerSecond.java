@@ -41,7 +41,7 @@ public class BytesReceivedPerSecond extends ibis.deploy.monitoring.collection.im
 		ibis.deploy.monitoring.collection.impl.MetricImpl castMetric = ((ibis.deploy.monitoring.collection.impl.MetricImpl)metric);
 		HashMap<IbisIdentifier, Number> result = new HashMap<IbisIdentifier, Number>();
 		HashMap<IbisIdentifier, Number> percentResult = new HashMap<IbisIdentifier, Number>();
-		long total = 0L;
+		// long total = 0L;
 		
 		if (results[0] instanceof Map<?, ?>) {
 			for (Map.Entry<?,?> incoming : ((Map<?, ?>) results[0]).entrySet()) {
@@ -56,7 +56,7 @@ public class BytesReceivedPerSecond extends ibis.deploy.monitoring.collection.im
 					float time_seconds = time_elapsed / 1000.0f;
 		
 					long value = received.getValue();
-					total += value;
+					 //total += value;
 					
 					long perSec = (long) (value / time_seconds);
 					result.put(received.getKey(), perSec);

@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
  * @author Maarten van Meersbergen
  */
 public abstract class ElementImpl implements Element {
-	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.collection.impl.Element");
 
 	Element parent;

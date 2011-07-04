@@ -16,7 +16,6 @@ import ibis.deploy.monitoring.collection.exceptions.OutputUnavailableException;
 import ibis.deploy.monitoring.visualization.gridvision.exceptions.AllInUseException;
 
 public class JGLinkMetric extends JGVisualAbstract implements JGVisual {
-	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.visualization.gridvision.JGLinkMetric");
 	
 	private static final float WIDTH = 0.1f;

@@ -26,7 +26,7 @@ public class PieChartWaypoint extends Waypoint {
         double radius = 0;
         double latitude = 0;
         double longitude = 0;
-        double totalNodes = 0;
+        // double totalNodes = 0;
 
         // compute the maximum radius in the group, position, number of nodes
         for (ClusterWaypoint waypoint : clusterList) {
@@ -37,7 +37,7 @@ public class PieChartWaypoint extends Waypoint {
 
                 latitude += waypoint.getPosition().getLatitude();
                 longitude += waypoint.getPosition().getLongitude();
-                totalNodes += waypoint.getCluster().getNodes();
+                // totalNodes += waypoint.getCluster().getNodes();
 
                 clusterNames.add(waypoint.getName());
                 this.clusters.add(waypoint);

@@ -453,7 +453,7 @@ public class CollectorImpl implements Collector, Runnable {
 	}
 
 	public void run() {
-		int iterations = 0;
+		// int iterations = 0;
 
 		while (true) {
 			// Clear the queue for a new round, and make sure every worker is
@@ -502,7 +502,7 @@ public class CollectorImpl implements Collector, Runnable {
 					logger.debug("Consider increasing the refresh time.");
 				}
 			}
-			iterations++;
+			// iterations++;
 		}
 	}	
 }

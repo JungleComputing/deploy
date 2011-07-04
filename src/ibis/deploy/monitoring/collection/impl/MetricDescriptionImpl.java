@@ -18,7 +18,6 @@ import ibis.ipl.support.management.AttributeDescription;
  */
 
 public abstract class MetricDescriptionImpl implements MetricDescription {
-	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.collection.impl.MetricDescription");
 
 	protected String name, verboseName;
