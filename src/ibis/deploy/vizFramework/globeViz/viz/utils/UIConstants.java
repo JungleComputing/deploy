@@ -34,7 +34,8 @@ public class UIConstants {
     public static int LOCATION_CIRCLE_SIZE = 25;
     public static float LOCATION_GAP = 0.3f;
     public static double increment = 2 * Math.PI / 50;
-    public static int LEVELS = 2;
+    public static int FAKE_LEVELS = 2;
+    public static int REAL_LEVELS = 1;
     public static int MARKER_SIZE = 6;
     public static int EDGE_WITH_PARTICLE_SIZE = 1;
     public static int EDGE_WITHOUT_PARTICLE_SIZE = 2;

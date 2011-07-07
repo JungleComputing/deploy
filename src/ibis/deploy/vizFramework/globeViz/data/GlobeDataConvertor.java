@@ -195,7 +195,7 @@ public class GlobeDataConvertor implements IDataConvertor {
             }
             tempEdges.clear();
             numberOfSubedgesPerEdge.clear();
-            connectClusters(root, UIConstants.LEVELS, pieChartsChanged);
+            connectClusters(root, UIConstants.FAKE_LEVELS, pieChartsChanged);
 
             redrawEdges(pieChartsChanged);
         } catch (Exception e) {
@@ -238,7 +238,7 @@ public class GlobeDataConvertor implements IDataConvertor {
             positionList.clear();
             globeViz.clearAnnotationLayer();
 
-            generateInitialLocationAnnotations(root, UIConstants.LEVELS,
+            generateInitialLocationAnnotations(root, UIConstants.FAKE_LEVELS,
                     structureChanged);
         }
         refreshClusterData(false, structureChanged);

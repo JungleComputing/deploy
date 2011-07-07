@@ -81,6 +81,8 @@ public class GUI {
     private final Mode mode;
 
     private Collector collector;
+    
+    public static boolean fakeData = false;
 
     // private Boolean sharedHubs;
 
@@ -303,7 +305,6 @@ public class GUI {
     protected GUI(String[] arguments) {
         boolean verbose = false;
         boolean keepSandboxes = false;
-        boolean fakeData = false;
         String serverCluster = null;
         int port = 0;
         Mode mode = Mode.NORMAL;

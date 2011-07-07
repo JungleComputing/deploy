@@ -21,12 +21,12 @@ public class RandomDataGenerator {
     private static Cluster[] clusters;
     private static int currentIdx;
 
-    // Bucharest, Barcelona, Tokyo, Los Angeles, Athens, Amsterdam,
-    // Delft, Leiden, Copenhagen, Moscow, Sydney
-    private static double[] latitudes = { 44.433, 41.38, 35.68, 34.05, 37.98,
-             52.35, 52, 52.15, 55.75, 55.66, -33.9};
-    private static double[] longitudes = { 26.1, 2.18, 139.75, -118.24, 23.73,
-            4.91, 4.36, 4.5, 37.61, 12.58, 151.2};
+    // Bucharest, Barcelona, Moscow, Los Angeles, Athens, Amsterdam,
+    // Delft, Leiden, Copenhagen,  Sydney, Tokyo
+    private static double[] latitudes = { 44.433, 41.38,55.66,  34.05, 37.98,
+             52.35, 52, 52.15, 55.75,  -33.9, 35.68};
+    private static double[] longitudes = { 26.1, 2.18, 12.58, -118.24, 23.73,
+            4.91, 4.36, 4.5, 37.61, 151.2, 139.75};
 
     public static void setGUI(GUI guiRef) {
         gui = guiRef;

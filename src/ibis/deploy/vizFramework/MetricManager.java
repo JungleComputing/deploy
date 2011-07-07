@@ -32,10 +32,9 @@ public class MetricManager {
         for (IVisualization vis : visualizations) {
             if (vis instanceof GlobeVisualization) {
                 dataConvertors.add(new GlobeDataConvertor((GlobeVisualization)vis, collector
-                        .getRoot()));
+                        .getRoot())); //TODO -- make sure I get the root again, otherwise I won't have all updates
             } else if (vis instanceof BundlesVisualization) {
-                dataConvertors.add(new BundlesDataConvertor((BundlesVisualization)vis, collector
-                        .getRoot()));
+                dataConvertors.add(new BundlesDataConvertor((BundlesVisualization)vis));
             }
         }
 

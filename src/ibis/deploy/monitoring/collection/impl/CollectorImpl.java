@@ -127,7 +127,7 @@ public class CollectorImpl implements Collector, Runnable {
             w.start();
         }
     }
-    
+
     public static CollectorImpl getCollector(
             ManagementServiceInterface manInterface,
             RegistryServiceInterface regInterface) {
@@ -222,9 +222,7 @@ public class CollectorImpl implements Collector, Runnable {
 
     private void initLocations() {
         ibises.clear();
-
-        // TODO - maybe don't clear - locations usually remain the same
-        // locations.clear();
+        locations.clear();
         parents.clear();
 
         Float[] color = { 0f, 0f, 0f };
@@ -254,7 +252,7 @@ public class CollectorImpl implements Collector, Runnable {
                     // Get the lowest location
                     ibis.ipl.Location ibisLocation = ibisid.location(); // .getParent();
                     String locationName = ibisLocation.toString();
-
+                    
                     Location current;
                     if (locations.containsKey(locationName)) {
                         current = locations.get(locationName);
@@ -262,16 +260,18 @@ public class CollectorImpl implements Collector, Runnable {
 
                         if (locationName.startsWith("cluster")) {
                             current = new LocationImpl(locationName, color,
+                                    RandomDataGenerator.generateRandomLatitude(
+                                            true, locationName),
                                     RandomDataGenerator
-                                            .generateRandomLatitude(true, locationName),
-                                    RandomDataGenerator
-                                            .generateRandomLongitude(true, locationName));
+                                            .generateRandomLongitude(true,
+                                                    locationName));
                         } else {
                             current = new LocationImpl(locationName, color,
+                                    RandomDataGenerator.generateRandomLatitude(
+                                            false, locationName),
                                     RandomDataGenerator
-                                            .generateRandomLatitude(false, locationName),
-                                    RandomDataGenerator
-                                            .generateRandomLongitude(false, locationName));
+                                            .generateRandomLongitude(false,
+                                                    locationName));
                         }
                         locations.put(locationName, current);
                     }
@@ -298,15 +298,19 @@ public class CollectorImpl implements Collector, Runnable {
                             if (name.contains("cluster")) {
                                 parent = new LocationImpl(name, color,
                                         RandomDataGenerator
-                                                .generateRandomLatitude(true, name),
+                                                .generateRandomLatitude(true,
+                                                        name),
                                         RandomDataGenerator
-                                                .generateRandomLongitude(true, name));
+                                                .generateRandomLongitude(true,
+                                                        name));
                             } else {
                                 parent = new LocationImpl(name, color,
                                         RandomDataGenerator
-                                                .generateRandomLatitude(false, name),
+                                                .generateRandomLatitude(false,
+                                                        name),
                                         RandomDataGenerator
-                                                .generateRandomLongitude(false, name));
+                                                .generateRandomLongitude(false,
+                                                        name));
                             }
                             locations.put(name, parent);
                         }

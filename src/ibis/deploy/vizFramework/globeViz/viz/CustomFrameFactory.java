@@ -39,8 +39,6 @@ public class CustomFrameFactory extends FrameFactory {
             throw new IllegalArgumentException(message);
         }
 
-        int count = verts.remaining() / 2;
-
         GL2 gl = dc.getGL().getGL2();
         GLU glu = dc.getGLU();
 

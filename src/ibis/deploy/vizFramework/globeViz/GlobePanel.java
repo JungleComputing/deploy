@@ -65,7 +65,7 @@ public class GlobePanel extends JPanel {
         leftPanel.add(terrainRadio);
         
         leftPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-//        leftPanel.add(new JSeparator(SwingConstants.HORIZONTAL));
+        leftPanel.add(new JSeparator(SwingConstants.HORIZONTAL));
         
         //Change polyline visibility
         JCheckBox cb = new JCheckBox("Polylines visible");
@@ -80,14 +80,14 @@ public class GlobePanel extends JPanel {
         leftPanel.add(cb);
         
         leftPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-//        leftPanel.add(new JSeparator(SwingConstants.HORIZONTAL));
+        leftPanel.add(new JSeparator(SwingConstants.HORIZONTAL));
         
         leftPanel.add(new JLabel("Display type:    "));
         
         // radio buttons for switching between layouts
         ButtonGroup particleButtonGroup = new ButtonGroup();
 
-        JRadioButton showParticlesRadio = new JRadioButton("Show particles");
+        JRadioButton showParticlesRadio = new JRadioButton("Particle encoding");
         particleButtonGroup.add(showParticlesRadio);
         showParticlesRadio.addActionListener(new ActionListener() {
 
@@ -99,7 +99,7 @@ public class GlobePanel extends JPanel {
         showParticlesRadio.setSelected(true);
         leftPanel.add(showParticlesRadio);
         
-        JRadioButton showArcsRadio = new JRadioButton("Show colored edges");
+        JRadioButton showArcsRadio = new JRadioButton("Edge weight encoding");
         particleButtonGroup.add(showArcsRadio);
         showArcsRadio.addActionListener(new ActionListener() {
 
@@ -114,7 +114,10 @@ public class GlobePanel extends JPanel {
         });
         leftPanel.add(showArcsRadio);    
         
-        leftPanel.add(Box.createHorizontalGlue());
+        leftPanel.add(Box.createVerticalGlue());
+        leftPanel.add(Box.createVerticalGlue());
+        leftPanel.add(Box.createVerticalGlue());
+        leftPanel.add(Box.createVerticalGlue());
 
         // Set up the window
         add(globe, BorderLayout.CENTER);
