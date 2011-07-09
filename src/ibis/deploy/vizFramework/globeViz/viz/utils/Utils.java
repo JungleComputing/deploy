@@ -8,18 +8,32 @@ import prefuse.Visualization;
 import prefuse.data.Graph;
 import prefuse.data.Tree;
 import prefuse.visual.EdgeItem;
+import ibis.deploy.Cluster;
+import ibis.deploy.gui.GUI;
 import ibis.deploy.vizFramework.bundles.edgeBundles.BSplineEdgeItem;
 import ibis.deploy.vizFramework.globeViz.viz.GlobeVisualization;
 import gov.nasa.worldwind.View;
+import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.globes.Globe;
 
 public class Utils {
-    
+
     public static double MAX_EDGE_WEIGHT = 0;
     public static double MIN_EDGE_WEIGHT = 1;
     
+    
+    // Bucharest, Barcelona, Tokyo, Los Angeles, Athens, Amsterdam,
+    // Delft, Leiden, Copenhagen, Moscow, Sydney
+    private static double[] latitudes = { 44.433, 41.38, 35.68, 34.05, 37.98,
+             52.35, 52, 52.15, 55.75, 55.66, -33.9};
+    private static double[] longitudes = { 26.1, 2.18, 139.75, -118.24, 23.73,
+            4.91, 4.36, 4.5, 37.61, 12.58, 151.2};
+    
+    static Cluster[] clusters;
+    static GUI gui;
+
     public static double computeDistance(Position p1, Position p2, Globe globe,
             View view) {
 
@@ -49,35 +63,37 @@ public class Utils {
         vecPos = globe.computePointFromPosition(pos);
         return view.project(vecPos);
     }
-    
-    public static Position fromScreenToPosition(Vec4 screen, Globe globe, View view) {
-        //double yInGLCoords = viewport.height - y - 1;
+
+    public static Position fromScreenToPosition(Vec4 screen, Globe globe,
+            View view) {
+        // double yInGLCoords = viewport.height - y - 1;
         Vec4 vecPos = view.unProject(screen);
         return globe.computePositionFromPoint(vecPos);
     }
-    
+
     public static Vec4 fromPositionTo3DCoords(Position pos, Globe globe) {
         Vec4 vecPos;
         vecPos = globe.computePointFromPosition(pos);
         return vecPos;
     }
-    
+
     public static Position from3DCoordsToPosition(Vec4 pos, Globe globe) {
         return globe.computePositionFromPoint(pos);
     }
-    
-    public static Position fromScreenToPosition(double x, double y, double z, Globe globe, View view){
+
+    public static Position fromScreenToPosition(double x, double y, double z,
+            Globe globe, View view) {
         Vec4 vecpos = view.unProject(new Vec4(x, y, z));
         Position pos = globe.computePositionFromPoint(vecpos);
         return new Position(pos.getLatitude(), pos.getLongitude(), 0);
-        //return globe.computePositionFromPoint(temp);
+        // return globe.computePositionFromPoint(temp);
     }
 
     @SuppressWarnings("unchecked")
     public static void forceEdgeUpdate(Visualization vis) {
         Iterator<EdgeItem> edgeIter;
         BSplineEdgeItem edge;
-    
+
         // update all edges - when a node is moved, all edges must be recomputed
         Graph graph = (Graph) vis.getGroup(UIConstants.GRAPH);
         edgeIter = graph.edges();
@@ -105,10 +121,10 @@ public class Utils {
         Iterator<EdgeItem> edgeIter = vis.visibleItems("graph.edges");
         BSplineEdgeItem edge;
         int minlength = Integer.MAX_VALUE, maxlength = Integer.MIN_VALUE, tsize;
-    
+
         // force control point recalculation
         forceEdgeUpdate(vis);
-    
+
         while (edgeIter.hasNext()) {
             try {
                 edge = (BSplineEdgeItem) edgeIter.next();
@@ -128,20 +144,23 @@ public class Utils {
                 // Prefuse just throws an exception
             }
         }
-    
+
         Graph graph = (Graph) vis.getGroup(UIConstants.GRAPH);
         edgeIter = graph.edges();
-    
+
         while (edgeIter.hasNext()) {
             try {
                 edge = (BSplineEdgeItem) edgeIter.next();
-                edge.setAlpha(fromIntervalToInterval(edge.getControlPoints()
-                        .size(), minlength, maxlength, UIConstants.minAlpha, UIConstants.maxAlpha));
+                if (edge.getControlPoints() != null) {
+                    edge.setAlpha(fromIntervalToInterval(edge
+                            .getControlPoints().size(), minlength, maxlength,
+                            UIConstants.minAlpha, UIConstants.maxAlpha));
+                }
             } catch (IllegalArgumentException exc) {
                 // same story here
                 System.err.println(exc.getMessage());
             }
-    
+
         }
     }
 
@@ -149,32 +168,32 @@ public class Utils {
             float alpha) {
         float r = (float) ratio;
         float ir = (float) 1.0 - r;
-    
+
         float rgb1[] = new float[3];
         float rgb2[] = new float[3];
-    
+
         color1.getColorComponents(rgb1);
         color2.getColorComponents(rgb2);
-    
+
         rgb1[0] = rgb1[0] * r + rgb2[0] * ir;
         rgb1[1] = rgb1[1] * r + rgb2[1] * ir;
         rgb1[2] = rgb1[2] * r + rgb2[2] * ir;
-    
+
         if (rgb1[0] > 1) {
             rgb1[0] = 1;
-        } else if(rgb1[0] < 0){
+        } else if (rgb1[0] < 0) {
             rgb1[0] = 0;
         }
-    
+
         if (rgb1[1] > 1) {
             rgb1[1] = 1;
-        } else if(rgb1[1] < 0){
+        } else if (rgb1[1] < 0) {
             rgb1[1] = 0;
         }
-    
+
         if (rgb1[2] > 1) {
             rgb1[2] = 1;
-        } else if(rgb1[2] < 0){
+        } else if (rgb1[2] < 0) {
             rgb1[2] = 0;
         }
         return new Color(rgb1[0], rgb1[1], rgb1[2], alpha);
@@ -194,7 +213,7 @@ public class Utils {
                 if (value > MAX_EDGE_WEIGHT) {
                     MAX_EDGE_WEIGHT = value;
                 }
-    
+
                 if (value < MIN_EDGE_WEIGHT) {
                     MIN_EDGE_WEIGHT = value;
                 }
@@ -206,7 +225,110 @@ public class Utils {
         if (UIConstants.colorIndex == UIConstants.colors.length) {
             UIConstants.colorIndex = 0;
         }
-    
+
         return UIConstants.colors[UIConstants.colorIndex++];
+    }
+    
+    public static String extractLocationName(String name) {
+        int index = name.lastIndexOf("@");
+
+        if (index > 0) {
+            if (GUI.fakeData) {
+                return "cluster" + "@" + name.substring(index + 1);
+            } else {
+                return name.substring(index + 1);
+            }
+        }
+        return name;
+    }
+
+    public static String extractIbisName(String ibisName) {
+        String locationName = extractLocationName(ibisName);
+        int index;
+        if (GUI.fakeData) {
+            index = ibisName.indexOf("-");
+            if (index > 0) {
+                return ibisName.substring(0, index) + "@" + locationName;
+            }
+        } else {
+            index = ibisName.indexOf("@");
+            if (index > 0) {
+                return ibisName.substring(0, index) + "@" +locationName;
+            }
+        }
+        return ibisName;
+    }
+
+    public static void resetIndex(){
+        currentIdx = 0;
+    }
+    
+    public static LatLon generateLatLon(boolean useFakeData, String name){
+        double lat, lon;
+        if (useFakeData && Utils.currentIdx < longitudes.length) {
+            System.out.println("current: " + currentIdx);
+            lat = latitudes[currentIdx];
+            lon = longitudes[currentIdx++];
+        } else {
+            Cluster c = getClusterByName(name);
+            if (c != null) {
+                lat = c.getLatitude();
+                lon = c.getLongitude();
+            } else {
+                lat = (Math.random() * 1000) % 180 - 90;
+                lon = (Math.random() * 1000) % 360 - 180;
+            }
+        }
+       return LatLon.fromDegrees(lat, lon);
+    }
+
+    public static double generateLatitude(boolean useClusterData,
+            String name) {
+        System.out.println("sadaaas");
+        if (useClusterData && Utils.currentIdx < latitudes.length) {
+            System.out.println("here");
+            return latitudes[Utils.currentIdx];
+        } else {
+            Cluster c = Utils.getClusterByName(name);
+            if (c != null) {
+                return c.getLatitude();
+            }
+        }
+        return (Math.random() * 1000) % 180 - 90;
+    }
+    
+    
+    public static double generateLongitude(boolean useClusterData,
+            String name) {
+        if (useClusterData && Utils.currentIdx < longitudes.length) {
+            return longitudes[Utils.currentIdx++];
+        } else {
+            Cluster c = Utils.getClusterByName(name);
+            if (c != null) {
+                return c.getLongitude();
+            }
+        }
+        return (Math.random() * 1000) % 360 - 180;
+    }
+
+
+    static int currentIdx;
+
+    static Cluster getClusterByName(String name) {
+        if (name != null) {
+            for (Cluster c : Utils.clusters) {
+                if (c.getName().equals(name)) {
+                    return c;
+                }
+            }
+        }
+    
+        return null;
+    }
+
+    public static void setGUI(GUI guiRef) {
+        Utils.gui = guiRef;
+        Utils.clusters = Utils.gui.getGrid().getClusters();
+        currentIdx = 0;
     }
 }

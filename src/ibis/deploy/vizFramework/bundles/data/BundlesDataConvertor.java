@@ -61,7 +61,7 @@ public class BundlesDataConvertor implements IDataConvertor {
     private synchronized void updateLocations(Location root, int level,
             boolean structureChanged, String spacer) {
         ArrayList<Location> dataChildren = root.getChildren();
-        String locationName = extractLocationName(root.getName());
+        String locationName = Utils.extractLocationName(root.getName());
        // System.out.println(root.getName());
 
         if ((dataChildren == null || dataChildren.size() == 0)
@@ -71,7 +71,7 @@ public class BundlesDataConvertor implements IDataConvertor {
 
             for (Ibis dataIbis : dataIbises) {
                 IbisImpl ibis = (IbisImpl) dataIbis;
-                String ibisName = extractIbisName(ibis.getName());
+                String ibisName = Utils.extractIbisName(ibis.getName());
 
                 // String locationName = ibisName
                 // .substring(ibisName.indexOf("@") + 1);
@@ -94,11 +94,11 @@ public class BundlesDataConvertor implements IDataConvertor {
                     if ((link.getSource() instanceof IbisImpl)
                             && (link.getDestination() instanceof IbisImpl)) {
                         startLocation = ((IbisImpl) link.getSource()).getName();
-                        startLocation = extractIbisName(startLocation);
+                        startLocation = Utils.extractIbisName(startLocation);
 
                         stopLocation = ((IbisImpl) link.getDestination())
                                 .getName();
-                        stopLocation = extractIbisName(stopLocation);
+                        stopLocation = Utils.extractIbisName(stopLocation);
 
                         for (Metric metric : link
                                 .getMetrics(LinkDirection.SRC_TO_DST)) {
@@ -150,35 +150,5 @@ public class BundlesDataConvertor implements IDataConvertor {
             }
             updateLocations(loc, level - 1, structureChanged, spacer + "  ");
         }
-    }
-
-    private String extractLocationName(String name) {
-        int index = name.lastIndexOf("@");
-
-        if (index > 0) {
-            if (GUI.fakeData) {
-                return "cluster" + "@" + name.substring(index + 1);
-            } else {
-                return name.substring(index + 1);
-            }
-        }
-        return name;
-    }
-
-    private String extractIbisName(String ibisName) {
-        String locationName = extractLocationName(ibisName);
-        int index;
-        if (GUI.fakeData) {
-            index = ibisName.indexOf("-");
-            if (index > 0) {
-                return ibisName.substring(0, index) + "@" + locationName;
-            }
-        } else {
-            index = ibisName.indexOf("@");
-            if (index > 0) {
-                return ibisName.substring(0, index) + "@" +locationName;
-            }
-        }
-        return ibisName;
     }
 }

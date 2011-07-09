@@ -25,12 +25,14 @@ public class GlobeEdge {
     private final String name;
     private Color edgeColor = Color.green;
     private Color particleColor = Color.green;
-    // private BasicMarkerAttributes attributes;
     private MarkerPool markerPool;
     private boolean isSecondEdge;
+    private boolean lastStateFollowGrid = false;
+    ArrayList<Position> positions; //TODO - maybe remove this
 
     // pos1 and pos2 need to be non-null
-    public GlobeEdge(Position pos1, Position pos2, String name, boolean isSecondEdge) {
+    public GlobeEdge(Position pos1, Position pos2, String name,
+            boolean isSecondEdge) {
         if (pos1 != null && pos2 != null) {
             this.pos1 = pos1;
             this.pos2 = pos2;
@@ -40,33 +42,41 @@ public class GlobeEdge {
         }
         this.name = name;
         this.isSecondEdge = isSecondEdge;
-        // attributes = new BasicMarkerAttributes(new Material(Color.GREEN),
-        // BasicMarkerShape.SPHERE, 0.5);
-        // attributes.setMarkerPixels(8);
-
         markerPool = new MarkerPool();
     }
 
     // the polyline is calculated only once. If the polyline is already
     // calculated, only the color is changed.
     public void updateAssociatedPolyline(GlobeVisualization globe, Color color,
-            boolean forceEdgeRedraw, boolean showParticles) {
+            boolean forceEdgeRedraw, boolean showParticles, boolean followGrid) {
         int size;
         particleColor = color;
         if (!showParticles) {
             edgeColor = color;
-            size = UIConstants.EDGE_WITHOUT_PARTICLE_SIZE;
+            size = UIConstants.EDGE_WITHOUT_PARTICLE_SIZE; 
+            // TODO - there's something fishy about this size, it doesn't always update
         } else {
             edgeColor = UIConstants.EDGE_WITH_PARTICLES_COLOR;
             size = UIConstants.EDGE_WITH_PARTICLE_SIZE;
         }
 
-        if (polyline == null || forceEdgeRedraw) {
-            polyline = globe.createArcBetween(pos1, pos2, edgeColor, size, isSecondEdge);
-            globe.drawArc(polyline, edgeColor);
+        if (polyline == null || forceEdgeRedraw || lastStateFollowGrid) {
+            if (!showParticles && followGrid) {
+                polyline = globe.createArcBetween(positions, edgeColor, size);
+                lastStateFollowGrid = true;
+            } else {
+                polyline = globe.createArcBetween(pos1, pos2, edgeColor, size,
+                        isSecondEdge);
+                globe.drawArc(polyline, edgeColor);
+                lastStateFollowGrid = false;
+            }
         } else {
             polyline.setColor(edgeColor);
         }
+    }
+
+    public void updatePolylineFollowGrid(ArrayList<Position> positions) {
+        this.positions = positions;
     }
 
     @Override
@@ -74,11 +84,11 @@ public class GlobeEdge {
         if (other != null && other instanceof GlobeEdge) {
             GlobeEdge secondEdge = (GlobeEdge) other;
             if ((GlobeEdge.positionsEqual(pos1, secondEdge.getFirstPosition()) && GlobeEdge
-                    .positionsEqual(pos2, secondEdge.getSecondPosition()))){
-//                    || (GlobeEdge.positionsEqual(pos2,
-//                            secondEdge.getFirstPosition()) && GlobeEdge
-//                            .positionsEqual(pos1,
-//                                    secondEdge.getSecondPosition()))) {
+                    .positionsEqual(pos2, secondEdge.getSecondPosition()))) {
+                // || (GlobeEdge.positionsEqual(pos2,
+                // secondEdge.getFirstPosition()) && GlobeEdge
+                // .positionsEqual(pos1,
+                // secondEdge.getSecondPosition()))) {
                 return true;
             }
 
@@ -99,8 +109,8 @@ public class GlobeEdge {
         // matter what the edge direction is. TODO - if at some point edge
         // direction matters, change this
         int hash1 = (41 * (41 + pos1.hashCode()) + pos2.hashCode());
-        //int hash2 = (41 * (41 + pos2.hashCode()) + pos1.hashCode());
-        return hash1; //Math.max(hash1, hash2);
+        // int hash2 = (41 * (41 + pos2.hashCode()) + pos1.hashCode());
+        return hash1; // Math.max(hash1, hash2);
     }
 
     public Position getFirstPosition() {
@@ -122,7 +132,7 @@ public class GlobeEdge {
     }
 
     public String getName() {
-        //return pos1.toString() + " -> " + pos2.toString();
+        // return pos1.toString() + " -> " + pos2.toString();
         return name;
     }
 
@@ -137,8 +147,9 @@ public class GlobeEdge {
     public Marker addMarkerToEdge() {
         MovingMarker marker = null;
         if (((ArrayList<Position>) polyline.getPositions()).size() > 0) {
-            marker = markerPool.getMarker(((ArrayList<Position>) polyline
-                    .getPositions()).get(0), particleColor);
+            marker = markerPool.getMarker(
+                    ((ArrayList<Position>) polyline.getPositions()).get(0),
+                    particleColor);
         }
         return marker;
     }

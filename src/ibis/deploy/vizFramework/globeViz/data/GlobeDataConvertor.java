@@ -39,6 +39,7 @@ import ibis.deploy.monitoring.collection.MetricDescription.MetricOutput;
 import ibis.deploy.monitoring.collection.exceptions.OutputUnavailableException;
 import ibis.deploy.monitoring.collection.impl.LocationImpl;
 import ibis.deploy.util.Colors;
+import ibis.deploy.vizFramework.globeViz.bundles.GridGraph;
 import ibis.deploy.vizFramework.globeViz.viz.CircleAnnotation;
 import ibis.deploy.vizFramework.globeViz.viz.GlobeVisualization;
 import ibis.deploy.vizFramework.globeViz.viz.utils.UIConstants;
@@ -47,6 +48,8 @@ import ibis.deploy.vizFramework.globeViz.viz.utils.Utils;
 public class GlobeDataConvertor implements IDataConvertor {
 
     private final GlobeVisualization globeViz;
+    
+    //positions before clusters are grouped
     private ConcurrentHashMap<String, Position> positionList;
 
     private double maximum = Double.MIN_VALUE;
@@ -54,7 +57,7 @@ public class GlobeDataConvertor implements IDataConvertor {
     private ConcurrentHashMap<GlobeEdge, Double> globeEdges;
     // hash map used for storing edges temporarily on update
     private ConcurrentHashMap<GlobeEdge, Double> tempEdges;
-    
+
     private ConcurrentHashMap<GlobeEdge, Integer> numberOfSubedgesPerEdge;
     // the starting point of the Location tree, used for retrieving data
     private final Location root;
@@ -65,8 +68,9 @@ public class GlobeDataConvertor implements IDataConvertor {
     private boolean initialized = false;
     private boolean showParticles = true;
 
-    public GlobeDataConvertor(GlobeVisualization globeVizRef,
-            Location rootRef) {
+    private GridGraph bundlesGenerator;
+
+    public GlobeDataConvertor(GlobeVisualization globeVizRef, Location rootRef) {
 
         this.globeViz = globeVizRef;
         globeViz.setDataConvertor(this);
@@ -76,7 +80,7 @@ public class GlobeDataConvertor implements IDataConvertor {
         globeEdges = new ConcurrentHashMap<GlobeEdge, Double>();
         tempEdges = new ConcurrentHashMap<GlobeEdge, Double>();
         numberOfSubedgesPerEdge = new ConcurrentHashMap<GlobeEdge, Integer>();
-        
+
         pieChartWaypointSet = Collections
                 .synchronizedSet(new HashSet<CircleAnnotation>());
 
@@ -127,7 +131,7 @@ public class GlobeDataConvertor implements IDataConvertor {
 
                     @Override
                     public void mouseReleased(MouseEvent arg0) {
-                        //refreshClusterData(false, true);
+                        // refreshClusterData(false, true);
                     }
 
                     @Override
@@ -167,23 +171,24 @@ public class GlobeDataConvertor implements IDataConvertor {
         // }
         // });
         // particleReleaseTimer.start();
-
-        // generateFixedLocations(globeViz.getAnnotationLayer(), globeViz);
+        
+        
+        bundlesGenerator = new GridGraph();
     }
 
     public synchronized void refreshClusterData(boolean zoomIn,
-            boolean regroupPies) {
+            boolean structureChanged) {
         boolean pieChartsChanged = false;
 
-        if (regroupPies) {
-//            if (zoomIn) {
-//                pieChartsChanged = splitPieCharts();
-//                System.out.println("split");
-            //} else {
-                // TODO - see if we also keep the split before here or not
-                pieChartsChanged = splitPieCharts();
-                pieChartsChanged = pieChartsChanged || groupPieCharts();
-            //}
+        if (structureChanged) {
+            // if (zoomIn) {
+            // pieChartsChanged = splitPieCharts();
+            // System.out.println("split");
+            // } else {
+            // TODO - see if we also keep the split before here or not
+            pieChartsChanged = splitPieCharts();
+            pieChartsChanged = pieChartsChanged || groupPieCharts();
+            // }
         }
         try {
             if (pieChartsChanged) {
@@ -196,8 +201,12 @@ public class GlobeDataConvertor implements IDataConvertor {
             tempEdges.clear();
             numberOfSubedgesPerEdge.clear();
             connectClusters(root, UIConstants.FAKE_LEVELS, pieChartsChanged);
-
             redrawEdges(pieChartsChanged);
+
+            if (structureChanged) {
+                //bundlesGenerator.computePaths(globeEdges, pieChartWaypointSet, globeViz.funkyLayer);
+                //bundlesGenerator.generateGrid(globeViz.funkyLayer);
+            }
         } catch (Exception e) {
             System.err.print(e.getMessage());
         }
@@ -276,14 +285,15 @@ public class GlobeDataConvertor implements IDataConvertor {
 
             // update existing edges
             for (GlobeEdge edge : tempEdges.keySet()) {
-                //System.out.println("** " + tempEdges.get(edge) + "  " + numberOfSubedgesPerEdge.get(edge));
+                // System.out.println("** " + tempEdges.get(edge) + "  " +
+                // numberOfSubedgesPerEdge.get(edge));
                 value = tempEdges.get(edge) / numberOfSubedgesPerEdge.get(edge);
-                //System.out.println(value);
-                //System.out.println(edge.getName());
+                // System.out.println(value);
+                // System.out.println(edge.getName());
                 updateMax(value);
                 globeEdges.put(edge, value);
             }
-            //System.out.println("---------------------------------->");
+            // System.out.println("---------------------------------->");
 
             for (GlobeEdge edge : globeEdges.keySet()) {
                 if (edge != null) {
@@ -292,7 +302,7 @@ public class GlobeDataConvertor implements IDataConvertor {
                         newColor = Utils.blend(Color.red, Color.green, ratio,
                                 0.7f);
                         edge.updateAssociatedPolyline(globeViz, newColor,
-                                pieChartsChanged, showParticles);
+                                pieChartsChanged, showParticles, false);
 
                         if (pieChartsChanged) {
                             globeViz.getMarkerLayer().addAllMarkers(
@@ -446,17 +456,18 @@ public class GlobeDataConvertor implements IDataConvertor {
                 positionsForPieCharts.put(oldPieChart.getName(),
                         oldPieChart.getPosition());
 
-                //TODO - decide later if we leave this here or not - it optimizes computations, but it messes up grouping
-//                if (!positionIsVisible(oldPieChart.getPosition())) {
-//                    // don't take hidden pie charts into consideration
-//                    invisiblePieCharts.add(oldPieChart);
-//                }
+                // TODO - decide later if we leave this here or not - it
+                // optimizes computations, but it messes up grouping
+                // if (!positionIsVisible(oldPieChart.getPosition())) {
+                // // don't take hidden pie charts into consideration
+                // invisiblePieCharts.add(oldPieChart);
+                // }
             }
         }
 
         // remove all piecharts that aren't visible - we still keep them in the
         // invisiblePieCharts, so that we can render them again in the end
-        //visiblePieChartWaypointSet.removeAll(invisiblePieCharts);
+        // visiblePieChartWaypointSet.removeAll(invisiblePieCharts);
 
         // create a graph from the clusters in the pie chart;
         createAdjacencyList(positionsForPieCharts, adjacencyList, visited);
@@ -638,35 +649,46 @@ public class GlobeDataConvertor implements IDataConvertor {
                         }
                     }
 
-//                    for (Metric metric : link
-//                            .getMetrics(LinkDirection.DST_TO_SRC)) {
-//                        try {
-//                            value2 = (Float) metric.getValue(
-//                                    MetricModifier.NORM, MetricOutput.PERCENT);
-//                        } catch (OutputUnavailableException e) {
-//                            System.out.println(e.getMessage());
-//                        }
-//                    }
+                    // for (Metric metric : link
+                    // .getMetrics(LinkDirection.DST_TO_SRC)) {
+                    // try {
+                    // value2 = (Float) metric.getValue(
+                    // MetricModifier.NORM, MetricOutput.PERCENT);
+                    // } catch (OutputUnavailableException e) {
+                    // System.out.println(e.getMessage());
+                    // }
+                    // }
 
                     pos1 = startPie.getPosition();
                     pos2 = stopPie.getPosition();
 
                     if (pos1 != null && pos2 != null) {
-                        GlobeEdge reverseEdge = new GlobeEdge(pos2, pos1,
-                                stopPie.getName() + " -> " + startPie.getName(), false);
-                        boolean isSecondEdge = tempEdges.containsKey(reverseEdge);
-                        //System.out.println(isSecondEdge + reverseEdge.getName());
-                        GlobeEdge edge = new GlobeEdge(pos1, pos2,
-                                startPie.getName() + " -> " + stopPie.getName(), isSecondEdge);
+                        GlobeEdge reverseEdge = new GlobeEdge(
+                                pos2,
+                                pos1,
+                                stopPie.getName() + " -> " + startPie.getName(),
+                                false);
+                        boolean isSecondEdge = tempEdges
+                                .containsKey(reverseEdge);
+                        // System.out.println(isSecondEdge +
+                        // reverseEdge.getName());
+                        GlobeEdge edge = new GlobeEdge(
+                                pos1,
+                                pos2,
+                                startPie.getName() + " -> " + stopPie.getName(),
+                                isSecondEdge);
                         // if the edge is already in the map, this just updates
                         // the value
                         if (tempEdges.get(edge) != null) {
-                            //System.out.println(tempEdges.get(edge) + "  " + value1);
+                            // System.out.println(tempEdges.get(edge) + "  " +
+                            // value1);
                             tempEdges.put(edge, tempEdges.get(edge) + value1
                                     + value2);
-                            numberOfSubedgesPerEdge.put(edge, numberOfSubedgesPerEdge.get(edge) + 1);
+                            numberOfSubedgesPerEdge.put(edge,
+                                    numberOfSubedgesPerEdge.get(edge) + 1);
                         } else {
-                            //System.out.println(tempEdges.get(edge) + "  " + value1);
+                            // System.out.println(tempEdges.get(edge) + "  " +
+                            // value1);
                             tempEdges.put(edge, value1 + value2);
                             numberOfSubedgesPerEdge.put(edge, 1);
                         }

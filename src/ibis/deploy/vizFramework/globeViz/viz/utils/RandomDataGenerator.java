@@ -5,8 +5,6 @@ import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.AnnotationAttributes;
 
-import ibis.deploy.Cluster;
-import ibis.deploy.gui.GUI;
 import ibis.deploy.vizFramework.globeViz.viz.CircleAnnotation;
 import ibis.deploy.vizFramework.globeViz.viz.GlobeVisualization;
 
@@ -16,35 +14,6 @@ import java.awt.Point;
 import java.util.ArrayList;
 
 public class RandomDataGenerator {
-
-    private static GUI gui;
-    private static Cluster[] clusters;
-    private static int currentIdx;
-
-    // Bucharest, Barcelona, Moscow, Los Angeles, Athens, Amsterdam,
-    // Delft, Leiden, Copenhagen,  Sydney, Tokyo
-    private static double[] latitudes = { 44.433, 41.38,55.66,  34.05, 37.98,
-             52.35, 52, 52.15, 55.75,  -33.9, 35.68};
-    private static double[] longitudes = { 26.1, 2.18, 12.58, -118.24, 23.73,
-            4.91, 4.36, 4.5, 37.61, 151.2, 139.75};
-
-    public static void setGUI(GUI guiRef) {
-        gui = guiRef;
-        clusters = gui.getGrid().getClusters();
-        currentIdx = 0;
-    }
-
-    private static Cluster getClusterByName(String name) {
-        if (name != null) {
-            for (Cluster c : clusters) {
-                if (c.getName().equals(name)) {
-                    return c;
-                }
-            }
-        }
-
-        return null;
-    }
 
     // generates a list with nPoints random locations
     public static ArrayList<Position> generatePositionList(int nPoints) {
@@ -59,37 +28,11 @@ public class RandomDataGenerator {
     // generates one random geographic location
     public static Position generateRandomPosition() {
         double lat, longit;
-        lat = generateRandomLatitude(false, null);
-        longit = generateRandomLongitude(false, null);
+        lat = Utils.generateLatitude(false, null);
+        longit = Utils.generateLongitude(false, null);
         LatLon pos1 = LatLon.fromDegrees(lat, longit);
 
         return new Position(pos1, 0);
-    }
-
-    public static double generateRandomLatitude(boolean useClusterData,
-            String name) {
-        if (useClusterData && currentIdx < latitudes.length) {
-            return latitudes[currentIdx];
-        } else {
-            Cluster c = getClusterByName(name);
-            if (c != null) {
-                return c.getLatitude();
-            }
-        }
-        return (Math.random() * 1000) % 180 - 90;
-    }
-
-    public static double generateRandomLongitude(boolean useClusterData,
-            String name) {
-        if (useClusterData && currentIdx < longitudes.length) {
-            return longitudes[currentIdx++];
-        } else {
-            Cluster c = getClusterByName(name);
-            if (c != null) {
-                return c.getLongitude();
-            }
-        }
-        return (Math.random() * 1000) % 360 - 180;
     }
 
     public static void generateRandomDotsAndConnections(GlobeVisualization globe) {

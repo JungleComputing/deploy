@@ -1,9 +1,10 @@
 package ibis.deploy.monitoring.collection.impl;
 
+import gov.nasa.worldwind.geom.LatLon;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
-import ibis.deploy.vizFramework.globeViz.viz.utils.RandomDataGenerator;
+import ibis.deploy.vizFramework.globeViz.viz.utils.Utils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -89,9 +90,10 @@ public class CollectorImpl implements Collector, Runnable {
         Float[] color = { 0f, 0f, 0f };
 
         if (locations.get("root") == null) {
+            LatLon temp = Utils.generateLatLon(false, null);
             root = new LocationImpl("root", color,
-                    RandomDataGenerator.generateRandomLatitude(false, null),
-                    RandomDataGenerator.generateRandomLongitude(false, null));
+                    temp.getLatitude().degrees,
+                    temp.getLongitude().degrees);
 
             locations.put("root", root);
         } else {
@@ -140,7 +142,7 @@ public class CollectorImpl implements Collector, Runnable {
         if (ref == null) {
             ref = new CollectorImpl(manInterface, regInterface);
             ref.initWorkers();
-            RandomDataGenerator.setGUI(gui);
+            Utils.setGUI(gui);
             // ref.initUniverse();
         }
         return ref;
@@ -227,10 +229,13 @@ public class CollectorImpl implements Collector, Runnable {
 
         Float[] color = { 0f, 0f, 0f };
 
+        LatLon temp;
+        Utils.resetIndex(); //to reuse the same random locations
         if (locations.get("root") == null) {
+            temp = Utils.generateLatLon(false, null);
             root = new LocationImpl("root", color,
-                    RandomDataGenerator.generateRandomLatitude(false, null),
-                    RandomDataGenerator.generateRandomLongitude(false, null));
+                    temp.getLatitude().degrees,
+                    temp.getLongitude().degrees);
             locations.put("root", root);
         } else {
             root = locations.get("root");
@@ -257,22 +262,10 @@ public class CollectorImpl implements Collector, Runnable {
                     if (locations.containsKey(locationName)) {
                         current = locations.get(locationName);
                     } else {
-
-                        if (locationName.startsWith("cluster")) {
-                            current = new LocationImpl(locationName, color,
-                                    RandomDataGenerator.generateRandomLatitude(
-                                            true, locationName),
-                                    RandomDataGenerator
-                                            .generateRandomLongitude(true,
-                                                    locationName));
-                        } else {
-                            current = new LocationImpl(locationName, color,
-                                    RandomDataGenerator.generateRandomLatitude(
-                                            false, locationName),
-                                    RandomDataGenerator
-                                            .generateRandomLongitude(false,
-                                                    locationName));
-                        }
+                        temp = Utils.generateLatLon(locationName.startsWith("cluster"), locationName);
+                        current = new LocationImpl(locationName, color,
+                                temp.getLatitude().degrees,
+                                temp.getLongitude().degrees);
                         locations.put(locationName, current);
                     }
 
@@ -295,23 +288,10 @@ public class CollectorImpl implements Collector, Runnable {
                         if (locations.containsKey(name)) {
                             parent = locations.get(name);
                         } else {
-                            if (name.contains("cluster")) {
-                                parent = new LocationImpl(name, color,
-                                        RandomDataGenerator
-                                                .generateRandomLatitude(true,
-                                                        name),
-                                        RandomDataGenerator
-                                                .generateRandomLongitude(true,
-                                                        name));
-                            } else {
-                                parent = new LocationImpl(name, color,
-                                        RandomDataGenerator
-                                                .generateRandomLatitude(false,
-                                                        name),
-                                        RandomDataGenerator
-                                                .generateRandomLongitude(false,
-                                                        name));
-                            }
+                            temp = Utils.generateLatLon(name.startsWith("cluster"), name); // TODO better Location assign
+                            parent = new LocationImpl(name, color,
+                                    temp.getLatitude().degrees,
+                                    temp.getLongitude().degrees);
                             locations.put(name, parent);
                         }
 

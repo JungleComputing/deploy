@@ -15,6 +15,7 @@ import gov.nasa.worldwind.render.AnnotationAttributes;
 import gov.nasa.worldwind.render.GlobeAnnotation;
 import ibis.deploy.gui.GUI;
 import ibis.deploy.vizFramework.IVisualization;
+import ibis.deploy.vizFramework.globeViz.bundles.GridGraph;
 import ibis.deploy.vizFramework.globeViz.data.GlobeDataConvertor;
 import ibis.deploy.vizFramework.globeViz.viz.markers.SynchronizedMarkerLayer;
 import ibis.deploy.vizFramework.globeViz.viz.utils.UIConstants;
@@ -37,6 +38,7 @@ public class GlobeVisualization extends JPanel implements IVisualization {
     private CircleAnnotation lastSelectedDot;
     private RenderableLayer annotationLayer;
     private RenderableLayer polylineLayer;
+    public RenderableLayer funkyLayer;
     private SynchronizedMarkerLayer markerLayer;
     private boolean followTerrain = false;
     private GlobeDataConvertor convertor;
@@ -62,11 +64,19 @@ public class GlobeVisualization extends JPanel implements IVisualization {
         polylineLayer = new RenderableLayer();
         polylineLayer.setName("Edges");
         worldWindCanvas.getModel().getLayers().add(polylineLayer);
+        //polylineLayer.setEnabled(false);//TODO - remove this
+        
+        
+     // initialize the polylineLayer layer
+        funkyLayer = new RenderableLayer();
+        funkyLayer.setName("Testing layer");
+        worldWindCanvas.getModel().getLayers().add(funkyLayer);
 
         markerLayer = new SynchronizedMarkerLayer();
         markerLayer.setName("Markers");
         markerLayer.setKeepSeparated(false);
         worldWindCanvas.getModel().getLayers().add(markerLayer);
+        //markerLayer.setEnabled(false); // TODO remove this
 
         // only used when we want fake-fake data :P
         // RandomDataGenerator.generateRandomDotsAndConnections(this);
@@ -91,7 +101,6 @@ public class GlobeVisualization extends JPanel implements IVisualization {
 //                layer.setEnabled(false);
 //            }
 //        }
-
     }
 
     public RenderableLayer getAnnotationLayer() {
@@ -156,6 +165,15 @@ public class GlobeVisualization extends JPanel implements IVisualization {
         }
     }
 
+    public UnclippablePolyline createArcBetween(ArrayList<Position> positions,
+            Color color, int lineWidth) {
+        UnclippablePolyline polyline = new UnclippablePolyline(positions);
+        polyline.setColor(color);
+        polyline.setLineWidth(lineWidth);
+        polyline.setFollowTerrain(true);
+        return polyline;
+    }
+    
     // computes a polyline between the two locations
     public UnclippablePolyline createArcBetween(Position pos1, Position pos2,
             Color color, int lineWidth, boolean applyOffset) {

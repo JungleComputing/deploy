@@ -61,6 +61,7 @@ import prefuse.render.DefaultRendererFactory;
 import prefuse.render.EdgeRenderer;
 import prefuse.render.LabelRenderer;
 import prefuse.util.ColorLib;
+import prefuse.util.display.DebugStatsPainter;
 import prefuse.util.ui.JFastLabel;
 import prefuse.visual.NodeItem;
 import prefuse.visual.VisualItem;
@@ -572,6 +573,9 @@ public class BundlesVisualization extends JPanel implements IVisualization {
             // color the graph and perform layout
             m_vis.run("initialColor");
 
+            //TODO - here we measure time it takes to draw
+            addPaintListener(new DebugStatsPainter());
+           
         }
 
         public void forceSelectedNodeUpdate() {

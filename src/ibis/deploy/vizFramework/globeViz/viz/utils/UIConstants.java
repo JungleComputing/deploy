@@ -68,4 +68,5 @@ public class UIConstants {
     public static double minAlpha = 0.4;
     public static double maxAlpha = 0.9;
     public static int offset = 1000;
+    public static int GRID_CELL_SIZE = 10;
 }

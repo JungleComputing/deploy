@@ -42,4 +42,12 @@ public class BundlesPrefuseVisualization extends Visualization {
 
         return vg;
     }
+    
+    @Override
+    public synchronized void repaint() {
+        long startTime = System.currentTimeMillis();
+        super.repaint();
+        long stopTime = System.currentTimeMillis();
+        //System.out.println("Time to repaint: " + (stopTime - startTime));
+    }
 }
