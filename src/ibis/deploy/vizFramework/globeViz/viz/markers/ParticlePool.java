@@ -10,18 +10,18 @@ import ibis.deploy.vizFramework.globeViz.viz.utils.UIConstants;
 import java.awt.Color;
 import java.util.Vector;
 
-public class MarkerPool {
+public class ParticlePool {
 
-    private Vector<MovingMarker> passiveMarkers;
-    private Vector<MovingMarker> activeMarkers;
+    private Vector<MovingParticle> passiveMarkers;
+    private Vector<MovingParticle> activeMarkers;
     
-    public MarkerPool(){
-        passiveMarkers = new Vector<MovingMarker>();
-        activeMarkers = new Vector<MovingMarker>();
+    public ParticlePool(){
+        passiveMarkers = new Vector<MovingParticle>();
+        activeMarkers = new Vector<MovingParticle>();
     }
     
-    public MovingMarker getMarker(Position pos, Color color){
-        MovingMarker marker;
+    public MovingParticle getMarker(Position pos, Color color){
+        MovingParticle marker;
         if(passiveMarkers.size() > 0){
             marker = passiveMarkers.remove(0);
             marker.getAttributes().setMaterial(new Material(color));
@@ -30,19 +30,24 @@ public class MarkerPool {
             BasicMarkerAttributes attrs = new BasicMarkerAttributes(new Material(Color.GREEN),
                   BasicMarkerShape.SPHERE, 0.5);
             attrs.setMarkerPixels(UIConstants.MARKER_SIZE);
-            marker = new MovingMarker(pos, attrs);
+            marker = new MovingParticle(pos, attrs);
         }
         
         activeMarkers.add(marker);
         return marker;
     }
     
-    public void returnMarkerToPool(MovingMarker marker){
+    public void returnAllMarkersToPool(){
+        passiveMarkers.addAll(activeMarkers);
+        activeMarkers.clear();
+    }
+    
+    public void returnMarkerToPool(MovingParticle marker){
         activeMarkers.remove(marker);
         passiveMarkers.add(marker);
     }
     
-    public Vector<MovingMarker> getActiveMarkers(){
+    public Vector<MovingParticle> getActiveMarkers(){
         return activeMarkers;
     }
 }

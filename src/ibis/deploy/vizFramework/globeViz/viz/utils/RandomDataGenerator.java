@@ -5,7 +5,7 @@ import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.AnnotationAttributes;
 
-import ibis.deploy.vizFramework.globeViz.viz.CircleAnnotation;
+import ibis.deploy.vizFramework.globeViz.viz.PieChartAnnotation;
 import ibis.deploy.vizFramework.globeViz.viz.GlobeVisualization;
 
 import java.awt.Color;
@@ -37,7 +37,7 @@ public class RandomDataGenerator {
 
     public static void generateRandomDotsAndConnections(GlobeVisualization globe) {
         Position pos;
-        CircleAnnotation annotation;
+        PieChartAnnotation annotation;
         int i;
         RenderableLayer layer = globe.getAnnotationLayer();
 
@@ -57,7 +57,7 @@ public class RandomDataGenerator {
         for (i = 0; i < UIConstants.NPOSITIONS; i++) {
             pos = positionList.get(i);
 
-            annotation = new CircleAnnotation(pos, dotAttributes, "Location "
+            annotation = new PieChartAnnotation(pos, dotAttributes, "Location "
                     + i);
             annotation.getAttributes().setImageSource(
                     UIConstants.LOCATIONS_SHAPE_LIST[i % 7]);
@@ -94,7 +94,7 @@ public class RandomDataGenerator {
             GlobeVisualization globe) {
 
         Position pos1, pos2;
-        CircleAnnotation annotation;
+        PieChartAnnotation annotation;
 
         AnnotationAttributes dotAttributes = new AnnotationAttributes();
         dotAttributes.setDrawOffset(new Point(0, -16));
@@ -107,12 +107,12 @@ public class RandomDataGenerator {
         pos1 = Position.ZERO;
         pos2 = new Position(LatLon.fromDegrees(0, 10), 0);
 
-        annotation = new CircleAnnotation(pos1, dotAttributes,
+        annotation = new PieChartAnnotation(pos1, dotAttributes,
                 "Location1@Location1@ASD");
         annotation.getAttributes().setTextColor(Color.blue);
         layer.addRenderable(annotation);
 
-        annotation = new CircleAnnotation(pos2, dotAttributes,
+        annotation = new PieChartAnnotation(pos2, dotAttributes,
                 "Location2@Location2@ASD");
         annotation.getAttributes().setTextColor(Color.blue);
         layer.addRenderable(annotation);

@@ -45,7 +45,7 @@ public class BundlesDataConvertor implements IDataConvertor {
 
         Utils.updateMinMaxWeights(connectionsPerIbis);
 
-        //System.out.println(ibisesPerSite.toString());
+//        System.out.println(ibisesPerSite.toString());
         //System.out.println(connectionsPerIbis.toString());
 
         // update the UI
@@ -62,28 +62,17 @@ public class BundlesDataConvertor implements IDataConvertor {
             boolean structureChanged, String spacer) {
         ArrayList<Location> dataChildren = root.getChildren();
         String locationName = Utils.extractLocationName(root.getName());
-       // System.out.println(root.getName());
 
         if ((dataChildren == null || dataChildren.size() == 0)
                 && !root.getName().equals("root")) {
-            // we can find Ibises only on the very last level :(
+            // we can find Ibises only on the very last level
             ArrayList<Ibis> dataIbises = root.getIbises();
 
             for (Ibis dataIbis : dataIbises) {
                 IbisImpl ibis = (IbisImpl) dataIbis;
                 String ibisName = Utils.extractIbisName(ibis.getName());
 
-                // String locationName = ibisName
-                // .substring(ibisName.indexOf("@") + 1);
-
                 ibisesPerSite.get(locationName).add(ibisName);
-
-                // if (structureChanged) {
-                // if (ibisesPerSite.get(locationName) == null) {
-                // ibisesPerSite.put(locationName, new HashSet<String>());
-                // }
-                // ibisesPerSite.get(locationName).add(ibisName);
-                // }
 
                 Link[] links = dataIbis.getLinks();
                 String startLocation = null, stopLocation = null;
@@ -131,7 +120,6 @@ public class BundlesDataConvertor implements IDataConvertor {
                                 (value1 + value2) / 2); // since we're
                                                         // displaying
                                                         // percentages ...
-                        // System.out.println(connectionsPerIbis.get(startLocation).get(stopLocation));
                     }
 
                 }
@@ -142,10 +130,6 @@ public class BundlesDataConvertor implements IDataConvertor {
             if (level == 0 && !root.getName().equals("root")) {
                 if (ibisesPerSite.get(locationName) == null) {
                     ibisesPerSite.put(locationName, new HashSet<String>());
-                } else {
-                    ibisesPerSite.get(locationName).clear();
-                    // this is necessary because changes in Ibises do not
-                    // trigger a change in the collector
                 }
             }
             updateLocations(loc, level - 1, structureChanged, spacer + "  ");

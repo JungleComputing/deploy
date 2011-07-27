@@ -6,13 +6,13 @@ import gov.nasa.worldwind.layers.MarkerLayer;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.markers.Marker;
 
-public class SynchronizedMarkerLayer extends MarkerLayer {
+public class ParticleLayer extends MarkerLayer {
 
-    public SynchronizedMarkerLayer() {
+    public ParticleLayer() {
         super();
     }
 
-    public SynchronizedMarkerLayer(Iterable<Marker> markers) {
+    public ParticleLayer(Iterable<Marker> markers) {
         super(markers);
     }
 
@@ -50,7 +50,7 @@ public class SynchronizedMarkerLayer extends MarkerLayer {
         getMarkers().clear();
     }
     
-    public synchronized void addAllMarkers(Vector<MovingMarker> markers){
+    public synchronized void addAllMarkers(Vector<MovingParticle> markers){
         getMarkers().addAll(markers);
     }
 }

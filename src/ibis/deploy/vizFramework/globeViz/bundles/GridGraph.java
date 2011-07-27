@@ -1,8 +1,9 @@
 package ibis.deploy.vizFramework.globeViz.bundles;
 
 import ibis.deploy.vizFramework.globeViz.data.GlobeEdge;
-import ibis.deploy.vizFramework.globeViz.viz.CircleAnnotation;
-import ibis.deploy.vizFramework.globeViz.viz.UnclippablePolyline;
+import ibis.deploy.vizFramework.globeViz.viz.BSpline3D;
+import ibis.deploy.vizFramework.globeViz.viz.PieChartAnnotation;
+import ibis.deploy.vizFramework.globeViz.viz.BSplinePolyline;
 import ibis.deploy.vizFramework.globeViz.viz.utils.UIConstants;
 
 import java.awt.Color;
@@ -11,9 +12,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
 import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.layers.RenderableLayer;
 
 public class GridGraph {
@@ -39,41 +40,41 @@ public class GridGraph {
         realNodes.clear();
     }
 
-    public UnclippablePolyline createArcBetween(ArrayList<Position> positions,
+    public BSplinePolyline createArcBetween(ArrayList<Position> positions,
             Color color, int lineWidth) {
-        UnclippablePolyline polyline = new UnclippablePolyline(positions);
+        BSplinePolyline polyline = new BSplinePolyline(positions);
         polyline.setColor(color);
         polyline.setLineWidth(lineWidth);
         polyline.setFollowTerrain(true);
         return polyline;
     }
 
-    public void generateGrid(RenderableLayer layer) {
+    public void generateGrid(RenderableLayer layer, Globe globe) {
         ArrayList<Position> poly = new ArrayList<Position>();
-        UnclippablePolyline polyline;
+        BSplinePolyline polyline;
 
         layer.removeAllRenderables();
 
         int i = 0;
 
         for (Node node : adjacencyLists.keySet()) {
-                poly.clear();
-                poly.add(getPositionFromNode(node));
-                for (Node neighbour : adjacencyLists.get(node).keySet()) {
-                    if (poly.size() == 1) {
-                        poly.add(1, getPositionFromNode(neighbour));
-                    } else {
-                        poly.set(1, getPositionFromNode(neighbour));
-                    }
-                    polyline = createArcBetween(poly, Color.blue, 2);
-                    layer.addRenderable(polyline);
+            poly.clear();
+            poly.add(getPositionFromNode(node));
+            for (Node neighbour : adjacencyLists.get(node).keySet()) {
+                if (poly.size() == 1) {
+                    poly.add(1, getPositionFromNode(neighbour));
+                } else {
+                    poly.set(1, getPositionFromNode(neighbour));
                 }
+                poly = BSpline3D.computePolyline(globe, poly);
+                polyline = createArcBetween(poly, Color.blue, 2);
+                layer.addRenderable(polyline);
+            }
         }
     }
 
     public void computePaths(ConcurrentHashMap<GlobeEdge, Double> globeEdges,
-            Set<CircleAnnotation> annotationList,
-            RenderableLayer layer) {
+            Set<PieChartAnnotation> annotationList, RenderableLayer layer, Globe globe) {
         Node start, stop;
         HashMap<Node, HashMap<Node, GlobeEdge>> adjReal = new HashMap<Node, HashMap<Node, GlobeEdge>>();
         HashMap<Node, GlobeEdge> temp;
@@ -98,20 +99,21 @@ public class GridGraph {
             Dijsktra(node);
             temp = adjReal.get(node);
             for (Node otherNode : temp.keySet()) {
-                result = getPathFrom(node, otherNode);
-                UnclippablePolyline polyline = createArcBetween(result,
+                result = getPathFrom(node, otherNode, 0.8);
+                result = BSpline3D.computePolyline(globe, result); // compute the b-spline
+                BSplinePolyline polyline = createArcBetween(result,
                         Color.red, 2);
                 layer.addRenderable(polyline);
             }
         }
     }
 
-    public void addRealNodes(Set<CircleAnnotation> annotationList) {
+    public void addRealNodes(Set<PieChartAnnotation> annotationList) {
         Node node;
         Position pos;
         double lat, lon, lat1, lat2, lon1, lon2;
         HashMap<Node, Double> tempAdj;
-        for (CircleAnnotation annotation : annotationList) {
+        for (PieChartAnnotation annotation : annotationList) {
             pos = annotation.getPosition();
             lat = pos.getLatitude().degrees;
             lon = pos.getLongitude().degrees;
@@ -191,19 +193,64 @@ public class GridGraph {
                 }
             }
         }
-        System.out.println(System.currentTimeMillis() - time);
+        //System.out.println(System.currentTimeMillis() - time);
     }
 
-    private ArrayList<Position> getPathFrom(Node start, Node stop) {
+    private ArrayList<Position> getPathFrom(Node start, Node stop,
+            double bundlingFactor) {
+
+        //System.out.println("----------------------------------->");
+        ArrayList<Node> tempResult = new ArrayList<Node>();
         ArrayList<Position> result = new ArrayList<Position>();
         Node current = stop;
         Position pos;
 
-        while (!current.equals(start)) {
-            result.add(getPositionFromNode(current));
+        // add stop point three times in order to force the spline to go through
+        // it
+        // tempResult.add(stop);
+        // tempResult.add(stop);
+
+        while (current != null && !current.equals(start)) {
+            tempResult.add(current);
             current = parent.get(current);
         }
-        result.add(realNodes.get(start)); // TODO - might have a problem here
+
+        // tempResult.add(start);
+        // tempResult.add(start);
+        tempResult.add(start);
+
+        double b = bundlingFactor, ib = 1 - bundlingFactor;
+        double ux, uy, dx, dy;
+        int N = tempResult.size(), i;
+        Node temp;
+
+        // //apply bundling factor
+        // if (b < 1) {
+        // Node o = stop;
+        // ux = o.lat;
+        // uy = o.lon;
+        //
+        // o = start;
+        // dx = o.lat;
+        // dy = o.lon;
+        //
+        // dx = (dx - ux) / (N + 2);
+        // dy = (dy - uy) / (N + 2);
+        //
+        // // adjust the control points, with the exception of the first
+        // // three and last three, which are just copies of the start and
+        // // stop nodes and shouldn't be moved
+        // for (i = 3; i < N - 3; i++) {
+        // temp = tempResult.get(i);
+        // temp.lat = b * temp.lat + ib * (ux + (i + 2) * dx);
+        // temp.lon = b * temp.lon + ib * (uy + (i + 2) * dy);
+        // tempResult.set(i, temp);
+        // }
+        // }
+
+        for (i = 0; i < tempResult.size(); i++) {
+            result.add(getPositionFromNode(tempResult.get(i)));
+        }
         return result;
     }
 
@@ -246,8 +293,8 @@ public class GridGraph {
                 }
             }
         }
-//        System.out.println("Time for Dijkstra: "
-//                + (System.currentTimeMillis() - time));
+        // System.out.println("Time for Dijkstra: "
+        // + (System.currentTimeMillis() - time));
     }
 }
 

@@ -7,17 +7,15 @@ import gov.nasa.worldwind.event.SelectListener;
 import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.geom.Position;
-import gov.nasa.worldwind.geom.Vec4;
-import gov.nasa.worldwind.globes.Globe;
-import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.AnnotationAttributes;
 import gov.nasa.worldwind.render.GlobeAnnotation;
+import gov.nasa.worldwind.render.Renderable;
 import ibis.deploy.gui.GUI;
 import ibis.deploy.vizFramework.IVisualization;
 import ibis.deploy.vizFramework.globeViz.bundles.GridGraph;
 import ibis.deploy.vizFramework.globeViz.data.GlobeDataConvertor;
-import ibis.deploy.vizFramework.globeViz.viz.markers.SynchronizedMarkerLayer;
+import ibis.deploy.vizFramework.globeViz.viz.markers.ParticleLayer;
 import ibis.deploy.vizFramework.globeViz.viz.utils.UIConstants;
 import ibis.deploy.vizFramework.globeViz.viz.utils.Utils;
 
@@ -35,11 +33,11 @@ public class GlobeVisualization extends JPanel implements IVisualization {
     private static WorldWindowGLCanvas worldWindCanvas;
 
     private GlobeAnnotation tooltipAnnotation;
-    private CircleAnnotation lastSelectedDot;
+    private PieChartAnnotation lastSelectedDot;
     private RenderableLayer annotationLayer;
     private RenderableLayer polylineLayer;
-    public RenderableLayer funkyLayer;
-    private SynchronizedMarkerLayer markerLayer;
+    public RenderableLayer mickeyMouseLayer;
+    private ParticleLayer markerLayer;
     private boolean followTerrain = false;
     private GlobeDataConvertor convertor;
     private GUI gui;
@@ -64,19 +62,19 @@ public class GlobeVisualization extends JPanel implements IVisualization {
         polylineLayer = new RenderableLayer();
         polylineLayer.setName("Edges");
         worldWindCanvas.getModel().getLayers().add(polylineLayer);
-        //polylineLayer.setEnabled(false);//TODO - remove this
-        
-        
-     // initialize the polylineLayer layer
-        funkyLayer = new RenderableLayer();
-        funkyLayer.setName("Testing layer");
-        worldWindCanvas.getModel().getLayers().add(funkyLayer);
+        // polylineLayer.setEnabled(false);//TODO - remove this
 
-        markerLayer = new SynchronizedMarkerLayer();
+        // initialize the polylineLayer layer
+        mickeyMouseLayer = new RenderableLayer();
+        mickeyMouseLayer.setName("Testing layer");
+        worldWindCanvas.getModel().getLayers().add(mickeyMouseLayer);
+        mickeyMouseLayer.setEnabled(false);
+
+        markerLayer = new ParticleLayer();
         markerLayer.setName("Markers");
         markerLayer.setKeepSeparated(false);
         worldWindCanvas.getModel().getLayers().add(markerLayer);
-        //markerLayer.setEnabled(false); // TODO remove this
+        // markerLayer.setEnabled(false); // TODO remove this
 
         // only used when we want fake-fake data :P
         // RandomDataGenerator.generateRandomDotsAndConnections(this);
@@ -95,12 +93,12 @@ public class GlobeVisualization extends JPanel implements IVisualization {
         });
 
         // //temporarily disable some layers for debugging - TODO - remove
-//        for (Layer layer : worldWindCanvas.getModel().getLayers()) {
-//            if (layer.getName().equals("NASA Blue Marble Image")
-//                    || layer.getName().equals("Blue Marble (WMS) 2004")) {
-//                layer.setEnabled(false);
-//            }
-//        }
+        // for (Layer layer : worldWindCanvas.getModel().getLayers()) {
+        // if (layer.getName().equals("NASA Blue Marble Image")
+        // || layer.getName().equals("Blue Marble (WMS) 2004")) {
+        // layer.setEnabled(false);
+        // }
+        // }
     }
 
     public RenderableLayer getAnnotationLayer() {
@@ -154,8 +152,8 @@ public class GlobeVisualization extends JPanel implements IVisualization {
             tooltipAnnotation.getAttributes().setVisible(false);
         }
 
-        if (o != null && o instanceof CircleAnnotation) {
-            lastSelectedDot = (CircleAnnotation) o;
+        if (o != null && o instanceof PieChartAnnotation) {
+            lastSelectedDot = (PieChartAnnotation) o;
             lastSelectedDot.getAttributes().setHighlighted(true);
             tooltipAnnotation.setText("<p>" + lastSelectedDot.getName()
                     + "</p>");
@@ -165,24 +163,25 @@ public class GlobeVisualization extends JPanel implements IVisualization {
         }
     }
 
-    public UnclippablePolyline createArcBetween(ArrayList<Position> positions,
+    public BSplinePolyline createArcBetween(ArrayList<Position> positions,
             Color color, int lineWidth) {
-        UnclippablePolyline polyline = new UnclippablePolyline(positions);
+        BSplinePolyline polyline = new BSplinePolyline(positions);
         polyline.setColor(color);
         polyline.setLineWidth(lineWidth);
         polyline.setFollowTerrain(true);
         return polyline;
     }
-    
+
     // computes a polyline between the two locations
-    public UnclippablePolyline createArcBetween(Position pos1, Position pos2,
+    public BSplinePolyline createArcBetween(Position pos1, Position pos2,
             Color color, int lineWidth, boolean applyOffset) {
-        UnclippablePolyline polyline;
+        BSplinePolyline polyline;
         ArrayList<Position> polylineList = new ArrayList<Position>();
 
         // add the control points to the list
         polylineList.addAll(doTheSplits(pos1, pos2,
-                UIConstants.NUMBER_OF_CONTROL_POINTS, !followTerrain, applyOffset));
+                UIConstants.NUMBER_OF_CONTROL_POINTS, !followTerrain,
+                applyOffset));
 
         // create the points of the BSpline using the control points.
         polylineList = BSpline3D.computePolyline(worldWindCanvas.getModel()
@@ -200,7 +199,7 @@ public class GlobeVisualization extends JPanel implements IVisualization {
                 polylineList.get(polylineList.size() - 1), tempPos, 2, true,
                 applyOffset));
 
-        polyline = new UnclippablePolyline(polylineList);
+        polyline = new BSplinePolyline(polylineList);
         polyline.setColor(color);
         polyline.setLineWidth(lineWidth);
         polyline.setFollowTerrain(followTerrain);
@@ -232,21 +231,7 @@ public class GlobeVisualization extends JPanel implements IVisualization {
             int depth, boolean adjustHeight, boolean applyOffset) {
 
         ArrayList<Position> l1, l2, list = new ArrayList<Position>();
-
-//        if (applyOffset) {
-//            Globe globe = worldWindCanvas.getModel().getGlobe();
-//            // Vec4 pos = Utils.fromPositionToScreen(pos1, globe,
-//            // worldWindCanvas.getView());
-//            // pos = new Vec4(pos.x + 1000, pos.y + 1000, pos.z);
-//            // pos1 = Utils.fromScreenToPosition(pos, globe,
-//            // worldWindCanvas.getView());
-//
-//            Vec4 pos = Utils.fromPositionTo3DCoords(pos2, globe);
-//            // System.out.println(worldWindCanvas.getView().getEyePosition().getElevation());
-//            pos = new Vec4(pos.x + 1000, pos.y + 1000, pos.z);
-//            pos2 = Utils.from3DCoordsToPosition(pos, globe);
-//        }
-
+        
         if (depth == 0) {
             list.add(pos1);
             list.add(pos2);
@@ -281,13 +266,17 @@ public class GlobeVisualization extends JPanel implements IVisualization {
                 lineWidth, false));
     }
 
-    public void drawArc(UnclippablePolyline line, Color color) {
+    public void drawArc(BSplinePolyline line, Color color) {
         line.setColor(color);
         polylineLayer.addRenderable(line);
     }
 
     public void clearPolylineLayer() {
         polylineLayer.removeAllRenderables();
+    }
+
+    public void removePolyline(Renderable polyline) {
+        polylineLayer.removeRenderable(polyline);
     }
 
     public void redraw() {
@@ -314,7 +303,7 @@ public class GlobeVisualization extends JPanel implements IVisualization {
         convertor.setGUI(gui);
     }
 
-    public SynchronizedMarkerLayer getMarkerLayer() {
+    public ParticleLayer getMarkerLayer() {
         return markerLayer;
     }
 

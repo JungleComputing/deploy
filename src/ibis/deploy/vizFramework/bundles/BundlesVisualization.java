@@ -29,7 +29,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import ibis.deploy.vizFramework.IVisualization;
-import ibis.deploy.vizFramework.bundles.data.BundlesDataConvertor;
 import ibis.deploy.vizFramework.bundles.data.GraphGenerator;
 import ibis.deploy.vizFramework.bundles.edgeBundles.BundledEdgeRenderer;
 import ibis.deploy.vizFramework.bundles.edgeBundles.BundlesPrefuseVisualization;
@@ -61,7 +60,6 @@ import prefuse.render.DefaultRendererFactory;
 import prefuse.render.EdgeRenderer;
 import prefuse.render.LabelRenderer;
 import prefuse.util.ColorLib;
-import prefuse.util.display.DebugStatsPainter;
 import prefuse.util.ui.JFastLabel;
 import prefuse.visual.NodeItem;
 import prefuse.visual.VisualItem;
@@ -91,12 +89,7 @@ public class BundlesVisualization extends JPanel implements IVisualization {
     private NodeLinkTreeLayout treeLayout;
     private RadialGraphDisplay radialGraphDisplay;
     private JPanel vizPanel;
-
-    // JMX variables
-    private RegistryServiceInterface regInterface;
-    private ManagementServiceInterface manInterface;
-
-    // private DataCollector dataCollector;
+    
     private GraphGenerator generator;
 
     public BundlesVisualization(GUI gui) {
@@ -111,21 +104,6 @@ public class BundlesVisualization extends JPanel implements IVisualization {
         // the panels are created and so is the Visualization object
         String label = "name";
         vizPanel.add(createVisualizationPanels(label), BorderLayout.CENTER);
-
-        // retrieve the JMX interfaces
-        try {
-            this.regInterface = gui.getDeploy().getServer()
-                    .getRegistryService();
-            this.manInterface = gui.getDeploy().getServer()
-                    .getManagementService();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // create the data collecting thread
-        // dataCollector = new DataCollector(manInterface, regInterface, this);
-        // dataCollector.start();
-        // dataCollector.setCollectingState(false);
 
         add(vizPanel, BorderLayout.CENTER);
     }
@@ -173,8 +151,7 @@ public class BundlesVisualization extends JPanel implements IVisualization {
                     synchronized (vis) { // make sure that this section is
                                          // synchnorized
                         if (lastSelectedLayout == radialTreeLayout) {
-                            vis.run(RADIAL_TREE_LAYOUT); // start up the tree
-                                                         // layout
+                            vis.run(RADIAL_TREE_LAYOUT); 
                         } else {
                             vis.run(TREE_LAYOUT);
                         }
@@ -185,15 +162,14 @@ public class BundlesVisualization extends JPanel implements IVisualization {
                         }
 
                         // pass the new spanning tree reference to the renderer
-                        // for
-                        // later use
+                        // for later use
                         if (edgeRenderer instanceof BundledEdgeRenderer) {
                             ((BundledEdgeRenderer) edgeRenderer)
                                     .setSpanningTree(tree);
                         }
                     }
                 }
-
+               
                 // compute alphas for the edges, according to their length
                 Utils.computeEdgeAlphas(vis, tree);
 
@@ -308,26 +284,6 @@ public class BundlesVisualization extends JPanel implements IVisualization {
         panel.add(buttonStop);
 
         verticalpaJPanel.add(panel);
-
-        // panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        // // button for managing simulation
-        // final JButton refreshDataButton = new JButton("Start monitoring");
-        // refreshDataButton.addActionListener(new ActionListener() {
-        //
-        // @Override
-        // public void actionPerformed(ActionEvent arg0) {
-        // // if (dataCollector.isCollecting()) {
-        // // dataCollector.setCollectingState(false);
-        // // refreshDataButton.setText("Start monitoring");
-        // // } else {
-        // // dataCollector.setCollectingState(true);
-        // // refreshDataButton.setText("Stop monitoring");
-        // // }
-        // }
-        // });
-        //
-        // panel.add(refreshDataButton);
-        // verticalpaJPanel.add(panel);
 
         // the left panel is initialized, so add it to the main panel
         topPanel.add(verticalpaJPanel);
@@ -515,7 +471,6 @@ public class BundlesVisualization extends JPanel implements IVisualization {
 
             edgeRenderer = new BundledEdgeRenderer(
                     UIConstants.BSPLINE_EDGE_TYPE);
-            // new EdgeRenderer(Constants.EDGE_TYPE_CURVE);
 
             DefaultRendererFactory rf = new DefaultRendererFactory(
                     m_nodeRenderer);
@@ -536,6 +491,7 @@ public class BundlesVisualization extends JPanel implements IVisualization {
 
             ColorAction edges = new ColorAction(UIConstants.EDGES,
                     VisualItem.STROKECOLOR, ColorLib.hex("00FF00"));
+
 
             // create an action list containing all color assignments
             ActionList initialColor = new ActionList();
@@ -572,9 +528,9 @@ public class BundlesVisualization extends JPanel implements IVisualization {
             computeVisualParameters(edgeRenderer, true);
             // color the graph and perform layout
             m_vis.run("initialColor");
-
-            //TODO - here we measure time it takes to draw
-            addPaintListener(new DebugStatsPainter());
+//
+//            //TODO - here we measure time it takes to draw
+//            addPaintListener(new DebugStatsPainter());
            
         }
 

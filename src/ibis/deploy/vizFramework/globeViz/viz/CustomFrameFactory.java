@@ -48,11 +48,15 @@ public class CustomFrameFactory extends FrameFactory {
         float cy = UIConstants.LOCATION_CIRCLE_SIZE / 2;
 
         float currentAngle = 0;
-        float step = 360 / clusterColors.size();
+        float step;
+        if (clusterColors.size() > 0) {
+            step = 360 / clusterColors.size();
+        } else {
+            step = 360;
+        }
 
-       
         gl.glTranslatef(cx, cy, 0);
-        
+
         float[] color = new float[4];
         float gap = (UIConstants.LOCATION_GAP * clusterColors.size());
         GLUquadric quad;
@@ -67,7 +71,7 @@ public class CustomFrameFactory extends FrameFactory {
             gl.glRotatef(-currentAngle, 0, 0, 1);
             gl.glTranslatef(0, gap, 0);
 
-            //draw pie chart slice
+            // draw pie chart slice
             quad = glu.gluNewQuadric();
             glu.gluPartialDisk(quad, 0, UIConstants.LOCATION_CIRCLE_SIZE, 32,
                     32, -step / 2, step);
@@ -77,8 +81,8 @@ public class CustomFrameFactory extends FrameFactory {
                 color[3] = 0.8f;
                 gl.glColor4fv(color, 0);
             }
-            
-            //draw pie chart contour
+
+            // draw pie chart contour
             quad = glu.gluNewQuadric();
             glu.gluQuadricDrawStyle(quad, GLU.GLU_SILHOUETTE);
             glu.gluPartialDisk(quad, 0, UIConstants.LOCATION_CIRCLE_SIZE, 32,

@@ -28,14 +28,15 @@ public class UIConstants {
             Color.YELLOW, Color.GREEN, Color.BLUE, Color.GRAY, Color.BLACK, };
     public static Color EDGE_WITH_PARTICLES_COLOR = Color.GRAY;
     public static int NPOSITIONS = 10;
-    public static int ARC_HEIGHT = 8000;
-    public static int ARC_SECOND_HEIGHT = 16000;
-    public static int NUMBER_OF_CONTROL_POINTS = 3;
+    public static int ARC_HEIGHT = 6000;
+    public static int ARC_SECOND_HEIGHT = 12000;
+    public static int NUMBER_OF_CONTROL_POINTS = 4;
     public static int LOCATION_CIRCLE_SIZE = 25;
     public static float LOCATION_GAP = 0.3f;
     public static double increment = 2 * Math.PI / 50;
     public static int FAKE_LEVELS = 2;
     public static int REAL_LEVELS = 1;
+    public static int REAL_LEVELS_GLOBE = 0;
     public static int MARKER_SIZE = 6;
     public static int EDGE_WITH_PARTICLE_SIZE = 1;
     public static int EDGE_WITHOUT_PARTICLE_SIZE = 2;
@@ -68,5 +69,5 @@ public class UIConstants {
     public static double minAlpha = 0.4;
     public static double maxAlpha = 0.9;
     public static int offset = 1000;
-    public static int GRID_CELL_SIZE = 10;
+    public static int GRID_CELL_SIZE = 5;
 }

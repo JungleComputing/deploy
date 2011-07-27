@@ -15,12 +15,12 @@ import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.Polyline;
 
-public class UnclippablePolyline extends Polyline {
+public class BSplinePolyline extends Polyline {
 
     private ArrayList<Position> knots = new ArrayList<Position>();
     private boolean knotsUninitialized = true;
 
-    public UnclippablePolyline() {
+    public BSplinePolyline() {
         super();
         knots = new ArrayList<Position>();
     }
@@ -29,11 +29,11 @@ public class UnclippablePolyline extends Polyline {
         return knots;
     }
 
-    public UnclippablePolyline(Iterable<? extends Position> positions) {
+    public BSplinePolyline(Iterable<? extends Position> positions) {
         super(positions);
     }
 
-    public UnclippablePolyline(Iterable<? extends LatLon> positions,
+    public BSplinePolyline(Iterable<? extends LatLon> positions,
             double elevation) {
         super(positions, elevation);
     }

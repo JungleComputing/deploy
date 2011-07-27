@@ -22,15 +22,17 @@ public class Utils {
 
     public static double MAX_EDGE_WEIGHT = 0;
     public static double MIN_EDGE_WEIGHT = 1;
-    
-    
-    // Bucharest, Barcelona, Tokyo, Los Angeles, Athens, Amsterdam,
-    // Delft, Leiden, Copenhagen, Moscow, Sydney
-    private static double[] latitudes = { 44.433, 41.38, 35.68, 34.05, 37.98,
-             52.35, 52, 52.15, 55.75, 55.66, -33.9};
-    private static double[] longitudes = { 26.1, 2.18, 139.75, -118.24, 23.73,
-            4.91, 4.36, 4.5, 37.61, 12.58, 151.2};
-    
+
+    // Bucharest, Barcelona, Amsterdam,
+    // Delft, Los Angeles, Copenhagen, Moscow, Sydney, Tokyo, Leiden, Athens,
+    // Cape Town, New Delhi
+    private static double[] latitudes = { 44.433, 41.38, 52.35, 52, 34.05,
+            55.75, 55.66, -33.9, 35.68, 52.15, 37.98, -33.91, 24.73 };
+    private static double[] longitudes = { 26.1, 2.18, 4.91, 4.36, -118.24,
+            37.61, 12.58, 151.2, 139.75, 4.5, 23.73, 18.42, 81.33 };
+
+    private static HashMap<String, LatLon> latLonsPerLocation = new HashMap<String, LatLon>();
+
     static Cluster[] clusters;
     static GUI gui;
 
@@ -43,15 +45,24 @@ public class Utils {
 
             if (point1 != null && point2 != null) {
 
-                if (view.getFrustumInModelCoordinates().contains(point1)
-                        && view.getFrustumInModelCoordinates().contains(point2)) {
-                    point1 = view.project(point1);
-                    point2 = view.project(point2);
+                // if (view.getFrustumInModelCoordinates().contains(point1)
+                // && view.getFrustumInModelCoordinates().contains(point2)) {
 
-                    if (point1 != null && point2 != null) {
-                        return point1.distanceTo3(point2);
-                    }
+                boolean p1Visible = view.getFrustumInModelCoordinates()
+                        .contains(point1);
+                boolean p2Visible = view.getFrustumInModelCoordinates()
+                        .contains(point2);
+
+                point1 = view.project(point1);
+                point2 = view.project(point2);
+
+                // compute distances only if the points are on the same side of
+                // the globe
+                if (point1 != null && point2 != null
+                        && !(p1Visible ^ p2Visible)) {
+                    return Math.abs(point1.distanceTo3(point2));
                 }
+                // }
             }
         }
 
@@ -79,6 +90,12 @@ public class Utils {
 
     public static Position from3DCoordsToPosition(Vec4 pos, Globe globe) {
         return globe.computePositionFromPoint(pos);
+    }
+
+    public static Position from3DCoordsToPosition(double x, double y, double z,
+            Globe globe) {
+        Vec4 vecpos = new Vec4(x, y, z);
+        return globe.computePositionFromPoint(vecpos);
     }
 
     public static Position fromScreenToPosition(double x, double y, double z,
@@ -118,49 +135,53 @@ public class Utils {
 
     @SuppressWarnings("unchecked")
     public static void computeEdgeAlphas(Visualization vis, Tree tree) {
-        Iterator<EdgeItem> edgeIter = vis.visibleItems("graph.edges");
-        BSplineEdgeItem edge;
-        int minlength = Integer.MAX_VALUE, maxlength = Integer.MIN_VALUE, tsize;
+        synchronized (vis) {
+            Iterator<EdgeItem> edgeIter = vis.visibleItems("graph.edges");
+            BSplineEdgeItem edge;
+            int minlength = Integer.MAX_VALUE, maxlength = Integer.MIN_VALUE, tsize;
 
-        // force control point recalculation
-        forceEdgeUpdate(vis);
+            // force control point recalculation
+            forceEdgeUpdate(vis);
 
-        while (edgeIter.hasNext()) {
-            try {
-                edge = (BSplineEdgeItem) edgeIter.next();
-                edge.computeControlPoints(false, 1, edge, tree);
-                tsize = edge.getControlPoints().size();
-                if (tsize > maxlength) {
-                    maxlength = tsize;
+            while (edgeIter.hasNext()) {
+                try {
+                    edge = (BSplineEdgeItem) edgeIter.next();
+                    edge.computeControlPoints(false, 1, edge, tree);
+                    tsize = edge.getControlPoints().size();
+                    if (tsize > maxlength) {
+                        maxlength = tsize;
+                    }
+                    if (tsize < minlength) {
+                        minlength = tsize;
+                    }
+                } catch (IllegalArgumentException exc) {
+                    System.err.println(exc.getMessage());
+                    // Prefuse sometimes throws this exception if the node /
+                    // edge
+                    // has been recently removed. I think it's due to
+                    // synchronization issues, plus instead of returning false,
+                    // Prefuse just throws an exception
                 }
-                if (tsize < minlength) {
-                    minlength = tsize;
-                }
-            } catch (IllegalArgumentException exc) {
-                System.err.println(exc.getMessage());
-                // Prefuse sometimes throws this exception if the node / edge
-                // has been recently removed. I think it's due to
-                // synchronization issues, plus instead of returning false,
-                // Prefuse just throws an exception
-            }
-        }
-
-        Graph graph = (Graph) vis.getGroup(UIConstants.GRAPH);
-        edgeIter = graph.edges();
-
-        while (edgeIter.hasNext()) {
-            try {
-                edge = (BSplineEdgeItem) edgeIter.next();
-                if (edge.getControlPoints() != null) {
-                    edge.setAlpha(fromIntervalToInterval(edge
-                            .getControlPoints().size(), minlength, maxlength,
-                            UIConstants.minAlpha, UIConstants.maxAlpha));
-                }
-            } catch (IllegalArgumentException exc) {
-                // same story here
-                System.err.println(exc.getMessage());
             }
 
+            Graph graph = (Graph) vis.getGroup(UIConstants.GRAPH);
+            edgeIter = graph.edges();
+
+            while (edgeIter.hasNext()) {
+                try {
+                    edge = (BSplineEdgeItem) edgeIter.next();
+                    if (edge.getControlPoints() != null) {
+                        edge.setAlpha(fromIntervalToInterval(edge
+                                .getControlPoints().size(), minlength,
+                                maxlength, UIConstants.minAlpha,
+                                UIConstants.maxAlpha));
+                    }
+                } catch (IllegalArgumentException exc) {
+                    // same story here
+                    System.err.println(exc.getMessage());
+                }
+
+            }
         }
     }
 
@@ -228,7 +249,7 @@ public class Utils {
 
         return UIConstants.colors[UIConstants.colorIndex++];
     }
-    
+
     public static String extractLocationName(String name) {
         int index = name.lastIndexOf("@");
 
@@ -253,25 +274,28 @@ public class Utils {
         } else {
             index = ibisName.indexOf("@");
             if (index > 0) {
-                return ibisName.substring(0, index) + "@" +locationName;
+                return ibisName.substring(0, index) + "@" + locationName;
             }
         }
         return ibisName;
     }
 
-    public static void resetIndex(){
+    public static void resetIndex() {
         currentIdx = 0;
     }
-    
-    public static LatLon generateLatLon(boolean useFakeData, String name){
+
+    public static LatLon generateLatLon(boolean useFakeData, String name) {
         double lat, lon;
+        if (latLonsPerLocation.containsKey(name)) {
+            return latLonsPerLocation.get(name);
+        }
         if (useFakeData && Utils.currentIdx < longitudes.length) {
-            System.out.println("current: " + currentIdx);
             lat = latitudes[currentIdx];
             lon = longitudes[currentIdx++];
         } else {
             Cluster c = getClusterByName(name);
             if (c != null) {
+
                 lat = c.getLatitude();
                 lon = c.getLongitude();
             } else {
@@ -279,11 +303,11 @@ public class Utils {
                 lon = (Math.random() * 1000) % 360 - 180;
             }
         }
-       return LatLon.fromDegrees(lat, lon);
+        latLonsPerLocation.put(name, LatLon.fromDegrees(lat, lon));
+        return latLonsPerLocation.get(name);
     }
 
-    public static double generateLatitude(boolean useClusterData,
-            String name) {
+    public static double generateLatitude(boolean useClusterData, String name) {
         System.out.println("sadaaas");
         if (useClusterData && Utils.currentIdx < latitudes.length) {
             System.out.println("here");
@@ -296,10 +320,8 @@ public class Utils {
         }
         return (Math.random() * 1000) % 180 - 90;
     }
-    
-    
-    public static double generateLongitude(boolean useClusterData,
-            String name) {
+
+    public static double generateLongitude(boolean useClusterData, String name) {
         if (useClusterData && Utils.currentIdx < longitudes.length) {
             return longitudes[Utils.currentIdx++];
         } else {
@@ -311,7 +333,6 @@ public class Utils {
         return (Math.random() * 1000) % 360 - 180;
     }
 
-
     static int currentIdx;
 
     static Cluster getClusterByName(String name) {
@@ -322,7 +343,7 @@ public class Utils {
                 }
             }
         }
-    
+
         return null;
     }
 

@@ -17,6 +17,7 @@ import java.awt.Color;
 import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -25,25 +26,26 @@ import java.util.StringTokenizer;
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 
-public class CircleAnnotation extends GlobeAnnotation {
+public class PieChartAnnotation extends GlobeAnnotation {
     private String locationName;
 
     private Set<String> clusters;
 
     private ArrayList<Color> clusterColors;
 
-    private HashMap<CircleAnnotation, Double> connections;
+    private HashMap<PieChartAnnotation, Double> connections;
 
-    public CircleAnnotation(Position position, AnnotationAttributes defaults,
+    public PieChartAnnotation(Position position, AnnotationAttributes defaults,
             String name) {
-        super(name, position, defaults);
+        super(name, position == null ? Position.ZERO : position, defaults);
+        //System.out.println("-- " + name + " " + position.toString());
         locationName = name;
         clusters = new HashSet<String>();
         clusters.add(name);
 
         clusterColors = new ArrayList<Color>();
         clusterColors.add(Colors.fromLocation(name));
-        connections = new HashMap<CircleAnnotation, Double>();
+        connections = new HashMap<PieChartAnnotation, Double>();
     }
 
     // public CircleAnnotation(ArrayList<CircleAnnotation> clusterAnnotations,
@@ -75,73 +77,83 @@ public class CircleAnnotation extends GlobeAnnotation {
     // }
     // }
 
-    public CircleAnnotation(ArrayList<String> clusterNames,
-            ArrayList<Position> positions, AnnotationAttributes defaults, WorldWindowGLCanvas canvas) {
+    public PieChartAnnotation(ArrayList<String> clusterNames,
+            ArrayList<Position> positions, AnnotationAttributes defaults,
+            WorldWindowGLCanvas canvas) {
         super(clusterNames.toString(), Position.ZERO, defaults);
-
         // there might be compound names, so split them before using them
-        HashSet<String> finalClusterNames = new HashSet<String>();
-        for (String name : clusterNames) {
-            StringTokenizer st = new StringTokenizer(name, "[] ,");
-            while (st.hasMoreElements()) {
-                finalClusterNames.add(st.nextToken());
-            }
-        }
-
-        locationName = finalClusterNames.toString();
+//        HashSet<String> finalClusterNames = new HashSet<String>();
+//        for (String name : clusterNames) {
+//            StringTokenizer st = new StringTokenizer(name, "[] ,");
+//            while (st.hasMoreElements()) {
+//                finalClusterNames.add(st.nextToken());
+//            }
+//        }
+        
+        Collections.sort(clusterNames);
+        locationName = clusterNames.toString();
         clusters = new HashSet<String>();
         clusterColors = new ArrayList<Color>();
-        connections = new HashMap<CircleAnnotation, Double>();
+        connections = new HashMap<PieChartAnnotation, Double>();
+        
+        if (clusterNames != null && clusterNames.size() > 0) {
 
-        if (finalClusterNames != null && finalClusterNames.size() > 0) {
-
-            clusters.addAll(finalClusterNames);
+            clusters.addAll(clusterNames);
 
             if (positions.size() == 1) {
                 setPosition(positions.get(0));
             } else {
-//                Position intermediate = Position.interpolateGreatCircle(0.5,
-//                        positions.get(0), positions.get(1));
-//
-//                for (int i = 1; i < positions.size(); i++) {
-//                    intermediate = Position.interpolateGreatCircle(0.5, intermediate,
-//                            positions.get(i));
-//                }
+                // Position intermediate = Position.interpolateGreatCircle(0.5,
+                // positions.get(0), positions.get(1));
+                //
+                // for (int i = 1; i < positions.size(); i++) {
+                // intermediate = Position.interpolateGreatCircle(0.5,
+                // intermediate,
+                // positions.get(i));
+                // }
 
-//                setPosition(intermediate);
-                
-                //find the mid-point of the Position list by computing an average of the screen positions
-                
+                // setPosition(intermediate);
+
+                // find the mid-point of the Position list by computing an
+                // average of the screen positions
+
                 ArrayList<Vec4> points = new ArrayList<Vec4>();
-                for(Position pos:positions){
-                    points.add(Utils.fromPositionToScreen(pos, canvas.getModel().getGlobe(), canvas.getView()));
+                for (Position pos : positions) {
+                    if (pos != null) {
+                        points.add(Utils.fromPositionTo3DCoords(pos, canvas
+                                .getModel().getGlobe()));
+                    }
                 }
-                
+
                 double x = 0, y = 0, z = 0;
-                for(Vec4 point: points){
-                    x+= point.getX();
-                    y+= point.getY();
-                    z+= point.getZ();
+                for (Vec4 point : points) {
+                    x += point.getX();
+                    y += point.getY();
+                    z += point.getZ();
                 }
-                
-                x/= points.size();
-                y/= points.size();
-                z/= points.size();
-                
-                setPosition(Utils.fromScreenToPosition(x, y,z, canvas.getModel().getGlobe(), canvas.getView()));
+
+                x /= points.size();
+                y /= points.size();
+                z /= points.size();
+
+                setPosition(Utils.from3DCoordsToPosition(x, y, z, canvas
+                        .getModel().getGlobe()));
+                setPosition(new Position(getPosition().latitude, getPosition().longitude, 0));
             }
-            
-            for (String cluster : finalClusterNames) {
+
+            for (String cluster : clusterNames) {
                 clusterColors.add(Colors.fromLocation(cluster));
             }
         }
+        
+        //System.out.println("**" + locationName + " " + position.toString());
     }
 
     public boolean containsCluster(String clusterName) {
         return clusters.contains(clusterName);
     }
 
-    public void addConnection(CircleAnnotation destination, double value) {
+    public void addConnection(PieChartAnnotation destination, double value) {
         if (connections.containsKey(destination)) {
             connections.put(destination, connections.get(destination) + value);
         } else {
@@ -254,7 +266,7 @@ public class CircleAnnotation extends GlobeAnnotation {
         // FrameFactory.drawBuffer(dc, GL.GL_TRIANGLE_FAN, this.shapeBuffer);
     }
 
-    public double computeDistance(CircleAnnotation wp,
+    public double computeDistance(PieChartAnnotation wp,
             WorldWindowGLCanvas canvas) {
 
         Globe globe = canvas.getModel().getGlobe();
@@ -263,7 +275,7 @@ public class CircleAnnotation extends GlobeAnnotation {
         return computeDistanceTo(wp, globe, view);
     }
 
-    public double computeDistanceTo(CircleAnnotation wp, Globe globe, View view) {
+    public double computeDistanceTo(PieChartAnnotation wp, Globe globe, View view) {
         Position p1 = this.getPosition();
         Position p2 = wp.getPosition();
 

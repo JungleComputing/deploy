@@ -37,7 +37,7 @@ public class CollectorImpl implements Collector, Runnable {
             .getLogger("ibis.deploy.monitoring.collection.impl.Collector");
     private static final ibis.ipl.Location universe = new ibis.ipl.impl.Location(
             new String[0]);
-    private static final int workercount = 8;
+    private static final int workercount = 1;
 
     private static CollectorImpl ref = null;
 
@@ -251,7 +251,6 @@ public class CollectorImpl implements Collector, Runnable {
             IbisIdentifier[] poolIbises;
             try {
                 poolIbises = regInterface.getMembers(poolName);
-
                 // for all ibises
                 for (IbisIdentifier ibisid : poolIbises) {
                     // Get the lowest location
@@ -262,7 +261,8 @@ public class CollectorImpl implements Collector, Runnable {
                     if (locations.containsKey(locationName)) {
                         current = locations.get(locationName);
                     } else {
-                        temp = Utils.generateLatLon(locationName.startsWith("cluster"), locationName);
+                        temp = //Utils.generateLatLon(!locationName.contains("@"), locationName);
+                            Utils.generateLatLon(locationName.startsWith("cluster"), locationName);
                         current = new LocationImpl(locationName, color,
                                 temp.getLatitude().degrees,
                                 temp.getLongitude().degrees);
@@ -288,7 +288,8 @@ public class CollectorImpl implements Collector, Runnable {
                         if (locations.containsKey(name)) {
                             parent = locations.get(name);
                         } else {
-                            temp = Utils.generateLatLon(name.startsWith("cluster"), name); // TODO better Location assign
+                            temp =  //Utils.generateLatLon(!name.contains("@"), name);
+                               Utils.generateLatLon(name.startsWith("cluster"), name); // TODO better Location assign
                             parent = new LocationImpl(name, color,
                                     temp.getLatitude().degrees,
                                     temp.getLongitude().degrees);
@@ -450,6 +451,7 @@ public class CollectorImpl implements Collector, Runnable {
                 jobQueue.clear();
                 for (Worker w : workers) {
                     w.interrupt();
+//                    w.setNumIbises(ibises.values().size());
                 }
             }
 

@@ -36,7 +36,7 @@ public class Colors {
         if (location == null) {
             return null;
         }
-
+        
         String result = colorMap.get(location);
 
         if (result == null) {

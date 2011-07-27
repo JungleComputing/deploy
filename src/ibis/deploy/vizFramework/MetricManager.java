@@ -31,10 +31,25 @@ public class MetricManager {
         // create the globe data convertor and add it to the array
         for (IVisualization vis : visualizations) {
             if (vis instanceof GlobeVisualization) {
-                dataConvertors.add(new GlobeDataConvertor((GlobeVisualization)vis, collector
-                        .getRoot())); //TODO -- make sure I get the root again, otherwise I won't have all updates
+                dataConvertors.add(new GlobeDataConvertor(
+                        (GlobeVisualization) vis, collector.getRoot())); // TODO
+                                                                         // --
+                                                                         // make
+                                                                         // sure
+                                                                         // I
+                                                                         // get
+                                                                         // the
+                                                                         // root
+                                                                         // again,
+                                                                         // otherwise
+                                                                         // I
+                                                                         // won't
+                                                                         // have
+                                                                         // all
+                                                                         // updates
             } else if (vis instanceof BundlesVisualization) {
-                dataConvertors.add(new BundlesDataConvertor((BundlesVisualization)vis));
+                dataConvertors.add(new BundlesDataConvertor(
+                        (BundlesVisualization) vis));
             }
         }
 
@@ -54,6 +69,10 @@ public class MetricManager {
 
     public void update() {
         Location root = collector.getRoot();
+//        if (collector.change()) {
+//            System.out.println("----------------------------------------");
+//            printLocations(root, "");
+//        }
         for (IDataConvertor convertor : dataConvertors) {
             convertor.updateData(root, collector.change(), false);
         }

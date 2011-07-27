@@ -7,9 +7,9 @@ import java.util.Vector;
 import com.sun.org.apache.bcel.internal.generic.NEW;
 
 import ibis.deploy.vizFramework.globeViz.viz.GlobeVisualization;
-import ibis.deploy.vizFramework.globeViz.viz.UnclippablePolyline;
-import ibis.deploy.vizFramework.globeViz.viz.markers.MarkerPool;
-import ibis.deploy.vizFramework.globeViz.viz.markers.MovingMarker;
+import ibis.deploy.vizFramework.globeViz.viz.BSplinePolyline;
+import ibis.deploy.vizFramework.globeViz.viz.markers.ParticlePool;
+import ibis.deploy.vizFramework.globeViz.viz.markers.MovingParticle;
 import ibis.deploy.vizFramework.globeViz.viz.utils.UIConstants;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Vec4;
@@ -21,11 +21,11 @@ import gov.nasa.worldwind.render.markers.Marker;
 public class GlobeEdge {
 
     private final Position pos1, pos2;
-    private UnclippablePolyline polyline;
+    private BSplinePolyline polyline;
     private final String name;
     private Color edgeColor = Color.green;
     private Color particleColor = Color.green;
-    private MarkerPool markerPool;
+    private ParticlePool markerPool;
     private boolean isSecondEdge;
     private boolean lastStateFollowGrid = false;
     ArrayList<Position> positions; //TODO - maybe remove this
@@ -42,9 +42,18 @@ public class GlobeEdge {
         }
         this.name = name;
         this.isSecondEdge = isSecondEdge;
-        markerPool = new MarkerPool();
+        markerPool = new ParticlePool();
     }
 
+    public void removeAssociatedPolylineFromDisplay(GlobeVisualization viz){
+        viz.removePolyline(polyline);
+        for(MovingParticle particle: markerPool.getActiveMarkers()){
+            viz.getMarkerLayer().removeMarker(particle);
+        }
+        
+        markerPool.returnAllMarkersToPool();
+    }
+    
     // the polyline is calculated only once. If the polyline is already
     // calculated, only the color is changed.
     public void updateAssociatedPolyline(GlobeVisualization globe, Color color,
@@ -54,7 +63,6 @@ public class GlobeEdge {
         if (!showParticles) {
             edgeColor = color;
             size = UIConstants.EDGE_WITHOUT_PARTICLE_SIZE; 
-            // TODO - there's something fishy about this size, it doesn't always update
         } else {
             edgeColor = UIConstants.EDGE_WITH_PARTICLES_COLOR;
             size = UIConstants.EDGE_WITH_PARTICLE_SIZE;
@@ -72,6 +80,7 @@ public class GlobeEdge {
             }
         } else {
             polyline.setColor(edgeColor);
+            polyline.setLineWidth(size);
         }
     }
 
@@ -109,8 +118,9 @@ public class GlobeEdge {
         // matter what the edge direction is. TODO - if at some point edge
         // direction matters, change this
         int hash1 = (41 * (41 + pos1.hashCode()) + pos2.hashCode());
-        // int hash2 = (41 * (41 + pos2.hashCode()) + pos1.hashCode());
-        return hash1; // Math.max(hash1, hash2);
+         //int hash2 = (41 * (41 + pos2.hashCode()) + pos1.hashCode());
+        return hash1; 
+        //Math.max(hash1, hash2);
     }
 
     public Position getFirstPosition() {
@@ -136,7 +146,7 @@ public class GlobeEdge {
         return name;
     }
 
-    public UnclippablePolyline getPolyline() {
+    public BSplinePolyline getPolyline() {
         return polyline;
     }
 
@@ -145,7 +155,7 @@ public class GlobeEdge {
     }
 
     public Marker addMarkerToEdge() {
-        MovingMarker marker = null;
+        MovingParticle marker = null;
         if (((ArrayList<Position>) polyline.getPositions()).size() > 0) {
             marker = markerPool.getMarker(
                     ((ArrayList<Position>) polyline.getPositions()).get(0),
@@ -156,18 +166,18 @@ public class GlobeEdge {
 
     public Marker addMarkerToEdge(Position position) {
 
-        MovingMarker marker = null;
+        MovingParticle marker = null;
         marker = markerPool.getMarker(position, particleColor);
         return marker;
     }
 
-    public Vector<MovingMarker> getMarkers() {
+    public Vector<MovingParticle> getMarkers() {
         return markerPool.getActiveMarkers();
     }
 
     public void moveMarkers(GlobeVisualization globeViz) {
 
-        MovingMarker marker;
+        MovingParticle marker;
         int idx;
 
         // if (edgeColor != null) {

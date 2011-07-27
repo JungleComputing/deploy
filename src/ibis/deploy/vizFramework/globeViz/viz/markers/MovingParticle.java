@@ -4,12 +4,12 @@ import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.render.markers.BasicMarker;
 import gov.nasa.worldwind.render.markers.BasicMarkerAttributes;
 
-public class MovingMarker extends BasicMarker {
+public class MovingParticle extends BasicMarker {
     
     private int currentIndex;
     //private int maxIndex;
     
-    public MovingMarker(Position pos, BasicMarkerAttributes attrs){
+    public MovingParticle(Position pos, BasicMarkerAttributes attrs){
         super(pos, attrs);
         currentIndex = 0;
         //this.maxIndex = maxIndex;
