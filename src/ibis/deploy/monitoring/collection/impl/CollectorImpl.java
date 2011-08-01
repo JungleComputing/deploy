@@ -5,7 +5,13 @@ import ibis.ipl.IbisIdentifier;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
 import ibis.deploy.vizFramework.globeViz.viz.utils.Utils;
+import ibis.deploy.vizFramework.persistence.PersistenceManagementService;
+import ibis.deploy.vizFramework.persistence.PersistenceRegistryService;
+import ibis.deploy.vizFramework.persistence.XMLExporter;
+import ibis.deploy.vizFramework.persistence.XMLImporter;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,8 +26,10 @@ import ibis.deploy.monitoring.collection.Element;
 import ibis.deploy.monitoring.collection.Ibis;
 import ibis.deploy.monitoring.collection.Link;
 import ibis.deploy.monitoring.collection.Location;
+import ibis.deploy.monitoring.collection.Metric;
 import ibis.deploy.monitoring.collection.MetricDescription;
 import ibis.deploy.monitoring.collection.Pool;
+import ibis.deploy.monitoring.collection.MetricDescription.MetricOutput;
 import ibis.deploy.monitoring.collection.exceptions.SelfLinkeageException;
 import ibis.deploy.monitoring.collection.exceptions.SingletonObjectNotInstantiatedException;
 import ibis.deploy.monitoring.collection.metrics.*;
@@ -44,8 +52,13 @@ public class CollectorImpl implements Collector, Runnable {
     private static GUI gui = null;
 
     // Interfaces to the IPL
-    private ManagementServiceInterface manInterface;
-    private RegistryServiceInterface regInterface;
+    private ManagementServiceInterface manInterface, realManInterface;
+    private RegistryServiceInterface regInterface, realRegInterface;
+
+    // interfaces to the persistence module
+    private RegistryServiceInterface persistenceRegInterface = new PersistenceRegistryService();
+    private ManagementServiceInterface persistenceManInterface = new PersistenceManagementService(
+            regInterface);
 
     // Map to hold the status quo
     private Map<String, Integer> poolSizes;
@@ -70,10 +83,13 @@ public class CollectorImpl implements Collector, Runnable {
     private HashSet<MetricDescription> descriptions;
     private boolean change = false;
 
+    private XMLExporter xmlConvertor = XMLExporter.getInstance();
+    private boolean writingToFile = false;
+
     private CollectorImpl(ManagementServiceInterface manInterface,
             RegistryServiceInterface regInterface) {
-        this.manInterface = manInterface;
-        this.regInterface = regInterface;
+        this.manInterface = realManInterface = manInterface;
+        this.regInterface = realRegInterface = regInterface;
 
         // Initialize all of the lists and hashmaps needed
         poolSizes = new HashMap<String, Integer>();
@@ -91,8 +107,7 @@ public class CollectorImpl implements Collector, Runnable {
 
         if (locations.get("root") == null) {
             LatLon temp = Utils.generateLatLon(false, null);
-            root = new LocationImpl("root", color,
-                    temp.getLatitude().degrees,
+            root = new LocationImpl("root", color, temp.getLatitude().degrees,
                     temp.getLongitude().degrees);
 
             locations.put("root", root);
@@ -158,6 +173,7 @@ public class CollectorImpl implements Collector, Runnable {
     }
 
     public void initUniverse() {
+
         // Check if there was a change in the pool sizes
         boolean change = initPools();
 
@@ -187,9 +203,21 @@ public class CollectorImpl implements Collector, Runnable {
 
         try {
             newSizes = regInterface.getPoolSizes();
+            // if (writingToFile) {
+            // xmlConvertor.poolsToXML(newSizes);
+            // }
         } catch (Exception e) {
             if (logger.isErrorEnabled()) {
                 logger.error("Could not get pool sizes from registry.");
+            }
+        }
+        
+        //check if there were pools that disappeared
+        for(Map.Entry<String, Integer> entry: poolSizes.entrySet()){
+            String oldPoolName = entry.getKey();
+            if(! newSizes.containsKey(oldPoolName)){
+                change = true;
+                break;
             }
         }
 
@@ -200,14 +228,16 @@ public class CollectorImpl implements Collector, Runnable {
 
             if (!poolSizes.containsKey(poolName)
                     || newSize != poolSizes.get(poolName)) {
-                pools.clear();
-                change = true;
-
-                poolSizes = newSizes;
+                change = true; 
+                break;
             }
         }
 
         if (change) {
+            pools.clear();
+            poolSizes.clear();
+            poolSizes.putAll(newSizes); // copy instead of assign --> if the newSizes map is reused, things go wrong
+            
             // reinitialize the pools list
             for (Map.Entry<String, Integer> entry : newSizes.entrySet()) {
                 String poolName = entry.getKey();
@@ -230,11 +260,10 @@ public class CollectorImpl implements Collector, Runnable {
         Float[] color = { 0f, 0f, 0f };
 
         LatLon temp;
-        Utils.resetIndex(); //to reuse the same random locations
+        Utils.resetIndex(); // to reuse the same random locations
         if (locations.get("root") == null) {
             temp = Utils.generateLatLon(false, null);
-            root = new LocationImpl("root", color,
-                    temp.getLatitude().degrees,
+            root = new LocationImpl("root", color, temp.getLatitude().degrees,
                     temp.getLongitude().degrees);
             locations.put("root", root);
         } else {
@@ -242,6 +271,7 @@ public class CollectorImpl implements Collector, Runnable {
         }
 
         parents.put(root, null);
+        xmlConvertor.clearBuffer();
 
         // For all pools
         for (Entry<String, Pool> entry : pools.entrySet()) {
@@ -251,18 +281,28 @@ public class CollectorImpl implements Collector, Runnable {
             IbisIdentifier[] poolIbises;
             try {
                 poolIbises = regInterface.getMembers(poolName);
+
+                if (writingToFile) {
+                    xmlConvertor.poolToXML(poolName, poolIbises);
+                } else {
+                    xmlConvertor.cachePoolContents(poolName, poolIbises);
+                }
+
                 // for all ibises
                 for (IbisIdentifier ibisid : poolIbises) {
                     // Get the lowest location
                     ibis.ipl.Location ibisLocation = ibisid.location(); // .getParent();
                     String locationName = ibisLocation.toString();
-                    
+
                     Location current;
                     if (locations.containsKey(locationName)) {
                         current = locations.get(locationName);
                     } else {
-                        temp = //Utils.generateLatLon(!locationName.contains("@"), locationName);
-                            Utils.generateLatLon(locationName.startsWith("cluster"), locationName);
+                        temp = // Utils.generateLatLon(!locationName.contains("@"),
+                               // locationName);
+                        Utils.generateLatLon(
+                                locationName.startsWith("cluster"),
+                                locationName);
                         current = new LocationImpl(locationName, color,
                                 temp.getLatitude().degrees,
                                 temp.getLongitude().degrees);
@@ -288,8 +328,10 @@ public class CollectorImpl implements Collector, Runnable {
                         if (locations.containsKey(name)) {
                             parent = locations.get(name);
                         } else {
-                            temp =  //Utils.generateLatLon(!name.contains("@"), name);
-                               Utils.generateLatLon(name.startsWith("cluster"), name); // TODO better Location assign
+                            temp = // Utils.generateLatLon(!name.contains("@"),
+                                   // name);
+                            Utils.generateLatLon(name.startsWith("cluster"),
+                                    name); // TODO better Location assign
                             parent = new LocationImpl(name, color,
                                     temp.getLatitude().degrees,
                                     temp.getLongitude().degrees);
@@ -423,7 +465,17 @@ public class CollectorImpl implements Collector, Runnable {
     }
 
     public Ibis getIbis(IbisIdentifier ibisid) {
-        return ibises.get(ibisid);
+        // a bit more inefficient, but sometimes we have different
+        // FakeIbisIdentifier instances for the same ibis ...
+        for (IbisIdentifier ibis : ibises.keySet()) {
+            if (ibis.name().equals(ibisid.name())
+                    && ibis.location().equals(ibisid.location())) {
+                return ibises.get(ibis);
+            }
+        }
+        return null;
+
+        // return ibises.get(ibisid);
     }
 
     public Element getParent(Element child) {
@@ -451,12 +503,15 @@ public class CollectorImpl implements Collector, Runnable {
                 jobQueue.clear();
                 for (Worker w : workers) {
                     w.interrupt();
-//                    w.setNumIbises(ibises.values().size());
+                    // w.setNumIbises(ibises.values().size());
                 }
             }
 
             // Add stuff to the queue and notify
             synchronized (jobQueue) {
+                if (writingToFile) {
+                    xmlConvertor.startUpdate();
+                }
                 initUniverse();
                 setlinksNotUpdated();
 
@@ -490,7 +545,40 @@ public class CollectorImpl implements Collector, Runnable {
                             + " / " + ibises.size());
                     logger.debug("Consider increasing the refresh time.");
                 }
+
+                // TODO - see if this is the right place to do this
+                if (writingToFile) {
+                    for (Ibis ibis : ibises.values()) {
+                        IbisImpl source = (IbisImpl) ibis;
+                        Metric[] linkMetrics = source.getLinkMetrics();
+                        for (int i = 0; i < linkMetrics.length; i++) {
+                            MetricImpl metric = (MetricImpl) linkMetrics[i];
+                            HashMap<Element, Number> values = (HashMap<Element, Number>) metric.linkValues
+                                    .get(MetricOutput.PERCENT);
+
+                            if (values != null) {
+                                for (Element elem : values.keySet()) {
+                                    IbisImpl dest = (IbisImpl) elem;
+
+                                    // if (source != null && dest != null) {
+                                    // System.out.println(source.getName()
+                                    // + " --> " + dest.getName() + "  "
+                                    // + values.get(elem));
+                                    // }
+
+                                    xmlConvertor.metricToXML(dest.getPool()
+                                            .getName(), source.getName(), dest
+                                            .getName(), values.get(elem)
+                                            .floatValue());
+                                }
+                            }
+                        }
+                    }
+
+                    xmlConvertor.endUpdate();
+                }
             }
+
             iterations++;
         }
     }
@@ -498,5 +586,45 @@ public class CollectorImpl implements Collector, Runnable {
     @Override
     public int getRefreshRate() {
         return refreshrate;
+    }
+
+    public void toXML() {
+        try {
+            BufferedWriter writer = new BufferedWriter(
+                    new FileWriter("out.xml"));
+            writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
+            writer.write("<graph>\n");
+            writer.write(((LocationImpl) root).toXML());
+            writer.write("</graph>\n");
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void startWritingToFile() {
+        xmlConvertor.openFile("out.xml");
+    }
+
+    public void stopWritingToFile() {
+        xmlConvertor.closeFile();
+    }
+
+    public boolean isWritingToFile() {
+        return writingToFile;
+    }
+
+    public void setWritingToFile(boolean state) {
+        writingToFile = state;
+    }
+
+    public void startImport() {
+        manInterface = persistenceManInterface;
+        regInterface = persistenceRegInterface;
+
+        initUniverse();
+
+        XMLImporter.getImporter().openFile("out.xml");
     }
 }

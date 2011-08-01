@@ -44,6 +44,8 @@ import ibis.deploy.monitoring.collection.Collector;
 import ibis.deploy.monitoring.simulator.FakeManagementService;
 import ibis.deploy.monitoring.simulator.FakeRegistryService;
 import ibis.deploy.monitoring.visualization.gridvision.JungleGoggles;
+import ibis.deploy.vizFramework.persistence.PersistenceManagementService;
+import ibis.deploy.vizFramework.persistence.PersistenceRegistryService;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
 
@@ -398,6 +400,7 @@ public class GUI {
                 logger.info("Monitor using simulated data.");
 
                 // Ibis/JMX variables
+                
                 regInterface = new FakeRegistryService();
                 manInterface = new FakeManagementService(regInterface);
             } else {

@@ -6,11 +6,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import ibis.deploy.gui.GUI;
+import ibis.deploy.monitoring.collection.exceptions.SingletonObjectNotInstantiatedException;
+import ibis.deploy.monitoring.collection.impl.CollectorImpl;
 import ibis.deploy.vizFramework.globeViz.viz.GlobeVisualization;
+import ibis.deploy.vizFramework.persistence.XMLImporter;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -112,7 +116,42 @@ public class GlobePanel extends JPanel {
                 }
             }
         });
-        leftPanel.add(showArcsRadio);    
+        leftPanel.add(showArcsRadio);  
+        
+        JButton button = new JButton("Start export");
+        button.addActionListener(new ActionListener() {
+            
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                try {
+                    JButton source = (JButton) event.getSource();
+                    if(source.getText().equals("Start export")){
+                        source.setText("Stop export");
+                        CollectorImpl.getCollector().startWritingToFile();
+                    } else {
+                        source.setText("Start export");
+                        CollectorImpl.getCollector().stopWritingToFile();
+                    }
+                } catch (SingletonObjectNotInstantiatedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        leftPanel.add(button);
+        
+        JButton readButton = new JButton("Read xml");
+        readButton.addActionListener(new ActionListener() {
+            
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                try {
+                    CollectorImpl.getCollector().startImport();
+                } catch (SingletonObjectNotInstantiatedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        leftPanel.add(readButton);
         
         leftPanel.add(Box.createVerticalGlue());
         leftPanel.add(Box.createVerticalGlue());

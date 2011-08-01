@@ -2,6 +2,7 @@ package ibis.deploy.monitoring.collection.impl;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -14,13 +15,18 @@ import ibis.ipl.IbisIdentifier;
 import ibis.ipl.NoSuchPropertyException;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.support.management.AttributeDescription;
+import ibis.deploy.monitoring.collection.Element;
 import ibis.deploy.monitoring.collection.Ibis;
 import ibis.deploy.monitoring.collection.Link;
 import ibis.deploy.monitoring.collection.Location;
 import ibis.deploy.monitoring.collection.Metric;
 import ibis.deploy.monitoring.collection.MetricDescription;
+import ibis.deploy.monitoring.collection.Metric.MetricModifier;
+import ibis.deploy.monitoring.collection.MetricDescription.MetricOutput;
 import ibis.deploy.monitoring.collection.MetricDescription.MetricType;
 import ibis.deploy.monitoring.collection.Pool;
+import ibis.deploy.vizFramework.globeViz.viz.utils.Utils;
+import ibis.deploy.vizFramework.persistence.XMLExporter;
 
 /**
  * A representation of a seperate Ibis instance within the data gathering
@@ -29,146 +35,185 @@ import ibis.deploy.monitoring.collection.Pool;
  * @author Maarten van Meersbergen
  */
 public class IbisImpl extends ElementImpl implements Ibis {
-	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.collection.impl.Ibis");
+    private static final Logger logger = LoggerFactory
+            .getLogger("ibis.deploy.monitoring.collection.impl.Ibis");
 
-	ManagementServiceInterface manInterface;
-	IbisIdentifier ibisid;
-	private Pool pool;
-	private Location location;
+    ManagementServiceInterface manInterface;
+    IbisIdentifier ibisid;
+    private Pool pool;
+    private Location location;
 
-	public IbisImpl(ManagementServiceInterface manInterface,
-			IbisIdentifier ibisid, Pool pool, Location location) {
-		super();
-		this.manInterface = manInterface;
-		this.ibisid = ibisid;
-		this.pool = pool;
-		this.location = location;
-	}
+    private XMLExporter xmlConvertor = XMLExporter.getInstance();
 
-	public Metric[] getMetrics() {
-		ArrayList<Metric> result = new ArrayList<Metric>();
-		for (Metric metric : metrics.values()) {
-			if (metric.getDescription().getType() == MetricType.NODE) {
-				result.add(metric);
-			}
-		}
-		return result.toArray(new Metric[0]);
-	}
+    public IbisImpl(ManagementServiceInterface manInterface,
+            IbisIdentifier ibisid, Pool pool, Location location) {
+        super();
+        this.manInterface = manInterface;
+        this.ibisid = ibisid;
+        this.pool = pool;
+        this.location = location;
+    }
 
-	public Location getLocation() {
-		return location;
-	}
+    public Metric[] getMetrics() {
+        ArrayList<Metric> result = new ArrayList<Metric>();
+        for (Metric metric : metrics.values()) {
+            if (metric.getDescription().getType() == MetricType.NODE) {
+                result.add(metric);
+            }
+        }
+        return result.toArray(new Metric[0]);
+    }
 
-	public Pool getPool() {
-		return pool;
-	}
+    public Metric[] getLinkMetrics() {
+        ArrayList<Metric> result = new ArrayList<Metric>();
+        for (Metric metric : metrics.values()) {
+            if (metric.getDescription().getType() == MetricType.LINK) {
+                result.add(metric);
+            }
+        }
+        return result.toArray(new Metric[0]);
+    }
 
-	public void setMetrics(Set<MetricDescription> descriptions) {
-		for (Link link : links.values()) {
-			((LinkImpl) link).setMetrics(descriptions);
-		}
+    public Location getLocation() {
+        return location;
+    }
 
-		// add new metrics
-		for (MetricDescription md : descriptions) {
-			if (!metrics.containsKey(md)) {
-				MetricImpl newMetric = (MetricImpl) ((MetricDescriptionImpl) md)
-						.getMetric(this);
-				metrics.put(md, newMetric);
-			}
-		}
+    public Pool getPool() {
+        return pool;
+    }
 
-		// make a snapshot of our current metrics.
-		Set<MetricDescription> temp = new HashSet<MetricDescription>();
-		temp.addAll(metrics.keySet());
+    public void setMetrics(Set<MetricDescription> descriptions) {
+        for (Link link : links.values()) {
+            ((LinkImpl) link).setMetrics(descriptions);
+        }
 
-		// and loop through the snapshot to remove unwanted metrics that don't
-		// appear in the new set
-		for (MetricDescription entry : temp) {
-			if (!descriptions.contains(entry)) {
-				metrics.remove(entry);
-			}
-		}
-	}
+        // add new metrics
+        for (MetricDescription md : descriptions) {
+            if (!metrics.containsKey(md)) {
+                MetricImpl newMetric = (MetricImpl) ((MetricDescriptionImpl) md)
+                        .getMetric(this);
+                metrics.put(md, newMetric);
+            }
+        }
 
-	public void update() throws TimeoutException {
-		// Make an array of all the AttributeDescriptions needed to update this
-		// Ibis' metrics.
-		ArrayList<AttributeDescription> requestList = new ArrayList<AttributeDescription>();
-		for (Entry<MetricDescription, Metric> entry : metrics.entrySet()) {
-			MetricImpl metric = (MetricImpl) entry.getValue();
-			requestList
-					.addAll(((MetricDescriptionImpl) metric.getDescription())
-							.getNecessaryAttributes());
-		}
+        // make a snapshot of our current metrics.
+        Set<MetricDescription> temp = new HashSet<MetricDescription>();
+        temp.addAll(metrics.keySet());
 
-		AttributeDescription[] requestArray = (AttributeDescription[]) requestList
-				.toArray(new AttributeDescription[0]);
+        // and loop through the snapshot to remove unwanted metrics that don't
+        // appear in the new set
+        for (MetricDescription entry : temp) {
+            if (!descriptions.contains(entry)) {
+                metrics.remove(entry);
+            }
+        }
+    }
 
-		try {
-			// Then, pass this array to the management service interface, and
-			// receive an array of result objects in the same order
-			Object[] results = manInterface.getAttributes(ibisid, requestArray);
+    public void update() throws TimeoutException {
+        // Make an array of all the AttributeDescriptions needed to update this
+        // Ibis' metrics.
+        ArrayList<AttributeDescription> requestList = new ArrayList<AttributeDescription>();
+        for (Entry<MetricDescription, Metric> entry : metrics.entrySet()) {
+            MetricImpl metric = (MetricImpl) entry.getValue();
+            requestList
+                    .addAll(((MetricDescriptionImpl) metric.getDescription())
+                            .getNecessaryAttributes());
+        }
 
-			// Split the result objects into partial arrays depending on the
-			// amount needed per metric
-			int j = 0;
-			for (Entry<MetricDescription, Metric> entry : metrics.entrySet()) {
-				MetricImpl metric = ((MetricImpl) entry.getValue());
-				Object[] partialResults = new Object[((MetricDescriptionImpl) metric
-						.getDescription()).getNecessaryAttributes().size()];
-				for (int i = 0; i < partialResults.length; i++) {
-					partialResults[i] = results[j];
-					j++;
-				}
+        AttributeDescription[] requestArray = (AttributeDescription[]) requestList
+                .toArray(new AttributeDescription[0]);
 
-				// And pass them to the individual metrics to be updated.
-				metric.update(partialResults);
-			}
-		} catch (IOException e) {
-			throw new TimeoutException();
-		} catch (NoSuchPropertyException e) {
-			logger.error("Ibis " + ibisid
-					+ " got exception while updating metrics: "
-					+ e.getMessage());
-		} catch (Exception e) {
-			logger.error("Ibis " + ibisid
-					+ " got exception while updating metrics: ");
-			e.printStackTrace();
-		}
+        try {
+            // Then, pass this array to the management service interface, and
+            // receive an array of result objects in the same order
+            Object[] results = manInterface.getAttributes(ibisid, requestArray);
 
-		for (Link link : links.values()) {
-			((LinkImpl) link).update();
-		}
-	}
+            // Split the result objects into partial arrays depending on the
+            // amount needed per metric
+            int j = 0;
+            for (Entry<MetricDescription, Metric> entry : metrics.entrySet()) {
+                MetricImpl metric = ((MetricImpl) entry.getValue());
+                Object[] partialResults = new Object[((MetricDescriptionImpl) metric
+                        .getDescription()).getNecessaryAttributes().size()];
+                for (int i = 0; i < partialResults.length; i++) {
+                    partialResults[i] = results[j];
+                    j++;
+                }
 
-	// Tryout for steering
-	public void kill() {
-		// TODO implement
-	}
+                double value = (Float) metric.getValue(MetricModifier.NORM,
+                        MetricOutput.PERCENT);
 
-	public String debugPrint() {
-		String result = ibisid + " metrics: ";
+                // And pass them to the individual metrics to be updated.
+                metric.update(partialResults);
 
-		for (Entry<MetricDescription, Metric> entry : metrics.entrySet()) {
-			if (entry.getValue().getDescription().getType() == MetricType.NODE) {
-				result += " " + entry.getValue().getDescription().getName();
-			} else {
-				result += " !" + entry.getValue().getDescription().getName();
-			}
-		}
+                // if(CollectorImpl.getCollector().isWritingToFile()){
+                // if (metric.getDescription().getType() == MetricType.LINK) {
+                //
+                // HashMap<Element, Number> values = (HashMap<Element, Number>)
+                // metric.linkValues
+                // .get(MetricOutput.PERCENT);
+                //
+                // for(Element elem: values.keySet()){
+                // IbisImpl ibis = (IbisImpl) elem;
+                //
+                // xmlConvertor.metricToXML(getName(), ibis.getName(),
+                // values.get(elem).floatValue());
+                //
+                // System.out.println(getName() + "  --> " + ibis.getName() +
+                // "  " + values.get(elem));
+                // }
+                // }
+                // }
+            }
+        } catch (IOException e) {
+            throw new TimeoutException();
+        } catch (NoSuchPropertyException e) {
+            logger.error("Ibis " + ibisid
+                    + " got exception while updating metrics: "
+                    + e.getMessage());
+        } catch (Exception e) {
+            logger.error("Ibis " + ibisid
+                    + " got exception while updating metrics: ");
+            e.printStackTrace();
+        }
 
-		result += "\n";
+        for (Link link : links.values()) {
+            ((LinkImpl) link).update();
+        }
+    }
 
-		for (Link link : links.values()) {
-			result += ibisid + " " + ((LinkImpl) link).debugPrint();
-		}
+    // Tryout for steering
+    public void kill() {
+        // TODO implement
+    }
 
-		result += "\n";
+    public String debugPrint() {
+        String result = ibisid + " metrics: ";
 
-		return result;
-	}
-	
-	public String getName(){
-	    return ibisid.name() + "-" + ibisid.location();
-	}
+        for (Entry<MetricDescription, Metric> entry : metrics.entrySet()) {
+            if (entry.getValue().getDescription().getType() == MetricType.NODE) {
+                result += " " + entry.getValue().getDescription().getName();
+            } else {
+                result += " !" + entry.getValue().getDescription().getName();
+            }
+        }
+
+        result += "\n";
+
+        for (Link link : links.values()) {
+            result += ibisid + " " + ((LinkImpl) link).debugPrint();
+        }
+
+        result += "\n";
+
+        return result;
+    }
+
+    public String getName() {
+        return Utils.extractFullNameFromIbisIdentifier(ibisid);
+    }
+
+    public String toXML() {
+        return "<Ibis name = \"" + ibisid.name() + "\" />\n";
+    }
 }

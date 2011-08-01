@@ -12,6 +12,7 @@ import ibis.deploy.Cluster;
 import ibis.deploy.gui.GUI;
 import ibis.deploy.vizFramework.bundles.edgeBundles.BSplineEdgeItem;
 import ibis.deploy.vizFramework.globeViz.viz.GlobeVisualization;
+import ibis.ipl.IbisIdentifier;
 import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.geom.Position;
@@ -351,5 +352,9 @@ public class Utils {
         Utils.gui = guiRef;
         Utils.clusters = Utils.gui.getGrid().getClusters();
         currentIdx = 0;
+    }
+    
+    public static String extractFullNameFromIbisIdentifier(IbisIdentifier id){
+        return id.name() + "-" + id.location();
     }
 }

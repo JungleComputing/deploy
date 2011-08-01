@@ -357,17 +357,6 @@ public class GlobeDataConvertor implements IDataConvertor {
                     for (String location : connectedComponent) {
                         if (positionList.get(location) != null) {
                             positions.add(positionList.get(location));
-                        } else {
-                            // System.out
-                            // .println("Found another dud! " + location); //
-                            // TODO
-                            // // -
-                            // // remove
-                            // // these
-                            // // guys
-                            // // from
-                            // // the
-                            // // list
                         }
                     }
 

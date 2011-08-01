@@ -18,6 +18,12 @@ public class FakeIbisIdentifier implements ibis.ipl.IbisIdentifier {
 		ibisName = generateName();
 	}
 	
+	public FakeIbisIdentifier(String locationString, String poolName, String ibisName) {
+            location = new ibis.ipl.impl.Location(locationString);
+            this.poolName = poolName;
+            this.ibisName = ibisName;
+    }
+	
 	private String generateName(){
 	    ibisIndex++;
             if(ibisIndex == Long.MAX_VALUE){

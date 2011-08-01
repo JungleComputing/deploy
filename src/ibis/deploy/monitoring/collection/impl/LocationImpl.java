@@ -36,7 +36,7 @@ public class LocationImpl extends ElementImpl implements Location {
 	private ArrayList<Location> children;
 	
 	private double latitude;
-    private double longitude;
+        private double longitude;
 
 	public LocationImpl(String name, Float[] color, double latitude,
             double longitude) {
@@ -456,4 +456,16 @@ public class LocationImpl extends ElementImpl implements Location {
     }
 
 
+    public String toXML(){
+        String result = "";
+        result += "<Location name=\"" + name + "\" latitude = \"" + latitude + "\" longitude = \"" + longitude + "\" >\n";
+        for(Location kid: children){
+            result += ((LocationImpl)kid).toXML();
+        }
+        for(Ibis ibis:ibises){
+            result += ((IbisImpl) ibis).toXML();
+        }
+        result += "</Location>\n";
+        return result;
+    }
 }
