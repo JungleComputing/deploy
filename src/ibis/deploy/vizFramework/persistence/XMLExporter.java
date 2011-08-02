@@ -3,6 +3,8 @@ package ibis.deploy.vizFramework.persistence;
 import ibis.deploy.monitoring.collection.exceptions.SingletonObjectNotInstantiatedException;
 import ibis.deploy.monitoring.collection.impl.CollectorImpl;
 import ibis.deploy.monitoring.collection.impl.LocationImpl;
+import ibis.deploy.monitoring.collection.metrics.CPUUsage;
+import ibis.deploy.monitoring.collection.metrics.SystemMemory;
 import ibis.ipl.IbisIdentifier;
 
 import java.io.BufferedWriter;
@@ -127,20 +129,44 @@ public class XMLExporter {
                 result += "<Ibis location = \"" + ibis.location().toString()
                         + "\" id = \"" + ibis.name() + "\" />\n";
             }
-            result += "</Pool>";
+            result += "</Pool>\n";
 
             cachedPoolsContents += result;
         }
     }
 
-    public synchronized void metricToXML(String poolName, String source,
-            String destination, float value) {
+    public synchronized void linkMetricToXML(String poolName, String source,
+            String destination, float value, String type) {
         if (state == IN_UPDATE_CYCLE) {
-            // System.out.println("metric");
-            String result = "<Metric type = \"" + "bytesSent"
-                    + "\" poolName = \"" + poolName + "\" source = \"" + source
-                    + "\" destination = \"" + destination + "\" value = \""
-                    + value + "\"/>\n";
+            String result = "";
+
+            if (type.equals("Bytes_Sent_Per_Sec")) {
+                result = "<Metric type = \"" + "bytesSent" + "\" poolName = \""
+                        + poolName + "\" source = \"" + source
+                        + "\" destination = \"" + destination + "\" value = \""
+                        + value + "\"/>\n";
+            }
+            try {
+                writer.write(result);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public synchronized void cpuMetricToXML(String poolName, String source,
+            long value, String type, String subtype) {
+        if (state == IN_UPDATE_CYCLE) {
+            String result = "";
+            if (type.equals(CPUUsage.CPU)) {
+                result = "<Metric type = \"" + CPUUsage.CPU + "\" subtype = \"" + subtype  + "\" poolName = \""
+                        + poolName + "\" source = \"" + source
+                        + "\" value = \"" + value + "\"/>\n";
+            } else if (type.equals(SystemMemory.MEM_SYS)) {
+                result = "<Metric type = \"" + SystemMemory.MEM_SYS + "\" subtype = \"" + subtype  + "\" poolName = \""
+                + poolName + "\" source = \"" + source
+                + "\" value = \"" + value + "\"/>\n";
+            } 
 
             try {
                 writer.write(result);
@@ -148,6 +174,7 @@ public class XMLExporter {
                 e.printStackTrace();
             }
         }
+
     }
 
     public synchronized void clearBuffer() {

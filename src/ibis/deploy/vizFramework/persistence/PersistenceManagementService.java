@@ -17,6 +17,8 @@ import javax.management.openmbean.OpenDataException;
 import javax.management.openmbean.OpenType;
 import javax.management.openmbean.SimpleType;
 
+import ibis.deploy.monitoring.collection.metrics.CPUUsage;
+import ibis.deploy.monitoring.collection.metrics.SystemMemory;
 import ibis.deploy.monitoring.simulator.FakeService;
 import ibis.deploy.monitoring.simulator.FakeRegistryService.State;
 import ibis.deploy.vizFramework.globeViz.viz.utils.Utils;
@@ -49,27 +51,51 @@ public class PersistenceManagementService implements
 
                 if (desc[i].getBeanName().compareTo(
                         "java.lang:type=OperatingSystem") == 0
-                        && desc[i].getAttribute().compareTo("ProcessCpuTime") == 0) {
-                    result[i] = (long) (Math.random() * 5000);
+                        && desc[i].getAttribute().compareTo(
+                                CPUUsage.ATTRIBUTE_NAME_PROCESS_CPU_TIME) == 0) {
+                    result[i] = xmlImporter.getCPUorSystemMetric(
+                            Utils.extractFullNameFromIbisIdentifier(id),
+                            CPUUsage.CPU,
+                            CPUUsage.ATTRIBUTE_NAME_PROCESS_CPU_TIME);
                 } else if (desc[i].getBeanName().compareTo(
                         "java.lang:type=Runtime") == 0
-                        && desc[i].getAttribute().compareTo("Uptime") == 0) {
-                    result[i] = (long) (Math.random() * 5000);
+                        && desc[i].getAttribute().compareTo(
+                                CPUUsage.ATTRIBUTE_NAME_PROCESS_CPU_UPTIME) == 0) {
+                    result[i] = xmlImporter.getCPUorSystemMetric(
+                            Utils.extractFullNameFromIbisIdentifier(id),
+                            CPUUsage.CPU,
+                            CPUUsage.ATTRIBUTE_NAME_PROCESS_CPU_UPTIME);
                 } else if (desc[i].getBeanName().compareTo(
                         "java.lang:type=OperatingSystem") == 0
-                        && desc[i].getAttribute().compareTo(
-                                "AvailableProcessors") == 0) {
-                    result[i] = (int) 4;
+                        && desc[i]
+                                .getAttribute()
+                                .compareTo(
+                                        CPUUsage.ATTRIBUTE_NAME_PROCESS_AVAILABLE_PROCESSORS) == 0) {
+                    result[i] = (int) xmlImporter
+                            .getCPUorSystemMetric(
+                                    Utils.extractFullNameFromIbisIdentifier(id),
+                                    CPUUsage.CPU,
+                                    CPUUsage.ATTRIBUTE_NAME_PROCESS_AVAILABLE_PROCESSORS);
                 } else if (desc[i].getBeanName().compareTo(
                         "java.lang:type=OperatingSystem") == 0
-                        && desc[i].getAttribute().compareTo(
-                                "TotalPhysicalMemorySize") == 0) {
-                    result[i] = (long) 40000;
+                        && desc[i]
+                                .getAttribute()
+                                .compareTo(
+                                        SystemMemory.ATTRIBUTE_TOTAL_PHYSICAL_MEMORY_SIZE) == 0) {
+                    result[i] = (long) xmlImporter.getCPUorSystemMetric(
+                            Utils.extractFullNameFromIbisIdentifier(id),
+                            SystemMemory.MEM_SYS,
+                            SystemMemory.ATTRIBUTE_TOTAL_PHYSICAL_MEMORY_SIZE);
                 } else if (desc[i].getBeanName().compareTo(
                         "java.lang:type=OperatingSystem") == 0
-                        && desc[i].getAttribute().compareTo(
-                                "FreePhysicalMemorySize") == 0) {
-                    result[i] = (long) 20000;
+                        && desc[i]
+                                .getAttribute()
+                                .compareTo(
+                                        SystemMemory.ATTRIBUTE_FREE_PHYSICAL_MEMORY_SIZE) == 0) {
+                    result[i] = (long) xmlImporter.getCPUorSystemMetric(
+                            Utils.extractFullNameFromIbisIdentifier(id),
+                            SystemMemory.MEM_SYS,
+                            SystemMemory.ATTRIBUTE_FREE_PHYSICAL_MEMORY_SIZE);
                 } else if (desc[i].getBeanName().compareTo(
                         "java.lang:type=Memory") == 0
                         && desc[i].getAttribute().compareTo("HeapMemoryUsage") == 0) {

@@ -154,9 +154,9 @@ public class GlobeDataConvertor implements IDataConvertor {
             // if (structureChanged) {
             // // bundlesGenerator.computePaths(globeEdges,
             // // pieChartWaypointSet,
-            // // globeViz.mickeyMouseLayer, GlobeVisualization
+            // // globeViz.tentativeBundlesLayer, GlobeVisualization
             // // .getVisualization().getModel().getGlobe());
-            // // bundlesGenerator.generateGrid(globeViz.mickeyMouseLayer,
+            // // bundlesGenerator.generateGrid(globeViz.tentativeBundlesLayer,
             // // GlobeVisualization.getVisualization().getModel().getGlobe());
             // }
         } catch (Exception e) {
@@ -676,6 +676,10 @@ public class GlobeDataConvertor implements IDataConvertor {
                         try {
                             value1 = (Float) metric.getValue(
                                     MetricModifier.NORM, MetricOutput.PERCENT);
+                            
+//                            if(value1 > 0){
+//                                System.out.println(value1);
+//                            }
                         } catch (OutputUnavailableException e) {
                             System.out.println(e.getMessage());
                         }

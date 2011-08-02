@@ -11,20 +11,28 @@ import ibis.ipl.support.management.AttributeDescription;
 
 public class CPUUsage extends ibis.deploy.monitoring.collection.impl.MetricDescriptionImpl implements ibis.deploy.monitoring.collection.MetricDescription {
 	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.collection.metrics.CPUUsage");
+	
+	public static String CPU_PREV = "cpu_prev";
+	public static String UPT_PREV = "upt_prev";
+	public static String CPU = "CPU";
+	
+	public static String ATTRIBUTE_NAME_PROCESS_CPU_TIME = "ProcessCpuTime";
+	public static String ATTRIBUTE_NAME_PROCESS_CPU_UPTIME = "Uptime";
+	public static String ATTRIBUTE_NAME_PROCESS_AVAILABLE_PROCESSORS = "AvailableProcessors";
 		
 	public CPUUsage() {
 		super();
 		
-		name = "CPU";
+		name = CPU;
 		type = MetricType.NODE;
 				
 		color[0] = 255f/255f;
 		color[1] =   0f/255f;
 		color[2] =   0f/255f;
 				
-		necessaryAttributes.add(new AttributeDescription("java.lang:type=OperatingSystem", "ProcessCpuTime"));
-		necessaryAttributes.add(new AttributeDescription("java.lang:type=Runtime", "Uptime"));
-		necessaryAttributes.add(new AttributeDescription("java.lang:type=OperatingSystem", "AvailableProcessors"));
+		necessaryAttributes.add(new AttributeDescription("java.lang:type=OperatingSystem", ATTRIBUTE_NAME_PROCESS_CPU_TIME));
+		necessaryAttributes.add(new AttributeDescription("java.lang:type=Runtime", ATTRIBUTE_NAME_PROCESS_CPU_UPTIME));
+		necessaryAttributes.add(new AttributeDescription("java.lang:type=OperatingSystem", ATTRIBUTE_NAME_PROCESS_AVAILABLE_PROCESSORS));
 		
 		outputTypes.add(MetricOutput.PERCENT);
 	}
@@ -32,15 +40,20 @@ public class CPUUsage extends ibis.deploy.monitoring.collection.impl.MetricDescr
 	public void update(Object[] results, Metric metric) throws IncorrectParametersException {
 		ibis.deploy.monitoring.collection.impl.MetricImpl castMetric = ((ibis.deploy.monitoring.collection.impl.MetricImpl)metric);
 		if (results[0] instanceof Long && results[1] instanceof Long &&	results[2] instanceof Integer) {
-			long cpu_elapsed 	= (Long)	results[0] - (Long) castMetric.getHelperVariable("cpu_prev");
-			long upt_elapsed	= (Long)	results[1] - (Long) castMetric.getHelperVariable("upt_prev");
+			long cpu_elapsed 	= (Long)	results[0] - (Long) castMetric.getHelperVariable(CPU_PREV);
+			long upt_elapsed	= (Long)	results[1] - (Long) castMetric.getHelperVariable(UPT_PREV);
 			int num_cpus		= (Integer) results[2];
 			
 			// Found at http://forums.sun.com/thread.jspa?threadID=5305095 to be the correct calculation for CPU usage
 			float cpuUsage = Math.min(99F, cpu_elapsed / (upt_elapsed * 10000F * num_cpus));
 			
-			castMetric.setHelperVariable("cpu_prev", cpu_elapsed);
-			castMetric.setHelperVariable("upt_prev", upt_elapsed);
+			castMetric.setHelperVariable(CPU_PREV, cpu_elapsed);
+			castMetric.setHelperVariable(UPT_PREV, upt_elapsed);
+			
+			//we need to save these for the data export
+			castMetric.setHelperVariable(ATTRIBUTE_NAME_PROCESS_CPU_TIME, (Long)results[0]);
+			castMetric.setHelperVariable(ATTRIBUTE_NAME_PROCESS_CPU_UPTIME, (Long)results[1]);
+			castMetric.setHelperVariable(ATTRIBUTE_NAME_PROCESS_AVAILABLE_PROCESSORS, (Integer)results[2]);
 			
 			try {			 
 				castMetric.setValue(MetricModifier.NORM, MetricOutput.PERCENT, (cpuUsage / 100));

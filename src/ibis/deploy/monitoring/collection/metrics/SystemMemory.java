@@ -12,18 +12,22 @@ import ibis.ipl.support.management.AttributeDescription;
 public class SystemMemory extends ibis.deploy.monitoring.collection.impl.MetricDescriptionImpl implements ibis.deploy.monitoring.collection.MetricDescription {
 	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.collection.metrics.SystemMemory");
 	
+	public static String ATTRIBUTE_TOTAL_PHYSICAL_MEMORY_SIZE = "TotalPhysicalMemorySize";
+	public static String ATTRIBUTE_FREE_PHYSICAL_MEMORY_SIZE = "FreePhysicalMemorySize";
+	public static String MEM_SYS = "MEM_SYS";
+	
 	public SystemMemory() {
 		super();
 		
-		name = "MEM_SYS";	
+		name = MEM_SYS;	
 		type = MetricType.NODE;
 				
 		color[0] =   0f/255f;
 		color[1] =   0f/255f;
 		color[2] = 255f/255f;
 		
-		necessaryAttributes.add(new AttributeDescription("java.lang:type=OperatingSystem", "TotalPhysicalMemorySize"));
-		necessaryAttributes.add(new AttributeDescription("java.lang:type=OperatingSystem", "FreePhysicalMemorySize"));
+		necessaryAttributes.add(new AttributeDescription("java.lang:type=OperatingSystem", ATTRIBUTE_TOTAL_PHYSICAL_MEMORY_SIZE));
+		necessaryAttributes.add(new AttributeDescription("java.lang:type=OperatingSystem", ATTRIBUTE_FREE_PHYSICAL_MEMORY_SIZE));
 		
 		outputTypes.add(MetricOutput.PERCENT);
 		outputTypes.add(MetricOutput.RPOS);
@@ -37,6 +41,10 @@ public class SystemMemory extends ibis.deploy.monitoring.collection.impl.MetricD
 			
 			long mem_used = mem_all - mem_free;			
 			if (mem_used < 0) mem_used = 0;
+			
+			//we need these variables for data import / export
+			castMetric.setHelperVariable(ATTRIBUTE_TOTAL_PHYSICAL_MEMORY_SIZE, mem_all);
+			castMetric.setHelperVariable(ATTRIBUTE_FREE_PHYSICAL_MEMORY_SIZE, mem_free);
 					
 			try {			 
 				castMetric.setValue(MetricModifier.NORM, MetricOutput.PERCENT, (float) mem_used / (float) mem_all);

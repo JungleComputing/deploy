@@ -36,7 +36,7 @@ public class GlobeVisualization extends JPanel implements IVisualization {
     private PieChartAnnotation lastSelectedDot;
     private RenderableLayer annotationLayer;
     private RenderableLayer polylineLayer;
-    public RenderableLayer mickeyMouseLayer;
+    public RenderableLayer tentativeBundlesLayer;
     private ParticleLayer markerLayer;
     private boolean followTerrain = false;
     private GlobeDataConvertor convertor;
@@ -65,10 +65,10 @@ public class GlobeVisualization extends JPanel implements IVisualization {
         // polylineLayer.setEnabled(false);//TODO - remove this
 
         // initialize the polylineLayer layer
-        mickeyMouseLayer = new RenderableLayer();
-        mickeyMouseLayer.setName("Testing layer");
-        worldWindCanvas.getModel().getLayers().add(mickeyMouseLayer);
-        mickeyMouseLayer.setEnabled(false);
+        tentativeBundlesLayer = new RenderableLayer();
+        tentativeBundlesLayer.setName("Testing layer");
+        worldWindCanvas.getModel().getLayers().add(tentativeBundlesLayer);
+        tentativeBundlesLayer.setEnabled(false);
 
         markerLayer = new ParticleLayer();
         markerLayer.setName("Markers");

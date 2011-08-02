@@ -4,6 +4,7 @@ import gov.nasa.worldwind.geom.LatLon;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.server.ManagementServiceInterface;
 import ibis.ipl.server.RegistryServiceInterface;
+import ibis.ipl.support.management.AttributeDescription;
 import ibis.deploy.vizFramework.globeViz.viz.utils.Utils;
 import ibis.deploy.vizFramework.persistence.PersistenceManagementService;
 import ibis.deploy.vizFramework.persistence.PersistenceRegistryService;
@@ -29,7 +30,9 @@ import ibis.deploy.monitoring.collection.Location;
 import ibis.deploy.monitoring.collection.Metric;
 import ibis.deploy.monitoring.collection.MetricDescription;
 import ibis.deploy.monitoring.collection.Pool;
+import ibis.deploy.monitoring.collection.Metric.MetricModifier;
 import ibis.deploy.monitoring.collection.MetricDescription.MetricOutput;
+import ibis.deploy.monitoring.collection.exceptions.OutputUnavailableException;
 import ibis.deploy.monitoring.collection.exceptions.SelfLinkeageException;
 import ibis.deploy.monitoring.collection.exceptions.SingletonObjectNotInstantiatedException;
 import ibis.deploy.monitoring.collection.metrics.*;
@@ -211,11 +214,11 @@ public class CollectorImpl implements Collector, Runnable {
                 logger.error("Could not get pool sizes from registry.");
             }
         }
-        
-        //check if there were pools that disappeared
-        for(Map.Entry<String, Integer> entry: poolSizes.entrySet()){
+
+        // check if there were pools that disappeared
+        for (Map.Entry<String, Integer> entry : poolSizes.entrySet()) {
             String oldPoolName = entry.getKey();
-            if(! newSizes.containsKey(oldPoolName)){
+            if (!newSizes.containsKey(oldPoolName)) {
                 change = true;
                 break;
             }
@@ -228,7 +231,7 @@ public class CollectorImpl implements Collector, Runnable {
 
             if (!poolSizes.containsKey(poolName)
                     || newSize != poolSizes.get(poolName)) {
-                change = true; 
+                change = true;
                 break;
             }
         }
@@ -236,8 +239,10 @@ public class CollectorImpl implements Collector, Runnable {
         if (change) {
             pools.clear();
             poolSizes.clear();
-            poolSizes.putAll(newSizes); // copy instead of assign --> if the newSizes map is reused, things go wrong
-            
+            poolSizes.putAll(newSizes); // copy instead of assign --> if the
+                                        // newSizes map is reused, things go
+                                        // wrong
+
             // reinitialize the pools list
             for (Map.Entry<String, Integer> entry : newSizes.entrySet()) {
                 String poolName = entry.getKey();
@@ -511,6 +516,7 @@ public class CollectorImpl implements Collector, Runnable {
             synchronized (jobQueue) {
                 if (writingToFile) {
                     xmlConvertor.startUpdate();
+                    // System.out.println("------------------------------");
                 }
                 initUniverse();
                 setlinksNotUpdated();
@@ -560,18 +566,101 @@ public class CollectorImpl implements Collector, Runnable {
                                 for (Element elem : values.keySet()) {
                                     IbisImpl dest = (IbisImpl) elem;
 
-                                    // if (source != null && dest != null) {
-                                    // System.out.println(source.getName()
-                                    // + " --> " + dest.getName() + "  "
-                                    // + values.get(elem));
-                                    // }
-
-                                    xmlConvertor.metricToXML(dest.getPool()
+                                    xmlConvertor.linkMetricToXML(dest.getPool()
                                             .getName(), source.getName(), dest
                                             .getName(), values.get(elem)
-                                            .floatValue());
+                                            .floatValue(), metric
+                                            .getDescription().getName());
                                 }
                             }
+                        }
+
+                        Metric[] nodeMetrics = source.getMetrics();
+                        String subtype;
+                        ArrayList<AttributeDescription> attributes;
+                        long subvalue = 0;
+
+                        for (int i = 0; i < nodeMetrics.length; i++) {
+                            MetricImpl metric = (MetricImpl) nodeMetrics[i];
+
+                            if (metric.getDescription().getName().equals(CPUUsage.CPU)) {
+                                attributes = ((CPUUsage) metric
+                                        .getDescription())
+                                        .getNecessaryAttributes();
+                                for (AttributeDescription attr : attributes) {
+                                    subtype = attr.getAttribute();
+                                    subvalue = 0;
+                                    
+                                    if (subtype
+                                            .equals(CPUUsage.ATTRIBUTE_NAME_PROCESS_CPU_TIME)) {
+                                        subvalue = metric
+                                                .getHelperVariable(
+                                                        CPUUsage.ATTRIBUTE_NAME_PROCESS_CPU_TIME)
+                                                .longValue();
+                                    } else if (subtype
+                                            .equals(CPUUsage.ATTRIBUTE_NAME_PROCESS_CPU_UPTIME)) {
+                                        subvalue = metric
+                                                .getHelperVariable(
+                                                        CPUUsage.ATTRIBUTE_NAME_PROCESS_CPU_UPTIME)
+                                                .longValue();
+                                    } else {
+                                        subvalue = metric
+                                                .getHelperVariable(
+                                                        CPUUsage.ATTRIBUTE_NAME_PROCESS_AVAILABLE_PROCESSORS)
+                                                .longValue();
+                                    }
+                                    xmlConvertor.cpuMetricToXML(source
+                                            .getPool().getName(), source
+                                            .getName(), subvalue,
+                                            metric.getDescription().getName(),
+                                            subtype);
+                                }
+                            } else if (metric.getDescription().getName().equals(SystemMemory.MEM_SYS)) {
+                                
+                                attributes = ((SystemMemory) metric
+                                        .getDescription())
+                                        .getNecessaryAttributes();
+                                for (AttributeDescription attr : attributes) {
+                                    subtype = attr.getAttribute();
+                                    subvalue = 0;
+                                    if (subtype
+                                            .equals(SystemMemory.ATTRIBUTE_TOTAL_PHYSICAL_MEMORY_SIZE)) {
+                                        subvalue = metric
+                                                .getHelperVariable(
+                                                        SystemMemory.ATTRIBUTE_TOTAL_PHYSICAL_MEMORY_SIZE)
+                                                .longValue();
+                                    } else if (subtype
+                                            .equals(SystemMemory.ATTRIBUTE_FREE_PHYSICAL_MEMORY_SIZE)) {
+                                        subvalue = metric
+                                                .getHelperVariable(
+                                                        SystemMemory.ATTRIBUTE_FREE_PHYSICAL_MEMORY_SIZE)
+                                                .longValue();
+                                    } 
+                                    xmlConvertor.cpuMetricToXML(source
+                                            .getPool().getName(), source
+                                            .getName(), subvalue,
+                                            metric.getDescription().getName(),
+                                            subtype);
+                                }
+                            } else { 
+                                
+//                                try {
+//                                    normalMemory = metric.getValue(
+//                                            MetricModifier.NORM,
+//                                            MetricOutput.RPOS).floatValue();
+//                                    maxMemory = metric.getValue(
+//                                            MetricModifier.MAX,
+//                                            MetricOutput.RPOS).floatValue();
+//                                } catch (OutputUnavailableException e) {
+//                                    e.printStackTrace();
+//                                }
+//                                xmlConvertor.cpuMetricToXML(source.getPool()
+//                                        .getName(), source.getName(),
+//                                        percentMemory, normalMemory, maxMemory,
+//                                        metric.getDescription().getName());
+                            }
+                            // System.out.println(metric.getDescription()
+                            // .getName() + " " + percentMemory + metric);
                         }
                     }
 
