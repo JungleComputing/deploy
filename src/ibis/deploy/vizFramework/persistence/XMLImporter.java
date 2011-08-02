@@ -2,6 +2,8 @@ package ibis.deploy.vizFramework.persistence;
 
 import ibis.deploy.monitoring.collection.metrics.BytesSentPerSecond;
 import ibis.deploy.monitoring.collection.metrics.CPUUsage;
+import ibis.deploy.monitoring.collection.metrics.HeapMemory;
+import ibis.deploy.monitoring.collection.metrics.NonHeapMemory;
 import ibis.deploy.monitoring.collection.metrics.SystemMemory;
 import ibis.deploy.monitoring.simulator.FakeIbisIdentifier;
 import ibis.deploy.monitoring.simulator.FakeRegistryService.State;
@@ -28,8 +30,6 @@ public class XMLImporter implements Runnable {
     private static final int DOING_NOTHING = 0;
     private static final int READING_FROM_FILE = 1;
     private static final String SENT_BYTES = "sentBytes";
-    private static final String MEM_HEAP = "MEM_HEAP";
-    private static final String MEM_NONHEAP = "MEM_NONHEAP";
 
     private int state = DOING_NOTHING;
     private XMLStreamReader xmlStreamReader;
@@ -37,22 +37,18 @@ public class XMLImporter implements Runnable {
     private HashMap<String, Integer> poolSizes;
     private HashMap<String, HashMap<String, IbisIdentifier>> ibises;
 
-    private HashMap<String, Object> metrics;
-
     private HashMap<String, HashMap<IbisIdentifier, Long>> bytesSentMetric;
-    private HashMap<String, HashMap<String, Long>> cpuUsageMetric;
-    private HashMap<String, HashMap<String, Long>> memSysMetric;
+    private HashMap<String, HashMap<String, Long>> cpuUsageMetric,  memSysMetric, heapMetric, nonHeapMetric;
 
     private XMLImporter() {
         poolSizes = new HashMap<String, Integer>();
         ibises = new HashMap<String, HashMap<String, IbisIdentifier>>();
-        metrics = new HashMap<String, Object>();
-        metrics.put(SENT_BYTES,
-                new HashMap<String, HashMap<IbisIdentifier, Long>>());
 
         bytesSentMetric = new HashMap<String, HashMap<IbisIdentifier, Long>>();
         cpuUsageMetric = new HashMap<String, HashMap<String, Long>>();
         memSysMetric = new HashMap<String, HashMap<String, Long>>();
+        heapMetric = new HashMap<String, HashMap<String,Long>>();
+        nonHeapMetric = new HashMap<String, HashMap<String,Long>>();
     }
 
     public void clear() {
@@ -65,6 +61,8 @@ public class XMLImporter implements Runnable {
         bytesSentMetric.clear();
         cpuUsageMetric.clear();
         memSysMetric.clear();
+        heapMetric.clear();
+        nonHeapMetric.clear();
     }
 
     public static XMLImporter getImporter() {
@@ -117,8 +115,8 @@ public class XMLImporter implements Runnable {
                 if (event == XMLStreamConstants.END_ELEMENT) {
                     if (xmlStreamReader.getLocalName().equals("Update")) {
                         endOfUpdateFound = true;
-//                        System.out.println(cpuUsageMetric);
-//                        System.out.println(memSysMetric);
+                        // System.out.println(cpuUsageMetric);
+                        // System.out.println(memSysMetric);
                     }
                 }
             }
@@ -190,7 +188,7 @@ public class XMLImporter implements Runnable {
 
     private void readMetric() {
         String source = "", destination = "", attributeName, attributeValue, poolName = "", type = "", subtype = "";
-        float value = 0;
+        float value = 0, maxValue = 0;
         int i;
 
         for (i = 0; i < xmlStreamReader.getAttributeCount(); i++) {
@@ -209,22 +207,25 @@ public class XMLImporter implements Runnable {
                 destination = attributeValue;
             } else if (attributeName.equals("value")) {
                 value = Float.parseFloat(attributeValue);
+            } else if (attributeName.equals("maxValue")) {
+                maxValue = Float.parseFloat(attributeValue);
             }
         }
 
-        if (type.equals("bytesSent")) { // extract the remaining attributes
-            readBytesSent(source, destination, poolName, value);
+        if (type.equals(BytesSentPerSecond.BYTES_SENT_PER_SEC)) { // extract the remaining attributes
+            readLinkMetric(source, destination, poolName, value);
         } else { // it's a memory metric
-            readMemoryMetric(source, poolName, type, subtype, (long) value);
+            readNodeMetric(source, poolName, type, subtype, (long) value, (long) maxValue);
         }
 
     }
 
-    private void readMemoryMetric(String source, String poolName, String type,
-            String subtype, long value) {
+    private void readNodeMetric(String source, String poolName, String type,
+            String subtype, long value, long maxValue) {
         HashMap<String, IbisIdentifier> ibisesInPool;
-        HashMap<String, Long> helperIbisMemoryMap = null;
+        HashMap<String, Long> helperIbisMap = null;
         HashMap<String, HashMap<String, Long>> originalMap = null;
+        boolean hasMax = false;
 
         if (source.length() > 0 && poolName.length() > 0) {
             ibisesInPool = ibises.get(poolName);
@@ -234,31 +235,43 @@ public class XMLImporter implements Runnable {
                 sourceIbis = ibisesInPool.get(source);
                 if (sourceIbis != null) {
                     if (type.equals(CPUUsage.CPU)) {
-                        helperIbisMemoryMap = cpuUsageMetric.get(source);
+                        helperIbisMap = cpuUsageMetric.get(source);
                         originalMap = cpuUsageMetric;
                     } else if (type.equals(SystemMemory.MEM_SYS)) {
-                        helperIbisMemoryMap = memSysMetric.get(source);
+                        helperIbisMap = memSysMetric.get(source);
                         originalMap = memSysMetric;
+                    } else if (type.equals(HeapMemory.MEM_HEAP)){
+                        helperIbisMap = heapMetric.get(source);
+                        originalMap = heapMetric;
+                        subtype = HeapMemory.USED;
+                        hasMax = true;
+                    } else if (type.equals(NonHeapMemory.MEM_NON_HEAP)){
+                        helperIbisMap = nonHeapMetric.get(source);
+                        originalMap = nonHeapMetric;
+                        subtype = NonHeapMemory.USED;
+                        hasMax = true;
                     }
-                    
-                    //if there is no entry for this ibis in the map, create it now
-                    if (helperIbisMemoryMap == null) {
-                        helperIbisMemoryMap = new HashMap<String, Long>();
+
+                    // if there is no entry for this ibis in the map, create it
+                    if (helperIbisMap == null) {
+                        helperIbisMap = new HashMap<String, Long>();
                         if (originalMap != null) {
-                            originalMap.put(source, helperIbisMemoryMap);
+                            originalMap.put(source, helperIbisMap);
                         }
                     }
 
                     if (subtype.length() > 0) {
-                        helperIbisMemoryMap.put(subtype, value);
+                        helperIbisMap.put(subtype, value);
+                        if(hasMax){
+                            helperIbisMap.put(HeapMemory.MAX, maxValue);
+                        }
                     }
-
                 }
             }
         }
     }
 
-    private void readBytesSent(String source, String destination,
+    private void readLinkMetric(String source, String destination,
             String poolName, float value) {
         HashMap<String, IbisIdentifier> ibisesInPool;
         HashMap<IbisIdentifier, Long> metricsPerIbis;
@@ -292,7 +305,7 @@ public class XMLImporter implements Runnable {
         return poolSizes;
     }
 
-    public Map<IbisIdentifier, Long> getSentBytesPerIbis(String poolName,
+    public Map<IbisIdentifier, Long> getLinkMetric(String poolName,
             String ibisName) {
         if (bytesSentMetric.get(ibisName) == null) {
             return new HashMap<IbisIdentifier, Long>();
@@ -300,12 +313,22 @@ public class XMLImporter implements Runnable {
         return bytesSentMetric.get(ibisName);
     }
 
-    public long getCPUorSystemMetric(String ibis, String type, String subtype) {
+    public long getNodeMetric(String ibis, String type, String subtype) {
+        HashMap<String, HashMap<String, Long>> currentMap = null;
         if (type.equals(CPUUsage.CPU)) {
-            if (cpuUsageMetric.get(ibis) != null) {
-                return cpuUsageMetric.get(ibis).get(subtype);
-            }
+            currentMap = cpuUsageMetric;
+        } else if (type.equals(SystemMemory.MEM_SYS)) {
+            currentMap = memSysMetric;
+        } else if(type.equals(HeapMemory.MEM_HEAP)){
+            currentMap = heapMetric;
+        } else if(type.equals(NonHeapMemory.MEM_NON_HEAP)){
+            currentMap = nonHeapMetric;
         }
+        if (currentMap != null && currentMap.get(ibis) != null
+                && currentMap.get(ibis).get(subtype) != null) {
+            return currentMap.get(ibis).get(subtype);
+        }
+
         return 0;
     }
 

@@ -18,6 +18,8 @@ import javax.management.openmbean.OpenType;
 import javax.management.openmbean.SimpleType;
 
 import ibis.deploy.monitoring.collection.metrics.CPUUsage;
+import ibis.deploy.monitoring.collection.metrics.HeapMemory;
+import ibis.deploy.monitoring.collection.metrics.NonHeapMemory;
 import ibis.deploy.monitoring.collection.metrics.SystemMemory;
 import ibis.deploy.monitoring.simulator.FakeService;
 import ibis.deploy.monitoring.simulator.FakeRegistryService.State;
@@ -44,7 +46,7 @@ public class PersistenceManagementService implements
             AttributeDescription... desc) throws IOException,
             NoSuchPropertyException {
         synchronized (this) {
-            // Otherwise just return decent results
+
             Object[] result = new Object[desc.length];
             for (int i = 0; i < desc.length; i++) {
                 // logger.debug("working on "+desc[i].getAttribute());
@@ -53,7 +55,7 @@ public class PersistenceManagementService implements
                         "java.lang:type=OperatingSystem") == 0
                         && desc[i].getAttribute().compareTo(
                                 CPUUsage.ATTRIBUTE_NAME_PROCESS_CPU_TIME) == 0) {
-                    result[i] = xmlImporter.getCPUorSystemMetric(
+                    result[i] = xmlImporter.getNodeMetric(
                             Utils.extractFullNameFromIbisIdentifier(id),
                             CPUUsage.CPU,
                             CPUUsage.ATTRIBUTE_NAME_PROCESS_CPU_TIME);
@@ -61,7 +63,7 @@ public class PersistenceManagementService implements
                         "java.lang:type=Runtime") == 0
                         && desc[i].getAttribute().compareTo(
                                 CPUUsage.ATTRIBUTE_NAME_PROCESS_CPU_UPTIME) == 0) {
-                    result[i] = xmlImporter.getCPUorSystemMetric(
+                    result[i] = xmlImporter.getNodeMetric(
                             Utils.extractFullNameFromIbisIdentifier(id),
                             CPUUsage.CPU,
                             CPUUsage.ATTRIBUTE_NAME_PROCESS_CPU_UPTIME);
@@ -72,7 +74,7 @@ public class PersistenceManagementService implements
                                 .compareTo(
                                         CPUUsage.ATTRIBUTE_NAME_PROCESS_AVAILABLE_PROCESSORS) == 0) {
                     result[i] = (int) xmlImporter
-                            .getCPUorSystemMetric(
+                            .getNodeMetric(
                                     Utils.extractFullNameFromIbisIdentifier(id),
                                     CPUUsage.CPU,
                                     CPUUsage.ATTRIBUTE_NAME_PROCESS_AVAILABLE_PROCESSORS);
@@ -82,7 +84,7 @@ public class PersistenceManagementService implements
                                 .getAttribute()
                                 .compareTo(
                                         SystemMemory.ATTRIBUTE_TOTAL_PHYSICAL_MEMORY_SIZE) == 0) {
-                    result[i] = (long) xmlImporter.getCPUorSystemMetric(
+                    result[i] = (long) xmlImporter.getNodeMetric(
                             Utils.extractFullNameFromIbisIdentifier(id),
                             SystemMemory.MEM_SYS,
                             SystemMemory.ATTRIBUTE_TOTAL_PHYSICAL_MEMORY_SIZE);
@@ -92,7 +94,7 @@ public class PersistenceManagementService implements
                                 .getAttribute()
                                 .compareTo(
                                         SystemMemory.ATTRIBUTE_FREE_PHYSICAL_MEMORY_SIZE) == 0) {
-                    result[i] = (long) xmlImporter.getCPUorSystemMetric(
+                    result[i] = (long) xmlImporter.getNodeMetric(
                             Utils.extractFullNameFromIbisIdentifier(id),
                             SystemMemory.MEM_SYS,
                             SystemMemory.ATTRIBUTE_FREE_PHYSICAL_MEMORY_SIZE);
@@ -122,8 +124,13 @@ public class PersistenceManagementService implements
                     }
 
                     HashMap<String, Long> values = new HashMap<String, Long>();
-                    values.put("used", (long) (Math.random() * 5000));
-                    values.put("max", (long) (5000L + Math.random() * 5000));
+                    values.put("used", xmlImporter.getNodeMetric(
+                            Utils.extractFullNameFromIbisIdentifier(id),
+                            HeapMemory.MEM_HEAP, HeapMemory.USED));
+
+                    values.put("max", xmlImporter.getNodeMetric(
+                            Utils.extractFullNameFromIbisIdentifier(id),
+                            HeapMemory.MEM_HEAP, HeapMemory.MAX));
 
                     CompositeData data = null;
                     try {
@@ -160,9 +167,14 @@ public class PersistenceManagementService implements
                     }
 
                     HashMap<String, Long> values = new HashMap<String, Long>();
-                    values.put("used", (long) (Math.random() * 5000));
-                    values.put("max", (long) (5000L + Math.random() * 5000));
+                    values.put("used", xmlImporter.getNodeMetric(
+                            Utils.extractFullNameFromIbisIdentifier(id),
+                            NonHeapMemory.MEM_NON_HEAP, NonHeapMemory.USED));
 
+                    values.put("max", xmlImporter.getNodeMetric(
+                            Utils.extractFullNameFromIbisIdentifier(id),
+                            NonHeapMemory.MEM_NON_HEAP, NonHeapMemory.MAX));
+                    
                     CompositeData data = null;
                     try {
                         data = new CompositeDataSupport(type, values);
@@ -172,7 +184,7 @@ public class PersistenceManagementService implements
                     }
 
                     result[i] = data;
-                } else if (desc[i].getBeanName().compareTo(
+                } else if (desc[i].getBeanName().compareTo( //TODO - this isn't used or imported / exported
                         "java.lang:type=Threading") == 0
                         && desc[i].getAttribute().compareTo("ThreadCount") == 0) {
 
@@ -180,22 +192,15 @@ public class PersistenceManagementService implements
                 } else if (desc[i].getBeanName().compareTo("ibis") == 0
                         && desc[i].getAttribute().compareTo(
                                 "receivedBytesPerIbis") == 0) {
-                    result[i] = xmlImporter.getSentBytesPerIbis(id.poolName(),
+                    result[i] = xmlImporter.getLinkMetric(id.poolName(),
                             Utils.extractFullNameFromIbisIdentifier(id));
                 } else if (desc[i].getBeanName().compareTo("ibis") == 0
                         && desc[i].getAttribute().compareTo("sentBytesPerIbis") == 0) {
 
-                    result[i] = xmlImporter.getSentBytesPerIbis(id.poolName(),
+                    result[i] = xmlImporter.getLinkMetric(id.poolName(),
                             Utils.extractFullNameFromIbisIdentifier(id));
-
-                    // System.out.println(result[i]);
                 } else {
                     throw new NoSuchPropertyException();
-                }
-
-                if (logger.isDebugEnabled()) {
-                    // logger.debug(desc[i].getAttribute() +" result: "+
-                    // result[i]);
                 }
 
             }
@@ -207,5 +212,4 @@ public class PersistenceManagementService implements
     public void doUpdate() {
 
     }
-
 }

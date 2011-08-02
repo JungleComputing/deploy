@@ -12,9 +12,9 @@ import ibis.ipl.support.management.AttributeDescription;
 public class SystemMemory extends ibis.deploy.monitoring.collection.impl.MetricDescriptionImpl implements ibis.deploy.monitoring.collection.MetricDescription {
 	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.collection.metrics.SystemMemory");
 	
-	public static String ATTRIBUTE_TOTAL_PHYSICAL_MEMORY_SIZE = "TotalPhysicalMemorySize";
-	public static String ATTRIBUTE_FREE_PHYSICAL_MEMORY_SIZE = "FreePhysicalMemorySize";
-	public static String MEM_SYS = "MEM_SYS";
+	public static final String ATTRIBUTE_TOTAL_PHYSICAL_MEMORY_SIZE = "TotalPhysicalMemorySize";
+	public static final String ATTRIBUTE_FREE_PHYSICAL_MEMORY_SIZE = "FreePhysicalMemorySize";
+	public static final String MEM_SYS = "MEM_SYS";
 	
 	public SystemMemory() {
 		super();
@@ -42,7 +42,7 @@ public class SystemMemory extends ibis.deploy.monitoring.collection.impl.MetricD
 			long mem_used = mem_all - mem_free;			
 			if (mem_used < 0) mem_used = 0;
 			
-			//we need these variables for data import / export
+			// we need these for data import / export
 			castMetric.setHelperVariable(ATTRIBUTE_TOTAL_PHYSICAL_MEMORY_SIZE, mem_all);
 			castMetric.setHelperVariable(ATTRIBUTE_FREE_PHYSICAL_MEMORY_SIZE, mem_free);
 					

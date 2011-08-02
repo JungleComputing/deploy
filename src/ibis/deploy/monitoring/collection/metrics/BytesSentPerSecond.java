@@ -23,11 +23,14 @@ public class BytesSentPerSecond extends
 
     public static final float MAX = 512000; // 1/2 GB
     private long overall_max = 1024;
+    
+    public static final String ATTRIBUTE_NAME_SENT_BYTES_PER_IBIS = "sentBytesPerIbis";
+    public static final String BYTES_SENT_PER_SEC =  "Bytes_Sent_Per_Sec";
 
     public BytesSentPerSecond() {
         super();
 
-        name = "Bytes_Sent_Per_Sec";
+        name = BYTES_SENT_PER_SEC;
         type = MetricType.LINK;
 
         color[0] = 64f / 255f;
@@ -37,7 +40,7 @@ public class BytesSentPerSecond extends
         // necessaryAttributes.add(new
         // AttributeDescription("java.lang:type=Runtime", "Uptime"));
         necessaryAttributes.add(new AttributeDescription("ibis",
-                "sentBytesPerIbis"));
+               ATTRIBUTE_NAME_SENT_BYTES_PER_IBIS));
 
         // outputTypes.add(MetricOutput.N);
         // outputTypes.add(MetricOutput.RPOS);

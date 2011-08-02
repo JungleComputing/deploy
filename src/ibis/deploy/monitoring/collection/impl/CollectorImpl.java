@@ -576,89 +576,93 @@ public class CollectorImpl implements Collector, Runnable {
                         }
 
                         Metric[] nodeMetrics = source.getMetrics();
-                        String subtype;
+                        String subtype = "";
                         ArrayList<AttributeDescription> attributes;
-                        long subvalue = 0;
+                        long value = 0, maxValue = 0;
 
                         for (int i = 0; i < nodeMetrics.length; i++) {
                             MetricImpl metric = (MetricImpl) nodeMetrics[i];
 
-                            if (metric.getDescription().getName().equals(CPUUsage.CPU)) {
+                            if (metric.getDescription().getName()
+                                    .equals(CPUUsage.CPU)) {
                                 attributes = ((CPUUsage) metric
                                         .getDescription())
                                         .getNecessaryAttributes();
                                 for (AttributeDescription attr : attributes) {
                                     subtype = attr.getAttribute();
-                                    subvalue = 0;
-                                    
+                                    value = 0;
+
                                     if (subtype
                                             .equals(CPUUsage.ATTRIBUTE_NAME_PROCESS_CPU_TIME)) {
-                                        subvalue = metric
+                                        value = metric
                                                 .getHelperVariable(
                                                         CPUUsage.ATTRIBUTE_NAME_PROCESS_CPU_TIME)
                                                 .longValue();
                                     } else if (subtype
                                             .equals(CPUUsage.ATTRIBUTE_NAME_PROCESS_CPU_UPTIME)) {
-                                        subvalue = metric
+                                        value = metric
                                                 .getHelperVariable(
                                                         CPUUsage.ATTRIBUTE_NAME_PROCESS_CPU_UPTIME)
                                                 .longValue();
                                     } else {
-                                        subvalue = metric
+                                        value = metric
                                                 .getHelperVariable(
                                                         CPUUsage.ATTRIBUTE_NAME_PROCESS_AVAILABLE_PROCESSORS)
                                                 .longValue();
                                     }
-                                    xmlConvertor.cpuMetricToXML(source
-                                            .getPool().getName(), source
-                                            .getName(), subvalue,
-                                            metric.getDescription().getName(),
-                                            subtype);
+
                                 }
-                            } else if (metric.getDescription().getName().equals(SystemMemory.MEM_SYS)) {
-                                
+                            } else if (metric.getDescription().getName()
+                                    .equals(SystemMemory.MEM_SYS)) {
+
                                 attributes = ((SystemMemory) metric
                                         .getDescription())
                                         .getNecessaryAttributes();
                                 for (AttributeDescription attr : attributes) {
                                     subtype = attr.getAttribute();
-                                    subvalue = 0;
+                                    value = 0;
                                     if (subtype
                                             .equals(SystemMemory.ATTRIBUTE_TOTAL_PHYSICAL_MEMORY_SIZE)) {
-                                        subvalue = metric
+                                        value = metric
                                                 .getHelperVariable(
                                                         SystemMemory.ATTRIBUTE_TOTAL_PHYSICAL_MEMORY_SIZE)
                                                 .longValue();
                                     } else if (subtype
                                             .equals(SystemMemory.ATTRIBUTE_FREE_PHYSICAL_MEMORY_SIZE)) {
-                                        subvalue = metric
+                                        value = metric
                                                 .getHelperVariable(
                                                         SystemMemory.ATTRIBUTE_FREE_PHYSICAL_MEMORY_SIZE)
                                                 .longValue();
-                                    } 
-                                    xmlConvertor.cpuMetricToXML(source
-                                            .getPool().getName(), source
-                                            .getName(), subvalue,
-                                            metric.getDescription().getName(),
-                                            subtype);
+                                    }
                                 }
-                            } else { 
-                                
-//                                try {
-//                                    normalMemory = metric.getValue(
-//                                            MetricModifier.NORM,
-//                                            MetricOutput.RPOS).floatValue();
-//                                    maxMemory = metric.getValue(
-//                                            MetricModifier.MAX,
-//                                            MetricOutput.RPOS).floatValue();
-//                                } catch (OutputUnavailableException e) {
-//                                    e.printStackTrace();
-//                                }
-//                                xmlConvertor.cpuMetricToXML(source.getPool()
-//                                        .getName(), source.getName(),
-//                                        percentMemory, normalMemory, maxMemory,
-//                                        metric.getDescription().getName());
+                            } else if (metric.getDescription().getName()
+                                    .equals(HeapMemory.MEM_HEAP)) {
+                                attributes = ((HeapMemory) metric
+                                        .getDescription())
+                                        .getNecessaryAttributes();
+                                for (AttributeDescription attr : attributes) {
+                                    subtype = attr.getAttribute();
+                                    value = metric.getHelperVariable(
+                                            HeapMemory.USED).longValue();
+                                }
+                                maxValue = metric.getHelperVariable(
+                                        HeapMemory.MAX).longValue();
+                            } else if (metric.getDescription().getName()
+                                    .equals(NonHeapMemory.MEM_NON_HEAP)) {
+                                attributes = ((NonHeapMemory) metric
+                                        .getDescription())
+                                        .getNecessaryAttributes();
+                                value = metric.getHelperVariable(
+                                        NonHeapMemory.USED).longValue();
+                                maxValue = metric.getHelperVariable(
+                                        NonHeapMemory.MAX).longValue();
                             }
+
+                            xmlConvertor.cpuOrMemoryMetricToXML(source
+                                    .getPool().getName(), source.getName(),
+                                    value, maxValue, metric.getDescription()
+                                            .getName(), subtype);
+
                             // System.out.println(metric.getDescription()
                             // .getName() + " " + percentMemory + metric);
                         }

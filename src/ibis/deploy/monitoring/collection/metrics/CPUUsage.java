@@ -12,13 +12,13 @@ import ibis.ipl.support.management.AttributeDescription;
 public class CPUUsage extends ibis.deploy.monitoring.collection.impl.MetricDescriptionImpl implements ibis.deploy.monitoring.collection.MetricDescription {
 	private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.collection.metrics.CPUUsage");
 	
-	public static String CPU_PREV = "cpu_prev";
-	public static String UPT_PREV = "upt_prev";
-	public static String CPU = "CPU";
+	public static final String CPU_PREV = "cpu_prev";
+	public static final String UPT_PREV = "upt_prev";
+	public static final String CPU = "CPU";
 	
-	public static String ATTRIBUTE_NAME_PROCESS_CPU_TIME = "ProcessCpuTime";
-	public static String ATTRIBUTE_NAME_PROCESS_CPU_UPTIME = "Uptime";
-	public static String ATTRIBUTE_NAME_PROCESS_AVAILABLE_PROCESSORS = "AvailableProcessors";
+	public static final String ATTRIBUTE_NAME_PROCESS_CPU_TIME = "ProcessCpuTime";
+	public static final String ATTRIBUTE_NAME_PROCESS_CPU_UPTIME = "Uptime";
+	public static final String ATTRIBUTE_NAME_PROCESS_AVAILABLE_PROCESSORS = "AvailableProcessors";
 		
 	public CPUUsage() {
 		super();
@@ -50,7 +50,7 @@ public class CPUUsage extends ibis.deploy.monitoring.collection.impl.MetricDescr
 			castMetric.setHelperVariable(CPU_PREV, cpu_elapsed);
 			castMetric.setHelperVariable(UPT_PREV, upt_elapsed);
 			
-			//we need to save these for the data export
+			// we need this for data import / export
 			castMetric.setHelperVariable(ATTRIBUTE_NAME_PROCESS_CPU_TIME, (Long)results[0]);
 			castMetric.setHelperVariable(ATTRIBUTE_NAME_PROCESS_CPU_UPTIME, (Long)results[1]);
 			castMetric.setHelperVariable(ATTRIBUTE_NAME_PROCESS_AVAILABLE_PROCESSORS, (Integer)results[2]);

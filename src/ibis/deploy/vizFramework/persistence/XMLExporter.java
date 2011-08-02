@@ -3,7 +3,10 @@ package ibis.deploy.vizFramework.persistence;
 import ibis.deploy.monitoring.collection.exceptions.SingletonObjectNotInstantiatedException;
 import ibis.deploy.monitoring.collection.impl.CollectorImpl;
 import ibis.deploy.monitoring.collection.impl.LocationImpl;
+import ibis.deploy.monitoring.collection.metrics.BytesSentPerSecond;
 import ibis.deploy.monitoring.collection.metrics.CPUUsage;
+import ibis.deploy.monitoring.collection.metrics.HeapMemory;
+import ibis.deploy.monitoring.collection.metrics.NonHeapMemory;
 import ibis.deploy.monitoring.collection.metrics.SystemMemory;
 import ibis.ipl.IbisIdentifier;
 
@@ -140,8 +143,8 @@ public class XMLExporter {
         if (state == IN_UPDATE_CYCLE) {
             String result = "";
 
-            if (type.equals("Bytes_Sent_Per_Sec")) {
-                result = "<Metric type = \"" + "bytesSent" + "\" poolName = \""
+            if (type.equals(BytesSentPerSecond.BYTES_SENT_PER_SEC)) {
+                result = "<Metric type = \"" + BytesSentPerSecond.BYTES_SENT_PER_SEC + "\" poolName = \""
                         + poolName + "\" source = \"" + source
                         + "\" destination = \"" + destination + "\" value = \""
                         + value + "\"/>\n";
@@ -154,20 +157,19 @@ public class XMLExporter {
         }
     }
 
-    public synchronized void cpuMetricToXML(String poolName, String source,
-            long value, String type, String subtype) {
+    public synchronized void cpuOrMemoryMetricToXML(String poolName, String source,
+            long value, long maxValue, String type, String subtype) {
         if (state == IN_UPDATE_CYCLE) {
             String result = "";
-            if (type.equals(CPUUsage.CPU)) {
-                result = "<Metric type = \"" + CPUUsage.CPU + "\" subtype = \"" + subtype  + "\" poolName = \""
+            if (type.equals(CPUUsage.CPU) || type.equals(SystemMemory.MEM_SYS)) {
+                result = "<Metric type = \"" + type + "\" subtype = \"" + subtype  + "\" poolName = \""
                         + poolName + "\" source = \"" + source
                         + "\" value = \"" + value + "\"/>\n";
-            } else if (type.equals(SystemMemory.MEM_SYS)) {
-                result = "<Metric type = \"" + SystemMemory.MEM_SYS + "\" subtype = \"" + subtype  + "\" poolName = \""
+            } else if (type.equals(HeapMemory.MEM_HEAP) || type.equals(NonHeapMemory.MEM_NON_HEAP)) {
+                result = "<Metric type = \"" + type + "\" subtype = \"" + subtype  + "\" poolName = \""
                 + poolName + "\" source = \"" + source
-                + "\" value = \"" + value + "\"/>\n";
+                + "\" value = \"" + value + "\" maxValue = \"" + maxValue + "\"/>\n";
             } 
-
             try {
                 writer.write(result);
             } catch (IOException e) {
