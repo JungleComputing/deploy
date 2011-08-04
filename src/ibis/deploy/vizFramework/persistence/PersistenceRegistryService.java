@@ -9,6 +9,11 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @author Ana Vinatoru
+ *
+ */
+
 public class PersistenceRegistryService implements
         ibis.ipl.server.RegistryServiceInterface, FakeService {
     private static final Logger logger = LoggerFactory

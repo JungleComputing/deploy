@@ -18,6 +18,11 @@ import gov.nasa.worldwind.render.markers.BasicMarkerAttributes;
 import gov.nasa.worldwind.render.markers.BasicMarkerShape;
 import gov.nasa.worldwind.render.markers.Marker;
 
+/**
+ * @author Ana Vinatoru
+ *
+ */
+
 public class GlobeEdge {
 
     private final Position pos1, pos2;
@@ -28,7 +33,8 @@ public class GlobeEdge {
     private ParticlePool markerPool;
     private boolean isSecondEdge;
     private boolean lastStateFollowGrid = false;
-    ArrayList<Position> positions; //TODO - maybe remove this
+    ArrayList<Position> positions; // TODO - maybe remove this
+    private double weight;
 
     // pos1 and pos2 need to be non-null
     public GlobeEdge(Position pos1, Position pos2, String name,
@@ -45,24 +51,27 @@ public class GlobeEdge {
         markerPool = new ParticlePool();
     }
 
-    public void removeAssociatedPolylineFromDisplay(GlobeVisualization viz){
+    public void removeAssociatedPolylineFromDisplay(GlobeVisualization viz) {
         viz.removePolyline(polyline);
-        for(MovingParticle particle: markerPool.getActiveMarkers()){
+        for (MovingParticle particle : markerPool.getActiveMarkers()) {
             viz.getMarkerLayer().removeMarker(particle);
         }
-        
+
         markerPool.returnAllMarkersToPool();
     }
-    
+
     // the polyline is calculated only once. If the polyline is already
     // calculated, only the color is changed.
     public void updateAssociatedPolyline(GlobeVisualization globe, Color color,
-            boolean forceEdgeRedraw, boolean showParticles, boolean followGrid) {
+            boolean forceEdgeRedraw, boolean showParticles, boolean followGrid,
+            double ratio) {
         int size;
         particleColor = color;
+        this.weight = ratio;
+
         if (!showParticles) {
             edgeColor = color;
-            size = UIConstants.EDGE_WITHOUT_PARTICLE_SIZE; 
+            size = UIConstants.EDGE_WITHOUT_PARTICLE_SIZE;
         } else {
             edgeColor = UIConstants.EDGE_WITH_PARTICLES_COLOR;
             size = UIConstants.EDGE_WITH_PARTICLE_SIZE;
@@ -118,9 +127,9 @@ public class GlobeEdge {
         // matter what the edge direction is. TODO - if at some point edge
         // direction matters, change this
         int hash1 = (41 * (41 + pos1.hashCode()) + pos2.hashCode());
-         //int hash2 = (41 * (41 + pos2.hashCode()) + pos1.hashCode());
-        return hash1; 
-        //Math.max(hash1, hash2);
+        // int hash2 = (41 * (41 + pos2.hashCode()) + pos1.hashCode());
+        return hash1;
+        // Math.max(hash1, hash2);
     }
 
     public Position getFirstPosition() {
@@ -156,18 +165,13 @@ public class GlobeEdge {
 
     public Marker addMarkerToEdge() {
         MovingParticle marker = null;
-        if (((ArrayList<Position>) polyline.getPositions()).size() > 0) {
-            marker = markerPool.getMarker(
-                    ((ArrayList<Position>) polyline.getPositions()).get(0),
-                    particleColor);
+        if (weight > 0) {
+            if (((ArrayList<Position>) polyline.getPositions()).size() > 0) {
+                marker = markerPool.getMarker(
+                        ((ArrayList<Position>) polyline.getPositions()).get(0),
+                        particleColor);
+            }
         }
-        return marker;
-    }
-
-    public Marker addMarkerToEdge(Position position) {
-
-        MovingParticle marker = null;
-        marker = markerPool.getMarker(position, particleColor);
         return marker;
     }
 

@@ -21,6 +21,11 @@ import gov.nasa.worldwind.render.FrameFactory;
 import gov.nasa.worldwind.util.Logging;
 import gov.nasa.worldwind.util.OGLUtil;
 
+/**
+ * @author Ana Vinatoru
+ *
+ */
+
 public class CustomFrameFactory extends FrameFactory {
 
     private static int circleSteps = 64;

@@ -10,7 +10,11 @@ import prefuse.visual.VisualGraph;
 import prefuse.visual.VisualTable;
 import prefuse.visual.tuple.TableNodeItem;
 
-//altered visualization -> to customize the edge items
+/**
+ * @author Ana Vinatoru
+ *
+ */
+
 public class BundlesPrefuseVisualization extends Visualization {
 
     @Override

@@ -15,6 +15,11 @@ import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.Polyline;
 
+
+/**
+ * @author Ana Vinatoru
+ *
+ */
 public class BSplinePolyline extends Polyline {
 
     private ArrayList<Position> knots = new ArrayList<Position>();

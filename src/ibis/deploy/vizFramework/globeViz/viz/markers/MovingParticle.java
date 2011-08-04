@@ -4,6 +4,11 @@ import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.render.markers.BasicMarker;
 import gov.nasa.worldwind.render.markers.BasicMarkerAttributes;
 
+/**
+ * @author Ana Vinatoru
+ *
+ */
+
 public class MovingParticle extends BasicMarker {
     
     private int currentIndex;

@@ -28,6 +28,10 @@ import java.awt.Point;
 import java.util.ArrayList;
 import javax.swing.JPanel;
 
+/**
+ * @author Ana Vinatoru
+ *
+ */
 public class GlobeVisualization extends JPanel implements IVisualization {
     private static final long serialVersionUID = 1L;
     private static WorldWindowGLCanvas worldWindCanvas;

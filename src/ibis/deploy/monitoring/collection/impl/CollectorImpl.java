@@ -11,8 +11,7 @@ import ibis.deploy.vizFramework.persistence.PersistenceRegistryService;
 import ibis.deploy.vizFramework.persistence.XMLExporter;
 import ibis.deploy.vizFramework.persistence.XMLImporter;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,6 +19,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import ibis.deploy.gui.GUI;
 import ibis.deploy.monitoring.collection.Collector;
@@ -30,9 +30,7 @@ import ibis.deploy.monitoring.collection.Location;
 import ibis.deploy.monitoring.collection.Metric;
 import ibis.deploy.monitoring.collection.MetricDescription;
 import ibis.deploy.monitoring.collection.Pool;
-import ibis.deploy.monitoring.collection.Metric.MetricModifier;
 import ibis.deploy.monitoring.collection.MetricDescription.MetricOutput;
-import ibis.deploy.monitoring.collection.exceptions.OutputUnavailableException;
 import ibis.deploy.monitoring.collection.exceptions.SelfLinkeageException;
 import ibis.deploy.monitoring.collection.exceptions.SingletonObjectNotInstantiatedException;
 import ibis.deploy.monitoring.collection.metrics.*;
@@ -75,7 +73,7 @@ public class CollectorImpl implements Collector, Runnable {
     private int waiting = 0;
 
     // Internal lists
-    private HashMap<String, Location> locations;
+    private ConcurrentHashMap<String, Location> locations;
     private HashMap<Element, Location> parents;
     private HashMap<String, Pool> pools;
     private HashMap<IbisIdentifier, Ibis> ibises;
@@ -86,7 +84,7 @@ public class CollectorImpl implements Collector, Runnable {
     private HashSet<MetricDescription> descriptions;
     private boolean change = false;
 
-    private XMLExporter xmlConvertor = XMLExporter.getInstance();
+    private XMLExporter xmlExporter = XMLExporter.getInstance();
     private boolean writingToFile = false;
 
     private CollectorImpl(ManagementServiceInterface manInterface,
@@ -96,7 +94,7 @@ public class CollectorImpl implements Collector, Runnable {
 
         // Initialize all of the lists and hashmaps needed
         poolSizes = new HashMap<String, Integer>();
-        locations = new HashMap<String, Location>();
+        locations = new ConcurrentHashMap<String, Location>();
         parents = new HashMap<Element, Location>();
         pools = new HashMap<String, Pool>();
         descriptions = new HashSet<MetricDescription>();
@@ -206,9 +204,6 @@ public class CollectorImpl implements Collector, Runnable {
 
         try {
             newSizes = regInterface.getPoolSizes();
-            // if (writingToFile) {
-            // xmlConvertor.poolsToXML(newSizes);
-            // }
         } catch (Exception e) {
             if (logger.isErrorEnabled()) {
                 logger.error("Could not get pool sizes from registry.");
@@ -276,7 +271,7 @@ public class CollectorImpl implements Collector, Runnable {
         }
 
         parents.put(root, null);
-        xmlConvertor.clearBuffer();
+        xmlExporter.clearBuffer();
 
         // For all pools
         for (Entry<String, Pool> entry : pools.entrySet()) {
@@ -288,9 +283,9 @@ public class CollectorImpl implements Collector, Runnable {
                 poolIbises = regInterface.getMembers(poolName);
 
                 if (writingToFile) {
-                    xmlConvertor.poolToXML(poolName, poolIbises);
+                    xmlExporter.poolToXML(poolName, poolIbises);
                 } else {
-                    xmlConvertor.cachePoolContents(poolName, poolIbises);
+                    xmlExporter.cachePoolContents(poolName, poolIbises);
                 }
 
                 // for all ibises
@@ -501,22 +496,35 @@ public class CollectorImpl implements Collector, Runnable {
         int iterations = 0;
 
         while (true) {
+
             // Clear the queue for a new round, and make sure every worker is
             // waiting
             synchronized (jobQueue) {
+                // we need to call this to make sure that data is read from the
+                // file before the update
+                XMLImporter.getImporter().doRun();
+
                 waiting = 0;
                 jobQueue.clear();
                 for (Worker w : workers) {
                     w.interrupt();
-                    // w.setNumIbises(ibises.values().size());
                 }
             }
 
             // Add stuff to the queue and notify
             synchronized (jobQueue) {
                 if (writingToFile) {
-                    xmlConvertor.startUpdate();
-                    // System.out.println("------------------------------");
+                    xmlExporter.startUpdate();
+
+                    // we do this because the first update might not include
+                    // details about the pools - it will very likely result in
+                    // having the pool details twice in the first update, but it
+                    // doesn't affect the import at all
+
+                    if (xmlExporter.isAtFirstUpdate()) {
+                        forceExportPools();
+                        xmlExporter.setFirstUpdate(false);
+                    }
                 }
                 initUniverse();
                 setlinksNotUpdated();
@@ -554,125 +562,147 @@ public class CollectorImpl implements Collector, Runnable {
 
                 // TODO - see if this is the right place to do this
                 if (writingToFile) {
-                    for (Ibis ibis : ibises.values()) {
-                        IbisImpl source = (IbisImpl) ibis;
-                        Metric[] linkMetrics = source.getLinkMetrics();
-                        for (int i = 0; i < linkMetrics.length; i++) {
-                            MetricImpl metric = (MetricImpl) linkMetrics[i];
-                            HashMap<Element, Number> values = (HashMap<Element, Number>) metric.linkValues
-                                    .get(MetricOutput.PERCENT);
+                    writeToFile();
+                }
 
-                            if (values != null) {
-                                for (Element elem : values.keySet()) {
-                                    IbisImpl dest = (IbisImpl) elem;
+            }
+            iterations++;
+        }
+    }
 
-                                    xmlConvertor.linkMetricToXML(dest.getPool()
-                                            .getName(), source.getName(), dest
-                                            .getName(), values.get(elem)
-                                            .floatValue(), metric
+    private void writeToFile() {
+        for (Ibis ibis : ibises.values()) {
+            IbisImpl source = (IbisImpl) ibis;
+            Metric[] linkMetrics = source.getLinkMetrics();
+            for (int i = 0; i < linkMetrics.length; i++) {
+                MetricImpl metric = (MetricImpl) linkMetrics[i];
+                HashMap<Element, Number> values = (HashMap<Element, Number>) metric.linkValues
+                        .get(MetricOutput.PERCENT);
+
+                if (values != null) {
+                    for (Element elem : values.keySet()) {
+                        IbisImpl dest = (IbisImpl) elem;
+
+                        // take the value from the helper map, since here we
+                        // have the unprocessed version
+                        if (metric.helperVariables.get(BytesSentPerSecond
+                                .getHelperMapName(
+                                        BytesSentPerSecond.BYTES_SENT_PER_SEC,
+                                        dest.ibisid.name())) != null) {
+                            long val = metric.helperVariables
+                                    .get(BytesSentPerSecond
+                                            .getHelperMapName(
+                                                    BytesSentPerSecond.BYTES_SENT_PER_SEC,
+                                                    dest.ibisid.name()))
+                                    .longValue();
+                            
+                            xmlExporter.linkMetricToXML(dest.getPool().getName(),
+                                    source.getName(), dest.getName(), val, metric
                                             .getDescription().getName());
-                                }
-                            }
-                        }
-
-                        Metric[] nodeMetrics = source.getMetrics();
-                        String subtype = "";
-                        ArrayList<AttributeDescription> attributes;
-                        long value = 0, maxValue = 0;
-
-                        for (int i = 0; i < nodeMetrics.length; i++) {
-                            MetricImpl metric = (MetricImpl) nodeMetrics[i];
-
-                            if (metric.getDescription().getName()
-                                    .equals(CPUUsage.CPU)) {
-                                attributes = ((CPUUsage) metric
-                                        .getDescription())
-                                        .getNecessaryAttributes();
-                                for (AttributeDescription attr : attributes) {
-                                    subtype = attr.getAttribute();
-                                    value = 0;
-
-                                    if (subtype
-                                            .equals(CPUUsage.ATTRIBUTE_NAME_PROCESS_CPU_TIME)) {
-                                        value = metric
-                                                .getHelperVariable(
-                                                        CPUUsage.ATTRIBUTE_NAME_PROCESS_CPU_TIME)
-                                                .longValue();
-                                    } else if (subtype
-                                            .equals(CPUUsage.ATTRIBUTE_NAME_PROCESS_CPU_UPTIME)) {
-                                        value = metric
-                                                .getHelperVariable(
-                                                        CPUUsage.ATTRIBUTE_NAME_PROCESS_CPU_UPTIME)
-                                                .longValue();
-                                    } else {
-                                        value = metric
-                                                .getHelperVariable(
-                                                        CPUUsage.ATTRIBUTE_NAME_PROCESS_AVAILABLE_PROCESSORS)
-                                                .longValue();
-                                    }
-
-                                }
-                            } else if (metric.getDescription().getName()
-                                    .equals(SystemMemory.MEM_SYS)) {
-
-                                attributes = ((SystemMemory) metric
-                                        .getDescription())
-                                        .getNecessaryAttributes();
-                                for (AttributeDescription attr : attributes) {
-                                    subtype = attr.getAttribute();
-                                    value = 0;
-                                    if (subtype
-                                            .equals(SystemMemory.ATTRIBUTE_TOTAL_PHYSICAL_MEMORY_SIZE)) {
-                                        value = metric
-                                                .getHelperVariable(
-                                                        SystemMemory.ATTRIBUTE_TOTAL_PHYSICAL_MEMORY_SIZE)
-                                                .longValue();
-                                    } else if (subtype
-                                            .equals(SystemMemory.ATTRIBUTE_FREE_PHYSICAL_MEMORY_SIZE)) {
-                                        value = metric
-                                                .getHelperVariable(
-                                                        SystemMemory.ATTRIBUTE_FREE_PHYSICAL_MEMORY_SIZE)
-                                                .longValue();
-                                    }
-                                }
-                            } else if (metric.getDescription().getName()
-                                    .equals(HeapMemory.MEM_HEAP)) {
-                                attributes = ((HeapMemory) metric
-                                        .getDescription())
-                                        .getNecessaryAttributes();
-                                for (AttributeDescription attr : attributes) {
-                                    subtype = attr.getAttribute();
-                                    value = metric.getHelperVariable(
-                                            HeapMemory.USED).longValue();
-                                }
-                                maxValue = metric.getHelperVariable(
-                                        HeapMemory.MAX).longValue();
-                            } else if (metric.getDescription().getName()
-                                    .equals(NonHeapMemory.MEM_NON_HEAP)) {
-                                attributes = ((NonHeapMemory) metric
-                                        .getDescription())
-                                        .getNecessaryAttributes();
-                                value = metric.getHelperVariable(
-                                        NonHeapMemory.USED).longValue();
-                                maxValue = metric.getHelperVariable(
-                                        NonHeapMemory.MAX).longValue();
-                            }
-
-                            xmlConvertor.cpuOrMemoryMetricToXML(source
-                                    .getPool().getName(), source.getName(),
-                                    value, maxValue, metric.getDescription()
-                                            .getName(), subtype);
-
-                            // System.out.println(metric.getDescription()
-                            // .getName() + " " + percentMemory + metric);
                         }
                     }
-
-                    xmlConvertor.endUpdate();
                 }
             }
 
-            iterations++;
+            Metric[] nodeMetrics = source.getMetrics();
+            String subtype = "";
+            ArrayList<AttributeDescription> attributes;
+            long value = 0, maxValue = 0;
+
+            for (int i = 0; i < nodeMetrics.length; i++) {
+                MetricImpl metric = (MetricImpl) nodeMetrics[i];
+
+                if (metric.getDescription().getName().equals(CPUUsage.CPU)) {
+                    attributes = ((CPUUsage) metric.getDescription())
+                            .getNecessaryAttributes();
+                    for (AttributeDescription attr : attributes) {
+                        subtype = attr.getAttribute();
+                        value = 0;
+
+                        if (subtype
+                                .equals(CPUUsage.ATTRIBUTE_NAME_PROCESS_CPU_TIME)) {
+                            value = metric.getHelperVariable(
+                                    CPUUsage.ATTRIBUTE_NAME_PROCESS_CPU_TIME)
+                                    .longValue();
+                        } else if (subtype
+                                .equals(CPUUsage.ATTRIBUTE_NAME_PROCESS_CPU_UPTIME)) {
+                            value = metric.getHelperVariable(
+                                    CPUUsage.ATTRIBUTE_NAME_PROCESS_CPU_UPTIME)
+                                    .longValue();
+                        } else {
+                            value = metric
+                                    .getHelperVariable(
+                                            CPUUsage.ATTRIBUTE_NAME_PROCESS_AVAILABLE_PROCESSORS)
+                                    .longValue();
+                        }
+
+                    }
+                } else if (metric.getDescription().getName()
+                        .equals(SystemMemory.MEM_SYS)) {
+
+                    attributes = ((SystemMemory) metric.getDescription())
+                            .getNecessaryAttributes();
+                    for (AttributeDescription attr : attributes) {
+                        subtype = attr.getAttribute();
+                        value = 0;
+                        if (subtype
+                                .equals(SystemMemory.ATTRIBUTE_TOTAL_PHYSICAL_MEMORY_SIZE)) {
+                            value = metric
+                                    .getHelperVariable(
+                                            SystemMemory.ATTRIBUTE_TOTAL_PHYSICAL_MEMORY_SIZE)
+                                    .longValue();
+                        } else if (subtype
+                                .equals(SystemMemory.ATTRIBUTE_FREE_PHYSICAL_MEMORY_SIZE)) {
+                            value = metric
+                                    .getHelperVariable(
+                                            SystemMemory.ATTRIBUTE_FREE_PHYSICAL_MEMORY_SIZE)
+                                    .longValue();
+                        }
+                    }
+                } else if (metric.getDescription().getName()
+                        .equals(HeapMemory.MEM_HEAP)) {
+                    attributes = ((HeapMemory) metric.getDescription())
+                            .getNecessaryAttributes();
+                    for (AttributeDescription attr : attributes) {
+                        subtype = attr.getAttribute();
+                        value = metric.getHelperVariable(HeapMemory.USED)
+                                .longValue();
+                    }
+                    maxValue = metric.getHelperVariable(HeapMemory.MAX)
+                            .longValue();
+                } else if (metric.getDescription().getName()
+                        .equals(NonHeapMemory.MEM_NON_HEAP)) {
+                    attributes = ((NonHeapMemory) metric.getDescription())
+                            .getNecessaryAttributes();
+                    value = metric.getHelperVariable(NonHeapMemory.USED)
+                            .longValue();
+                    maxValue = metric.getHelperVariable(NonHeapMemory.MAX)
+                            .longValue();
+                }
+
+                xmlExporter.cpuOrMemoryMetricToXML(source.getPool().getName(),
+                        source.getName(), value, maxValue, metric
+                                .getDescription().getName(), subtype);
+            }
+        }
+
+        xmlExporter.endUpdate();
+    }
+
+    private void forceExportPools() {
+        // For all pools
+        for (Entry<String, Pool> entry : pools.entrySet()) {
+            String poolName = entry.getKey();
+            // Get the members of this pool
+            IbisIdentifier[] poolIbises;
+            try {
+                poolIbises = regInterface.getMembers(poolName);
+                if (writingToFile) {
+                    xmlExporter.poolToXML(poolName, poolIbises);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -681,27 +711,12 @@ public class CollectorImpl implements Collector, Runnable {
         return refreshrate;
     }
 
-    public void toXML() {
-        try {
-            BufferedWriter writer = new BufferedWriter(
-                    new FileWriter("out.xml"));
-            writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
-            writer.write("<graph>\n");
-            writer.write(((LocationImpl) root).toXML());
-            writer.write("</graph>\n");
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    public void startWritingToFile() {
-        xmlConvertor.openFile("out.xml");
+    public void startWritingToFile(File file) {
+        xmlExporter.openFile(file);
     }
 
     public void stopWritingToFile() {
-        xmlConvertor.closeFile();
+        xmlExporter.closeFile();
     }
 
     public boolean isWritingToFile() {
@@ -712,12 +727,39 @@ public class CollectorImpl implements Collector, Runnable {
         writingToFile = state;
     }
 
-    public void startImport() {
-        manInterface = persistenceManInterface;
-        regInterface = persistenceRegInterface;
+    public void prepareForImport(File name) {
+        synchronized (jobQueue) {
 
-        initUniverse();
+            XMLImporter.getImporter().openFile(name);
 
-        XMLImporter.getImporter().openFile("out.xml");
+            manInterface = persistenceManInterface;
+            regInterface = persistenceRegInterface;
+
+            pools.clear();
+            initLocations();
+            initLinks();
+            initMetrics();
+            change = true;
+        }
+
+    }
+
+    public void revertToRealData() {
+        synchronized (jobQueue) {
+            manInterface = realManInterface;
+            regInterface = realRegInterface;
+
+            pools.clear();
+            initLocations();
+            initLinks();
+            initMetrics();
+            change = true;
+        }
+    }
+
+    public void toggleImport(boolean pause) {
+        synchronized (jobQueue) {
+            XMLImporter.getImporter().toggleReading(pause);
+        }
     }
 }

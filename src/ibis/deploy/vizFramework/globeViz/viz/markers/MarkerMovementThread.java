@@ -4,6 +4,11 @@ import javax.swing.SwingUtilities;
 
 import ibis.deploy.vizFramework.globeViz.data.GlobeDataConvertor;
 
+/**
+ * @author Ana Vinatoru
+ *
+ */
+
 public class MarkerMovementThread implements Runnable {
     private static final int APS = 8;
 

@@ -19,6 +19,11 @@ import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.globes.Globe;
 
+/**
+ * @author Ana Vinatoru
+ *
+ */
+
 public class Utils {
 
     public static double MAX_EDGE_WEIGHT = 0;
@@ -46,16 +51,18 @@ public class Utils {
 
             if (point1 != null && point2 != null) {
 
-                // if (view.getFrustumInModelCoordinates().contains(point1)
-                // && view.getFrustumInModelCoordinates().contains(point2)) {
+                boolean p1Visible = false, p2Visible = false;
 
-                boolean p1Visible = view.getFrustumInModelCoordinates()
-                        .contains(point1);
-                boolean p2Visible = view.getFrustumInModelCoordinates()
-                        .contains(point2);
+                if (view != null) {
 
-                point1 = view.project(point1);
-                point2 = view.project(point2);
+                    p1Visible = view.getFrustumInModelCoordinates().contains(
+                            point1);
+                    p2Visible = view.getFrustumInModelCoordinates().contains(
+                            point2);
+
+                    point1 = view.project(point1);
+                    point2 = view.project(point2);
+                }
 
                 // compute distances only if the points are on the same side of
                 // the globe
@@ -63,7 +70,6 @@ public class Utils {
                         && !(p1Visible ^ p2Visible)) {
                     return Math.abs(point1.distanceTo3(point2));
                 }
-                // }
             }
         }
 
@@ -353,8 +359,8 @@ public class Utils {
         Utils.clusters = Utils.gui.getGrid().getClusters();
         currentIdx = 0;
     }
-    
-    public static String extractFullNameFromIbisIdentifier(IbisIdentifier id){
+
+    public static String extractFullNameFromIbisIdentifier(IbisIdentifier id) {
         return id.name() + "-" + id.location();
     }
 }

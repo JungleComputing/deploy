@@ -10,6 +10,11 @@ import ibis.deploy.vizFramework.globeViz.viz.utils.UIConstants;
 import java.awt.Color;
 import java.util.Vector;
 
+/**
+ * @author Ana Vinatoru
+ *
+ */
+
 public class ParticlePool {
 
     private Vector<MovingParticle> passiveMarkers;

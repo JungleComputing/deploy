@@ -11,10 +11,16 @@ import ibis.deploy.monitoring.collection.metrics.SystemMemory;
 import ibis.ipl.IbisIdentifier;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
+/**
+ * @author Ana Vinatoru
+ *
+ */
 
 public class XMLExporter {
 
@@ -26,17 +32,20 @@ public class XMLExporter {
     private static int OUTSIDE_UPDATE_CYCLE = 0;
     private static int IN_UPDATE_CYCLE = 1;
     private static int WAITING_FOR_CLOSE = 2;
+    
+    private boolean firstUpdate = true;
 
     public XMLExporter() {
     }
 
-    public synchronized void openFile(String file) {
+    public synchronized void openFile(File file) {
         // System.out.println("open");
         try {
             CollectorImpl.getCollector().setWritingToFile(true);
             writer = new BufferedWriter(new FileWriter(file));
             writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
             writer.write("<Graph>\n");
+            firstUpdate = true;
         } catch (IOException e) {
             e.printStackTrace();
         } catch (SingletonObjectNotInstantiatedException e) {
@@ -64,7 +73,6 @@ public class XMLExporter {
 
     public synchronized void startUpdate() {
         if (state == OUTSIDE_UPDATE_CYCLE) {
-            // System.out.println("start");
             try {
                 state = IN_UPDATE_CYCLE;
                 writer.write("<Update id =\"" + System.currentTimeMillis()
@@ -139,7 +147,7 @@ public class XMLExporter {
     }
 
     public synchronized void linkMetricToXML(String poolName, String source,
-            String destination, float value, String type) {
+            String destination, long value, String type) {
         if (state == IN_UPDATE_CYCLE) {
             String result = "";
 
@@ -192,5 +200,13 @@ public class XMLExporter {
             instance = new XMLExporter();
         }
         return instance;
+    }
+    
+    public boolean isAtFirstUpdate(){
+        return firstUpdate;
+    }
+    
+    public void setFirstUpdate(boolean value){
+        firstUpdate = value;
     }
 }

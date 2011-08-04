@@ -17,6 +17,11 @@ import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.layers.RenderableLayer;
 
+/**
+ * @author Ana Vinatoru
+ *
+ */
+
 public class GridGraph {
 
     HashSet<Node> nodes;

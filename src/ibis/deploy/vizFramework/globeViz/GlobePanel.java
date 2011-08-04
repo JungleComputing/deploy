@@ -1,13 +1,17 @@
 package ibis.deploy.vizFramework.globeViz;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import ibis.deploy.gui.GUI;
 import ibis.deploy.monitoring.collection.exceptions.SingletonObjectNotInstantiatedException;
 import ibis.deploy.monitoring.collection.impl.CollectorImpl;
+import ibis.deploy.vizFramework.VisualizationPanel;
 import ibis.deploy.vizFramework.globeViz.viz.GlobeVisualization;
 import ibis.deploy.vizFramework.persistence.XMLImporter;
 
@@ -22,6 +26,11 @@ import javax.swing.JRadioButton;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 
+/**
+ * @author Ana Vinatoru
+ *
+ */
+
 public class GlobePanel extends JPanel {
     private static final long serialVersionUID = 4754345291079348455L;
 
@@ -31,13 +40,19 @@ public class GlobePanel extends JPanel {
         setLayout(new BorderLayout(5, 5));
 
         JPanel leftPanel = new JPanel();
-        BoxLayout verticalLayout = new BoxLayout(leftPanel,
+        BoxLayout bLayout = new BoxLayout(leftPanel,
                 BoxLayout.PAGE_AXIS);
-        leftPanel.setLayout(verticalLayout);
+        leftPanel.setLayout(bLayout);
+        leftPanel.add(Box.createRigidArea(new Dimension(30, 15)));
+       
 
         globe = new GlobeVisualization(gui);
         
-        leftPanel.add(new JLabel("Edge type:    "));
+
+        JLabel edgeTypeLabel = new JLabel("Connection type:    ");
+        Font newLabelFont = new Font(edgeTypeLabel.getFont().getName(),Font.BOLD,edgeTypeLabel.getFont().getSize());
+        edgeTypeLabel.setFont(newLabelFont);
+        leftPanel.add(edgeTypeLabel);
         
         // radio buttons for switching between layouts
         ButtonGroup radioGroup = new ButtonGroup();
@@ -57,7 +72,7 @@ public class GlobePanel extends JPanel {
         arcRadio.setSelected(true);
         leftPanel.add(arcRadio);
 
-        JRadioButton terrainRadio = new JRadioButton("Terrain");
+        JRadioButton terrainRadio = new JRadioButton("Follow terrain");
         radioGroup.add(terrainRadio);
         terrainRadio.addActionListener(new ActionListener() {
 
@@ -73,6 +88,7 @@ public class GlobePanel extends JPanel {
         
         //Change polyline visibility
         JCheckBox cb = new JCheckBox("Polylines visible");
+        cb.setFont(newLabelFont);
         cb.setSelected(true);
         cb.addActionListener(new ActionListener() {
             
@@ -86,12 +102,14 @@ public class GlobePanel extends JPanel {
         leftPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         leftPanel.add(new JSeparator(SwingConstants.HORIZONTAL));
         
-        leftPanel.add(new JLabel("Display type:    "));
+        JLabel displayTypeLabel = new JLabel("Display type:    ");
+        displayTypeLabel.setFont(newLabelFont);
+        leftPanel.add(displayTypeLabel);
         
         // radio buttons for switching between layouts
         ButtonGroup particleButtonGroup = new ButtonGroup();
 
-        JRadioButton showParticlesRadio = new JRadioButton("Particle encoding");
+        JRadioButton showParticlesRadio = new JRadioButton("Historical (particles)");
         particleButtonGroup.add(showParticlesRadio);
         showParticlesRadio.addActionListener(new ActionListener() {
 
@@ -103,7 +121,7 @@ public class GlobePanel extends JPanel {
         showParticlesRadio.setSelected(true);
         leftPanel.add(showParticlesRadio);
         
-        JRadioButton showArcsRadio = new JRadioButton("Edge weight encoding");
+        JRadioButton showArcsRadio = new JRadioButton("Real-time (edges)");
         particleButtonGroup.add(showArcsRadio);
         showArcsRadio.addActionListener(new ActionListener() {
 
@@ -118,45 +136,8 @@ public class GlobePanel extends JPanel {
         });
         leftPanel.add(showArcsRadio);  
         
-        JButton button = new JButton("Start export");
-        button.addActionListener(new ActionListener() {
-            
-            @Override
-            public void actionPerformed(ActionEvent event) {
-                try {
-                    JButton source = (JButton) event.getSource();
-                    if(source.getText().equals("Start export")){
-                        source.setText("Stop export");
-                        CollectorImpl.getCollector().startWritingToFile();
-                    } else {
-                        source.setText("Start export");
-                        CollectorImpl.getCollector().stopWritingToFile();
-                    }
-                } catch (SingletonObjectNotInstantiatedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        leftPanel.add(button);
-        
-        JButton readButton = new JButton("Read xml");
-        readButton.addActionListener(new ActionListener() {
-            
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                try {
-                    CollectorImpl.getCollector().startImport();
-                } catch (SingletonObjectNotInstantiatedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        leftPanel.add(readButton);
-        
-        leftPanel.add(Box.createVerticalGlue());
-        leftPanel.add(Box.createVerticalGlue());
-        leftPanel.add(Box.createVerticalGlue());
-        leftPanel.add(Box.createVerticalGlue());
+        Component rigidArea = Box.createRigidArea(new Dimension(10, 350));
+        leftPanel.add(rigidArea);
 
         // Set up the window
         add(globe, BorderLayout.CENTER);

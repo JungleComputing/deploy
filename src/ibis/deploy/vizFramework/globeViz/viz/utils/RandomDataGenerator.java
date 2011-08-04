@@ -13,6 +13,11 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.util.ArrayList;
 
+/**
+ * @author Ana Vinatoru
+ *
+ */
+
 public class RandomDataGenerator {
 
     // generates a list with nPoints random locations

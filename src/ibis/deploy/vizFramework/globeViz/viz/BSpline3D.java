@@ -6,6 +6,11 @@ import gov.nasa.worldwind.geom.Vec4;
 import gov.nasa.worldwind.globes.Globe;
 import java.util.ArrayList;
 
+/**
+ * @author Ana Vinatoru
+ *
+ */
+
 public class BSpline3D {
     public BSpline3D() {
     }

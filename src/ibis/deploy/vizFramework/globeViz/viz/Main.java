@@ -1,5 +1,9 @@
 package ibis.deploy.vizFramework.globeViz.viz;
 
+/**
+ * @author Ana Vinatoru
+ *
+ */
 import java.awt.BorderLayout;
 import java.awt.Color;
 import javax.swing.JFrame;

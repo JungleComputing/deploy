@@ -22,6 +22,11 @@ import prefuse.util.GraphicsLib;
 import prefuse.visual.EdgeItem;
 import prefuse.visual.VisualItem;
 
+/**
+ * @author Ana Vinatoru
+ *
+ */
+
 public class BundledEdgeRenderer extends EdgeRenderer {
     private Tree tree;
     private double bfactor;

@@ -13,6 +13,11 @@ import prefuse.visual.EdgeItem;
 import prefuse.visual.NodeItem;
 import prefuse.visual.VisualItem;
 
+/**
+ * @author Ana Vinatoru
+ *
+ */
+
 public class DisplayControlAdapter extends ControlAdapter {
 
     private NodeItem lastSelectedNode = null;

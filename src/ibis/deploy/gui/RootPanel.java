@@ -7,6 +7,7 @@ import ibis.deploy.gui.misc.Utils;
 import ibis.deploy.monitoring.visualization.gridvision.swing.GogglePanel;
 import ibis.deploy.vizFramework.IVisualization;
 import ibis.deploy.vizFramework.MetricManager;
+import ibis.deploy.vizFramework.VisualizationPanel;
 import ibis.deploy.vizFramework.bundles.BundlesVisualization;
 import ibis.deploy.vizFramework.globeViz.GlobePanel;
 import ibis.deploy.vizFramework.globeViz.viz.GlobeVisualization;
@@ -58,28 +59,33 @@ public class RootPanel extends JPanel {
                         Color.WHITE, false, true, false, gui.getDeploy()
                                 .getRootHubAddress()), tabs);
 
-//        if (!gui.isReadOnly()) {
-//            gridVisionTab = new DetachableTab("3D Visualization",
-//                    "images/gridvision.png",
-//                    new GogglePanel(gui.getCollector()), tabs);
-//        }
+        // if (!gui.isReadOnly()) {
+        // gridVisionTab = new DetachableTab("3D Visualization",
+        // "images/gridvision.png",
+        // new GogglePanel(gui.getCollector()), tabs);
+        // }
+        
+        DetachableTab vizTab = new DetachableTab("Visualizations",
+                "images/gridvision.png", VisualizationPanel.getVisualizationPanel(gui), tabs);
 
-        BundlesVisualization bundlePanel = new BundlesVisualization(gui);
-
-        deployVizTab = new DetachableTab("Connection Overview",
-                "images/gridvision.png", bundlePanel, tabs);
-
-        GlobePanel globePanel = new GlobePanel(gui);
-
-        globeTab = new DetachableTab("Global Overview",
-                "images/gridvision.png", globePanel, tabs);
-
-        ArrayList<IVisualization> visualizations = new ArrayList<IVisualization>();
-        visualizations.add(globePanel.getGlobe());
-        visualizations.add(bundlePanel);
-
-        MetricManager mgr = new MetricManager(gui.getCollector(),
-                visualizations);
+//        BundlesVisualization bundlePanel = new BundlesVisualization(gui);
+//
+//        deployVizTab = new DetachableTab("Connection Overview",
+//                "images/gridvision.png", bundlePanel, tabs);
+//
+//        GlobePanel globePanel = new GlobePanel(gui);
+//
+//        globeTab = new DetachableTab("Global Overview",
+//                "images/gridvision.png", globePanel, tabs);
+//
+//        
+//
+//        ArrayList<IVisualization> visualizations = new ArrayList<IVisualization>();
+//        visualizations.add(globePanel.getGlobe());
+//        visualizations.add(bundlePanel);
+//
+//        MetricManager mgr = MetricManager.getMetricManager(gui.getCollector(),
+//                visualizations);
         add(tabs, BorderLayout.CENTER);
     }
 }

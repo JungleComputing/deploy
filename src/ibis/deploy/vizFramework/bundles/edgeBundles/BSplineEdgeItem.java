@@ -8,6 +8,10 @@ import prefuse.visual.EdgeItem;
 import prefuse.visual.NodeItem;
 import prefuse.visual.tuple.TableEdgeItem;
 
+/**
+ * @author Ana Vinatoru
+ *
+ */
 public class BSplineEdgeItem extends TableEdgeItem {
     public BSplineEdgeItem() {
         super();

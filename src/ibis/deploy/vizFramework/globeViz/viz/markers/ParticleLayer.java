@@ -6,6 +6,11 @@ import gov.nasa.worldwind.layers.MarkerLayer;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.markers.Marker;
 
+/**
+ * @author Ana Vinatoru
+ *
+ */
+
 public class ParticleLayer extends MarkerLayer {
 
     public ParticleLayer() {

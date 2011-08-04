@@ -4,8 +4,10 @@ import ibis.deploy.gui.GUI;
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -35,9 +37,6 @@ import ibis.deploy.vizFramework.bundles.edgeBundles.BundlesPrefuseVisualization;
 import ibis.deploy.vizFramework.bundles.edgeBundles.DisplayControlAdapter;
 import ibis.deploy.vizFramework.globeViz.viz.utils.UIConstants;
 import ibis.deploy.vizFramework.globeViz.viz.utils.Utils;
-import ibis.ipl.server.ManagementServiceInterface;
-import ibis.ipl.server.RegistryServiceInterface;
-
 import prefuse.Constants;
 import prefuse.Display;
 import prefuse.Visualization;
@@ -66,6 +65,11 @@ import prefuse.visual.VisualItem;
 import prefuse.visual.expression.InGroupPredicate;
 import prefuse.visual.sort.TreeDepthItemSorter;
 
+/**
+ * @author Ana Vinatoru
+ *
+ */
+
 public class BundlesVisualization extends JPanel implements IVisualization {
 
     private static final long serialVersionUID = 1L;
@@ -89,7 +93,7 @@ public class BundlesVisualization extends JPanel implements IVisualization {
     private NodeLinkTreeLayout treeLayout;
     private RadialGraphDisplay radialGraphDisplay;
     private JPanel vizPanel;
-    
+
     private GraphGenerator generator;
 
     public BundlesVisualization(GUI gui) {
@@ -151,7 +155,7 @@ public class BundlesVisualization extends JPanel implements IVisualization {
                     synchronized (vis) { // make sure that this section is
                                          // synchnorized
                         if (lastSelectedLayout == radialTreeLayout) {
-                            vis.run(RADIAL_TREE_LAYOUT); 
+                            vis.run(RADIAL_TREE_LAYOUT);
                         } else {
                             vis.run(TREE_LAYOUT);
                         }
@@ -169,7 +173,7 @@ public class BundlesVisualization extends JPanel implements IVisualization {
                         }
                     }
                 }
-               
+
                 // compute alphas for the edges, according to their length
                 Utils.computeEdgeAlphas(vis, tree);
 
@@ -222,8 +226,8 @@ public class BundlesVisualization extends JPanel implements IVisualization {
         box.add(title);
         box.add(Box.createHorizontalStrut(3));
 
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.add(createControlPanels(), BorderLayout.NORTH);
+        JPanel panel = new JPanel(new BorderLayout(5, 5));
+        panel.add(createControlPanels(), BorderLayout.WEST);
         panel.add(radialGraphDisplay, BorderLayout.CENTER);
         panel.add(box, BorderLayout.SOUTH);
 
@@ -234,72 +238,67 @@ public class BundlesVisualization extends JPanel implements IVisualization {
     // visualization
     private JPanel createControlPanels() {
 
-        JPanel topPanel = new JPanel();
-        BoxLayout blayout = new BoxLayout(topPanel, BoxLayout.LINE_AXIS);
-        topPanel.setLayout(blayout);
-        topPanel.add(Box.createRigidArea(new Dimension(30, 30)));
+        JPanel leftPanel = new JPanel();
+        BoxLayout bLayout = new BoxLayout(leftPanel, BoxLayout.PAGE_AXIS);
+        leftPanel.setLayout(bLayout);
+        leftPanel.add(Box.createRigidArea(new Dimension(30, 15)));
 
-        // initialize left panel
-        JPanel verticalpaJPanel = new JPanel();
-        BoxLayout verticalLayout = new BoxLayout(verticalpaJPanel,
-                BoxLayout.PAGE_AXIS);
-        verticalpaJPanel.setLayout(verticalLayout);
+        JLabel sharedAncestorLabel = new JLabel("Shared ancestor:");
+        Font newLabelFont = new Font(sharedAncestorLabel.getFont().getName(),
+                Font.BOLD, sharedAncestorLabel.getFont().getSize());
+        sharedAncestorLabel.setFont(newLabelFont);
+        leftPanel.add(sharedAncestorLabel);
 
-        // checkbox to add / remove shared ancestor
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        panel.add(new JLabel("Remove shared ancestor:"));
-        cbox = new JCheckBox();
+        cbox = new JCheckBox("Include");
         cbox.addChangeListener(new ChangeListener() {
 
             @Override
             public void stateChanged(ChangeEvent arg0) {
                 if (edgeRenderer instanceof BundledEdgeRenderer) {
                     ((BundledEdgeRenderer) edgeRenderer)
-                            .setRemoveSharedAncestor(cbox.isSelected());
+                            .setRemoveSharedAncestor(!cbox.isSelected());
                 }
                 Utils.forceEdgeUpdate(vis);
                 vis.repaint();
             }
         });
-        panel.add(cbox);
-        verticalpaJPanel.add(panel);
+        cbox.setSelected(true);
+        leftPanel.add(cbox);
 
-        // color picker for edge start color
-        panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        panel.add(new JLabel("Start color:"));
+        addSpacer(leftPanel);
+
+        JLabel startColorLabel = new JLabel("Start color:");
+        startColorLabel.setFont(newLabelFont);
+        leftPanel.add(startColorLabel);
         buttonStart = new JButton("  ");
         buttonStart.setBackground(UIConstants.DEFAULT_START_COLOR);
         buttonStart.setFocusPainted(false);
         buttonStart.addActionListener(new ButtonActionListener());
         buttonStart.setToolTipText("Click to select color");
-        panel.add(buttonStart);
+        leftPanel.add(buttonStart);
 
         // color picker for edge stop color
-        panel.add(new JLabel("Stop color:"));
+        JLabel stopColorLabel = new JLabel("Stop color: ");
+        stopColorLabel.setFont(newLabelFont);
+        leftPanel.add(stopColorLabel);
+
         buttonStop = new JButton("  ");
         buttonStop.setBackground(UIConstants.DEFAULT_STOP_COLOR);
         buttonStop.setFocusPainted(false);
         buttonStop.addActionListener(new ButtonActionListener());
         buttonStop.setToolTipText("Click to select color");
-        panel.add(buttonStop);
+        leftPanel.add(buttonStop);
 
-        verticalpaJPanel.add(panel);
-
-        // the left panel is initialized, so add it to the main panel
-        topPanel.add(verticalpaJPanel);
-
-        topPanel.add(new JSeparator(JSeparator.VERTICAL));
-
-        // initialize right panel
-        verticalpaJPanel = new JPanel();
-        verticalLayout = new BoxLayout(verticalpaJPanel, BoxLayout.PAGE_AXIS);
-        verticalpaJPanel.setLayout(verticalLayout);
+        addSpacer(leftPanel);
 
         // slider for changing the bundling factor
-        panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        panel.add(new JLabel("Change bundling factor:"));
+        JLabel bundlingFactorLabel = new JLabel("Bundling factor:");
+        bundlingFactorLabel.setFont(newLabelFont);
+        leftPanel.add(bundlingFactorLabel);
+
         slider = new JSlider(0, 20,
                 (int) (20 * UIConstants.INITIAL_BUNDLING_FACTOR));
+        slider.setPreferredSize(new Dimension(150, 25));
         slider.addChangeListener(new ChangeListener() {
 
             @Override
@@ -312,12 +311,13 @@ public class BundlesVisualization extends JPanel implements IVisualization {
                 vis.repaint();
             }
         });
-        panel.add(slider);
+        leftPanel.add(slider);
 
-        verticalpaJPanel.add(panel);
+        addSpacer(leftPanel);
 
-        panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        panel.add(new JLabel("Layout:"));
+        JLabel layoutLabel = new JLabel("Layout:");
+        layoutLabel.setFont(newLabelFont);
+        leftPanel.add(layoutLabel);
 
         // radio buttons for switching between layouts
         ButtonGroup radioGroup = new ButtonGroup();
@@ -340,7 +340,7 @@ public class BundlesVisualization extends JPanel implements IVisualization {
             }
         });
         circleRadio.setSelected(true);
-        panel.add(circleRadio);
+        leftPanel.add(circleRadio);
 
         JRadioButton treeRadio = new JRadioButton("Tree");
         radioGroup.add(treeRadio);
@@ -356,16 +356,18 @@ public class BundlesVisualization extends JPanel implements IVisualization {
                 vis.repaint();
             }
         });
-        panel.add(treeRadio);
-        verticalpaJPanel.add(panel);
+        leftPanel.add(treeRadio);
+
+        addSpacer(leftPanel);
 
         // radio buttons for switching between edge color encoding methods:
         // based on edge weight or based on start and end nodes
-        panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        panel.add(new JLabel("Edge color encoding:"));
+        JLabel edgeEncodingLabel = new JLabel("Edge color encoding:");
+        edgeEncodingLabel.setFont(newLabelFont);
+        leftPanel.add(edgeEncodingLabel);
 
         ButtonGroup colorRadioGroup = new ButtonGroup();
-        JRadioButton weightRadio = new JRadioButton("Edge weight");
+        JRadioButton weightRadio = new JRadioButton("Weight");
         colorRadioGroup.add(weightRadio);
         weightRadio.addActionListener(new ActionListener() {
 
@@ -378,7 +380,7 @@ public class BundlesVisualization extends JPanel implements IVisualization {
             }
         });
         weightRadio.setSelected(true);
-        panel.add(weightRadio);
+        leftPanel.add(weightRadio);
 
         JRadioButton startEndRadio = new JRadioButton("Start to end node");
         colorRadioGroup.add(startEndRadio);
@@ -393,12 +395,18 @@ public class BundlesVisualization extends JPanel implements IVisualization {
                 vis.repaint();
             }
         });
-        panel.add(startEndRadio);
-        verticalpaJPanel.add(panel);
+        leftPanel.add(startEndRadio);
 
-        topPanel.add(verticalpaJPanel);
+        Component rigidArea = Box.createRigidArea(new Dimension(10, 250));
+        leftPanel.add(rigidArea);
 
-        return topPanel;
+        return leftPanel;
+    }
+
+    private void addSpacer(JPanel panel) {
+        panel.add(Box.createRigidArea(new Dimension(30, 5)));
+        panel.add(new JSeparator(JSeparator.HORIZONTAL));
+        panel.add(Box.createRigidArea(new Dimension(30, 5)));
     }
 
     // displays the color chooser
@@ -492,7 +500,6 @@ public class BundlesVisualization extends JPanel implements IVisualization {
             ColorAction edges = new ColorAction(UIConstants.EDGES,
                     VisualItem.STROKECOLOR, ColorLib.hex("00FF00"));
 
-
             // create an action list containing all color assignments
             ActionList initialColor = new ActionList();
             initialColor.add(text);
@@ -528,10 +535,10 @@ public class BundlesVisualization extends JPanel implements IVisualization {
             computeVisualParameters(edgeRenderer, true);
             // color the graph and perform layout
             m_vis.run("initialColor");
-//
-//            //TODO - here we measure time it takes to draw
-//            addPaintListener(new DebugStatsPainter());
-           
+            //
+            // //TODO - here we measure time it takes to draw
+            // addPaintListener(new DebugStatsPainter());
+
         }
 
         public void forceSelectedNodeUpdate() {

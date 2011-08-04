@@ -7,6 +7,11 @@ import java.awt.image.BufferedImage;
 
 import prefuse.util.ColorLib;
 
+/**
+ * @author Ana Vinatoru
+ *
+ */
+
 public class UIConstants {
 
     public static BufferedImage LOCATIONS_SHAPE_LIST[] = {

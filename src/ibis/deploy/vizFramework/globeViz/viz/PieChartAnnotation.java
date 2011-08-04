@@ -1,5 +1,9 @@
 package ibis.deploy.vizFramework.globeViz.viz;
 
+/**
+ * @author Ana Vinatoru
+ *
+ */
 import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
 import gov.nasa.worldwind.geom.Position;

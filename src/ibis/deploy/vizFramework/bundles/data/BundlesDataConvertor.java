@@ -21,6 +21,11 @@ import ibis.deploy.vizFramework.globeViz.data.IDataConvertor;
 import ibis.deploy.vizFramework.globeViz.viz.utils.UIConstants;
 import ibis.deploy.vizFramework.globeViz.viz.utils.Utils;
 
+/**
+ * @author Ana Vinatoru
+ *
+ */
+
 public class BundlesDataConvertor implements IDataConvertor {
 
     private final BundlesVisualization bundlesViz;
@@ -134,5 +139,9 @@ public class BundlesDataConvertor implements IDataConvertor {
             }
             updateLocations(loc, level - 1, structureChanged, spacer + "  ");
         }
+    }
+
+    @Override
+    public void togglePause(boolean pause) {
     }
 }

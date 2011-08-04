@@ -23,9 +23,9 @@ public class BytesSentPerSecond extends
 
     public static final float MAX = 512000; // 1/2 GB
     private long overall_max = 1024;
-    
+
     public static final String ATTRIBUTE_NAME_SENT_BYTES_PER_IBIS = "sentBytesPerIbis";
-    public static final String BYTES_SENT_PER_SEC =  "Bytes_Sent_Per_Sec";
+    public static final String BYTES_SENT_PER_SEC = "Bytes_Sent_Per_Sec";
 
     public BytesSentPerSecond() {
         super();
@@ -40,7 +40,7 @@ public class BytesSentPerSecond extends
         // necessaryAttributes.add(new
         // AttributeDescription("java.lang:type=Runtime", "Uptime"));
         necessaryAttributes.add(new AttributeDescription("ibis",
-               ATTRIBUTE_NAME_SENT_BYTES_PER_IBIS));
+                ATTRIBUTE_NAME_SENT_BYTES_PER_IBIS));
 
         // outputTypes.add(MetricOutput.N);
         // outputTypes.add(MetricOutput.RPOS);
@@ -78,10 +78,11 @@ public class BytesSentPerSecond extends
 
                         long sent_now = received.getValue();
                         long sent = sent_now
-                                - (Long) castMetric.getHelperVariable(this.name
-                                        + "_" + id + "_sent_prev");
-                        castMetric.setHelperVariable(this.name + "_" + id
-                                + "_sent_prev", sent_now);
+                                - (Long) castMetric
+                                        .getHelperVariable(getHelperMapName(
+                                                this.name, id));
+                        castMetric.setHelperVariable(
+                                getHelperMapName(this.name, id), sent_now);
 
                         long perSec = (long) ((float) sent / time_seconds);
                         if (perSec < 0)
@@ -117,12 +118,16 @@ public class BytesSentPerSecond extends
             // castMetric.setValue(MetricModifier.NORM, MetricOutput.N, total);
             // castMetric.setValue(MetricModifier.NORM, MetricOutput.RPOS,
             // result);
-            //System.out.println(percentResult);
+            // System.out.println(percentResult);
             castMetric.setValue(MetricModifier.NORM, MetricOutput.PERCENT,
                     percentResult);
         } catch (BeyondAllowedRangeException e) {
             logger.debug(name
                     + " metric failed trying to set value out of bounds.");
         }
+    }
+
+    public static String getHelperMapName(String name, String id) {
+        return name + "_" + id + "_sent_prev";
     }
 }

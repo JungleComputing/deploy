@@ -21,6 +21,11 @@ import prefuse.data.Schema;
 import prefuse.util.ColorLib;
 import prefuse.visual.NodeItem;
 
+/**
+ * @author Ana Vinatoru
+ *
+ */
+
 public class GraphGenerator {
 
     /** Node table schemas used for generated Graphs */
