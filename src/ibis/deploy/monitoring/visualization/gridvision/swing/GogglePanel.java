@@ -9,6 +9,9 @@ import java.io.IOException;
 import ibis.deploy.gui.GUI;
 import ibis.deploy.monitoring.collection.Collector;
 import ibis.deploy.monitoring.collection.MetricDescription;
+import ibis.deploy.monitoring.collection.impl.CollectorImpl;
+import ibis.deploy.monitoring.simulator.FakeManagementService;
+import ibis.deploy.monitoring.simulator.FakeRegistryService;
 import ibis.deploy.monitoring.visualization.gridvision.JGVisual.CollectionShape;
 import ibis.deploy.monitoring.visualization.gridvision.JungleGoggles;
 import ibis.deploy.monitoring.visualization.gridvision.KeyHandler;
@@ -30,6 +33,8 @@ import ibis.deploy.monitoring.visualization.gridvision.swing.listeners.ParentSki
 import ibis.deploy.monitoring.visualization.gridvision.swing.listeners.RefreshrateSliderChangeListener;
 import ibis.deploy.monitoring.visualization.gridvision.swing.listeners.ThresholdSliderChangeListener;
 import ibis.deploy.monitoring.visualization.gridvision.swing.util.GoggleSwing;
+import ibis.ipl.server.ManagementServiceInterface;
+import ibis.ipl.server.RegistryServiceInterface;
 
 import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLProfile;
@@ -72,12 +77,17 @@ public class GogglePanel extends JPanel {
 	public GogglePanel(final GUI gui, final Collector collector) {
 	    final JButton initButton = new JButton("Initialize 3D Visualization");
 	    add(initButton);
+	    
 	    initButton.addActionListener(new ActionListener() {
-
-		public void actionPerformed(ActionEvent e) {
-		    removeAll();
-		    initialize(gui, collector);
-		}
+			public void actionPerformed(ActionEvent e) {
+			    removeAll();
+			    
+			    //DEBUG
+			    //RegistryServiceInterface emptyReg = new FakeRegistryService(1,1,1,1,1);
+			    //ManagementServiceInterface emptyMan = new FakeManagementService(emptyReg);
+			    //Collector emptyCollector = CollectorImpl.getCollector(emptyMan, emptyReg);
+			    initialize(gui, collector);
+			}
 	    });
 	}
 
@@ -206,7 +216,7 @@ public class GogglePanel extends JPanel {
 		gatheringTweaks.add(GoggleSwing.titleBox("Gathering Tweaks", listener));
 		
 			String[] items = {"Skip"};
-			boolean[] selections = { false };
+			boolean[] selections = { true };
 			
 			GoggleListener selectionListener = new ParentSkipListener(goggles);			
 			GoggleListener[] listeners = new GoggleListener[items.length];

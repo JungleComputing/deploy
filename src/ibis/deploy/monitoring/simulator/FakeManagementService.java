@@ -64,10 +64,10 @@ public class FakeManagementService implements ManagementServiceInterface, FakeSe
 				
 				if (		desc[i].getBeanName().compareTo("java.lang:type=OperatingSystem") == 0 &&
 							desc[i].getAttribute().compareTo("ProcessCpuTime") == 0) {
-					result[i] = (long) (Math.random()*5000);
+					result[i] = (long) (Math.random()*5000+currentIteration*5000);
 				} else if (	desc[i].getBeanName().compareTo("java.lang:type=Runtime") == 0 &&
 							desc[i].getAttribute().compareTo("Uptime") == 0) {
-					result[i] = (long) (Math.random()*5000);
+					result[i] = (long) (Math.random()*500+currentIteration*500);
 				} else if (	desc[i].getBeanName().compareTo("java.lang:type=OperatingSystem") == 0 &&
 							desc[i].getAttribute().compareTo("AvailableProcessors") == 0) {
 					result[i] = (int) 4;

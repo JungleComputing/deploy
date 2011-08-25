@@ -354,7 +354,7 @@ public class GUI {
                     mode = Mode.READ_ONLY;
                 } else if (arguments[i].equals("-f")) {
                     monitoringFakeData = true;
-                } else if (arguments[i].equals("-collecting")) {
+                } else if (arguments[i].equals("-c")) {
                 	isCollecting = true;
                 } else {
                     File file = new File(arguments[i]);
@@ -424,7 +424,7 @@ public class GUI {
 	            	logger.info("Collecting simulated data.");
 	            	
 	            	//Ibis/JMX variables
-	            	regInterface = new FakeRegistryService();
+	            	regInterface = new FakeRegistryService(1,2,2,3,4);
 	            	manInterface = new FakeManagementService(regInterface);
 	            } else {
 	            	logger.info("Collecting real data.");

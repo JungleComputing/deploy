@@ -19,36 +19,30 @@ public class FakeRegistryService implements ibis.ipl.server.RegistryServiceInter
 	double 	CHANCE_OF_IBIS_JOIN  	= 0.000000001;
 	double 	CHANCE_OF_IBIS_RECOVERY = 0.01;
 	int 	MAX_FAILRATE 			= 10;
-
-	final int POOLS = 1;
-	final int COUNTRIES = 1;
-	final int UNIVERSITIES = 1;
-	final int CLUSTERS = 4;
-	final int IBISES = 4;
 	
 	private HashMap<String, IbisIdentifier[]> pools;
 	private HashMap<IbisIdentifier, State> ibises;
 	private HashMap<IbisIdentifier, Integer> failingIbises;
 
-	public FakeRegistryService() {
+	public FakeRegistryService(int numpools, int numcountries, int numuniversities, int numclusters, int numibises) {
 		pools = new HashMap<String, IbisIdentifier[]>();
 		ibises = new HashMap<IbisIdentifier, State>();
 		failingIbises = new HashMap<IbisIdentifier, Integer>();
 		
-		for (int p=0; p<POOLS; p++) {
+		for (int p=0; p<numpools; p++) {
 			String poolName = "pool"+p;
 			ArrayList<IbisIdentifier> poolIbises = new ArrayList<IbisIdentifier>();
 
-			for (int c=0; c<COUNTRIES; c++) {
+			for (int c=0; c<numcountries; c++) {
 				String countryName = "country"+c;
 
-				for (int u=0; u<UNIVERSITIES; u++) {
+				for (int u=0; u<numuniversities; u++) {
 					String universityName = "university"+u;
 
-					for (int s=0; s<CLUSTERS; s++) {
+					for (int s=0; s<numclusters; s++) {
 						String clusterName = "cluster"+s;
 
-						for (int i=0; i<IBISES; i++) {
+						for (int i=0; i<numibises; i++) {
 							IbisIdentifier fakeibis = new FakeIbisIdentifier(i+"_"+poolName+"@"+clusterName+"@"+universityName+"@"+countryName, poolName);
 							poolIbises.add(fakeibis);
 							ibises.put(fakeibis, State.ALIVE);
@@ -65,7 +59,7 @@ public class FakeRegistryService implements ibis.ipl.server.RegistryServiceInter
 		if (logger.isInfoEnabled()) {
 			System.out.println("FakeRegistry has created "+ibises.size()+" ibises.");
 			logger.info("FakeRegistry has created "+ibises.size()+" ibises.");			
-			logger.info("in "+COUNTRIES+" countries, "+UNIVERSITIES+" universities and "+CLUSTERS+" clusters" );
+			logger.info("in "+numcountries+" countries, "+numuniversities+" universities and "+numclusters+" clusters" );
 			logger.info("and divided among "+pools.size()+" pools.");
 		}
 		

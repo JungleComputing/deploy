@@ -48,7 +48,7 @@ public abstract class ElementImpl implements Element {
 		} else if (links.containsKey(destination)) {
 			result = links.get(destination);
 		} else {
-			result = new LinkImpl(this, destination);
+			result = new LinkImpl(this, (ElementImpl)destination);
 			links.put(((ElementImpl) destination), result);
 			((ElementImpl) destination).addLink(this, result);
 		}
@@ -56,7 +56,9 @@ public abstract class ElementImpl implements Element {
 	}
 
 	public void addLink(Element destination, Link link) {
-		links.put(((ElementImpl) destination), link);
+		if (!links.containsKey(destination)) {
+			links.put(((ElementImpl) destination), link);
+		}
 	}
 
 	public void removeLink(Element destination) {
