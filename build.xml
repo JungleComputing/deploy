@@ -106,5 +106,19 @@
         <delete dir="lib-zorilla" />
         <delete dir="javadoc" />
     </target>
+	
+	<target name="dist" depends="build" description="create a binary distribution">
+	        <zip destfile="deploy-src.zip">
+	            <zipfileset dir="src" prefix="deploy-src/" />
+	        </zip>
+
+	        <delete dir="dist" />
+	        <mkdir dir="dist" />
+
+	        <zip destfile="dist/deploy${version}.zip">
+	            <zipfileset dir="." prefix="deploy${version}" includes="deploy-src.zip, README, lib/**, javadoc/**, log4j.properties, LICENSE" />
+	            <zipfileset dir="." prefix="deploy${version}" filemode="755" includes="bin/**"/>
+	        </zip>
+	    </target>
 
 </project>
