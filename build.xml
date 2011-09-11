@@ -1,124 +1,124 @@
 <project name="deploy" default="build" basedir=".">
-    <description>
+	<description>
 	Build file for the deploy project
     </description>
 
-    <property name="version" value="" />
+	<property name="version" value="" />
 
-    <property name="dist-name" value="${ant.project.name}${version}" />
-    <property name="lib-jar" value="deploy${version}.jar" />
-    <property name="gui-jar" value="deploy-gui${version}.jar" />
-    <property name="cli-jar" value="deploy-cli${version}.jar" />
+	<property name="dist-name" value="${ant.project.name}${version}" />
+	<property name="lib-jar" value="deploy${version}.jar" />
+	<property name="gui-jar" value="deploy-gui${version}.jar" />
+	<property name="cli-jar" value="deploy-cli${version}.jar" />
 	<property name="mon-jar" value="deploy-mon${version}.jar" />
 
-    <!-- Import environment properties -->
+	<!-- Import environment properties -->
 
-    <property name="ipl" location="external/ipl" />
-    <property name="javagat" location="external/javagat" />
+	<property name="ipl" location="external/ipl" />
+	<property name="javagat" location="external/javagat" />
 	<property name="jogl" location="external/jogl" />
 
-    <target name="build" description="Build with included JavaGAT and IPL" depends="clean,copy-external,compile" />
+	<target name="build" description="Build with included JavaGAT and IPL" depends="clean,copy-external,compile" />
 
-    <path id="default.classpath">
-        <fileset dir="lib">
-            <include name="*.jar" />
-        </fileset>
-        <pathelement path="tmp" />
-    </path>
+	<path id="default.classpath">
+		<fileset dir="lib">
+			<include name="*.jar" />
+		</fileset>
+		<pathelement path="tmp" />
+	</path>
 
 
-    <!-- copy external dependancies -->
-    <target name="copy-external">
-        <mkdir dir="lib" />
-        <mkdir dir="lib-server" />
+	<!-- copy external dependancies -->
+	<target name="copy-external">
+		<mkdir dir="lib" />
+		<mkdir dir="lib-server" />
 
-        <copy todir="lib">
-            <fileset dir="external" includes="*.jar" />            
-        	<fileset dir="${jogl}" />
-            <fileset dir="${javagat}" />
-            <fileset dir="${ipl}" />
-        </copy>
+		<copy todir="lib">
+			<fileset dir="external" includes="*.jar" />
+			<fileset dir="${jogl}" />
+			<fileset dir="${javagat}" />
+			<fileset dir="${ipl}" />
+		</copy>
 
-        <!--
+		<!--
         <copy todir="lib-server">
             <fileset dir="${ipl}" />
         </copy>
 -->
 
-    </target>
+	</target>
 
 
-    <!-- Compile -->
-    <target name="compile">
-        <mkdir dir="tmp" />
-        <mkdir dir="tmp/images" />
-        <mkdir dir="lib" />
+	<!-- Compile -->
+	<target name="compile">
+		<mkdir dir="tmp" />
+		<mkdir dir="tmp/images" />
+		<mkdir dir="lib" />
 
 
-        <copy todir="tmp/images">
-            <fileset dir="images" includes="*" />
-        </copy>
+		<copy todir="tmp/images">
+			<fileset dir="images" includes="*" />
+		</copy>
 
-        <!-- Compile the java code from ${src} into ${tmp} -->
-        <javac srcdir="src" destdir="tmp" includeantruntime="false" debug="on" source="1.5" target="1.5" classpathref="default.classpath">
-            <compilerarg value="-Xlint:unchecked" />
-        </javac>
+		<!-- Compile the java code from ${src} into ${tmp} -->
+		<javac srcdir="src" destdir="tmp" includeantruntime="false" debug="on" source="1.5" target="1.5" classpathref="default.classpath">
+			<compilerarg value="-Xlint:unchecked" />
+		</javac>
 
-        <!-- Create jar file -->
-        <jar destfile="lib/${lib-jar}" basedir="tmp" includes="ibis/deploy/*.class,ibis/deploy/util/*.class">
-        </jar>
+		<!-- Create jar file -->
+		<jar destfile="lib/${lib-jar}" basedir="tmp" includes="ibis/deploy/*.class,ibis/deploy/util/*.class">
+		</jar>
 
-        <!-- Create jar file -->
-        <jar destfile="lib/${gui-jar}" basedir="tmp" includes="ibis/deploy/gui/**/*.class,images/*">
-        </jar>
-    	
-    	<!-- Create jar file -->
-    	<jar destfile="lib/${mon-jar}" basedir="tmp" includes="ibis/deploy/monitoring/**/*.class">
-    	</jar>
+		<!-- Create jar file -->
+		<jar destfile="lib/${gui-jar}" basedir="tmp" includes="ibis/deploy/gui/**/*.class,images/*">
+		</jar>
 
-        <!-- Create jar file -->
-        <jar destfile="lib/${cli-jar}" basedir="tmp" includes="ibis/deploy/cli/**/*.class">
-        </jar>
+		<!-- Create jar file -->
+		<jar destfile="lib/${mon-jar}" basedir="tmp" includes="ibis/deploy/monitoring/**/*.class">
+		</jar>
 
-        <!-- Generate javadoc -->
-        <javadoc destdir="javadoc" access="public" classpathref="default.classpath" packagenames="ibis.deploy" sourcepath="src" windowtitle="Ibis ${ant.project.name} Documentation" doctitle="Ibis ${ant.project.name} Documentation" bottom="The Ibis project">
-        </javadoc>
+		<!-- Create jar file -->
+		<jar destfile="lib/${cli-jar}" basedir="tmp" includes="ibis/deploy/cli/**/*.class">
+		</jar>
 
-        <delete dir="tmp" />
+		<!-- Generate javadoc -->
+		<javadoc destdir="javadoc" access="public" classpathref="default.classpath" packagenames="ibis.deploy" sourcepath="src" windowtitle="Ibis ${ant.project.name} Documentation" doctitle="Ibis ${ant.project.name} Documentation" bottom="The Ibis project">
+		</javadoc>
 
-        <mkdir dir="lib-server" />
+		<delete dir="tmp" />
+
+		<mkdir dir="lib-server" />
 
 		<!-- Re-package all the ipl jars into one jar for the server.
     	     Exclude some unneeded jars to keep the file size down -->
 
-        <jar destfile="lib-server/server-all.jar">
-            <zipgroupfileset dir="${ipl}" includes="*.jar" excludes="antenna*,bcel*,TGGraphLayout*" />
-        </jar>
+		<jar destfile="lib-server/server-all.jar">
+			<zipgroupfileset dir="${ipl}" includes="*.jar" excludes="antenna*,bcel*,TGGraphLayout*" />
+		</jar>
 
-    </target>
+	</target>
 
-    <!-- Clean up everything -->
-    <target name="clean" description="Clean up">
-        <delete dir="tmp" />
-        <delete dir="lib" />
-        <delete dir="lib-server" />
-	<!-- actually not created anymore, but to cleanup in old copies too -->
-        <delete dir="lib-zorilla" />
-        <delete dir="javadoc" />
-    </target>
-	
+	<!-- Clean up everything -->
+	<target name="clean" description="Clean up">
+		<delete dir="tmp" />
+		<delete dir="lib" />
+		<delete dir="lib-server" />
+		<!-- actually not created anymore, but to cleanup in old copies too -->
+		<delete dir="lib-zorilla" />
+		<delete dir="javadoc" />
+	</target>
+
 	<target name="dist" depends="build" description="create a binary distribution">
-	        <zip destfile="deploy-src.zip">
-	            <zipfileset dir="src" prefix="deploy-src/" />
-	        </zip>
+		<zip destfile="deploy-src.zip">
+			<zipfileset dir="src" prefix="deploy-src/" />
+		</zip>
 
-	        <delete dir="dist" />
-	        <mkdir dir="dist" />
+		<delete dir="dist" />
+		<mkdir dir="dist" />
 
-	        <zip destfile="dist/deploy${version}.zip">
-	            <zipfileset dir="." prefix="deploy${version}" includes="deploy-src.zip, README, lib/**, javadoc/**, log4j.properties, LICENSE" />
-	            <zipfileset dir="." prefix="deploy${version}" filemode="755" includes="bin/**"/>
-	        </zip>
-	    </target>
+		<zip destfile="dist/deploy${version}.zip">
+			<zipfileset dir="." prefix="deploy${version}" includes="deploy-src.zip, README, *.script, doc/**, lib/**, lib-server/**, javadoc/**, log4j.properties, LICENSE" />
+			<zipfileset dir="." prefix="deploy${version}" filemode="755" includes="bin/**" />
+		</zip>
+	</target>
 
 </project>
