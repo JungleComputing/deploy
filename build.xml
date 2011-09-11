@@ -91,7 +91,7 @@
 		<!-- Re-package all the ipl jars into one jar for the server.
     	     Exclude some unneeded jars to keep the file size down -->
 
-		<jar destfile="lib-server/server-all.jar">
+		<jar destfile="lib-server/server-all${version}.jar">
 			<zipgroupfileset dir="${ipl}" includes="*.jar" excludes="antenna*,bcel*,TGGraphLayout*" />
 		</jar>
 
@@ -102,9 +102,10 @@
 		<delete dir="tmp" />
 		<delete dir="lib" />
 		<delete dir="lib-server" />
+		<delete dir="javadoc" />
+		<delete file="deploy-src.zip" />
 		<!-- actually not created anymore, but to cleanup in old copies too -->
 		<delete dir="lib-zorilla" />
-		<delete dir="javadoc" />
 	</target>
 
 	<target name="dist" depends="build" description="create a binary distribution">
