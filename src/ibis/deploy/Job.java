@@ -519,9 +519,19 @@ public class Job implements Runnable {
         }
 
         // class path
+        boolean foundClasspathOption = false;
+        for(String option: application.getJVMOptions()) {
+            if (option.equals("-classpath") || option.equals("-cp")) {
+                foundClasspathOption = true;
+            }
+        }
+        
+        if (!foundClasspathOption) {
         sd.setJavaClassPath(createClassPath(cluster.getJobAdaptor(),
                 application.getLibs()));
-
+        }
+        
+        
         if (sd instanceof JythonSoftwareDescription) {
             ((JythonSoftwareDescription) sd).setPythonPath(createClassPath(
                     cluster.getJobAdaptor(), application.getLibs()));
