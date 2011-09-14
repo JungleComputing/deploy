@@ -117,7 +117,7 @@
 		<mkdir dir="dist" />
 
 		<zip destfile="dist/deploy${version}.zip">
-			<zipfileset dir="." prefix="deploy${version}" includes="deploy-src.zip, README, *.script, doc/**, lib/**, lib-server/**, javadoc/**, log4j.properties, LICENSE" />
+			<zipfileset dir="." prefix="deploy${version}" includes="deploy-src.zip, README, deploy-workspace/**, ipl-apps/**, *.script, doc/**, lib/**, lib-server/**, javadoc/**, log4j.properties, LICENSE" />
 			<zipfileset dir="." prefix="deploy${version}" filemode="755" includes="bin/**" />
 		</zip>
 	</target>
