@@ -21,15 +21,19 @@ public class GLWindow implements GLEventListener {
 	public static boolean AXES = true;
 	public static boolean GAS_ON = true;
 	public static boolean PREDICTION_ON = false;
+	public static boolean DRAW_SORTED_ON = false;
 	
 	public static long WAITTIME = 100;
 	public static long LONGWAITTIME = 10000;
 	public static int MAX_CLOUD_DEPTH = 25;
 	public static int MAX_STAR_SIZE = 50;
 	public static float GAS_EDGES = 800f;
-	public static int MAX_ELEMENTS_PER_OCTREE_NODE = 25;
+	public static int MAX_ELEMENTS_PER_OCTREE_NODE = 100;
 	public static float EPSILON = 1.0E-7f;
 	public static float GAS_OPACITY_FACTOR = .8f;
+	
+	public static enum octants { PPP, PPN, PNP, PNN, NPP, NPN, NNP, NNN }
+	public static octants current_view_octant = octants.PPN; 
 	
 	private ProgramLoader loader;
 	
@@ -37,7 +41,7 @@ public class GLWindow implements GLEventListener {
 	Program ppl, axes, gas, postprocess;
 	Program gaussianBlur;
 	
-	Perlin3D noiseTex;
+//	Perlin3D noiseTex;
 		
 	FloatBuffer color1 = (new Vec3(0f,0f,0f)).asBuffer();
 	FloatBuffer color2 = (new Vec3(.6f,.1f,0f)).asBuffer();
@@ -84,7 +88,7 @@ public class GLWindow implements GLEventListener {
 	public GLWindow() {		
 		loader = new ProgramLoader();
 		
-		noiseTex = new Perlin3D(128);		
+//		noiseTex = new Perlin3D(128);		
 	}
 
 	public void init(GLAutoDrawable drawable) {
@@ -97,12 +101,15 @@ public class GLWindow implements GLEventListener {
 		gl.glHint(GL3.GL_POLYGON_SMOOTH_HINT, GL3.GL_NICEST);
 
 		// Depth testing
-//		gl.glEnable(GL3.GL_DEPTH_TEST);
+		gl.glEnable(GL3.GL_DEPTH_TEST);
 		gl.glDepthFunc(GL3.GL_LEQUAL);
 		gl.glClearDepth(1.0f);
 
 		// Culling
-		//gl.glEnable(GL3.GL_CULL_FACE);
+		if (DRAW_SORTED_ON) {
+			gl.glEnable(GL3.GL_CULL_FACE);
+			gl.glCullFace(GL3.GL_BACK);
+		}
 
 		// Enable Blending (needed for both Transparency and Anti-Aliasing
 		gl.glBlendFunc(GL3.GL_SRC_ALPHA, GL3.GL_ONE_MINUS_SRC_ALPHA);
@@ -160,7 +167,7 @@ public class GLWindow implements GLEventListener {
 		root.init(gl);
 		cubeRoot.init(gl);
 		
-		noiseTex.init(gl);
+//		noiseTex.init(gl);
 				
 //		volumeGas = new Rectangle(gas, new Material(), 400, 400, 400, new Vec3(0,0,0), true);
 //		volumeGas.init(gl);
@@ -267,7 +274,7 @@ public class GLWindow implements GLEventListener {
 	    		loader.setUniform("Multicolor", 1);	    
 	    		ppl.use(gl);
 	    				    	
-		    	gl.glEnable(GL3.GL_DEPTH_TEST);
+	    		if (!DRAW_SORTED_ON) gl.glEnable(GL3.GL_DEPTH_TEST);
 		    	
 		    	root.draw(gl, mv);
 		    	
@@ -277,13 +284,21 @@ public class GLWindow implements GLEventListener {
 		    	loader.setUniform("Colormap", multiTex);
 		    	
 		    	gas.use(gl);
-		    	gl.glDisable(GL3.GL_DEPTH_TEST);		    	
-		    	cubeRoot.draw(gl, mv);
+		    	if (!DRAW_SORTED_ON) gl.glDisable(GL3.GL_DEPTH_TEST);
+		    	if (DRAW_SORTED_ON) {
+					gl.glEnable(GL3.GL_CULL_FACE);
+					gl.glCullFace(GL3.GL_FRONT);
+					cubeRoot.draw(gl, mv);
+					gl.glCullFace(GL3.GL_BACK);
+					cubeRoot.draw(gl, mv);
+				} else {
+					cubeRoot.draw(gl, mv);
+				}
 			} else {
 				loader.setUniform("Multicolor", 0);
 				
 				gas.use(gl);
-		    	gl.glDisable(GL3.GL_DEPTH_TEST);		    	
+				if (!DRAW_SORTED_ON) gl.glDisable(GL3.GL_DEPTH_TEST);		    	
 		    	cubeRoot.draw(gl, mv);
 			}
 	    	
@@ -308,12 +323,12 @@ public class GLWindow implements GLEventListener {
 	    	
 	    	
     		multiTex = 0;
-    		noiseTex.use(gl, multiTex);
-    		loader.setUniform("Noise", multiTex);
+//    		noiseTex.use(gl, multiTex);
+//    		loader.setUniform("Noise", multiTex);
     		loader.setUniformMatrix("PMatrix", p.asBuffer());    
     		loader.setUniform("Mode", 0);
     		ppl.use(gl);
-	    	gl.glEnable(GL3.GL_DEPTH_TEST);
+    		if (!DRAW_SORTED_ON) gl.glEnable(GL3.GL_DEPTH_TEST);
 	    	
 	    	root.draw(gl, mv);
 	    	    	
@@ -399,8 +414,74 @@ public class GLWindow implements GLEventListener {
 		translation.set(2, viewDist);
 	}
 
-	public void setRotation(Vec3 rotation) {
+	public void setRotation(Vec3 rotation) {	
+		float x = rotation.get(0);
+		int qx = (int) Math.floor(x/90f);
+		float y = rotation.get(1);
+		int qy = (int) Math.floor(y/90f);
+				
+		
+//		System.out.println("x: "+ qx +" y: "+ qy);
+		
+		if        (qx == 0 && qy == 0) {
+			current_view_octant = octants.NPN; 
+//			System.out.println("NPN");
+		} else if (qx == 0 && qy == 1) {
+			current_view_octant = octants.NPP; 
+//			System.out.println("NPP");
+		} else if (qx == 0 && qy == 2) {
+			current_view_octant = octants.PPP; 
+//			System.out.println("PPP");
+		} else if (qx == 0 && qy == 3) {
+			current_view_octant = octants.PPN; 
+//			System.out.println("PPN");
+			
+		} else if (qx == 1 && qy == 0) {
+			current_view_octant = octants.NPP; 
+//			System.out.println("NPP");
+		} else if (qx == 1 && qy == 1) {
+			current_view_octant = octants.NPN; 
+//			System.out.println("NPN");
+		} else if (qx == 1 && qy == 2) {
+			current_view_octant = octants.PPN; 
+//			System.out.println("PPN");
+		} else if (qx == 1 && qy == 3) {
+			current_view_octant = octants.PPP; 
+//			System.out.println("PPP");
+			
+		} else if (qx == 2 && qy == 0) {
+			current_view_octant = octants.NNP; 
+//			System.out.println("NNP");
+		} else if (qx == 2 && qy == 1) {
+			current_view_octant = octants.PNP; 
+//			System.out.println("PNP");
+		} else if (qx == 2 && qy == 2) {
+			current_view_octant = octants.PNN; 
+//			System.out.println("PNN");
+		} else if (qx == 2 && qy == 3) {
+			current_view_octant = octants.NNN; 
+//			System.out.println("NNN");
+			
+		} else if (qx == 3 && qy == 0) {
+			current_view_octant = octants.NNN; 
+//			System.out.println("NNN");
+		} else if (qx == 3 && qy == 1) {
+			current_view_octant = octants.NNP; 
+//			System.out.println("NNP");
+		} else if (qx == 3 && qy == 2) {
+			current_view_octant = octants.PNP; 
+//			System.out.println("PNP");
+		} else if (qx == 3 && qy == 3) {
+			current_view_octant = octants.PNN; 
+//			System.out.println("PNN");
+		}
+		
+		
 		this.rotation = rotation;
+	}
+	
+	public static octants getCurrentOctant() {
+		return current_view_octant;
 	}
 
 	public synchronized void setRoot(SGNode root) {

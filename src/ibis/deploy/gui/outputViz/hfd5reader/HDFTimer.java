@@ -231,7 +231,7 @@ public class HDFTimer implements Runnable {
 				    currentFrame++;
 										
 					stopTime = System.currentTimeMillis();
-					System.out.println("Frame "+currentFrame+" built in "+(stopTime-startTime)+" ms.");
+//					System.out.println("Frame "+currentFrame+" built in "+(stopTime-startTime)+" ms.");
 				    if (startTime-stopTime < GLWindow.WAITTIME) {
 						Thread.sleep(GLWindow.WAITTIME - (startTime-stopTime));
 					} else {
@@ -338,16 +338,19 @@ public class HDFTimer implements Runnable {
 	}
 	
 	public void rewind() {
-		setFrame(0);
-		timeBar.setValue(currentFrame);
-		frameCounter.setValue(currentFrame);
 		currentState = states.STOPPED;
+		
+		setFrame(0);
+		timeBar.setValue(currentFrame);		
 	}
 
 	public void setFrame(int value) {
-		currentState = states.STOPPED;
-		currentFrame = value;	
-		
-		updateFrame();
+		synchronized (this) {
+			currentState = states.STOPPED;
+			currentFrame = value;
+			
+			updateFrame();	
+			frameCounter.setValue(currentFrame);
+		}
 	}
 }

@@ -237,8 +237,7 @@ public class OutputVizPanel extends JPanel {
 				timeBar.addChangeListener(new ChangeListener() {
 					public void stateChanged(ChangeEvent e) {
 						JSlider source = (JSlider)e.getSource();
-					    if (source.hasFocus()) {		
-					    	frameCounter.setValue(timeBar.getValue());
+					    if (source.hasFocus()) {					    	
 							timer.setFrame(timeBar.getValue());
 					    }
 					}

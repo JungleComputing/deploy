@@ -59,7 +59,9 @@ public class MouseHandler implements MouseListener, MouseMotionListener, MouseWh
 		if (SwingUtilities.isLeftMouseButton(e)) {
 			// x/y reversed because of axis orientation
 			rotationY = ((e.getPoint().x - dragLeftXorigin) + rotationYorigin) % 360;
+			if (rotationY < 0) rotationY = 360f+rotationY % 360;
 			rotationX = ((e.getPoint().y - dragLeftYorigin) + rotationXorigin) % 360;
+			if (rotationX < 0) rotationX = 360f+rotationX % 360;
 			rotation.set(0, rotationX);
 			rotation.set(1, rotationY);
 			rotation.set(2, 0f);
