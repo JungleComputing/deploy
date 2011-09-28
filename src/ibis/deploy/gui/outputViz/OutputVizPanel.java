@@ -6,7 +6,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
+import java.text.NumberFormat;
 
 import ibis.deploy.gui.GUI;
 import ibis.deploy.gui.outputViz.common.*;
@@ -23,12 +27,14 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JSlider;
+import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -43,8 +49,9 @@ public class OutputVizPanel extends JPanel {
 	private GLWindow window;
 	private GLCanvas glcanvas;
 	
-	HDFTimer timer;
-	JSlider timeBar;
+	public HDFTimer timer;
+	public JSlider timeBar;
+	public JFormattedTextField frameCounter;
 
 	public OutputVizPanel(final GUI gui) {		
 	    final JButton initButton = new JButton("Initialize 3D Visualization");
@@ -105,55 +112,58 @@ public class OutputVizPanel extends JPanel {
 	    timeBar.setPaintTicks(true);
 	    timeBar.setSnapToTicks(true);
 	    
-		timer = new HDFTimer(timeBar);		
+		timer = new HDFTimer(timeBar, frameCounter);		
 		
 		//Make the menu bar
 		JMenuBar menuBar = new JMenuBar();
 			JMenu file = new JMenu("File");
 				JMenuItem open = new JMenuItem("Open");
-				open.addActionListener(new ActionListener() {
-					
-					public void actionPerformed(ActionEvent arg0) {
+				open.addActionListener(new ActionListener() {					
+					public void actionPerformed(ActionEvent arg0) {						
 						File file = openFile();
-						String path = file.getPath();
-						String[] ext = path.split("[.]");
-//						if (!(ext[1].compareTo("evo") == 0 ||
-//							  ext[1].compareTo("grav") == 0 || 
-//							  ext[1].compareTo("add") == 0 || 
-//							  ext[1].compareTo("gas") == 0 || 
-//							  ext[1].compareTo("data") == 0)) {
-//							JOptionPane pane = new JOptionPane();
-//							pane.setMessage("Tried to open invalid file type.");
-//							JDialog dialog = pane.createDialog("Alert");
-//						    dialog.setVisible(true);							
-//						} else {
-							String prefix = ext[0].substring(0, ext[0].length()-6);
-							window.stopAnimation();
-							timer = new HDFTimer(timeBar);
-							timer.open(prefix);
-							window.startAnimation(timer);
-//						}						
+						if (file != null) { 
+							String path = file.getPath().substring(0, file.getPath().length()-file.getName().length());
+							String name = file.getName();
+							String fullPath = path + name;
+							String[] ext = fullPath.split("[.]");
+							if (!(ext[1].compareTo("evo") == 0 ||
+								  ext[1].compareTo("grav") == 0 || 
+								  ext[1].compareTo("add") == 0 || 
+								  ext[1].compareTo("gas") == 0 || 
+								  ext[1].compareTo("data") == 0)) {
+								JOptionPane pane = new JOptionPane();
+								pane.setMessage("Tried to open invalid file type.");
+								JDialog dialog = pane.createDialog("Alert");
+							    dialog.setVisible(true);							
+							} else {
+								String prefix = ext[0].substring(0, ext[0].length()-6);
+								window.stopAnimation();
+								timer = new HDFTimer(timeBar, frameCounter);
+								timer.open(path, prefix);
+								window.startAnimation(timer);
+							}
+						}
 					}					
 				});
 				file.add(open);				
 			menuBar.add(file);
 			JMenu options = new JMenu("Options");
-				JMenuItem gas = new JMenuItem("Gas Toggle");
-				gas.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent arg0) {
-						GLWindow.setGas(!GLWindow.GAS_ON);
-					}					
-				});
-				options.add(gas);
-				
-				JMenuItem colormap = new JMenuItem("Gas Colormap Toggle");
-				colormap.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent arg0) {
-						GLWindow.setColormap(!GLWindow.GAS_COLORMAP);
-					}					
-				});
-				options.add(colormap);
-				
+//				JMenuItem gas = new JMenuItem("Gas Toggle");
+//				gas.addActionListener(new ActionListener() {
+//					public void actionPerformed(ActionEvent arg0) {
+//						GLWindow.setGas(!GLWindow.GAS_ON);
+//					}					
+//				});
+//				options.add(gas);
+//				
+//				JMenuItem colormap = new JMenuItem("Gas Colormap Toggle");
+//				colormap.addActionListener(new ActionListener() {
+//					public void actionPerformed(ActionEvent arg0) {
+//						GLWindow.setColormap(!GLWindow.GAS_COLORMAP);
+//					}					
+//				});
+//				options.add(colormap);
+//				
 				JMenuItem postprocess = new JMenuItem("Post-Process (blur) Toggle");
 				postprocess.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent arg0) {
@@ -162,21 +172,21 @@ public class OutputVizPanel extends JPanel {
 				});
 				options.add(postprocess);
 				
-				JMenuItem axes = new JMenuItem("Axes Toggle");
-				axes.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent arg0) {
-						GLWindow.setAxes(!GLWindow.AXES);
-					}					
-				});
-				options.add(axes);
-				
-				JMenuItem prediction = new JMenuItem("Prediction Toggle");
-				prediction.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent arg0) {
-						GLWindow.setPrediction(!GLWindow.PREDICTION_ON);
-					}					
-				});
-				options.add(prediction);
+//				JMenuItem axes = new JMenuItem("Axes Toggle");
+//				axes.addActionListener(new ActionListener() {
+//					public void actionPerformed(ActionEvent arg0) {
+//						GLWindow.setAxes(!GLWindow.AXES);
+//					}					
+//				});
+//				options.add(axes);
+//				
+//				JMenuItem prediction = new JMenuItem("Prediction Toggle");
+//				prediction.addActionListener(new ActionListener() {
+//					public void actionPerformed(ActionEvent arg0) {
+//						GLWindow.setPrediction(!GLWindow.PREDICTION_ON);
+//					}					
+//				});
+//				options.add(prediction);
 			menuBar.add(options);
 			
 		//Make the "media player" panel
@@ -206,10 +216,29 @@ public class OutputVizPanel extends JPanel {
 				});
 				bottomPanel.add(button2);
 				
+				frameCounter = new JFormattedTextField();
+				frameCounter.setValue(new Integer(1));
+				frameCounter.setColumns(4);
+				frameCounter.setMaximumSize(new Dimension(40,20));
+				frameCounter.setValue(0);
+				frameCounter.addPropertyChangeListener(new PropertyChangeListener() {					
+					public void propertyChange(PropertyChangeEvent e) {
+						JFormattedTextField source = (JFormattedTextField) e.getSource();
+						if (source.hasFocus()) {	
+							if (source == frameCounter) {
+								if (window.timerInitialized) timer.setFrame(((Number)frameCounter.getValue()).intValue());
+							}
+						}
+					}
+				});
+				
+				bottomPanel.add(frameCounter);				
+				
 				timeBar.addChangeListener(new ChangeListener() {
 					public void stateChanged(ChangeEvent e) {
 						JSlider source = (JSlider)e.getSource();
-					    if (source.hasFocus()) {							
+					    if (source.hasFocus()) {		
+					    	frameCounter.setValue(timeBar.getValue());
 							timer.setFrame(timeBar.getValue());
 					    }
 					}
@@ -266,8 +295,7 @@ public class OutputVizPanel extends JPanel {
 	private File openFile() {      
 		JFileChooser fileChooser = new JFileChooser();
 
-		fileChooser.setFileSelectionMode(
-				JFileChooser.FILES_ONLY );
+		fileChooser.setFileSelectionMode( JFileChooser.FILES_ONLY );
 		int result = fileChooser.showOpenDialog( this );
 
 		// user clicked Cancel button on dialog

@@ -8,11 +8,26 @@ import ibis.deploy.gui.outputViz.common.Vec4;
 import ibis.deploy.gui.outputViz.exceptions.FileOpeningException;
 import ibis.deploy.gui.outputViz.models.base.Sphere;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.util.*;
 
 import ncsa.hdf.object.*;
 
 public class Hdf5StarReader {	
+	static class ExtFilter implements FilenameFilter {
+		private String ext;
+		
+		public ExtFilter(String ext) {
+			this.ext = ext;
+		}
+		
+		public boolean accept(File dir, String name) {
+			return (name.endsWith(ext));
+		}
+		
+	}
+	
 	private static ArrayList<FileFormat> openFiles = new ArrayList<FileFormat>();
 	
 	public long[] keys;
@@ -99,6 +114,12 @@ public class Hdf5StarReader {
 	    }
 	    		
 	    closeFiles();
+	}
+	
+	protected static int getNumFiles(String path, String namePostfix) {
+		String[] ls = new File(path).list(new ExtFilter(namePostfix));
+		
+		return ls.length;
 	}
 	
 	protected static Group getRoot(String filename) throws FileOpeningException {

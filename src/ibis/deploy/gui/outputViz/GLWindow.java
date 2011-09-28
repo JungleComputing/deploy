@@ -22,11 +22,12 @@ public class GLWindow implements GLEventListener {
 	public static boolean GAS_ON = true;
 	public static boolean PREDICTION_ON = false;
 	
-	public static long WAITTIME = 200;
+	public static long WAITTIME = 100;
+	public static long LONGWAITTIME = 10000;
 	public static int MAX_CLOUD_DEPTH = 25;
 	public static int MAX_STAR_SIZE = 50;
 	public static float GAS_EDGES = 800f;
-	public static int MAX_ELEMENTS_PER_OCTREE_NODE = 100;
+	public static int MAX_ELEMENTS_PER_OCTREE_NODE = 25;
 	public static float EPSILON = 1.0E-7f;
 	public static float GAS_OPACITY_FACTOR = .8f;
 	
