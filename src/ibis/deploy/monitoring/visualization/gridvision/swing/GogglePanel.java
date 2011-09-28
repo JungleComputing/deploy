@@ -72,12 +72,17 @@ public class GogglePanel extends JPanel {
 	public GogglePanel(final GUI gui, final Collector collector) {
 	    final JButton initButton = new JButton("Initialize 3D Visualization");
 	    add(initButton);
+	    
 	    initButton.addActionListener(new ActionListener() {
-
-		public void actionPerformed(ActionEvent e) {
-		    removeAll();
-		    initialize(gui, collector);
-		}
+			public void actionPerformed(ActionEvent e) {
+			    removeAll();
+			    
+			    //DEBUG
+			    //RegistryServiceInterface emptyReg = new FakeRegistryService(1,1,1,1,1);
+			    //ManagementServiceInterface emptyMan = new FakeManagementService(emptyReg);
+			    //Collector emptyCollector = CollectorImpl.getCollector(emptyMan, emptyReg);
+			    initialize(gui, collector);
+			}
 	    });
 	}
 
@@ -90,17 +95,17 @@ public class GogglePanel extends JPanel {
 	    }
 	    
 	    boolean ok = false;
-            try {
-            	//File[] nativeLibs = getNativeLibTargets();
-            	gui.loadNativeLibs();
+//            try {
+//            	//File[] nativeLibs = getNativeLibTargets();
+//            	gui.loadNativeLibs();
             	ok = true;
-            } catch (IOException e) {
-             	System.err.println("Your OS is not supported by JOGL. 3D visualization will be disabled.");
-            	System.err.println(e.getMessage());
-            } catch (Throwable e) {
-            	System.err.println("Something went wrong while loading JOGL natives. 3D visualization will be disabled.");
-            	System.err.println(e.getMessage());
-            }
+//            } catch (IOException e) {
+//             	System.err.println("Your OS is not supported by JOGL. 3D visualization will be disabled.");
+//            	System.err.println(e.getMessage());
+//            } catch (Throwable e) {
+//            	System.err.println("Something went wrong while loading JOGL natives. 3D visualization will be disabled.");
+//            	System.err.println(e.getMessage());
+//            }
             
             if (! ok) {
         	JOptionPane.showMessageDialog(this, "No 3D visualization: native library initialization failed",
@@ -206,7 +211,7 @@ public class GogglePanel extends JPanel {
 		gatheringTweaks.add(GoggleSwing.titleBox("Gathering Tweaks", listener));
 		
 			String[] items = {"Skip"};
-			boolean[] selections = { false };
+			boolean[] selections = { true };
 			
 			GoggleListener selectionListener = new ParentSkipListener(goggles);			
 			GoggleListener[] listeners = new GoggleListener[items.length];

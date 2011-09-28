@@ -354,7 +354,7 @@ public class GUI {
                     mode = Mode.READ_ONLY;
                 } else if (arguments[i].equals("-f")) {
                     monitoringFakeData = true;
-                } else if (arguments[i].equals("-collecting")) {
+                } else if (arguments[i].equals("-c")) {
                 	isCollecting = true;
                 } else {
                     File file = new File(arguments[i]);
@@ -424,7 +424,7 @@ public class GUI {
 	            	logger.info("Collecting simulated data.");
 	            	
 	            	//Ibis/JMX variables
-	            	regInterface = new FakeRegistryService();
+	            	regInterface = new FakeRegistryService(1,2,2,3,4);
 	            	manInterface = new FakeManagementService(regInterface);
 	            } else {
 	            	logger.info("Collecting real data.");
@@ -640,38 +640,40 @@ public class GUI {
     
     
     public void loadNativeLibs() throws IOException, URISyntaxException {
-    	String filesep = System.getProperty("file.separator");
-    	String os = System.getProperty("os.name").toLowerCase();
-    	String dirname = deploy.getHome().getAbsolutePath() + filesep + "lib";
-    	
-    	String[] prefixes = { "jogl", "gluegen-rt", "nativewindow", "newt" };
-    	    	
-    	File tmpdir = makeNativeDir();
-    	String tmpPath = String.format(tmpdir.getAbsolutePath());
-    	
-    	HashMap<File, File[]> jarStore = new HashMap<File, File[]>();
-    	
-    	for (String prefix : prefixes) {
-    		//Select the correct jar file based on OS and architecture    		
-	        String jarname = dirname + filesep + prefix + getNativeJarName(os); 
+    	if (!nativeLoaded) {
+	    	String filesep = System.getProperty("file.separator");
+	    	String os = System.getProperty("os.name").toLowerCase();
+	    	String dirname = deploy.getHome().getAbsolutePath() + filesep + "lib";
 	    	
-	        File nativeJar = new File(jarname);
-	        
-	        String[] nativeLibNames =  getNativeLibNames(nativeJar);
-	        File[] nativeLibs = new File[nativeLibNames.length];
-	        	        
-	        for (int i = 0; i < nativeLibNames.length; i++) {
-	        	nativeLibs[i] = new File(tmpPath + filesep + nativeLibNames[i]);
-	        }
-	        
-	        jarStore.put(nativeJar, nativeLibs);
+	    	String[] prefixes = { "jogl", "gluegen-rt", "nativewindow", "newt" };
+	    	    	
+	    	File tmpdir = makeNativeDir();
+	    	String tmpPath = String.format(tmpdir.getAbsolutePath());
+	    	
+	    	HashMap<File, File[]> jarStore = new HashMap<File, File[]>();
+	    	
+	    	for (String prefix : prefixes) {
+	    		//Select the correct jar file based on OS and architecture    		
+		        String jarname = dirname + filesep + prefix + getNativeJarName(os); 
+		    	
+		        File nativeJar = new File(jarname);
+		        
+		        String[] nativeLibNames =  getNativeLibNames(nativeJar);
+		        File[] nativeLibs = new File[nativeLibNames.length];
+		        	        
+		        for (int i = 0; i < nativeLibNames.length; i++) {
+		        	nativeLibs[i] = new File(tmpPath + filesep + nativeLibNames[i]);
+		        }
+		        
+		        jarStore.put(nativeJar, nativeLibs);
+	    	}
+	    	
+	    	for (Entry<File, File[]> entry : jarStore.entrySet()) {
+	    		for (File file : entry.getValue()) {
+	    			extractNativeLib(entry.getKey(), file);
+	    		}		
+	    	} 
     	}
-    	
-    	for (Entry<File, File[]> entry : jarStore.entrySet()) {
-    		for (File file : entry.getValue()) {
-    			extractNativeLib(entry.getKey(), file);
-    		}		
-    	} 
     	nativeLoaded = true;
     }
     

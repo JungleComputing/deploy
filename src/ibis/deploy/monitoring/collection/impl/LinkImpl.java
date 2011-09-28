@@ -32,10 +32,10 @@ public class LinkImpl extends ElementImpl implements Link {
 	private boolean updatedThisCycle;
 	
 
-	public LinkImpl(ElementImpl origin, Element destination) {
+	public LinkImpl(ElementImpl origin, ElementImpl destination) {
 		super();
 		this.source = origin;
-		this.destination = (ElementImpl) destination;
+		this.destination = destination;
 		
 		try {
 			c = CollectorImpl.getCollector();
@@ -121,7 +121,7 @@ public class LinkImpl extends ElementImpl implements Link {
 	}
 
 	public void update() {
-		if ( !updatedThisCycle ) {
+		if ( !updatedThisCycle ) {		
 			// First update all of our children
 			for (Link child : children) {
 				((LinkImpl) child).update();

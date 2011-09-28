@@ -260,3 +260,24 @@ DAS4-VU.latitude = 52.3328
 DAS4-VU.longitude = 4.8669
 DAS4-VU.color = #FFBF80
 DAS4-VU.location = DAS-4@VU@NL
+
+# Details of cluster "DAS4-FS0"
+DAS4-FS0.server.adaptor = SshTrilead
+DAS4-FS0.server.uri = ssh://fs0.das4.cs.vu.nl
+DAS4-FS0.job.adaptor = SshTrilead
+DAS4-FS0.job.uri = ssh://fs0.das4.cs.vu.nl
+DAS4-FS0.file.adaptors = SftpTrilead, SshTrilead, Local
+DAS4-FS0.java.path = /usr/lib/jvm/java-openjdk/bin/java
+#DAS4-FS0.job.wrapper.script = das4.script
+#DAS4-VU.user.name = 
+#DAS4-VU.user.key = 
+#DAS4-VU.cache.dir = 
+#DAS4-VU.server.output.files =
+#DAS4-VU.server.system.properties =
+#DAS4-FS0.nodes = 85
+#DAS4-FS0.cores = 440
+#DAS4-VU.memory = 
+DAS4-FS0.latitude = 52.3328
+DAS4-FS0.longitude = 4.8669
+DAS4-FS0.color = #FFBF80
+DAS4-FS0.location = FS0@DAS-4@VU@NL

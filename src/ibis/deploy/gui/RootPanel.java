@@ -5,6 +5,8 @@ import ibis.deploy.gui.clusters.ClusterEditorPanel;
 import ibis.deploy.gui.deployViz.DeployVizPanel;
 import ibis.deploy.gui.experiment.ExperimentsPanel;
 import ibis.deploy.gui.misc.Utils;
+import ibis.deploy.gui.outputViz.GLWindow;
+import ibis.deploy.gui.outputViz.OutputVizPanel;
 import ibis.deploy.monitoring.visualization.gridvision.swing.GogglePanel;
 import ibis.smartsockets.viz.SmartsocketsViz;
 
@@ -21,6 +23,7 @@ public class RootPanel extends JPanel {
 	DetachableTab smartSocketsTab;
 	DetachableTab gridVisionTab;
 	DetachableTab deployVizTab;
+	DetachableTab outputVizTab;
 
 	private static final long serialVersionUID = 2685960743908025422L;
 
@@ -58,6 +61,9 @@ public class RootPanel extends JPanel {
 			gridVisionTab = new DetachableTab("3D Visualization", 
 					"images/gridvision.png", new GogglePanel(gui, gui.getCollector()), tabs);
 		}
+		
+		outputVizTab = new DetachableTab("Output Visualization",
+				"images/gridvision.png", new OutputVizPanel(gui), tabs);
 
 		add(tabs, BorderLayout.CENTER);
 	}

@@ -1,10 +1,76 @@
 <project name="deploy" default="build" basedir=".">
     <description>
 	Build file for the deploy project
-    </description>
-
+    </description>	
+	 
+	<condition property="build.on.linux32">
+		<and>
+			<or>
+				<matches string="${os.name}" pattern=".*nix.*"/>
+				<matches string="${os.name}" pattern=".*nux.*"/>
+			</or>
+			<not>
+				<matches string="${os.arch}" pattern=".*64.*"/>
+			</not>
+		</and>
+	</condition>
+	
+	<condition property="build.on.linux64">
+		<and>
+			<or>
+				<matches string="${os.name}" pattern=".*nix.*"/>
+				<matches string="${os.name}" pattern=".*nux.*"/>
+			</or>
+			<matches string="${os.arch}" pattern=".*64.*"/>
+		</and>	
+	</condition>
+	
+	<condition property="build.on.windows32">
+		<and>
+			<or>
+				<matches string="${os.name}" pattern=".*nt.*"/>
+				<matches string="${os.name}" pattern=".*win.*"/>
+				<matches string="${os.name}" pattern=".*Win.*"/>
+			</or>
+			<not>
+				<matches string="${os.arch}" pattern=".*64.*"/>
+			</not>
+		</and>  
+	</condition>
+	
+	<condition property="build.on.windows64">
+		<and>
+			<or>
+				<matches string="${os.name}" pattern=".*nt.*"/>
+				<matches string="${os.name}" pattern=".*win.*"/>
+				<matches string="${os.name}" pattern=".*Win.*"/>
+			</or>
+			<matches string="${os.arch}" pattern=".*64.*"/>
+		</and>  
+	</condition>
+	
+	<condition property="build.on.macosx32">
+		<and>
+			<matches string="${os.name}" pattern=".*mac.*"/>
+			<matches string="${os.name}" pattern=".*Mac.*"/>
+			<not>
+				<matches string="${os.arch}" pattern=".*64.*"/>
+			</not>
+		</and>  
+	</condition>
+	
+	<condition property="build.on.macosx64">
+		<and>
+			<matches string="${os.name}" pattern=".*mac.*"/>
+			<matches string="${os.name}" pattern=".*Mac.*"/>
+			<matches string="${os.arch}" pattern=".*64.*"/>
+		</and>  
+	</condition>
+	
+	
+	
     <property name="version" value="" />
-
+	
     <property name="dist-name" value="${ant.project.name}${version}" />
     <property name="lib-jar" value="deploy${version}.jar" />
     <property name="gui-jar" value="deploy-gui${version}.jar" />
@@ -12,12 +78,12 @@
 	<property name="mon-jar" value="deploy-mon${version}.jar" />
 
     <!-- Import environment properties -->
-
     <property name="ipl" location="external/ipl" />
     <property name="javagat" location="external/javagat" />
 	<property name="jogl" location="external/jogl" />
+	<property name="hdf" location="external/hdf" />
 
-    <target name="build" description="Build with included JavaGAT and IPL" depends="clean,copy-external,compile" />
+    <target name="build" description="Build with included JavaGAT and IPL" depends="clean, copy-external, copy-natives, compile" />
 
     <path id="default.classpath">
         <fileset dir="lib">
@@ -25,8 +91,7 @@
         </fileset>
         <pathelement path="tmp" />
     </path>
-
-
+	
     <!-- copy external dependancies -->
     <target name="copy-external">
         <mkdir dir="lib" />
@@ -34,7 +99,8 @@
 
         <copy todir="lib">
             <fileset dir="external" includes="*.jar" />            
-        	<fileset dir="${jogl}" />
+        	<fileset dir="${jogl}" includes="*.jar" excludes="**/*natives*" />
+        	<fileset dir="${hdf}" includes="*.jar" />
             <fileset dir="${javagat}" />
             <fileset dir="${ipl}" />
         </copy>
@@ -44,9 +110,72 @@
             <fileset dir="${ipl}" />
         </copy>
 -->
-
-    </target>
-
+    </target>	
+	
+	<target name="copy-natives" depends="make-native-dir, copy-win32, copy-win64, copy-linux32, copy-linux64, copy-macosx32, copy-macosx64" />
+	<target name="make-native-dir">
+		<mkdir dir="lib/natives" />
+	</target>
+	
+	<target name="copy-win32" if="build.on.windows32">				
+		<copy todir="lib/natives">
+			<fileset dir="external/hdf/win32" includes="*.*" />
+		</copy>
+		
+		<unzip dest="lib/natives">
+			<fileset dir="external/jogl" includes="*natives-windows-i586.jar" />
+		</unzip>
+	</target>
+	
+	<target name="copy-win64" if="build.on.windows64">
+		<copy todir="lib/natives">
+			<fileset dir="external/hdf/win64" includes="*.*" />
+		</copy>
+		
+		<unzip dest="lib/natives">
+			<fileset dir="external/jogl" includes="*natives-windows-amd64.jar" />
+		</unzip>
+	</target>
+	
+	<target name="copy-linux32" if="build.on.linux32">
+		<copy todir="lib/natives">
+			<fileset dir="external/hdf/linux32" includes="*.*" />
+		</copy>
+		
+		<unzip dest="lib/natives">
+			<fileset dir="external/jogl" includes="*natives-linux-i586.jar" />
+		</unzip>
+	</target>
+		
+	<target name="copy-linux64" if="build.on.linux64">
+		<copy todir="lib/natives">
+			<fileset dir="external/hdf/linux64" includes="*.*" />
+		</copy>
+		
+		<unzip dest="lib/natives">
+			<fileset dir="external/jogl" includes="*natives-linux-amd64.jar" />
+		</unzip>
+	</target>		
+	
+	<target name="copy-macosx32" if="build.on.macosx32">
+		<copy todir="lib/natives">
+			<fileset dir="external/hdf/macintel32" includes="*.*" />
+		</copy>
+		
+		<unzip dest="lib/natives">
+			<fileset dir="external/jogl" includes="*natives-macosx-universal.jar" />
+		</unzip>
+	</target>
+		
+	<target name="copy-macosx64" if="build.on.macosx32">
+		<copy todir="lib/natives">
+			<fileset dir="external/hdf/macintel64" includes="*.*" />
+		</copy>
+		
+		<unzip dest="lib/natives">
+			<fileset dir="external/jogl" includes="*natives-macosx-universal.jar" />
+		</unzip>
+	</target>
 
     <!-- Compile -->
     <target name="compile">
@@ -54,13 +183,12 @@
         <mkdir dir="tmp/images" />
         <mkdir dir="lib" />
 
-
         <copy todir="tmp/images">
             <fileset dir="images" includes="*" />
         </copy>
 
         <!-- Compile the java code from ${src} into ${tmp} -->
-        <javac srcdir="src" destdir="tmp" includeantruntime="false" debug="on" source="1.5" target="1.5" classpathref="default.classpath">
+        <javac srcdir="src" destdir="tmp" includeantruntime="false" debug="on" source="1.6" target="1.6" classpathref="default.classpath">
             <compilerarg value="-Xlint:unchecked" />
         </javac>
 

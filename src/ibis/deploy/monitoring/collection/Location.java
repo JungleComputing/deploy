@@ -29,6 +29,8 @@ public interface Location extends Element {
 	
 	public ArrayList<Location> getChildren();
 	
+	public int getRank();
+	
 	/**
 	 * Returns a number of links that correspond to the criteria.
 	 * @param metric

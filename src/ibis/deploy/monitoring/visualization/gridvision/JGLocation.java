@@ -5,6 +5,9 @@ import java.util.List;
 
 import javax.media.opengl.glu.gl2.GLUgl2;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ibis.deploy.monitoring.collection.Ibis;
 import ibis.deploy.monitoring.collection.Location;
 import ibis.deploy.monitoring.collection.Metric;
@@ -12,6 +15,9 @@ import ibis.deploy.monitoring.collection.Metric.MetricModifier;
 
 
 public class JGLocation extends JGVisualAbstract implements JGVisual {	
+	private static final Logger logger = LoggerFactory.getLogger(JGLocation.class);
+
+	
 	public JGLocation(JungleGoggles goggles, JGVisual parent, GLUgl2 glu, Location dataLocation, float[] newSeparation) {
 		super(goggles, parent);
 
@@ -30,7 +36,8 @@ public class JGLocation extends JGVisualAbstract implements JGVisual {
 				
 		ArrayList<Location> dataChildren = dataLocation.getChildren();		
 		for (Location datachild : dataChildren) {
-			JGLocation newLocation = new JGLocation(goggles, this, glu, datachild, FloatMatrixMath.div(locationSeparation, 2));			
+			JGLocation newLocation = new JGLocation(goggles, this, glu, datachild, FloatMatrixMath.div(locationSeparation, datachild.getRank()));	
+			logger.debug("JGLocation reports child rank: "+datachild.getRank());
 			locations.add(newLocation);			
 		}
 		

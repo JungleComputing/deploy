@@ -31,6 +31,7 @@ public class LocationImpl extends ElementImpl implements Location {
 
 	private String name;
 	private Float[] color;
+	private int rank;
 
 	private ArrayList<Ibis> ibises;
 	private ArrayList<Location> children;
@@ -51,8 +52,12 @@ public class LocationImpl extends ElementImpl implements Location {
 	public String getName() {
 		return name;
 	}
-
-	public Metric[] getMetrics() {
+	
+	public int getRank() {
+		return rank;
+	}
+	
+		public Metric[] getMetrics() {
 		ArrayList<Metric> result = new ArrayList<Metric>();
 		for (Metric metric : metrics.values()) {
 			if (metric.getDescription().getType() == MetricType.NODE) {
@@ -147,6 +152,13 @@ public class LocationImpl extends ElementImpl implements Location {
 	public void addChild(Location location) {
 		if (!children.contains(location)) {
 			children.add(location);
+		}
+	}
+	
+	public void setRank(int rankOfParent) {
+		rank = rankOfParent;
+		for (Location child : children) {
+			((LocationImpl) child).setRank(rankOfParent+1);
 		}
 	}
 

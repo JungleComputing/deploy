@@ -36,7 +36,7 @@ public class CollectorImpl implements Collector, Runnable {
 	private static final int workercount = 8;
 
 	private static CollectorImpl ref = null;	
-	private boolean skipParent = false, forceUpdate = false;
+	private boolean skipParent = true, forceUpdate = false;
 
 	// Interfaces to the IPL
 	private ManagementServiceInterface manInterface;
@@ -90,7 +90,7 @@ public class CollectorImpl implements Collector, Runnable {
 		root = new LocationImpl("root", color);
 
 		// Set the default refreshrate
-		refreshrate = 1000;
+		refreshrate = 5000;
 
 		// Set the default metrics
 		MetricDescription cpuDesc = new CPUUsage();
@@ -298,6 +298,8 @@ public class CollectorImpl implements Collector, Runnable {
 				}
 			}
 		}
+		
+		((LocationImpl) root).setRank(0);
 	}
 
 	private void initMetrics() {
@@ -488,7 +490,7 @@ public class CollectorImpl implements Collector, Runnable {
 
 			// and then see if our workers have done their jobs
 			synchronized (jobQueue) {
-				if (waiting == workercount) {
+				if (waiting >= workercount) {
 					if (!jobQueue.isEmpty()) {
 						logger.debug("workers idling while jobqueue not empty.");
 					}

@@ -444,6 +444,7 @@ public class Job implements Runnable {
         if (collecting) {
             sd.addJavaSystemProperty("ibis.managementclient", "true");
             sd.addJavaSystemProperty("ibis.bytescount", "true");
+            sd.addJavaSystemProperty("ibis.MPI_bytescount", "true");
         }
 
         // add hub list to software description
