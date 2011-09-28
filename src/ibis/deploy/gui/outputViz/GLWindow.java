@@ -21,19 +21,19 @@ public class GLWindow implements GLEventListener {
 	public static boolean AXES = true;
 	public static boolean GAS_ON = true;
 	public static boolean PREDICTION_ON = false;
-	public static boolean DRAW_SORTED_ON = false;
+	public static boolean DRAW_SORTED_ON = true;
 	
-	public static long WAITTIME = 100;
+	public static long WAITTIME = 200;
 	public static long LONGWAITTIME = 10000;
 	public static int MAX_CLOUD_DEPTH = 25;
-	public static int MAX_STAR_SIZE = 50;
+	public static int MAX_PREGENERATED_STAR_SIZE = 50;
 	public static float GAS_EDGES = 800f;
 	public static int MAX_ELEMENTS_PER_OCTREE_NODE = 100;
 	public static float EPSILON = 1.0E-7f;
 	public static float GAS_OPACITY_FACTOR = .8f;
 	
 	public static enum octants { PPP, PPN, PNP, PNN, NPP, NPN, NNP, NNN }
-	public static octants current_view_octant = octants.PPN; 
+	public static octants current_view_octant = octants.PPP; 
 	
 	private ProgramLoader loader;
 	
@@ -106,11 +106,9 @@ public class GLWindow implements GLEventListener {
 		gl.glClearDepth(1.0f);
 
 		// Culling
-		if (DRAW_SORTED_ON) {
-			gl.glEnable(GL3.GL_CULL_FACE);
-			gl.glCullFace(GL3.GL_BACK);
-		}
-
+		gl.glEnable(GL3.GL_CULL_FACE);
+		gl.glCullFace(GL3.GL_BACK);
+		
 		// Enable Blending (needed for both Transparency and Anti-Aliasing
 		gl.glBlendFunc(GL3.GL_SRC_ALPHA, GL3.GL_ONE_MINUS_SRC_ALPHA);
 		gl.glEnable(GL3.GL_BLEND);
@@ -127,8 +125,8 @@ public class GLWindow implements GLEventListener {
 			gas = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_gas.vp", "src/ibis/deploy/gui/outputViz/shaders/src/fs_gas.fp");
 //			gas = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_gas.vp", "src/ibis/deploy/gui/outputViz/shaders/src/fs_volumerendering.fp");
 //			gas = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_gas.vp", "src/ibis/deploy/gui/outputViz/shaders/src/fs_turbulence.fp");
-			//glow = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_glow.vp", "src/ibis/deploy/gui/outputViz/shaders/src/gs_glow.fp", "src/ibis/deploy/gui/outputViz/shaders/src/fs_glow.fp");
-			//star = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_star.vp", "src/ibis/deploy/gui/outputViz/shaders/src/fs_star.fp");
+//			glow = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_glow.vp", "src/ibis/deploy/gui/outputViz/shaders/src/gs_glow.fp", "src/ibis/deploy/gui/outputViz/shaders/src/fs_glow.fp");
+//			star = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_star.vp", "src/ibis/deploy/gui/outputViz/shaders/src/fs_star.fp");
 			if (POST_PROCESS) postprocess = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_postprocess.vp", "src/ibis/deploy/gui/outputViz/shaders/src/fs_postprocess.fp");
 			if (POST_PROCESS) gaussianBlur = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_postprocess.vp", "src/ibis/deploy/gui/outputViz/shaders/src/fs_gaussian_blur.fp");
 		} catch (Exception e) {
@@ -136,9 +134,6 @@ public class GLWindow implements GLEventListener {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		
-//		timer.init(this, ppl);
-//		new Thread(timer).start();
 				
 		root = new SGNode();
 		newRoot = false;
@@ -146,31 +141,8 @@ public class GLWindow implements GLEventListener {
 		cubeRoot = new CubeNode();
 		newCubeRoot = false;
 		
-//		for (int i = 0; i < particles.length; i++) {
-//			Material randomMaterial = Material.random();
-//			SGNode node = new SGNode();			
-//			node.addModel(new Sphere(animatedTurbulence, randomMaterial, 3, 1, new Vec3()));
-//			//node.translate(new Vec3((float)particles[i].x, (float)particles[i].y, (float)particles[i].z));
-//			root.addChild(node);
-//		}
-			
-//		for (int i = 0; i < particles.length; i++) {
-//			//Material material = Material.random();
-//			Material material = new Material(particles[i].color,particles[i].color,particles[i].color);
-//			SGNode node = new SGNode();			
-//			node.addModel(new Sphere(ppl, material, 3, (float)(particles[i].radius / 10E9), new Vec3()));
-//			node.translate(new Vec3((float)(particles[i].x / 10E14), (float)(particles[i].y / 10E14), (float)(particles[i].z / 10E14)));
-//			//node.setDirection(new Vec3((float)particles[i].vx, (float)particles[i].vy, (float)particles[i].vz));
-//			root.addChild(node);
-//		}
-		
 		root.init(gl);
 		cubeRoot.init(gl);
-		
-//		noiseTex.init(gl);
-				
-//		volumeGas = new Rectangle(gas, new Material(), 400, 400, 400, new Vec3(0,0,0), true);
-//		volumeGas.init(gl);
 		
 		if (AXES) {
 			Color4 axisColor = new Color4(0f,1f,0f,.3f);
@@ -263,105 +235,98 @@ public class GLWindow implements GLEventListener {
     		loader.setUniform("scrHeight", canvasHeight);
     		
     		if (timerInitialized) synchronized (timer) {
-	    	SGNode root = initSGRoot(gl);
-	    	CubeNode cubeRoot = initCubeRoot(gl);
-	
-			if (GAS_COLORMAP) {
-				multiTex = 2;
-				
-	    		loader.setUniformMatrix("SMatrix", MatrixMath.scale(2, 2, 2).asBuffer());
-	    		loader.setUniform("Mode", 1);
-	    		loader.setUniform("Multicolor", 1);	    
+		    	SGNode root = initSGRoot(gl);
+		    	CubeNode cubeRoot = initCubeRoot(gl);
+		
+				if (GAS_COLORMAP) {
+					multiTex = 2;
+					
+		    		loader.setUniformMatrix("SMatrix", MatrixMath.scale(2, 2, 2).asBuffer());
+		    		loader.setUniform("Mode", 1);
+		    		loader.setUniform("Multicolor", 1);	    
+		    		ppl.use(gl);
+		    				    	
+		    		if (!DRAW_SORTED_ON) gl.glEnable(GL3.GL_DEPTH_TEST);
+			    	
+			    	root.draw(gl, mv);
+			    	
+			    	renderToTexture(gl, multiTex, gasColorTex);
+			    			    	
+			    	loader.setUniformMatrix("SMatrix", MatrixMath.scale(1, 1, 1).asBuffer());
+			    	loader.setUniform("Colormap", multiTex);
+			    	
+			    	gas.use(gl);
+			    	if (!DRAW_SORTED_ON) gl.glDisable(GL3.GL_DEPTH_TEST);
+			    	
+					cubeRoot.draw(gl, mv);				
+				} else {
+					loader.setUniform("Multicolor", 0);
+					
+					gas.use(gl);
+					if (!DRAW_SORTED_ON) gl.glDisable(GL3.GL_DEPTH_TEST);		    	
+			    	cubeRoot.draw(gl, mv);
+				}
+		    	
+		    	if (POST_PROCESS) {
+		    		multiTex = 3;
+		    		renderToTexture(gl, multiTex, gasTex);	    		
+	    			loader.setUniform("Texture", multiTex);  
+	    			
+	        		loader.setUniformMatrix("PMatrix", new Mat4().asBuffer());
+	        		
+	        		loader.setUniform("blurType", 2);
+	        		loader.setUniform("blurDirection", 0);  
+	        		gaussianBlur.use(gl);
+	    	    	fullscreenQuad1.draw(gl, new Mat4());
+	        		renderToTexture(gl, multiTex, gasTex);
+	        		
+	        		loader.setUniform("blurDirection", 1);
+	        		gaussianBlur.use(gl);
+	    	    	fullscreenQuad2.draw(gl, new Mat4());
+	        		renderToTexture(gl, multiTex, gasTex);
+		    	}
+		    	
+		    	
+	    		multiTex = 0;
+	//    		noiseTex.use(gl, multiTex);
+	//    		loader.setUniform("Noise", multiTex);
+	    		loader.setUniformMatrix("PMatrix", p.asBuffer());    
+	    		loader.setUniform("Mode", 0);
 	    		ppl.use(gl);
-	    				    	
 	    		if (!DRAW_SORTED_ON) gl.glEnable(GL3.GL_DEPTH_TEST);
 		    	
 		    	root.draw(gl, mv);
+		    	    	
+		    	if (POST_PROCESS) {
+		    		multiTex = 4;
+		    		renderToTexture(gl, multiTex, starTex);
+		    	}
 		    	
-		    	renderToTexture(gl, multiTex, gasColorTex);
-		    			    	
-		    	loader.setUniformMatrix("SMatrix", MatrixMath.scale(1, 1, 1).asBuffer());
-		    	loader.setUniform("Colormap", multiTex);
+		    	if (AXES) {
+		    		axes.use(gl);
+		    		
+		    		xAxis.draw(gl, mv);
+		    		yAxis.draw(gl, mv);
+		    		zAxis.draw(gl, mv);
+		    		
+		    		if (POST_PROCESS) {
+		        		multiTex = 1;
+		        		renderToTexture(gl, multiTex, axesTex);
+		    		}
+		    	}
 		    	
-		    	gas.use(gl);
-		    	if (!DRAW_SORTED_ON) gl.glDisable(GL3.GL_DEPTH_TEST);
-		    	if (DRAW_SORTED_ON) {
-					gl.glEnable(GL3.GL_CULL_FACE);
-					gl.glCullFace(GL3.GL_FRONT);
-					cubeRoot.draw(gl, mv);
-					gl.glCullFace(GL3.GL_BACK);
-					cubeRoot.draw(gl, mv);
-				} else {
-					cubeRoot.draw(gl, mv);
-				}
-			} else {
-				loader.setUniform("Multicolor", 0);
-				
-				gas.use(gl);
-				if (!DRAW_SORTED_ON) gl.glDisable(GL3.GL_DEPTH_TEST);		    	
-		    	cubeRoot.draw(gl, mv);
-			}
-	    	
-	    	if (POST_PROCESS) {
-	    		multiTex = 3;
-	    		renderToTexture(gl, multiTex, gasTex);	    		
-    			loader.setUniform("Texture", multiTex);  
-    			
-        		loader.setUniformMatrix("PMatrix", new Mat4().asBuffer());
-        		
-        		loader.setUniform("blurType", 2);
-        		loader.setUniform("blurDirection", 0);  
-        		gaussianBlur.use(gl);
-    	    	fullscreenQuad1.draw(gl, new Mat4());
-        		renderToTexture(gl, multiTex, gasTex);
-        		
-        		loader.setUniform("blurDirection", 1);
-        		gaussianBlur.use(gl);
-    	    	fullscreenQuad2.draw(gl, new Mat4());
-        		renderToTexture(gl, multiTex, gasTex);
-	    	}
-	    	
-	    	
-    		multiTex = 0;
-//    		noiseTex.use(gl, multiTex);
-//    		loader.setUniform("Noise", multiTex);
-    		loader.setUniformMatrix("PMatrix", p.asBuffer());    
-    		loader.setUniform("Mode", 0);
-    		ppl.use(gl);
-    		if (!DRAW_SORTED_ON) gl.glEnable(GL3.GL_DEPTH_TEST);
-	    	
-	    	root.draw(gl, mv);
-	    	    	
-	    	if (POST_PROCESS) {
-	    		multiTex = 4;
-	    		renderToTexture(gl, multiTex, starTex);
-	    	}
-	    	
-	    	if (AXES) {
-	    		axes.use(gl);
-	    		
-	    		xAxis.draw(gl, mv);
-	    		yAxis.draw(gl, mv);
-	    		zAxis.draw(gl, mv);
-	    		
-	    		if (POST_PROCESS) {
-	        		multiTex = 1;
-	        		renderToTexture(gl, multiTex, axesTex);
-	    		}
-	    	}
-	    	
-	    	if (POST_PROCESS) {		
-    			loader.setUniform("axesTexture", 1);
-        		loader.setUniform("gasTexture", 3);
-        		loader.setUniform("starTexture", 4);        		
-        		
-        		loader.setUniform("scrWidth", canvasWidth);
-        		loader.setUniform("scrHeight", canvasHeight);
-	    		postprocess.use(gl);
-		    	    	    	
-		    	loader.setUniformMatrix("PMatrix", new Mat4().asBuffer());
-		    	fullscreenQuad.draw(gl, new Mat4());
-	    	}
+		    	if (POST_PROCESS) {		
+	    			loader.setUniform("axesTexture", 1);
+	        		loader.setUniform("gasTexture", 3);
+	        		loader.setUniform("starTexture", 4);        		
+	        		
+	        		loader.setUniform("scrWidth", canvasWidth);
+	        		loader.setUniform("scrHeight", canvasHeight);
+		    		postprocess.use(gl);
+			    	    	    	
+			    	loader.setUniformMatrix("PMatrix", new Mat4().asBuffer());
+			    	fullscreenQuad.draw(gl, new Mat4());
+		    	}
     		}
 		} catch (UninitializedException e) {
 			e.printStackTrace();
@@ -419,61 +384,42 @@ public class GLWindow implements GLEventListener {
 		int qx = (int) Math.floor(x/90f);
 		float y = rotation.get(1);
 		int qy = (int) Math.floor(y/90f);
-				
-		
-//		System.out.println("x: "+ qx +" y: "+ qy);
-		
+					
 		if        (qx == 0 && qy == 0) {
-			current_view_octant = octants.NPN; 
-//			System.out.println("NPN");
-		} else if (qx == 0 && qy == 1) {
 			current_view_octant = octants.NPP; 
-//			System.out.println("NPP");
+		} else if (qx == 0 && qy == 1) {
+			current_view_octant = octants.NPN;
 		} else if (qx == 0 && qy == 2) {
-			current_view_octant = octants.PPP; 
-//			System.out.println("PPP");
+			current_view_octant = octants.PPN;
 		} else if (qx == 0 && qy == 3) {
-			current_view_octant = octants.PPN; 
-//			System.out.println("PPN");
+			current_view_octant = octants.PPP;
 			
 		} else if (qx == 1 && qy == 0) {
-			current_view_octant = octants.NPP; 
-//			System.out.println("NPP");
+			current_view_octant = octants.PPN;
 		} else if (qx == 1 && qy == 1) {
-			current_view_octant = octants.NPN; 
-//			System.out.println("NPN");
+			current_view_octant = octants.PPP;
 		} else if (qx == 1 && qy == 2) {
-			current_view_octant = octants.PPN; 
-//			System.out.println("PPN");
+			current_view_octant = octants.NPP;
 		} else if (qx == 1 && qy == 3) {
-			current_view_octant = octants.PPP; 
-//			System.out.println("PPP");
+			current_view_octant = octants.NPN;
 			
 		} else if (qx == 2 && qy == 0) {
-			current_view_octant = octants.NNP; 
-//			System.out.println("NNP");
+			current_view_octant = octants.PNN;
 		} else if (qx == 2 && qy == 1) {
-			current_view_octant = octants.PNP; 
-//			System.out.println("PNP");
+			current_view_octant = octants.PNP;
 		} else if (qx == 2 && qy == 2) {
-			current_view_octant = octants.PNN; 
-//			System.out.println("PNN");
+			current_view_octant = octants.NNP;
 		} else if (qx == 2 && qy == 3) {
-			current_view_octant = octants.NNN; 
-//			System.out.println("NNN");
+			current_view_octant = octants.NNN;
 			
 		} else if (qx == 3 && qy == 0) {
-			current_view_octant = octants.NNN; 
-//			System.out.println("NNN");
+			current_view_octant = octants.NNP;
 		} else if (qx == 3 && qy == 1) {
-			current_view_octant = octants.NNP; 
-//			System.out.println("NNP");
+			current_view_octant = octants.NNN;
 		} else if (qx == 3 && qy == 2) {
-			current_view_octant = octants.PNP; 
-//			System.out.println("PNP");
+			current_view_octant = octants.PNN;
 		} else if (qx == 3 && qy == 3) {
-			current_view_octant = octants.PNN; 
-//			System.out.println("PNN");
+			current_view_octant = octants.PNP;
 		}
 		
 		
@@ -484,32 +430,40 @@ public class GLWindow implements GLEventListener {
 		return current_view_octant;
 	}
 
-	public synchronized void setRoot(SGNode root) {
-		this.root2 = root; 		
-		newRoot = true;
+	public void setRoot(SGNode root) {
+		synchronized (this) {
+			this.root2 = root; 		
+			newRoot = true;
+		}
 	}
 	
 	public void setCubeRoot(CubeNode cubeRoot) {
-		this.cubeRoot2 = cubeRoot;
-		newCubeRoot = true;
+		synchronized (this) {
+			this.cubeRoot2 = cubeRoot;
+			newCubeRoot = true;
+		}
 	}
 	
-	private synchronized SGNode initSGRoot(GL3 gl) {
-		if (newRoot) {
-			root = root2;			
-			root.init(gl);
-		}
-		newRoot = false;
+	private SGNode initSGRoot(GL3 gl) {
+		synchronized (this) {
+			if (newRoot) {
+				root = root2;			
+				root.init(gl);
+			}
+			newRoot = false;
+		}		
 		
 		return root;
 	}
 	
-	private synchronized CubeNode initCubeRoot(GL3 gl) {
-		if (newCubeRoot) {
-			cubeRoot = cubeRoot2;
-			cubeRoot.init(gl);
+	private CubeNode initCubeRoot(GL3 gl) {
+		synchronized (this) {
+			if (newCubeRoot) {
+				cubeRoot = cubeRoot2;
+				cubeRoot.init(gl);
+			}
+			newCubeRoot = false;
 		}
-		newCubeRoot = false;
 		
 		return cubeRoot;
 	}
@@ -554,4 +508,6 @@ public class GLWindow implements GLEventListener {
 	public static void setPrediction(boolean newSetting) {
 		PREDICTION_ON = newSetting;
 	}
+	
+	
 }

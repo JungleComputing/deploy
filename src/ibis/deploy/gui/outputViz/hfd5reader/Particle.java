@@ -97,7 +97,7 @@ public class Particle {
 				result = model.get(index);
 				index--;
 			}
-		}		
+		}
 		
 		return result;
 	}

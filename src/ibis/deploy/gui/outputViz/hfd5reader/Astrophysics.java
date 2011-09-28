@@ -22,6 +22,12 @@ public class Astrophysics {
 		return new Vec3(fx, fy, fz);
 	}
 	
+	public static float starToScreenCoord(double size) {
+		float fs = (float) (DISTANCE_FACTOR * (size / parsec));
+		
+		return fs;
+	}
+	
 	public static float toScreenCoord(double parsecs) {
 		float fx = (float) (DISTANCE_FACTOR * parsecs);
 		

@@ -1,6 +1,5 @@
 package ibis.deploy.gui.outputViz.hfd5reader;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,11 +14,10 @@ import ibis.deploy.gui.outputViz.common.Vec3;
 import ibis.deploy.gui.outputViz.common.Vec4;
 
 public class CubeNode {
-	
+	private int maxElements;
 	private CubeNode ppp,ppn,pnp,pnn,npp,npn,nnp,nnn;
 	
 	private HashMap<Vec3, Double> elements;
-	private ArrayList<Particle> stars;
 	private int childCounter;
 	
 	private Vec3 center;
@@ -41,7 +39,8 @@ public class CubeNode {
 	//private Program program;
 	//private Material material;
 	
-	public CubeNode(int depth, List<Model> models, Vec3 corner, float halfSize) {		
+	public CubeNode(int maxElements, int depth, List<Model> models, Vec3 corner, float halfSize) {
+		this.maxElements = maxElements;
 		this.cubeSize = halfSize;
 		center = corner.add(new Vec3(halfSize, halfSize, halfSize));
 		//System.out.println("Cube! center: "+center);
@@ -51,7 +50,6 @@ public class CubeNode {
 //		SMatrix = new Mat4();		
 		
 		elements = new HashMap<Vec3, Double>();
-		stars = new ArrayList<Particle>();
 		
 		childCounter = 0;
 		
@@ -59,12 +57,8 @@ public class CubeNode {
 		this.models = models;
 		model = models.get(depth);
 		
-		color = new Vec4(.6f,.3f,.3f,0f);
+//		color = new Vec4(.6f,.3f,.3f,0f);
 		total_u = 0.0;
-		//model = new Rectangle(program, material, halfSize*4f, halfSize*4f, halfSize*4f, center, true);
-		//model = new Sphere(program, material, 3, halfSize, new Vec3());		
-		//this.program = program;
-		//this.material = material;
 		
 		initialized = true;
 	}
@@ -92,14 +86,14 @@ public class CubeNode {
 	
 	private void subDiv() {	
 		float size = cubeSize/2f;
-		ppp = new CubeNode(depth+1, models, center.add(new Vec3(       0f,       0f,       0f)), size);
-		ppn = new CubeNode(depth+1, models, center.add(new Vec3(       0f,       0f,-cubeSize)), size);
-		pnp = new CubeNode(depth+1, models, center.add(new Vec3(       0f,-cubeSize,       0f)), size);
-		pnn = new CubeNode(depth+1, models, center.add(new Vec3(       0f,-cubeSize,-cubeSize)), size);
-		npp = new CubeNode(depth+1, models, center.add(new Vec3(-cubeSize,       0f,       0f)), size);
-		npn = new CubeNode(depth+1, models, center.add(new Vec3(-cubeSize,       0f,-cubeSize)), size);
-		nnp = new CubeNode(depth+1, models, center.add(new Vec3(-cubeSize,-cubeSize,       0f)), size);
-		nnn = new CubeNode(depth+1, models, center.add(new Vec3(-cubeSize,-cubeSize,-cubeSize)), size);
+		ppp = new CubeNode(maxElements, depth+1, models, center.add(new Vec3(       0f,       0f,       0f)), size);
+		ppn = new CubeNode(maxElements, depth+1, models, center.add(new Vec3(       0f,       0f,-cubeSize)), size);
+		pnp = new CubeNode(maxElements, depth+1, models, center.add(new Vec3(       0f,-cubeSize,       0f)), size);
+		pnn = new CubeNode(maxElements, depth+1, models, center.add(new Vec3(       0f,-cubeSize,-cubeSize)), size);
+		npp = new CubeNode(maxElements, depth+1, models, center.add(new Vec3(-cubeSize,       0f,       0f)), size);
+		npn = new CubeNode(maxElements, depth+1, models, center.add(new Vec3(-cubeSize,       0f,-cubeSize)), size);
+		nnp = new CubeNode(maxElements, depth+1, models, center.add(new Vec3(-cubeSize,-cubeSize,       0f)), size);
+		nnn = new CubeNode(maxElements, depth+1, models, center.add(new Vec3(-cubeSize,-cubeSize,-cubeSize)), size);
 		
 		for (Map.Entry<Vec3, Double> element : elements.entrySet()) {
 			addSubdivided(element.getKey(), element.getValue());
@@ -117,7 +111,7 @@ public class CubeNode {
 				(location.get(0) < center.get(0)+cubeSize) &&
 				(location.get(1) < center.get(1)+cubeSize) &&
 				(location.get(2) < center.get(2)+cubeSize)) {
-			if (childCounter > GLWindow.MAX_ELEMENTS_PER_OCTREE_NODE && !subdivided) {
+			if (childCounter > maxElements && !subdivided) {
 				if (depth < GLWindow.MAX_CLOUD_DEPTH) {
 					subDiv();
 					total_u = 0.0;
@@ -147,13 +141,12 @@ public class CubeNode {
 			npn.doneAddingGas();
 			nnp.doneAddingGas();
 			nnn.doneAddingGas();
+		} else {	
+			density = (float) (childCounter/(cubeSize*cubeSize*cubeSize*6));
+			float u = (float) (Math.sqrt(total_u / (float) childCounter) / 5000.0);
+			if (Float.isNaN(u)) u = 0f;
+			color = new Vec4(1f-u, 0f+u, 0f+u, density);
 		}
-		
-		
-		density = (float) (childCounter/(cubeSize*cubeSize*cubeSize*6));
-		float u = (float) (Math.sqrt(total_u / (float) childCounter) / 5000.0);
-		if (Float.isNaN(u)) u = 0f;
-		color = new Vec4(1f-u, 0f+u, 0f+u, density);
 	}
 	
 	public void addSubdivided(Vec3 location, double u) {
@@ -192,14 +185,6 @@ public class CubeNode {
 		if (initialized) {			
 			if (subdivided) {
 				draw_sorted(gl, MVMatrix);
-//				ppp.draw(gl, MVMatrix);
-//				ppn.draw(gl, MVMatrix);
-//				pnp.draw(gl, MVMatrix);
-//				pnn.draw(gl, MVMatrix);
-//				npp.draw(gl, MVMatrix);
-//				npn.draw(gl, MVMatrix);
-//				nnp.draw(gl, MVMatrix);
-//				nnn.draw(gl, MVMatrix);
 			} else {								
 				if (density > GLWindow.EPSILON) {
 					Mat4 newM = MVMatrix.mul(TMatrix);
@@ -311,8 +296,4 @@ public class CubeNode {
 			ppp.draw(gl, MVMatrix);
 		}
 	}
-	
-//	public int getNumVertices() {
-//		return 0;
-//	}
 }

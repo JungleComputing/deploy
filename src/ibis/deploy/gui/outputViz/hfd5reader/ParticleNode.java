@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import javax.media.opengl.GL3;
 
-import ibis.deploy.gui.outputViz.GLWindow;
 import ibis.deploy.gui.outputViz.common.Mat4;
 import ibis.deploy.gui.outputViz.common.Material;
 import ibis.deploy.gui.outputViz.common.MatrixMath;
@@ -28,16 +27,7 @@ public class ParticleNode extends SGNode {
 	}
 	
 	public void draw(GL3 gl, Mat4 MVMatrix) {
-		Mat4 newM = MVMatrix.mul(TMatrix);
-		
-//		if (GLWindow.PREDICTION_ON) {
-//			animationCounter++;
-//			newM = newM.mul(MatrixMath.translate(speedVec.mul(animationCounter)));
-//		}
-//		newM = newM.mul(SMatrix);
-		
-		
-//		newM = newM.mul(RMatrix);		
+		Mat4 newM = MVMatrix.mul(TMatrix);	
 		
 		for (int i=0; i<models.size(); i++) {
 			Model m = models.get(i);
@@ -53,5 +43,13 @@ public class ParticleNode extends SGNode {
 	public void setSpeedVec(Vec3 speedVec) {
 		animationCounter = 0;
 		this.speedVec = speedVec;		
+	}
+
+	public void setModel(Model model, Material mat) {
+		models.clear();
+		models.add(model);
+		
+		materials.clear();
+		materials.add(mat);
 	}
 }

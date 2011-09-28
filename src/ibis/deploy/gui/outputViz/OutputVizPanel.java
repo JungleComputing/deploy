@@ -9,8 +9,6 @@ import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.IOException;
-import java.text.NumberFormat;
 
 import ibis.deploy.gui.GUI;
 import ibis.deploy.gui.outputViz.common.*;
@@ -34,7 +32,6 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JSlider;
-import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -208,13 +205,22 @@ public class OutputVizPanel extends JPanel {
 				});
 				bottomPanel.add(button1);
 				
-				JButton button2 = new JButton("Play");
+				JButton button2 = new JButton("Snapshot!");
 				button2.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						timer.stop();
+						timer.makeSnapshot();
+					}
+				});
+				bottomPanel.add(button2);
+				
+				JButton button3 = new JButton("Play");
+				button3.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						timer.start();
 					}
 				});
-				bottomPanel.add(button2);
+				bottomPanel.add(button3);
 				
 				frameCounter = new JFormattedTextField();
 				frameCounter.setValue(new Integer(1));

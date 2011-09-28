@@ -14,7 +14,7 @@ import java.util.*;
 
 import ncsa.hdf.object.*;
 
-public class Hdf5StarReader {	
+public class Hdf5StarReader2 {	
 	static class ExtFilter implements FilenameFilter {
 		private String ext;
 		
@@ -32,7 +32,7 @@ public class Hdf5StarReader {
 	
 	public long[] keys;
     
-	public Hdf5StarReader(int frame, HashMap<Integer, Model> models, HashMap<Long, Particle> particles, String evo, String grav) throws FileOpeningException {
+	public Hdf5StarReader2(List<Model> models, HashMap<Long, Particle2> particles, String evo, String grav) throws FileOpeningException {
 		
 		HashMap<String, Dataset> result = new HashMap<String, Dataset>();
 		
@@ -45,63 +45,40 @@ public class Hdf5StarReader {
 	    Dataset keysSet = result.get("evo/particles/0000000001/keys");
 	    int numParticles = (int) keysSet.getDims()[0];	    
 	    	    
-	    double[] luminosity, realRadius, x, y, z, vx = null, vy = null, vz = null;
+	    double[] luminosity, realRadius, x, y, z;
 	    
 	    try {
 	    	keys		= (long[]) keysSet.read();
 	    	luminosity 	= (double[]) result.get("evo/particles/0000000001/attributes/luminosity").read();
 	    	realRadius 	= (double[]) result.get("evo/particles/0000000001/attributes/radius").read();
-//	    	visualRadius= (double[]) result.get("grav/particles/0000000001/attributes/radius").read();
+	    	
 	    	x 			= (double[]) result.get("grav/particles/0000000001/attributes/x").read();
 	    	y 			= (double[]) result.get("grav/particles/0000000001/attributes/y").read();
 	    	z 			= (double[]) result.get("grav/particles/0000000001/attributes/z").read();
-	    	
-	    	if (GLWindow.PREDICTION_ON) { 	    	
-		    	vx 			= (double[]) result.get("grav/particles/0000000001/attributes/vx").read();
-		    	vy 			= (double[]) result.get("grav/particles/0000000001/attributes/vy").read();
-		    	vz 			= (double[]) result.get("grav/particles/0000000001/attributes/vz").read();
-	    	}
-		    
-		    for (int i = 0; i< numParticles; i++) {
-		    	boolean modelChange = false;
-		    	
-		    	Particle current = particles.get(keys[i]);
-		    	
-		    	if (realRadius[i] != current.getLastUniqueRadius(frame)) {
-		    		current.radius.put(frame, realRadius[i]);
-		    		modelChange = true;
-		    	}
+	    			    
+		    for (int i = 0; i< numParticles; i++) {		    	
+		    	Particle2 current = particles.get(keys[i]);		    	
+		    	current.radius = realRadius[i];
 		    	
 		    	Vec4 color =  Astrophysics.toColor(luminosity[i], realRadius[i]);
-		    	if (!color.equals(current.getLastUniqueColor(frame))) {
-		    		current.luminosity.put(frame, luminosity[i]);
-		    		current.color.put(frame, color);
-		    		modelChange = true;
-		    	}
+		    	current.luminosity = luminosity[i];
+		    	current.color = color;
 		    	
-		    	if (modelChange) {
-		    		Material material = new Material(color,color,color);
-		    		
-		    		Model sphere;
-		    		int index = (int) Math.round((realRadius[i] / 10E9)/ 0.01);		    		
-		    		if (models.get(index) == null) {
-//		    			System.out.println(Astrophysics.starToScreenCoord(realRadius[i]));
-		    			sphere = new Sphere(models.get(0).program, material, 2, index*0.01f + 0.01f, new Vec3());
-		    		} else {
-			    		sphere = models.get(index);
-		    		}
-			    	//Model sphere = new Sphere(program, material, 3, ((float)(visualRadius[i] / 10E13)), new Vec3());
-			    	current.model.put(frame, sphere);
-		    	}
+		    	Material material = new Material(color,color,color);
 		    	
-		    	current.location.put(frame, Astrophysics.toScreenCoord(x[i], y[i], z[i]));
+		    	Model sphere;
+		    	int index = (int) Math.round((realRadius[i] / 10E9)/ 0.01);
+	    		if (index >= GLWindow.MAX_PREGENERATED_STAR_SIZE) {
+	    			sphere = new Sphere(models.get(0).program, material, 3, (float)(realRadius[i] / 10E9), new Vec3());
+	    		} else {		    	
+		    		sphere = models.get(index);
+	    		}
+
+		    	current.model = sphere;
+
 		    	
-		    	if (GLWindow.PREDICTION_ON) {
-		    		current.location.put(frame, Astrophysics.toScreenCoord(vx[i], vy[i], vz[i]));	    			    	
-		    	}
+		    	current.location = Astrophysics.toScreenCoord(x[i], y[i], z[i]);		    			    	
 		    }
-		    //System.out.println("x: "+x[200] / Astrophysics.parsec+" y: "+y[200] / Astrophysics.parsec+" z: "+z[200] / Astrophysics.parsec);
-	    	//System.out.println("vx: "+vx[200]+" vy: "+vy[200]+" vz: "+vz[200]);
 	    } catch (OutOfMemoryError e) {
 			e.printStackTrace();
 		} catch (Exception e) {

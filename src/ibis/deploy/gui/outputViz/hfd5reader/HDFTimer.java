@@ -37,6 +37,7 @@ public class HDFTimer implements Runnable {
 	@SuppressWarnings("unused")
 	private Hdf5GasCloudReader gasReader;
 	
+	ParticleNode root;
 	CubeNode cubeRoot;
 	
 	private ArrayList<Integer> framesRead;
@@ -46,7 +47,7 @@ public class HDFTimer implements Runnable {
 	private long[] particleKeys;
 	
 	Material starMaterial = new Material();
-	List<Model> starModels;
+	HashMap<Integer, Model> starModels;
 	
 	Vec4 gasColor = new Vec4(.6f,.3f,.3f,0f);
 	Vec4 transparent = new Vec4(0,0,0,0);
@@ -59,7 +60,7 @@ public class HDFTimer implements Runnable {
 	Program ppl, gas;
 	
 	String path;
-	String namePrefix;
+	public String namePrefix;
 	String evoNamePostfix = ".evo";	
 	String gravNamePostfix = ".grav";
 	String gasNamePostfix = ".gas";
@@ -114,10 +115,10 @@ public class HDFTimer implements Runnable {
 		HashMap<String, Dataset> particleResult = new HashMap<String, Dataset>();
 		List<HObject> particleMemberList;
 		
-		starModels = new ArrayList<Model>();
+		starModels = new HashMap<Integer, Model>();
 		float starSize = 0.01f;
-		for (int i=0; i < GLWindow.MAX_STAR_SIZE; i++ ) {				 
-			starModels.add(new Sphere(ppl, starMaterial, 2, starSize, new Vec3()));
+		for (int i=0; i < GLWindow.MAX_PREGENERATED_STAR_SIZE; i++ ) {				 
+			starModels.put(i, new Sphere(ppl, starMaterial, 2, starSize, new Vec3()));
 			starSize = starSize + 0.01f;
 		}
 		
@@ -136,7 +137,7 @@ public class HDFTimer implements Runnable {
 			if (GLWindow.GAS_ON) {				
 				gasName = namePrefix + intToString(currentFrame) + gasNamePostfix;
 								
-				cubeRoot = new CubeNode(0, cloudModels, new Vec3(-GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES), GLWindow.GAS_EDGES);
+				cubeRoot = new CubeNode(GLWindow.MAX_ELEMENTS_PER_OCTREE_NODE, 0, cloudModels, new Vec3(-GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES), GLWindow.GAS_EDGES);
 				gasReader = new Hdf5GasCloudReader(currentFrame, cubeRoot, gasName);
 				
 //				maxGasDensity = cubeRoot.getMaxDensity();
@@ -144,7 +145,6 @@ public class HDFTimer implements Runnable {
 //				cubeRoot.setTransparency(maxGasDensity);
 				
 				glw.setCubeRoot(cubeRoot);
-				Hdf5GasCloudReader.closeFiles();
 				
 //				Hdf5GasCloudReader2 gasReader2 = new Hdf5GasCloudReader2(currentFrame, gasName);				
 //				gasses.put(currentFrame, gasReader2.tex3d);
@@ -183,7 +183,7 @@ public class HDFTimer implements Runnable {
 			reader = new Hdf5StarReader(currentFrame, starModels, particles, evoName, gravName);
 			
 			//Construct the Scene graph		
-			ParticleNode root = new ParticleNode();
+			root = new ParticleNode();
 			for (int i = 0; i < particleKeys.length; i++) {
 				ParticleNode node = new ParticleNode();
 				nodes.put(particleKeys[i], node);				
@@ -214,7 +214,6 @@ public class HDFTimer implements Runnable {
 		}
 		
 		framesRead.add(0);
-		currentFrame = 1;
 				
 		glw.timerInitialized = true;
 		currentState = states.PLAYING;
@@ -224,11 +223,11 @@ public class HDFTimer implements Runnable {
 				try {
 					startTime = System.currentTimeMillis();							
 					
-					updateFrame();
-				    
 					timeBar.setValue(currentFrame);
 					frameCounter.setValue(currentFrame);
-				    currentFrame++;
+					
+					currentFrame++;					
+					updateFrame();
 										
 					stopTime = System.currentTimeMillis();
 //					System.out.println("Frame "+currentFrame+" built in "+(stopTime-startTime)+" ms.");
@@ -265,12 +264,7 @@ public class HDFTimer implements Runnable {
 			try {
 				String gasName, evoName, gravName;
 				if (!framesRead.contains(currentFrame)) {	
-					if (GLWindow.GAS_ON) {
-						gasName = namePrefix + intToString(currentFrame) + gasNamePostfix;
-						
-						cubeRoot = new CubeNode(0, cloudModels, new Vec3(-GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES), GLWindow.GAS_EDGES);
-						gasReader = new Hdf5GasCloudReader(currentFrame, cubeRoot, gasName);
-					}
+					
 					
 					evoName = namePrefix + intToString(currentFrame) + evoNamePostfix;
 					gravName = namePrefix + intToString(currentFrame) + gravNamePostfix;
@@ -284,24 +278,23 @@ public class HDFTimer implements Runnable {
 					ParticleNode node = nodes.get(particleKeys[i]);
 			    	Particle p = particles.get(particleKeys[i]);
 			    	if (p != null) {
+			    		Model m = p.getModel(currentFrame);
+			    		Vec4 color = p.getLastUniqueColor(currentFrame);
+			    		node.setModel(m, new Material(color,color,color));
 			    		node.setTranslation(p.location.get(currentFrame));
 			    		
 			    		if (GLWindow.PREDICTION_ON) node.setSpeedVec(p.direction.get(currentFrame));
 			    	}
 				}
 				
+				glw.setRoot(root);
+				
 				if (GLWindow.GAS_ON) {
-					if (GLWindow.GAS_ON) {
-						gasName = namePrefix + intToString(currentFrame) + gasNamePostfix;
-						
-						cubeRoot = new CubeNode(0, cloudModels, new Vec3(-GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES), GLWindow.GAS_EDGES);
-						try {
-							gasReader = new Hdf5GasCloudReader(currentFrame, cubeRoot, gasName);
-						} catch (FileOpeningException e) {
-							e.printStackTrace();
-						}
-					}
+					gasName = namePrefix + intToString(currentFrame) + gasNamePostfix;
 					
+					cubeRoot = new CubeNode(GLWindow.MAX_ELEMENTS_PER_OCTREE_NODE, 0, cloudModels, new Vec3(-GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES), GLWindow.GAS_EDGES);
+					gasReader = new Hdf5GasCloudReader(currentFrame, cubeRoot, gasName);
+											
 					glw.setCubeRoot(cubeRoot);
 				}
 			} catch (FileOpeningException e) {
@@ -351,6 +344,15 @@ public class HDFTimer implements Runnable {
 			
 			updateFrame();	
 			frameCounter.setValue(currentFrame);
+		}
+	}
+	
+	public void makeSnapshot() {
+		synchronized (this) {
+			currentState = states.STOPPED;
+			System.out.println("Snapshotting "+currentFrame);
+			HDFSnapshotter snappy = new HDFSnapshotter();
+			snappy.open(namePrefix, glw, ppl, gas, currentFrame);
 		}
 	}
 }
