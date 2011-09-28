@@ -206,7 +206,7 @@ public class HDFTimer implements Runnable {
 			System.exit(1);
 		}
 		
-		currentFrame = 65;
+		currentFrame = 1;
 				
 		glw.timerInitialized = true;
 		currentState = states.PLAYING;
