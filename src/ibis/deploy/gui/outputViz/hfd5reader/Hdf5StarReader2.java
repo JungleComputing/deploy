@@ -32,7 +32,7 @@ public class Hdf5StarReader2 {
 	
 	public long[] keys;
     
-	public Hdf5StarReader2(List<Model> models, HashMap<Long, Particle2> particles, String evo, String grav) throws FileOpeningException {
+	public Hdf5StarReader2(HashMap<Integer, Model> models, HashMap<Long, Particle2> particles, String evo, String grav) throws FileOpeningException {
 		
 		HashMap<String, Dataset> result = new HashMap<String, Dataset>();
 		

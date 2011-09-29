@@ -38,7 +38,7 @@ public class HDFSnapshotter {
     	long[] particleKeys = null;
     	
     	Material starMaterial = new Material();
-    	List<Model> starModels = new ArrayList<Model>();
+    	HashMap<Integer, Model> starModels = new HashMap<Integer, Model>();
     	
     	Vec4 gasColor = new Vec4(.6f,.3f,.3f,0f);
     	Vec4 transparent = new Vec4(0,0,0,0);
@@ -52,7 +52,7 @@ public class HDFSnapshotter {
 		
 		float starSize = 0.01f;
 		for (int i=0; i < GLWindow.MAX_PREGENERATED_STAR_SIZE; i++ ) {				 
-			starModels.add(new Sphere(ppl, starMaterial, 3, starSize, new Vec3()));
+			starModels.put(i, new Sphere(ppl, starMaterial, 3, starSize, new Vec3()));
 			starSize = starSize + 0.01f;
 		}
 		

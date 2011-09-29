@@ -15,14 +15,15 @@ import ibis.deploy.gui.outputViz.common.Model;
 import ibis.deploy.gui.outputViz.common.Vec3;
 import ibis.deploy.gui.outputViz.common.Vec4;
 import ibis.deploy.gui.outputViz.exceptions.FileOpeningException;
+import ibis.deploy.gui.outputViz.hfd5reader.HDFTimer.states;
 import ibis.deploy.gui.outputViz.models.base.Rectangle;
 import ibis.deploy.gui.outputViz.models.base.Sphere;
 import ibis.deploy.gui.outputViz.shaders.Program;
 
 public class HDFTimer implements Runnable {	
-	public static enum states { UNOPENED, UNINITIALIZED, INITIALIZED, STOPPED, SNAPSHOTTING, WAITINGONFRAME, PLAYING};
+	public static enum states { UNOPENED, UNINITIALIZED, INITIALIZED, STOPPED, REDRAWING, SNAPSHOTTING, WAITINGONFRAME, PLAYING};
 	
-	public states currentState = states.UNOPENED;
+	public static states currentState = states.UNOPENED;
 	public int currentFrame;
 	
 	private JSlider timeBar;
@@ -30,7 +31,7 @@ public class HDFTimer implements Runnable {
 	//private Hdf5Reader reader;
 	
 	@SuppressWarnings("unused")
-	private Hdf5StarReader reader;
+	private Hdf5StarReader2 reader;
 	
 	//private Hdf5GasReader gasReader;
 	
@@ -41,7 +42,7 @@ public class HDFTimer implements Runnable {
 	CubeNode cubeRoot;
 	
 	private ArrayList<Integer> framesRead;
-	private HashMap<Long, Particle> particles;
+	private HashMap<Long, Particle2> particles;
 //	private HashMap<Integer, Texture3D> gasses;
 	private HashMap<Long, ParticleNode> nodes;
 	private long[] particleKeys;
@@ -109,7 +110,7 @@ public class HDFTimer implements Runnable {
 		reader = null;
 		gasReader = null;
 		framesRead = new ArrayList<Integer>();
-		particles = new HashMap<Long, Particle>();
+		particles = new HashMap<Long, Particle2>();
 //		gasses = new HashMap<Integer, Texture3D>();
 		nodes = new HashMap<Long, ParticleNode>();
 		
@@ -168,7 +169,7 @@ public class HDFTimer implements Runnable {
 			//Pre-make all the particles in the hashmap
 			particleKeys = (long[]) keysSet.read();
 			for (int i = 0; i< particleKeys.length; i++) {
-		    	particles.put(particleKeys[i], new Particle());
+		    	particles.put(particleKeys[i], new Particle2());
 		    }
 			
 			//Close the datasets
@@ -181,20 +182,20 @@ public class HDFTimer implements Runnable {
 			evoName = namePrefix + intToString(currentFrame) + evoNamePostfix;
 			gravName = namePrefix + intToString(currentFrame) + gravNamePostfix;
 			//reader = new Hdf5Reader(currentFrame, program, particles, evoName, gravName);
-			reader = new Hdf5StarReader(currentFrame, starModels, particles, evoName, gravName);
+			reader = new Hdf5StarReader2(starModels, particles, evoName, gravName);
 			
 			//Construct the Scene graph		
 			root = new ParticleNode();
 			for (int i = 0; i < particleKeys.length; i++) {
 				ParticleNode node = new ParticleNode();
 				nodes.put(particleKeys[i], node);				
-				Particle p = particles.get(particleKeys[i]);
-				node.addModel(p.getModel(currentFrame));
-				Vec4 color = p.getLastUniqueColor(currentFrame);
+				Particle2 p = particles.get(particleKeys[i]);
+				node.addModel(p.model);
+				Vec4 color = p.color;
 				node.materials.add( new Material(color,color,color) );
-				node.setTranslation(p.location.get(currentFrame));
+				node.setTranslation(p.location);
 //				node.setTranslation(new Vec3((float)(p.x.get(currentFrame) / 10E14), (float)(p.y.get(currentFrame) / 10E14), (float)(p.z.get(currentFrame) / 10E14)));
-				if (GLWindow.PREDICTION_ON) node.setSpeedVec(p.direction.get(currentFrame));				
+//				if (GLWindow.PREDICTION_ON) node.setSpeedVec(p.direction.get(currentFrame));				
 				root.addChild(node);
 			}
 						
@@ -220,7 +221,7 @@ public class HDFTimer implements Runnable {
 		currentState = states.PLAYING;
 	    		
 		while(running) {
-			if (currentState == states.PLAYING) {
+			if (currentState == states.PLAYING || currentState == states.REDRAWING) {
 				try {
 					startTime = System.currentTimeMillis();							
 					
@@ -243,6 +244,7 @@ public class HDFTimer implements Runnable {
 				} catch (InterruptedException e) {
 					//Bla
 				}
+				if (currentState == states.REDRAWING) currentState = states.STOPPED;
 			} else if (currentState == states.STOPPED || currentState == states.SNAPSHOTTING) {
 				try {
 					Thread.sleep(GLWindow.WAITTIME);
@@ -257,6 +259,7 @@ public class HDFTimer implements Runnable {
 					//Bla
 				}
 			}
+			System.gc();
 		}
 	}
 	
@@ -270,21 +273,21 @@ public class HDFTimer implements Runnable {
 					evoName = namePrefix + intToString(currentFrame) + evoNamePostfix;
 					gravName = namePrefix + intToString(currentFrame) + gravNamePostfix;
 					
-					reader = new Hdf5StarReader(currentFrame, starModels, particles, evoName, gravName);
+					reader = new Hdf5StarReader2(starModels, particles, evoName, gravName);
 					
 					framesRead.add(currentFrame);
 				}
 				
 				for (int i = 0; i < particles.size(); i++) {
 					ParticleNode node = nodes.get(particleKeys[i]);
-			    	Particle p = particles.get(particleKeys[i]);
+			    	Particle2 p = particles.get(particleKeys[i]);
 			    	if (p != null) {
-			    		Model m = p.getModel(currentFrame);
-			    		Vec4 color = p.getLastUniqueColor(currentFrame);
+			    		Model m = p.model;
+			    		Vec4 color = p.color;
 			    		node.setModel(m, new Material(color,color,color));
-			    		node.setTranslation(p.location.get(currentFrame));
+			    		node.setTranslation(p.location);
 			    		
-			    		if (GLWindow.PREDICTION_ON) node.setSpeedVec(p.direction.get(currentFrame));
+//			    		if (GLWindow.PREDICTION_ON) node.setSpeedVec(p.direction.get(currentFrame));
 			    	}
 				}
 				
@@ -324,6 +327,7 @@ public class HDFTimer implements Runnable {
 	}
 
 	public void start() {
+		GLWindow.AXES = true;
 		currentState = states.PLAYING;
 	}
 	
@@ -350,10 +354,15 @@ public class HDFTimer implements Runnable {
 	
 	public void makeSnapshot() {
 		synchronized (this) {
+			GLWindow.AXES = false;
 			currentState = states.SNAPSHOTTING;
 //			System.out.println("Snapshotting "+currentFrame);
 			HDFSnapshotter snappy = new HDFSnapshotter();
 			snappy.open(namePrefix, glw, animatedTurbulence, gas, currentFrame);
 		}
+	}
+
+	public static void setState(states newState) {
+		currentState = newState;		
 	}
 }

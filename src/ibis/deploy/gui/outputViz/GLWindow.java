@@ -6,6 +6,7 @@ import ibis.deploy.gui.outputViz.exceptions.UninitializedException;
 import ibis.deploy.gui.outputViz.hfd5reader.Astrophysics;
 import ibis.deploy.gui.outputViz.hfd5reader.CubeNode;
 import ibis.deploy.gui.outputViz.hfd5reader.HDFTimer;
+import ibis.deploy.gui.outputViz.hfd5reader.HDFTimer.states;
 import ibis.deploy.gui.outputViz.models.Axis;
 import ibis.deploy.gui.outputViz.models.base.Quad;
 import ibis.deploy.gui.outputViz.shaders.*;
@@ -21,7 +22,7 @@ public class GLWindow implements GLEventListener {
 	public static boolean AXES = true;
 	public static boolean GAS_ON = true;
 	public static boolean PREDICTION_ON = false;
-	public static boolean DRAW_SORTED_ON = true;
+	public static boolean DRAW_SORTED_ON = false;
 	
 	public static long WAITTIME = 200;
 	public static long LONGWAITTIME = 10000;
@@ -260,13 +261,12 @@ public class GLWindow implements GLEventListener {
 			    	
 			    	gas.use(gl);
 			    	if (!DRAW_SORTED_ON) gl.glDisable(GL3.GL_DEPTH_TEST);
-			    	
 					cubeRoot.draw(gl, mv);				
 				} else {
 					loader.setUniform("Multicolor", 0);
 					
 					gas.use(gl);
-					if (!DRAW_SORTED_ON) gl.glDisable(GL3.GL_DEPTH_TEST);		    	
+					if (!DRAW_SORTED_ON) gl.glDisable(GL3.GL_DEPTH_TEST);
 			    	cubeRoot.draw(gl, mv);
 				}
 		    	
@@ -314,6 +314,12 @@ public class GLWindow implements GLEventListener {
 		    		
 		    		if (POST_PROCESS) {
 		        		multiTex = 1;
+		        		renderToTexture(gl, multiTex, axesTex);
+		    		}
+		    	} else {
+		    		if (POST_PROCESS) {
+		        		multiTex = 1;
+		        		gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
 		        		renderToTexture(gl, multiTex, axesTex);
 		    		}
 		    	}
@@ -498,6 +504,11 @@ public class GLWindow implements GLEventListener {
 	
 	public static void setPostprocess(boolean newSetting) {
 		POST_PROCESS = newSetting;
+	}
+	
+	public static void setResolution(int newSetting) {
+		MAX_ELEMENTS_PER_OCTREE_NODE = newSetting;
+		HDFTimer.setState(states.REDRAWING);
 	}
 	
 	public static void setAxes(boolean newSetting) {

@@ -169,6 +169,44 @@ public class OutputVizPanel extends JPanel {
 				});
 				options.add(postprocess);
 				
+				JMenu resolution = new JMenu("Gas cloud resolution.");
+					JMenuItem five = new JMenuItem("5 elements per node.");
+					five.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent arg0) {
+							GLWindow.setResolution(5);
+						}					
+					});
+					resolution.add(five);
+					JMenuItem ten = new JMenuItem("10 elements per node.");
+					ten.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent arg0) {
+							GLWindow.setResolution(10);
+						}					
+					});
+					resolution.add(ten);
+					JMenuItem twentyfive = new JMenuItem("25 elements per node.");
+					twentyfive.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent arg0) {
+							GLWindow.setResolution(25);
+						}					
+					});
+					resolution.add(twentyfive);
+					JMenuItem hundred = new JMenuItem("100 elements per node.");
+					hundred.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent arg0) {
+							GLWindow.setResolution(100);
+						}					
+					});
+					resolution.add(hundred);
+					JMenuItem twohundred = new JMenuItem("200 elements per node.");
+					twohundred.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent arg0) {
+							GLWindow.setResolution(200);
+						}					
+					});
+					resolution.add(twohundred);
+				options.add(resolution);
+				
 //				JMenuItem axes = new JMenuItem("Axes Toggle");
 //				axes.addActionListener(new ActionListener() {
 //					public void actionPerformed(ActionEvent arg0) {
