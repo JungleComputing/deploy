@@ -20,7 +20,7 @@ import ibis.deploy.gui.outputViz.models.base.Sphere;
 import ibis.deploy.gui.outputViz.shaders.Program;
 
 public class HDFTimer implements Runnable {	
-	public static enum states { UNOPENED, UNINITIALIZED, INITIALIZED, STOPPED, WAITINGONFRAME, PLAYING};
+	public static enum states { UNOPENED, UNINITIALIZED, INITIALIZED, STOPPED, SNAPSHOTTING, WAITINGONFRAME, PLAYING};
 	
 	public states currentState = states.UNOPENED;
 	public int currentFrame;
@@ -57,7 +57,7 @@ public class HDFTimer implements Runnable {
 	private boolean running = true;
 	
 	GLWindow glw;
-	Program ppl, gas;
+	Program ppl, gas, animatedTurbulence;
 	
 	String path;
 	public String namePrefix;
@@ -89,10 +89,11 @@ public class HDFTimer implements Runnable {
     	currentState = states.UNINITIALIZED;
     }
     
-    public void init(GLWindow glw, Program ppl, Program gas) {
+    public void init(GLWindow glw, Program ppl, Program gas, Program animatedTurbulence) {
     	this.glw = glw;
     	this.ppl = ppl;
     	this.gas = gas;
+    	this.animatedTurbulence = animatedTurbulence;
     	
     	currentState = states.INITIALIZED;
     }
@@ -242,7 +243,7 @@ public class HDFTimer implements Runnable {
 				} catch (InterruptedException e) {
 					//Bla
 				}
-			} else if (currentState == states.STOPPED) {
+			} else if (currentState == states.STOPPED || currentState == states.SNAPSHOTTING) {
 				try {
 					Thread.sleep(GLWindow.WAITTIME);
 				} catch (InterruptedException e) {
@@ -349,10 +350,10 @@ public class HDFTimer implements Runnable {
 	
 	public void makeSnapshot() {
 		synchronized (this) {
-			currentState = states.STOPPED;
-			System.out.println("Snapshotting "+currentFrame);
+			currentState = states.SNAPSHOTTING;
+//			System.out.println("Snapshotting "+currentFrame);
 			HDFSnapshotter snappy = new HDFSnapshotter();
-			snappy.open(namePrefix, glw, ppl, gas, currentFrame);
+			snappy.open(namePrefix, glw, animatedTurbulence, gas, currentFrame);
 		}
 	}
 }

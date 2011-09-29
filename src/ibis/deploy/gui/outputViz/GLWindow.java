@@ -41,7 +41,7 @@ public class GLWindow implements GLEventListener {
 	Program ppl, axes, gas, postprocess;
 	Program gaussianBlur;
 	
-//	Perlin3D noiseTex;
+	Perlin3D noiseTex;
 		
 	FloatBuffer color1 = (new Vec3(0f,0f,0f)).asBuffer();
 	FloatBuffer color2 = (new Vec3(.6f,.1f,0f)).asBuffer();
@@ -57,6 +57,7 @@ public class GLWindow implements GLEventListener {
 	
 	HDFTimer timer;
 	public boolean timerInitialized = false;
+	public boolean snapshotting = false;
 	
 	SGNode root, root2;
 	CubeNode cubeRoot, cubeRoot2;		
@@ -88,7 +89,7 @@ public class GLWindow implements GLEventListener {
 	public GLWindow() {		
 		loader = new ProgramLoader();
 		
-//		noiseTex = new Perlin3D(128);		
+		noiseTex = new Perlin3D(128);		
 	}
 
 	public void init(GLAutoDrawable drawable) {
@@ -134,6 +135,8 @@ public class GLWindow implements GLEventListener {
 			e.printStackTrace();
 			System.exit(1);
 		}
+		
+		noiseTex.init(gl);
 				
 		root = new SGNode();
 		newRoot = false;
@@ -288,8 +291,8 @@ public class GLWindow implements GLEventListener {
 		    	
 		    	
 	    		multiTex = 0;
-	//    		noiseTex.use(gl, multiTex);
-	//    		loader.setUniform("Noise", multiTex);
+	    		noiseTex.use(gl, multiTex);
+	    		loader.setUniform("Noise", multiTex);
 	    		loader.setUniformMatrix("PMatrix", p.asBuffer());    
 	    		loader.setUniform("Mode", 0);
 	    		ppl.use(gl);
@@ -470,7 +473,7 @@ public class GLWindow implements GLEventListener {
 
 	public void startAnimation(HDFTimer timer) {
 		this.timer = timer;
-		timer.init(this, ppl, gas);
+		timer.init(this, ppl, gas, animatedTurbulence);
 		new Thread(timer).start();	
 		timerInitialized = true;
 	}
