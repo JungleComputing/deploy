@@ -15,8 +15,6 @@ import ibis.deploy.gui.outputViz.common.Model;
 import ibis.deploy.gui.outputViz.common.Vec3;
 import ibis.deploy.gui.outputViz.common.Vec4;
 import ibis.deploy.gui.outputViz.exceptions.FileOpeningException;
-import ibis.deploy.gui.outputViz.hfd5reader.HDFTimer.states;
-import ibis.deploy.gui.outputViz.models.base.Rectangle;
 import ibis.deploy.gui.outputViz.models.base.Sphere;
 import ibis.deploy.gui.outputViz.shaders.Program;
 
@@ -33,42 +31,37 @@ public class HDFTimer implements Runnable {
 	@SuppressWarnings("unused")
 	private Hdf5StarReader2 reader;
 	
-	//private Hdf5GasReader gasReader;
-	
 	@SuppressWarnings("unused")
 	private Hdf5GasCloudReader gasReader;
 	
-	ParticleNode root;
-	CubeNode cubeRoot;
+	private ParticleNode root;
+	private CubeNode cubeRoot;
 	
 	private ArrayList<Integer> framesRead;
 	private HashMap<Long, Particle2> particles;
-//	private HashMap<Integer, Texture3D> gasses;
 	private HashMap<Long, ParticleNode> nodes;
 	private long[] particleKeys;
 	
-	Material starMaterial = new Material();
-	HashMap<Integer, Model> starModels;
+	private Material starMaterial = new Material();
+	private HashMap<Integer, Model> starModels;
 	
-	Vec4 gasColor = new Vec4(.6f,.3f,.3f,0f);
-	Vec4 transparent = new Vec4(0,0,0,0);
-	Material gasMaterial = new Material(gasColor,transparent,transparent);	
-	List<Model> cloudModels;
+	private Vec4 gasColor = new Vec4(.6f,.3f,.3f,0f);
+	private Vec4 transparent = new Vec4(0,0,0,0);
+	private Material gasMaterial = new Material(gasColor,transparent,transparent);	
+	private List<Model> cloudModels;
 	
 	private boolean running = true;
 	
-	GLWindow glw;
-	Program ppl, gas, animatedTurbulence;
+	private GLWindow glw;
+	private Program ppl, gas, animatedTurbulence;
 	
-	String path;
-	public String namePrefix;
-	String evoNamePostfix = ".evo";	
-	String gravNamePostfix = ".grav";
-	String gasNamePostfix = ".gas";
+	private String path;
+	private String namePrefix;
+	private String evoNamePostfix = ".evo";	
+	private String gravNamePostfix = ".grav";
+	private String gasNamePostfix = ".gas";
 	
-	long startTime, stopTime;
-	
-	float maxGasDensity;
+	private long startTime, stopTime;
 	
     public HDFTimer(JSlider timeBar, JFormattedTextField frameCounter) {    	
     	this.timeBar = timeBar;
@@ -127,8 +120,9 @@ public class HDFTimer implements Runnable {
 		if (GLWindow.GAS_ON) {
 			cloudModels = new ArrayList<Model>();
 			float gasSize = GLWindow.GAS_EDGES;
-			for (int i=0; i < GLWindow.MAX_CLOUD_DEPTH; i++ ) {				 
-				cloudModels.add(new Rectangle(gas, gasMaterial, gasSize*2f, gasSize*2f, gasSize*2f, new Vec3(), true));
+			for (int i=0; i < GLWindow.MAX_CLOUD_DEPTH; i++ ) {
+				cloudModels.add(new Sphere(gas, gasMaterial, 0, gasSize*3f, new Vec3()));
+//				cloudModels.add(new Rectangle(gas, gasMaterial, gasSize*2f, gasSize*2f, gasSize*2f, new Vec3(), true));
 //				cloudModels.add(new Sphere(gas, gasMaterial, 1, gasSize*4f, new Vec3()));
 //				cloudModels.add(new Quad(gas, gasMaterial, gasSize*4f, gasSize*4f, new Vec3()));
 				gasSize = gasSize/2f;

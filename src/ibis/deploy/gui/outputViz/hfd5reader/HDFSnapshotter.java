@@ -12,7 +12,6 @@ import ibis.deploy.gui.outputViz.common.Model;
 import ibis.deploy.gui.outputViz.common.Vec3;
 import ibis.deploy.gui.outputViz.common.Vec4;
 import ibis.deploy.gui.outputViz.exceptions.FileOpeningException;
-import ibis.deploy.gui.outputViz.models.base.Rectangle;
 import ibis.deploy.gui.outputViz.models.base.Sphere;
 import ibis.deploy.gui.outputViz.shaders.Program;
 
@@ -23,9 +22,8 @@ public class HDFSnapshotter {
 		
     public HDFSnapshotter() {
     }
-    
-    public void open(String namePrefix, GLWindow glw, Program ppl, Program gas, int currentFrame) {
-    	
+	
+    public void open(String namePrefix, GLWindow glw, Program ppl, Program gas, int currentFrame) {    	
     	@SuppressWarnings("unused")
     	Hdf5StarReader2 starReader = null;
     		
@@ -60,7 +58,7 @@ public class HDFSnapshotter {
 			cloudModels = new ArrayList<Model>();
 			float gasSize = GLWindow.GAS_EDGES;
 			for (int i=0; i < GLWindow.MAX_CLOUD_DEPTH; i++ ) {				 
-				cloudModels.add(new Rectangle(gas, gasMaterial, gasSize*2f, gasSize*2f, gasSize*2f, new Vec3(), true));
+				cloudModels.add(new Sphere(gas, gasMaterial, 0, gasSize*3f, new Vec3()));//Rectangle(gas, gasMaterial, gasSize*2f, gasSize*2f, gasSize*2f, new Vec3(), true));
 				gasSize = gasSize/2f;
 			}
 		}
