@@ -9,9 +9,9 @@ import javax.media.opengl.GL3;
 import ibis.deploy.gui.outputViz.GLWindow;
 import ibis.deploy.gui.outputViz.common.Mat4;
 import ibis.deploy.gui.outputViz.common.MatrixMath;
-import ibis.deploy.gui.outputViz.common.Model;
 import ibis.deploy.gui.outputViz.common.Vec3;
 import ibis.deploy.gui.outputViz.common.Vec4;
+import ibis.deploy.gui.outputViz.models.Model;
 
 public class CubeNode {
 	private int maxElements;
@@ -80,6 +80,23 @@ public class CubeNode {
 				npn.init(gl);
 				nnp.init(gl);
 				nnn.init(gl);
+			}
+		}
+	}
+	
+	public void delete(GL3 gl) {
+		if (initialized) {
+			model.delete(gl);			
+			
+			if (subdivided) {
+				ppp.delete(gl);
+				ppn.delete(gl);
+				pnp.delete(gl);
+				pnn.delete(gl);
+				npp.delete(gl);
+				npn.delete(gl);
+				nnp.delete(gl);
+				nnn.delete(gl);
 			}
 		}
 	}

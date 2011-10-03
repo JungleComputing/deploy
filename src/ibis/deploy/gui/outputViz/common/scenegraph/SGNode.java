@@ -6,8 +6,8 @@ import javax.media.opengl.GL3;
 
 import ibis.deploy.gui.outputViz.common.Mat4;
 import ibis.deploy.gui.outputViz.common.MatrixMath;
-import ibis.deploy.gui.outputViz.common.Model;
 import ibis.deploy.gui.outputViz.common.Vec3;
+import ibis.deploy.gui.outputViz.models.Model;
 
 public class SGNode {
 	protected Mat4 TMatrix;
@@ -34,6 +34,16 @@ public class SGNode {
 		
 		for (SGNode child : children) {
 			child.init(gl);
+		}
+	}
+	
+	public void delete(GL3 gl) {		
+		for (Model m : models) {
+			m.delete(gl);
+		}
+		
+		for (SGNode child : children) {
+			child.delete(gl);
 		}
 	}
 	

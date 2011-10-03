@@ -7,9 +7,9 @@ import javax.media.opengl.GL3;
 import ibis.deploy.gui.outputViz.common.Mat4;
 import ibis.deploy.gui.outputViz.common.Material;
 import ibis.deploy.gui.outputViz.common.MatrixMath;
-import ibis.deploy.gui.outputViz.common.Model;
 import ibis.deploy.gui.outputViz.common.Vec3;
 import ibis.deploy.gui.outputViz.common.scenegraph.SGNode;
+import ibis.deploy.gui.outputViz.models.Model;
 
 public class ParticleNode extends SGNode {
 	protected ArrayList<Material> materials;

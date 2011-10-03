@@ -8,6 +8,7 @@ import ibis.deploy.gui.outputViz.hfd5reader.CubeNode;
 import ibis.deploy.gui.outputViz.hfd5reader.HDFTimer;
 import ibis.deploy.gui.outputViz.hfd5reader.HDFTimer.states;
 import ibis.deploy.gui.outputViz.models.Axis;
+import ibis.deploy.gui.outputViz.models.Model;
 import ibis.deploy.gui.outputViz.models.base.Quad;
 import ibis.deploy.gui.outputViz.shaders.*;
 
@@ -22,7 +23,7 @@ public class GLWindow implements GLEventListener {
 	public static boolean AXES = true;
 	public static boolean GAS_ON = true;
 	public static boolean PREDICTION_ON = false;
-	public static boolean DRAW_SORTED_ON = false;
+	public static boolean DEPTH_TESTED_GAS = false;
 	
 	public static long WAITTIME = 200;
 	public static long LONGWAITTIME = 10000;
@@ -71,11 +72,11 @@ public class GLWindow implements GLEventListener {
 	private float ftheta = 0.0f;
 	private float phi = 0.0f;
     
-	private float  fovy = 45.0f;
-	private float  aspect;
-	private float  zNear = 0.1f, zFar = 3000.0f;
+	private float fovy = 45.0f;
+	private float aspect;
+	private float zNear = 0.1f, zFar = 3000.0f;
 	
-	private int canvasWidth, canvasHeight;
+	public int canvasWidth, canvasHeight;
 	
 	private Vec3 rotation = new Vec3();
 	private Vec3 translation = new Vec3(0f, 0f, -150f);
@@ -250,7 +251,7 @@ public class GLWindow implements GLEventListener {
 		    		loader.setUniform("Multicolor", 1);	    
 		    		ppl.use(gl);
 		    				    	
-		    		if (!DRAW_SORTED_ON) gl.glEnable(GL3.GL_DEPTH_TEST);
+		    		if (!DEPTH_TESTED_GAS) gl.glEnable(GL3.GL_DEPTH_TEST);
 			    	
 			    	root.draw(gl, mv);
 			    	
@@ -260,13 +261,13 @@ public class GLWindow implements GLEventListener {
 			    	loader.setUniform("Colormap", multiTex);
 			    	
 			    	gas.use(gl);
-			    	if (!DRAW_SORTED_ON) gl.glDisable(GL3.GL_DEPTH_TEST);
+			    	if (!DEPTH_TESTED_GAS) gl.glDisable(GL3.GL_DEPTH_TEST);
 					cubeRoot.draw(gl, mv);				
 				} else {
 					loader.setUniform("Multicolor", 0);
 					
 					gas.use(gl);
-					if (!DRAW_SORTED_ON) gl.glDisable(GL3.GL_DEPTH_TEST);
+					if (!DEPTH_TESTED_GAS) gl.glDisable(GL3.GL_DEPTH_TEST);
 			    	cubeRoot.draw(gl, mv);
 				}
 		    	
@@ -296,7 +297,7 @@ public class GLWindow implements GLEventListener {
 	    		loader.setUniformMatrix("PMatrix", p.asBuffer());    
 	    		loader.setUniform("Mode", 0);
 	    		ppl.use(gl);
-	    		if (!DRAW_SORTED_ON) gl.glEnable(GL3.GL_DEPTH_TEST);
+	    		if (!DEPTH_TESTED_GAS) gl.glEnable(GL3.GL_DEPTH_TEST);
 		    	
 		    	root.draw(gl, mv);
 		    	    	
@@ -456,6 +457,11 @@ public class GLWindow implements GLEventListener {
 	private SGNode initSGRoot(GL3 gl) {
 		synchronized (this) {
 			if (newRoot) {
+				if (HDFTimer.currentState == states.CLEANUP) {
+					root.delete(gl);
+					cubeRoot.delete(gl);
+					HDFTimer.setState(states.REDRAWING);
+				}
 				root = root2;			
 				root.init(gl);
 			}

@@ -1,6 +1,7 @@
 package ibis.deploy.gui.outputViz.models.base;
 
 import ibis.deploy.gui.outputViz.common.*;
+import ibis.deploy.gui.outputViz.models.Model;
 import ibis.deploy.gui.outputViz.shaders.Program;
 
 public class Quad extends Model {	

@@ -1,11 +1,10 @@
 package ibis.deploy.gui.outputViz.hfd5reader;
 
-import ibis.deploy.gui.outputViz.GLWindow;
 import ibis.deploy.gui.outputViz.common.Material;
-import ibis.deploy.gui.outputViz.common.Model;
 import ibis.deploy.gui.outputViz.common.Vec3;
 import ibis.deploy.gui.outputViz.common.Vec4;
 import ibis.deploy.gui.outputViz.exceptions.FileOpeningException;
+import ibis.deploy.gui.outputViz.models.Model;
 import ibis.deploy.gui.outputViz.models.base.Sphere;
 
 import java.io.File;
@@ -25,10 +24,10 @@ public class Hdf5StarReader2 {
 		public boolean accept(File dir, String name) {
 			return (name.endsWith(ext));
 		}
-		
 	}
 	
 	private static ArrayList<FileFormat> openFiles = new ArrayList<FileFormat>();
+	public static ArrayList<Model> additionalModels = new ArrayList<Model>();
 	
 	public long[] keys;
     
@@ -68,14 +67,14 @@ public class Hdf5StarReader2 {
 		    	
 		    	Model sphere;
 		    	int index = (int) Math.round((realRadius[i] / 10E9)/ 0.01);
-	    		if (index >= GLWindow.MAX_PREGENERATED_STAR_SIZE) {
+	    		if (!models.containsKey(index)) {
 	    			sphere = new Sphere(models.get(0).program, material, 3, (float)(realRadius[i] / 10E9), new Vec3());
+	    			models.put(index, sphere);
 	    		} else {		    	
 		    		sphere = models.get(index);
 	    		}
 
 		    	current.model = sphere;
-
 		    	
 		    	current.location = Astrophysics.toScreenCoord(x[i], y[i], z[i]);		    			    	
 		    }

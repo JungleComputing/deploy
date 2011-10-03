@@ -1,5 +1,7 @@
 package ibis.deploy.gui.outputViz.common;
 
+import ibis.deploy.gui.outputViz.models.Model;
+
 public class DualModel {
 	public Model solid, transparent;
 	

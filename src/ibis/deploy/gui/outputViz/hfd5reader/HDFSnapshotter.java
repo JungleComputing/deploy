@@ -8,14 +8,17 @@ import ncsa.hdf.object.Dataset;
 import ncsa.hdf.object.HObject;
 import ibis.deploy.gui.outputViz.GLWindow;
 import ibis.deploy.gui.outputViz.common.Material;
-import ibis.deploy.gui.outputViz.common.Model;
 import ibis.deploy.gui.outputViz.common.Vec3;
 import ibis.deploy.gui.outputViz.common.Vec4;
 import ibis.deploy.gui.outputViz.exceptions.FileOpeningException;
+import ibis.deploy.gui.outputViz.models.Model;
 import ibis.deploy.gui.outputViz.models.base.Sphere;
 import ibis.deploy.gui.outputViz.shaders.Program;
 
-public class HDFSnapshotter {		
+public class HDFSnapshotter {	
+	public static CubeNode cubeRoot;
+	public static ParticleNode sgRoot = new ParticleNode();
+	
 	String evoNamePostfix = ".evo";	
 	String gravNamePostfix = ".grav";
 	String gasNamePostfix = ".gas";
@@ -23,14 +26,11 @@ public class HDFSnapshotter {
     public HDFSnapshotter() {
     }
 	
-    public void open(String namePrefix, GLWindow glw, Program ppl, Program gas, int currentFrame) {    	
+    public void open(String namePrefix, GLWindow glw, Program ppl, Program gas, int currentFrame) {       
     	@SuppressWarnings("unused")
-    	Hdf5StarReader2 starReader = null;
-    		
+		Hdf5StarReader2 starReader = null;		
     	@SuppressWarnings("unused")
-    	Hdf5GasCloudReader gasReader = null;
-    	
-    	CubeNode cubeRoot;
+		Hdf5GasCloudReader gasReader = null;    	
     		
     	HashMap<Long, Particle2> particles = new HashMap<Long, Particle2>();
     	long[] particleKeys = null;
@@ -58,7 +58,7 @@ public class HDFSnapshotter {
 			cloudModels = new ArrayList<Model>();
 			float gasSize = GLWindow.GAS_EDGES;
 			for (int i=0; i < GLWindow.MAX_CLOUD_DEPTH; i++ ) {				 
-				cloudModels.add(new Sphere(gas, gasMaterial, 0, gasSize*3f, new Vec3()));//Rectangle(gas, gasMaterial, gasSize*2f, gasSize*2f, gasSize*2f, new Vec3(), true));
+				cloudModels.add(new Sphere(gas, gasMaterial, 1, gasSize*3f, new Vec3()));
 				gasSize = gasSize/2f;
 			}
 		}
@@ -73,10 +73,10 @@ public class HDFSnapshotter {
 				glw.setCubeRoot(cubeRoot);				
 			}	
 						
-			particleMemberList = Hdf5StarReader.getRoot(namePrefix + intToString(0) + evoNamePostfix).getMemberList();
+			particleMemberList = Hdf5StarReader2.getRoot(namePrefix + intToString(0) + evoNamePostfix).getMemberList();
 			Hdf5Reader.traverse("evo", particleResult, particleMemberList);
 			
-			particleMemberList = Hdf5StarReader.getRoot(namePrefix + intToString(0) + gravNamePostfix).getMemberList();
+			particleMemberList = Hdf5StarReader2.getRoot(namePrefix + intToString(0) + gravNamePostfix).getMemberList();
 			Hdf5Reader.traverse("grav", particleResult, particleMemberList);
 			
 			Hdf5Reader.closeFiles();	
@@ -102,7 +102,7 @@ public class HDFSnapshotter {
 			starReader = new Hdf5StarReader2(starModels, particles, evoName, gravName);
 			
 			//Construct the Scene graph		
-			ParticleNode root = new ParticleNode();
+			
 			for (int i = 0; i < particleKeys.length; i++) {
 				ParticleNode node = new ParticleNode();		
 				Particle2 p = particles.get(particleKeys[i]);
@@ -110,10 +110,10 @@ public class HDFSnapshotter {
 				Vec4 color = p.color;
 				node.materials.add( new Material(color,color,color) );
 				node.setTranslation(p.location);				
-				root.addChild(node);
+				sgRoot.addChild(node);
 			}
 						
-			glw.setRoot(root);					
+			glw.setRoot(sgRoot);					
 		} catch (FileOpeningException e) {
 			e.printStackTrace();
 			System.exit(1);

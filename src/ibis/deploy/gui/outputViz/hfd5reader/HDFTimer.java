@@ -11,15 +11,15 @@ import ncsa.hdf.object.Dataset;
 import ncsa.hdf.object.HObject;
 import ibis.deploy.gui.outputViz.GLWindow;
 import ibis.deploy.gui.outputViz.common.Material;
-import ibis.deploy.gui.outputViz.common.Model;
 import ibis.deploy.gui.outputViz.common.Vec3;
 import ibis.deploy.gui.outputViz.common.Vec4;
 import ibis.deploy.gui.outputViz.exceptions.FileOpeningException;
+import ibis.deploy.gui.outputViz.models.Model;
 import ibis.deploy.gui.outputViz.models.base.Sphere;
 import ibis.deploy.gui.outputViz.shaders.Program;
 
 public class HDFTimer implements Runnable {	
-	public static enum states { UNOPENED, UNINITIALIZED, INITIALIZED, STOPPED, REDRAWING, SNAPSHOTTING, WAITINGONFRAME, PLAYING};
+	public static enum states { UNOPENED, UNINITIALIZED, INITIALIZED, STOPPED, REDRAWING, SNAPSHOTTING, CLEANUP, WAITINGONFRAME, PLAYING};
 	
 	public static states currentState = states.UNOPENED;
 	public int currentFrame;
@@ -37,7 +37,6 @@ public class HDFTimer implements Runnable {
 	private ParticleNode root;
 	private CubeNode cubeRoot;
 	
-	private ArrayList<Integer> framesRead;
 	private HashMap<Long, Particle2> particles;
 	private HashMap<Long, ParticleNode> nodes;
 	private long[] particleKeys;
@@ -102,7 +101,6 @@ public class HDFTimer implements Runnable {
 		
 		reader = null;
 		gasReader = null;
-		framesRead = new ArrayList<Integer>();
 		particles = new HashMap<Long, Particle2>();
 //		gasses = new HashMap<Integer, Texture3D>();
 		nodes = new HashMap<Long, ParticleNode>();
@@ -122,9 +120,6 @@ public class HDFTimer implements Runnable {
 			float gasSize = GLWindow.GAS_EDGES;
 			for (int i=0; i < GLWindow.MAX_CLOUD_DEPTH; i++ ) {
 				cloudModels.add(new Sphere(gas, gasMaterial, 0, gasSize*3f, new Vec3()));
-//				cloudModels.add(new Rectangle(gas, gasMaterial, gasSize*2f, gasSize*2f, gasSize*2f, new Vec3(), true));
-//				cloudModels.add(new Sphere(gas, gasMaterial, 1, gasSize*4f, new Vec3()));
-//				cloudModels.add(new Quad(gas, gasMaterial, gasSize*4f, gasSize*4f, new Vec3()));
 				gasSize = gasSize/2f;
 			}
 		}
@@ -148,13 +143,13 @@ public class HDFTimer implements Runnable {
 				
 			}	
 			
-			int initialMaxBar = Hdf5StarReader.getNumFiles(path, gravNamePostfix);
+			int initialMaxBar = Hdf5StarReader2.getNumFiles(path, gravNamePostfix);
 			timeBar.setMaximum(initialMaxBar);
 			
-			particleMemberList = Hdf5StarReader.getRoot(namePrefix + intToString(0) + evoNamePostfix).getMemberList();
+			particleMemberList = Hdf5StarReader2.getRoot(namePrefix + intToString(0) + evoNamePostfix).getMemberList();
 			Hdf5Reader.traverse("evo", particleResult, particleMemberList);
 			
-			particleMemberList = Hdf5StarReader.getRoot(namePrefix + intToString(0) + gravNamePostfix).getMemberList();
+			particleMemberList = Hdf5StarReader2.getRoot(namePrefix + intToString(0) + gravNamePostfix).getMemberList();
 			Hdf5Reader.traverse("grav", particleResult, particleMemberList);
 			
 			Dataset keysSet = particleResult.get("evo/particles/0000000001/keys");
@@ -208,8 +203,6 @@ public class HDFTimer implements Runnable {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		
-		framesRead.add(0);
 				
 		glw.timerInitialized = true;
 		currentState = states.PLAYING;
@@ -217,7 +210,7 @@ public class HDFTimer implements Runnable {
 		while(running) {
 			if (currentState == states.PLAYING || currentState == states.REDRAWING) {
 				try {
-					startTime = System.currentTimeMillis();							
+					startTime = System.currentTimeMillis();					
 					
 					timeBar.setValue(currentFrame);
 					frameCounter.setValue(currentFrame);
@@ -239,7 +232,7 @@ public class HDFTimer implements Runnable {
 					//Bla
 				}
 				if (currentState == states.REDRAWING) currentState = states.STOPPED;
-			} else if (currentState == states.STOPPED || currentState == states.SNAPSHOTTING) {
+			} else if (currentState == states.STOPPED || currentState == states.SNAPSHOTTING || currentState == states.CLEANUP) {
 				try {
 					Thread.sleep(GLWindow.WAITTIME);
 				} catch (InterruptedException e) {
@@ -260,18 +253,12 @@ public class HDFTimer implements Runnable {
 	private void updateFrame() {
 		synchronized (this) {
 			try {
-				String gasName, evoName, gravName;
-				if (!framesRead.contains(currentFrame)) {	
-					
-					
-					evoName = namePrefix + intToString(currentFrame) + evoNamePostfix;
-					gravName = namePrefix + intToString(currentFrame) + gravNamePostfix;
-					
-					reader = new Hdf5StarReader2(starModels, particles, evoName, gravName);
-					
-					framesRead.add(currentFrame);
-				}
+				String gasName, evoName, gravName;					
+				evoName = namePrefix + intToString(currentFrame) + evoNamePostfix;
+				gravName = namePrefix + intToString(currentFrame) + gravNamePostfix;
 				
+				reader = new Hdf5StarReader2(starModels, particles, evoName, gravName);
+									
 				for (int i = 0; i < particles.size(); i++) {
 					ParticleNode node = nodes.get(particleKeys[i]);
 			    	Particle2 p = particles.get(particleKeys[i]);
@@ -322,15 +309,27 @@ public class HDFTimer implements Runnable {
 
 	public void start() {
 		GLWindow.AXES = true;
-		currentState = states.PLAYING;
+		if (currentState == states.SNAPSHOTTING) {
+			currentState = states.CLEANUP;
+		} else {
+			currentState = states.PLAYING;
+		}
 	}
 	
 	public void stop() {
-		currentState = states.STOPPED;
+		if (currentState == states.SNAPSHOTTING) {
+			currentState = states.CLEANUP;
+		} else {
+			currentState = states.STOPPED;
+		}
 	}
 	
 	public void rewind() {
-		currentState = states.STOPPED;
+		if (currentState == states.SNAPSHOTTING) {
+			currentState = states.CLEANUP;
+		} else {
+			currentState = states.STOPPED;
+		}
 		
 		setFrame(0);
 		timeBar.setValue(currentFrame);		
@@ -338,7 +337,11 @@ public class HDFTimer implements Runnable {
 
 	public void setFrame(int value) {
 		synchronized (this) {
-			currentState = states.STOPPED;
+			if (currentState == states.SNAPSHOTTING) {
+				currentState = states.CLEANUP;
+			} else {
+				currentState = states.STOPPED;
+			}
 			currentFrame = value;
 			
 			updateFrame();	

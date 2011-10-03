@@ -87,14 +87,13 @@ public class OutputVizPanel extends JPanel {
 		glcanvas.addGLEventListener(window);
 
 		// Add Mouse event listener
-		MouseHandler mouseHandler = new MouseHandler(window);
-		glcanvas.addMouseListener(mouseHandler);
-		glcanvas.addMouseMotionListener(mouseHandler);
-		glcanvas.addMouseWheelListener(mouseHandler);
+		InputHandler inputHandler = new InputHandler(window);
+		glcanvas.addMouseListener(inputHandler);
+		glcanvas.addMouseMotionListener(inputHandler);
+		glcanvas.addMouseWheelListener(inputHandler);
 
 		// Add key event listener
-		KeyHandler keyHandler = new KeyHandler(window);
-		glcanvas.addKeyListener(keyHandler);
+		glcanvas.addKeyListener(inputHandler);
 
 		// Set up animator
 		final FPSAnimator animator = new FPSAnimator(glcanvas, 60);

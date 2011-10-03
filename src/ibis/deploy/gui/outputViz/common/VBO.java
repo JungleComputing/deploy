@@ -32,4 +32,8 @@ public class VBO {
 	public void bind(GL3 gl) {
 		gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vboPointer.get(0));
 	}
+	
+	public void delete(GL3 gl) {
+		gl.glDeleteVertexArrays(1, vboPointer);
+	}
 }

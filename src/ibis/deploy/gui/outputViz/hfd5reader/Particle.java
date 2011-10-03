@@ -2,9 +2,9 @@ package ibis.deploy.gui.outputViz.hfd5reader;
 
 import java.util.HashMap;
 
-import ibis.deploy.gui.outputViz.common.Model;
 import ibis.deploy.gui.outputViz.common.Vec3;
 import ibis.deploy.gui.outputViz.common.Vec4;
+import ibis.deploy.gui.outputViz.models.Model;
 
 public class Particle {
 	public HashMap<Integer, Double> radius;

@@ -1,5 +1,9 @@
-package ibis.deploy.gui.outputViz.common;
+package ibis.deploy.gui.outputViz.models;
 
+import ibis.deploy.gui.outputViz.common.GLSLAttrib;
+import ibis.deploy.gui.outputViz.common.Mat4;
+import ibis.deploy.gui.outputViz.common.Material;
+import ibis.deploy.gui.outputViz.common.VBO;
 import ibis.deploy.gui.outputViz.exceptions.UninitializedException;
 import ibis.deploy.gui.outputViz.shaders.Program;
 
@@ -17,6 +21,8 @@ public class Model {
 	public Program program;
 	public Material material;
 	
+	private boolean initialized = false;
+	
 	public Model(Program program, Material material, vertex_format format) {
 		vertices  = null;
 		normals = null;		
@@ -27,20 +33,23 @@ public class Model {
 		this.format = format;
 	}
 	
-//	public Model(Program program, Material material, Model model) {
-//		this.numVertices = model.numVertices;
-//		this.vbo = model.vbo;
-//		
-//		this.program = program;
-//		this.material = material;		
-//	}
+	public void init(GL3 gl) {
+		if (!initialized) {
+			GLSLAttrib vAttrib = new GLSLAttrib(vertices, "MCvertex", 4);
+			GLSLAttrib nAttrib = new GLSLAttrib(normals, "MCnormal", 3);
+			
+			vbo = new VBO(gl, vAttrib, nAttrib);
+		}
+		initialized = true;
+	}
 	
-	public void init(GL3 gl) {				
-		GLSLAttrib vAttrib = new GLSLAttrib(vertices, "MCvertex", 4);
-		GLSLAttrib nAttrib = new GLSLAttrib(normals, "MCnormal", 3);
+	public void delete(GL3 gl) {
+		vertices  = null;
+		normals = null;
 		
-		vbo = new VBO(gl, vAttrib, nAttrib);
-//    	program.linkAttribs(gl, vAttrib, nAttrib);
+		if (initialized) {
+			vbo.delete(gl);
+		}
 	}
 	
 	public void draw(GL3 gl, Mat4 MVMatrix) {
