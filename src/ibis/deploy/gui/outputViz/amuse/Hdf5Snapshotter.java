@@ -76,14 +76,12 @@ public class Hdf5Snapshotter {
 				glw.setCubeRoot(cubeRoot);				
 			}	
 						
-			particleMemberList = Hdf5StarReader.getRoot(namePrefix + intToString(0) + evoNamePostfix).getMemberList();
+			particleMemberList = Hdf5StarReader.getRoot(namePrefix + intToString(currentFrame) + evoNamePostfix).getMemberList();
 			Hdf5StarReader.traverse("evo", particleResult, particleMemberList);
 			
-			particleMemberList = Hdf5StarReader.getRoot(namePrefix + intToString(0) + gravNamePostfix).getMemberList();
+			particleMemberList = Hdf5StarReader.getRoot(namePrefix + intToString(currentFrame) + gravNamePostfix).getMemberList();
 			Hdf5StarReader.traverse("grav", particleResult, particleMemberList);
-			
-			Hdf5StarReader.closeFiles();	
-			
+						
 			Dataset keysSet = particleResult.get("evo/particles/0000000001/keys");
 			particleMemberList = null;
 			
@@ -97,7 +95,9 @@ public class Hdf5Snapshotter {
 			for (Dataset d : particleResult.values()) {
 				d.clear();
 				d.close(0);
-		    }
+		    }		
+			
+			Hdf5StarReader.closeFiles();	
 			
 			//Get the initial data for the particles (frame 0)
 			evoName = namePrefix + intToString(currentFrame) + evoNamePostfix;
@@ -115,7 +115,8 @@ public class Hdf5Snapshotter {
 				sgRoot.addChild(node);
 			}
 						
-			glw.setRoot(sgRoot);					
+			glw.setRoot(sgRoot);
+			
 		} catch (FileOpeningException e) {
 			e.printStackTrace();
 			System.exit(1);

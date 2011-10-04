@@ -166,7 +166,9 @@ public class Hdf5TimedPlayer implements Runnable {
 			for (Dataset d : particleResult.values()) {
 				d.clear();
 				d.close(0);
-		    }
+		    }		
+			
+			Hdf5StarReader.closeFiles();	
 			
 			//Get the initial data for the particles (frame 0)
 			evoName = namePrefix + intToString(currentFrame) + evoNamePostfix;
@@ -189,8 +191,6 @@ public class Hdf5TimedPlayer implements Runnable {
 			}
 						
 			glw.setRoot(root);
-			
-			Hdf5StarReader.closeFiles();
 			
 						
 		} catch (FileOpeningException e) {
@@ -284,6 +284,8 @@ public class Hdf5TimedPlayer implements Runnable {
 				}
 			} catch (FileOpeningException e) {
 				currentState = states.WAITINGONFRAME;
+				currentFrame--;
+				return;
 			}
 		} 
 	}
@@ -353,7 +355,7 @@ public class Hdf5TimedPlayer implements Runnable {
 		synchronized (this) {
 			GLWindow.AXES = false;
 			currentState = states.SNAPSHOTTING;
-//			System.out.println("Snapshotting "+currentFrame);
+			System.out.println("Snapshotting "+currentFrame);
 			Hdf5Snapshotter snappy = new Hdf5Snapshotter();
 			snappy.open(namePrefix, glw, animatedTurbulence, gas, currentFrame);
 		}

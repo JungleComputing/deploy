@@ -44,6 +44,7 @@ public class GLWindow implements GLEventListener {
 	public static enum octants { PPP, PPN, PNP, PNN, NPP, NPN, NNP, NNN }
 	public static octants current_view_octant = octants.PPP; 
 	
+	private OutputVizPanel panel;
 	private ProgramLoader loader;
 	
 	Program animatedTurbulence;
@@ -95,7 +96,8 @@ public class GLWindow implements GLEventListener {
 	Model fullscreenQuad, fullscreenQuad0, fullscreenQuad1, fullscreenQuad2, volumeGas;
 	Model xAxis, yAxis, zAxis;
 	
-	public GLWindow() {		
+	public GLWindow(OutputVizPanel panel) {
+		this.panel = panel;
 		loader = new ProgramLoader();
 		
 		noiseTex = new Perlin3D(128);		
@@ -201,6 +203,8 @@ public class GLWindow implements GLEventListener {
 		//enableCubemaps(gl);	
 		
 		gl.glClearColor(0f, 0f, 0f, 0f);
+		
+		panel.callback();
 	}
 
 	public void display(GLAutoDrawable drawable) {

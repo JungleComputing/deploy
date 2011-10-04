@@ -43,14 +43,14 @@ public class OutputVizPanel extends JPanel {
 
     public static final int DEFAULT_SCREEN_HEIGHT = 768;
 
-
+    private static String cmdlnfileName;
 	private GLWindow window;
 	private GLCanvas glcanvas;
 	
 	public Hdf5TimedPlayer timer;
 	public JSlider timeBar;
 	public JFormattedTextField frameCounter;
-
+	
 	public OutputVizPanel(final GUI gui) {		
 	    final JButton initButton = new JButton("Initialize 3D Visualization");
 	    add(initButton);
@@ -71,7 +71,7 @@ public class OutputVizPanel extends JPanel {
 		setLayout(new BorderLayout(0, 0));
 		
 		// Make the GLEventListener
-		window = new GLWindow();
+		window = new GLWindow(this);
 
 		// Standard GL3 capabilities
 		GLProfile glp = GLProfile.getDefault();
@@ -293,13 +293,50 @@ public class OutputVizPanel extends JPanel {
 		add(menuBar, BorderLayout.NORTH);		
 		add(glcanvas, BorderLayout.CENTER);
 		add(bottomPanel, BorderLayout.SOUTH);	
-		
+				
 		setVisible(true);
 		glcanvas.setFocusable(true);		
 		glcanvas.requestFocusInWindow();
 	}
 	
-	public static void main(String[] args) {
+	public void callback() {
+		if (cmdlnfileName != null) {
+			File cmdlnfile = new File(cmdlnfileName);
+			if (cmdlnfile != null) { 
+				String path = cmdlnfile.getPath().substring(0, cmdlnfile.getPath().length()-cmdlnfile.getName().length());
+				String name = cmdlnfile.getName();
+				String fullPath = path + name;
+				String[] ext = fullPath.split("[.]");
+				if (!(ext[1].compareTo("evo") == 0 ||
+					  ext[1].compareTo("grav") == 0 || 
+					  ext[1].compareTo("add") == 0 || 
+					  ext[1].compareTo("gas") == 0 || 
+					  ext[1].compareTo("data") == 0)) {
+					JOptionPane pane = new JOptionPane();
+					pane.setMessage("Tried to open invalid file type.");
+					JDialog dialog = pane.createDialog("Alert");
+				    dialog.setVisible(true);							
+				} else {
+					String prefix = ext[0].substring(0, ext[0].length()-6);
+					window.stopAnimation();
+					timer = new Hdf5TimedPlayer(timeBar, frameCounter);
+					timer.open(path, prefix);
+					window.startAnimation(timer);
+				}
+			}
+		}
+	}
+	
+	public static void main(String[] arguments) {		
+        for (int i = 0; i < arguments.length; i++) {
+            if (arguments[i].equals("-o")) {
+                i++;
+                cmdlnfileName = arguments[i];
+            } else {
+            	cmdlnfileName = null;
+            }
+        }
+		
 		final JFrame frame = new JFrame("Ibis Deploy - OutputViz Testframe");
 		frame.setPreferredSize(new Dimension(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT));
 		
@@ -315,6 +352,8 @@ public class OutputVizPanel extends JPanel {
                         System.exit(0);
                     }
                 });
+                
+                
                 
             	} catch (Exception e) {
             		e.printStackTrace(System.err);
