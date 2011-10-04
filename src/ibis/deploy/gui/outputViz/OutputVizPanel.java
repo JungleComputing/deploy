@@ -101,7 +101,7 @@ public class OutputVizPanel extends JPanel {
 		final FPSAnimator animator = new FPSAnimator(glcanvas, 60);
 		animator.start();	
 		
-		timeBar = new JSlider();
+		timeBar = new CustomJSlider();
 		timeBar.setValue(0);
 	    timeBar.setMajorTickSpacing(5);
 	    timeBar.setMinorTickSpacing(1);
@@ -286,7 +286,7 @@ public class OutputVizPanel extends JPanel {
 							timer.setFrame(timeBar.getValue());
 					    }
 					}
-				});				
+				});	
 				bottomPanel.add(timeBar);	
 			
 			
