@@ -1,6 +1,7 @@
 package ibis.deploy.gui.outputViz.common;
 
 import ibis.deploy.gui.outputViz.GLWindow;
+import ibis.deploy.gui.outputViz.common.math.Vec3;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;

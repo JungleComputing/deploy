@@ -1,6 +1,9 @@
 package ibis.deploy.gui.outputViz.models;
 
 import ibis.deploy.gui.outputViz.common.*;
+import ibis.deploy.gui.outputViz.common.math.Vec3;
+import ibis.deploy.gui.outputViz.common.math.Vec4;
+import ibis.deploy.gui.outputViz.common.math.VectorMath;
 import ibis.deploy.gui.outputViz.shaders.Program;
 
 public class Axis extends Model {	
@@ -13,12 +16,12 @@ public class Axis extends Model {
 				
 		int numVertices = 2 + (numMajorIntervals*2) - 4 + (numMinorIntervals*2) - 4;		
 				
-		Point4[] points = new Point4[numVertices];
+		Vec4[] points = new Vec4[numVertices];
 		Vec3[] normals = new Vec3[numVertices];
 		
 		int arrayindex = 0;
-		points[0] = new Point4(start, 1f);
-		points[1] = new Point4(end, 1f);
+		points[0] = new Vec4(start, 1f);
+		points[1] = new Vec4(end, 1f);
 		
 		normals[0] = VectorMath.normalize(start).neg();
 		normals[1] = VectorMath.normalize(end).neg();
@@ -49,15 +52,15 @@ public class Axis extends Model {
 		}	
 		
 		this.numVertices = numVertices;
-	    this.vertices  = Vec4.toBuffer(points);
-	    this.normals  = Vec3.toBuffer(normals);
+	    this.vertices  = VectorMath.toBuffer(points);
+	    this.normals  = VectorMath.toBuffer(normals);
 	}
 	
-	private int addInterval(Point4[] points, Vec3[] normals, int arrayindex, Vec3 center, Vec3 alignment, float size) {
-		points[arrayindex] = new Point4(center.add(alignment.mul(size)), 1f);
+	private int addInterval(Vec4[] points, Vec3[] normals, int arrayindex, Vec3 center, Vec3 alignment, float size) {
+		points[arrayindex] = new Vec4(center.add(alignment.mul(size)), 1f);
 		normals[arrayindex] = VectorMath.normalize(alignment);
 		arrayindex++;
-	    points[arrayindex] = new Point4(center.sub(alignment.mul(size)), 1f);
+	    points[arrayindex] = new Vec4(center.sub(alignment.mul(size)), 1f);
 	    normals[arrayindex] = VectorMath.normalize(alignment).neg();
 	    arrayindex++;
 		return arrayindex;

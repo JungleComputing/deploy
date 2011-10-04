@@ -1,10 +1,10 @@
-package ibis.deploy.gui.outputViz.hfd5reader;
+package ibis.deploy.gui.outputViz.amuse;
 
-import ibis.deploy.gui.outputViz.common.Vec3;
-import ibis.deploy.gui.outputViz.common.Vec4;
+import ibis.deploy.gui.outputViz.common.math.Vec3;
+import ibis.deploy.gui.outputViz.common.math.Vec4;
 import ibis.deploy.gui.outputViz.models.Model;
 
-public class Particle2 {
+public class Star {
 	public double radius;
 	public Vec4 color;
 	public double luminosity;
@@ -13,6 +13,6 @@ public class Particle2 {
 	public Vec3 location;
 	public Vec3 direction;
 	
-	public Particle2() {
+	public Star() {
 	}
 }

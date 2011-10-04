@@ -1,8 +1,8 @@
-package ibis.deploy.gui.outputViz.hfd5reader;
+package ibis.deploy.gui.outputViz.amuse;
 
 import ibis.deploy.gui.outputViz.common.Material;
-import ibis.deploy.gui.outputViz.common.Vec3;
-import ibis.deploy.gui.outputViz.common.Vec4;
+import ibis.deploy.gui.outputViz.common.math.Vec3;
+import ibis.deploy.gui.outputViz.common.math.Vec4;
 import ibis.deploy.gui.outputViz.exceptions.FileOpeningException;
 import ibis.deploy.gui.outputViz.models.Model;
 import ibis.deploy.gui.outputViz.models.base.Sphere;
@@ -13,7 +13,7 @@ import java.util.*;
 
 import ncsa.hdf.object.*;
 
-public class Hdf5StarReader2 {	
+public class Hdf5StarReader {	
 	static class ExtFilter implements FilenameFilter {
 		private String ext;
 		
@@ -31,7 +31,7 @@ public class Hdf5StarReader2 {
 	
 	public long[] keys;
     
-	public Hdf5StarReader2(HashMap<Integer, Model> models, HashMap<Long, Particle2> particles, String evo, String grav) throws FileOpeningException {
+	public Hdf5StarReader(HashMap<Integer, Model> models, HashMap<Long, Star> particles, String evo, String grav) throws FileOpeningException {
 		
 		HashMap<String, Dataset> result = new HashMap<String, Dataset>();
 		
@@ -56,7 +56,7 @@ public class Hdf5StarReader2 {
 	    	z 			= (double[]) result.get("grav/particles/0000000001/attributes/z").read();
 	    			    
 		    for (int i = 0; i< numParticles; i++) {		    	
-		    	Particle2 current = particles.get(keys[i]);		    	
+		    	Star current = particles.get(keys[i]);		    	
 		    	current.radius = realRadius[i];
 		    	
 		    	Vec4 color =  Astrophysics.toColor(luminosity[i], realRadius[i]);
@@ -66,9 +66,9 @@ public class Hdf5StarReader2 {
 		    	Material material = new Material(color,color,color);
 		    	
 		    	Model sphere;
-		    	int index = (int) Math.round((realRadius[i] / 10E9)/ 0.01);
+		    	int index = (int) Math.round(Astrophysics.starToScreenRadius(realRadius[i])/ (float) Astrophysics.STAR_RADIUS_FACTOR);
 	    		if (!models.containsKey(index)) {
-	    			sphere = new Sphere(models.get(0).program, material, 3, (float)(realRadius[i] / 10E9), new Vec3());
+	    			sphere = new Sphere(models.get(0).program, material, 3, index, new Vec3());
 	    			models.put(index, sphere);
 	    		} else {		    	
 		    		sphere = models.get(index);
@@ -76,7 +76,7 @@ public class Hdf5StarReader2 {
 
 		    	current.model = sphere;
 		    	
-		    	current.location = Astrophysics.toScreenCoord(x[i], y[i], z[i]);		    			    	
+		    	current.location = Astrophysics.locationToScreenCoord(x[i], y[i], z[i]);		    			    	
 		    }
 	    } catch (OutOfMemoryError e) {
 			e.printStackTrace();

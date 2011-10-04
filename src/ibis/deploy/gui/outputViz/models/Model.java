@@ -1,9 +1,9 @@
 package ibis.deploy.gui.outputViz.models;
 
 import ibis.deploy.gui.outputViz.common.GLSLAttrib;
-import ibis.deploy.gui.outputViz.common.Mat4;
 import ibis.deploy.gui.outputViz.common.Material;
 import ibis.deploy.gui.outputViz.common.VBO;
+import ibis.deploy.gui.outputViz.common.math.Mat4;
 import ibis.deploy.gui.outputViz.exceptions.UninitializedException;
 import ibis.deploy.gui.outputViz.shaders.Program;
 

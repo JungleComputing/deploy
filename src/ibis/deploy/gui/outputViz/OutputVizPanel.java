@@ -11,8 +11,8 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 
 import ibis.deploy.gui.GUI;
+import ibis.deploy.gui.outputViz.amuse.Hdf5TimedPlayer;
 import ibis.deploy.gui.outputViz.common.*;
-import ibis.deploy.gui.outputViz.hfd5reader.HDFTimer;
 
 import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLProfile;
@@ -31,6 +31,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -46,7 +47,7 @@ public class OutputVizPanel extends JPanel {
 	private GLWindow window;
 	private GLCanvas glcanvas;
 	
-	public HDFTimer timer;
+	public Hdf5TimedPlayer timer;
 	public JSlider timeBar;
 	public JFormattedTextField frameCounter;
 
@@ -66,6 +67,7 @@ public class OutputVizPanel extends JPanel {
 	}
 
 	public void initialize(GUI gui) {
+		JPopupMenu.setDefaultLightWeightPopupEnabled(false);
 		setLayout(new BorderLayout(0, 0));
 		
 		// Make the GLEventListener
@@ -108,7 +110,7 @@ public class OutputVizPanel extends JPanel {
 	    timeBar.setPaintTicks(true);
 	    timeBar.setSnapToTicks(true);
 	    
-		timer = new HDFTimer(timeBar, frameCounter);		
+		timer = new Hdf5TimedPlayer(timeBar, frameCounter);		
 		
 		//Make the menu bar
 		JMenuBar menuBar = new JMenuBar();
@@ -134,7 +136,7 @@ public class OutputVizPanel extends JPanel {
 							} else {
 								String prefix = ext[0].substring(0, ext[0].length()-6);
 								window.stopAnimation();
-								timer = new HDFTimer(timeBar, frameCounter);
+								timer = new Hdf5TimedPlayer(timeBar, frameCounter);
 								timer.open(path, prefix);
 								window.startAnimation(timer);
 							}
@@ -292,9 +294,9 @@ public class OutputVizPanel extends JPanel {
 		add(glcanvas, BorderLayout.CENTER);
 		add(bottomPanel, BorderLayout.SOUTH);	
 		
-		setVisible(true);		
+		setVisible(true);
 		glcanvas.setFocusable(true);		
-		glcanvas.requestFocus();
+		glcanvas.requestFocusInWindow();
 	}
 	
 	public static void main(String[] args) {

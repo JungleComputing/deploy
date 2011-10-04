@@ -4,9 +4,9 @@ import java.util.ArrayList;
 
 import javax.media.opengl.GL3;
 
-import ibis.deploy.gui.outputViz.common.Mat4;
-import ibis.deploy.gui.outputViz.common.MatrixMath;
-import ibis.deploy.gui.outputViz.common.Vec3;
+import ibis.deploy.gui.outputViz.common.math.Mat4;
+import ibis.deploy.gui.outputViz.common.math.MatrixMath;
+import ibis.deploy.gui.outputViz.common.math.Vec3;
 import ibis.deploy.gui.outputViz.models.Model;
 
 public class SGNode {

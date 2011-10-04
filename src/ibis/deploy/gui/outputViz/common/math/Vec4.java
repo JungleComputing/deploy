@@ -1,41 +1,70 @@
-package ibis.deploy.gui.outputViz.common;
-
-
-import java.nio.FloatBuffer;
-import java.util.List;
+package ibis.deploy.gui.outputViz.common.math;
 
 public class Vec4 extends Vector {
-	float v[] = new float[4];
-	FloatBuffer buf = FloatBuffer.wrap(v);
-
+    /**
+     * Creates a new vector, initialized to 0.
+     */
     public Vec4() {
+    	super(4);
         this.v[0] = 0f;
         this.v[1] = 0f;
         this.v[2] = 0f;
         this.v[3] = 0f;
     }
-
+    
+    /**
+     * Creates a new vector by copying the given vector.     
+     * @param v
+     * 		The vector to be copied.
+     */
     public Vec4(Vec4 v) {
+    	super(4);
         this.v[0] = v.v[0];
         this.v[1] = v.v[1];
         this.v[2] = v.v[2];
         this.v[3] = v.v[3];
     }
     
+    /**
+     * Creates a new vector by copying the given vector, supplemented by the scalar.     
+     * @param v
+     * 		The vector to be copied.
+     * @param v3
+     * 		The additional value to be put into the fourth index.
+     */
     public Vec4(Vec3 v, float v3) {
+    	super(4);
         this.v[0] = v.v[0];
         this.v[1] = v.v[1];
         this.v[2] = v.v[2];
         this.v[3] = v3;
     }
-
-    public Vec4(float x, float y, float z, float h) {
+    
+    /**
+     * Creates a new vector with the given values.     
+     * @param x
+     * 		The value to be put in the first position.
+     * @param y
+     * 		The value to be put in the second position.
+     * @param z
+     * 		The value to be put in the third position.
+     * @param w
+     * 		The value to be put in the fourth position.
+     */
+    public Vec4(float x, float y, float z, float w) {
+    	super(4);
         this.v[0] = x;
         this.v[1] = y;
         this.v[2] = z;
-        this.v[3] = h;
+        this.v[3] = w;
     }
 
+    
+    /**
+     * Gives the negated vector of this vector. 
+     * @return
+     * 		The new negated vector.
+     */
     public Vec4 neg() {
     	Vec4 result = new Vec4();
     	result.v[0] = -v[0];
@@ -45,6 +74,14 @@ public class Vec4 extends Vector {
     	return result;
     }
 
+    
+    /**
+     * Adds the given vector to the current vector, and returns the result.
+     * @param u
+     * 		The vector to be added to this vector.
+     * @return
+     * 		The new vector.
+     */
     public Vec4 add(Vec4 u) {
     	Vec4 result = new Vec4();
     	result.v[0] = v[0] + u.v[0];
@@ -54,6 +91,13 @@ public class Vec4 extends Vector {
     	return result;
     }
 
+	/**
+	 * Substracts the given vector from this vector.
+	 * @param u
+	 * 		The vector to be substracted from this one.
+	 * @return
+	 * 		The new Vector, which is a result of the substraction.
+	 */
 	public Vec4 sub(Vec4 u) {
 		Vec4 result = new Vec4();
     	result.v[0] = v[0] - u.v[0];
@@ -63,6 +107,13 @@ public class Vec4 extends Vector {
     	return result;
 	}
 
+	/**
+	 * Multiplies the given scalar with this vector.
+	 * @param n
+	 * 		The scalar to be multiplied with this one.
+	 * @return
+	 * 		The new Vector, which is a result of the multiplication.
+	 */
 	public Vec4 mul(Number n) {
 		float fn = n.floatValue();
 		Vec4 result = new Vec4();
@@ -73,6 +124,13 @@ public class Vec4 extends Vector {
     	return result;
 	}
 
+	/**
+	 * Multiplies the given vector with this vector.
+	 * @param u
+	 * 		The vector to be multiplied with this one.
+	 * @return
+	 * 		The new Vector, which is a result of the multiplication.
+	 */
 	public Vec4 mul(Vec4 u) {
 		Vec4 result = new Vec4();
     	result.v[0] = v[0] * u.v[0];
@@ -82,6 +140,13 @@ public class Vec4 extends Vector {
     	return result;
 	}
 
+	/**
+	 * Divides the current vector with the given scalar.
+	 * @param n
+	 * 		The scalar to be divided with.
+	 * @return
+	 * 		The new Vector, which is a result of the division.
+	 */
 	public Vec4 div(Number n) {  
 		float f = n.floatValue();
     	if (f == 0f) return new Vec4();
@@ -95,63 +160,13 @@ public class Vec4 extends Vector {
     	return result;
 	}
     
-    public float[] asArray() {
-    	return v;
-    }
-    
-    public FloatBuffer asBuffer() {
-    	buf.rewind();
-    	return buf;
-    }
-    
-    public float get(int i) {
-        return v[i];
-    }
-    
-    public void set(int i, float u) {  
-    	v[i] = u;
-    }
-    
     public Vec4 clone() {
     	return new Vec4(this);
     }
     
-    public static FloatBuffer toBuffer(Vec4[] array) {
-		FloatBuffer result = FloatBuffer.allocate(array.length*4);
-		
-		for (int i=0; i < array.length; i++) {
-			result.put(array[i].asBuffer());
-		}
-		
-		result.rewind();
-		
-		return result;
-	}
-    
-    public static FloatBuffer toBuffer(List<Vec4> list) {
-		FloatBuffer result = FloatBuffer.allocate(list.size()*4);
-		
-		for (int i=0; i < list.size(); i++) {
-			result.put(list.get(i).asBuffer());
-		}
-		
-		result.rewind();
-		
-		return result;
-	}
-    
-    public String toString() {
-    	String result = "";
-		for (int i=0; i<3; i++) {
-			result += (v[i]+" ");
-		}
-		
-		return result;
-	}
-    
     @Override
 	public int hashCode() {
-		int hashCode = (int) (v[0] * 6833 + v[1] *7207 + v[2] * 7919 + v[3] * 3);
+		int hashCode = (int) (v[0]+23 * 6833 + v[1]+7 *7207 + v[2]+11 * 7919 + v[3]+3 * 3);
 		return hashCode;
 	}
     

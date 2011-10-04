@@ -1,12 +1,19 @@
 package ibis.deploy.gui.outputViz;
 
+import ibis.deploy.gui.outputViz.amuse.Astrophysics;
+import ibis.deploy.gui.outputViz.amuse.Hdf5TimedPlayer;
+import ibis.deploy.gui.outputViz.amuse.Hdf5TimedPlayer.states;
 import ibis.deploy.gui.outputViz.common.*;
+import ibis.deploy.gui.outputViz.common.math.Color4;
+import ibis.deploy.gui.outputViz.common.math.Mat3;
+import ibis.deploy.gui.outputViz.common.math.Mat4;
+import ibis.deploy.gui.outputViz.common.math.MatrixMath;
+import ibis.deploy.gui.outputViz.common.math.Point4;
+import ibis.deploy.gui.outputViz.common.math.Vec3;
+import ibis.deploy.gui.outputViz.common.math.Vec4;
+import ibis.deploy.gui.outputViz.common.scenegraph.OctreeNode;
 import ibis.deploy.gui.outputViz.common.scenegraph.SGNode;
 import ibis.deploy.gui.outputViz.exceptions.UninitializedException;
-import ibis.deploy.gui.outputViz.hfd5reader.Astrophysics;
-import ibis.deploy.gui.outputViz.hfd5reader.CubeNode;
-import ibis.deploy.gui.outputViz.hfd5reader.HDFTimer;
-import ibis.deploy.gui.outputViz.hfd5reader.HDFTimer.states;
 import ibis.deploy.gui.outputViz.models.Axis;
 import ibis.deploy.gui.outputViz.models.Model;
 import ibis.deploy.gui.outputViz.models.base.Quad;
@@ -32,7 +39,7 @@ public class GLWindow implements GLEventListener {
 	public static float GAS_EDGES = 800f;
 	public static int MAX_ELEMENTS_PER_OCTREE_NODE = 100;
 	public static float EPSILON = 1.0E-7f;
-	public static float GAS_OPACITY_FACTOR = .8f;
+	public static float GAS_OPACITY_FACTOR = 1f;
 	
 	public static enum octants { PPP, PPN, PNP, PNN, NPP, NPN, NNP, NNN }
 	public static octants current_view_octant = octants.PPP; 
@@ -57,12 +64,12 @@ public class GLWindow implements GLEventListener {
 	float[] bla3 = {0f};
 	FloatBuffer offset = FloatBuffer.wrap(bla3);
 	
-	HDFTimer timer;
+	Hdf5TimedPlayer timer;
 	public boolean timerInitialized = false;
 	public boolean snapshotting = false;
 	
 	SGNode root, root2;
-	CubeNode cubeRoot, cubeRoot2;		
+	OctreeNode cubeRoot, cubeRoot2;		
 	boolean newRoot = true, newCubeRoot = true;
 	
 	float[] bla4 = {50f};
@@ -143,7 +150,7 @@ public class GLWindow implements GLEventListener {
 		root = new SGNode();
 		newRoot = false;
 		
-		cubeRoot = new CubeNode();
+		cubeRoot = new OctreeNode();
 		newCubeRoot = false;
 		
 		root.init(gl);
@@ -241,15 +248,14 @@ public class GLWindow implements GLEventListener {
     		
     		if (timerInitialized) synchronized (timer) {
 		    	SGNode root = initSGRoot(gl);
-		    	CubeNode cubeRoot = initCubeRoot(gl);
+		    	OctreeNode cubeRoot = initCubeRoot(gl);
 		
 				if (GAS_COLORMAP) {
 					multiTex = 2;
 					
 		    		loader.setUniformMatrix("SMatrix", MatrixMath.scale(2, 2, 2).asBuffer());
 		    		loader.setUniform("Mode", 1);
-		    		loader.setUniform("Multicolor", 1);	    
-		    		ppl.use(gl);
+		    		loader.setUniform("Multicolor", 1);	
 		    				    	
 		    		if (!DEPTH_TESTED_GAS) gl.glEnable(GL3.GL_DEPTH_TEST);
 			    	
@@ -274,17 +280,17 @@ public class GLWindow implements GLEventListener {
 		    	if (POST_PROCESS) {
 		    		multiTex = 3;
 		    		renderToTexture(gl, multiTex, gasTex);	    		
-	    			loader.setUniform("Texture", multiTex);  
+		    		gaussianBlur.setUniform("Texture", multiTex);  
 	    			
-	        		loader.setUniformMatrix("PMatrix", new Mat4().asBuffer());
+		    		gaussianBlur.setUniformMatrix("PMatrix", new Mat4().asBuffer());
 	        		
-	        		loader.setUniform("blurType", 2);
-	        		loader.setUniform("blurDirection", 0);  
+	        		gaussianBlur.setUniform("blurType", 2);
+	        		gaussianBlur.setUniform("blurDirection", 0);  
 	        		gaussianBlur.use(gl);
 	    	    	fullscreenQuad1.draw(gl, new Mat4());
 	        		renderToTexture(gl, multiTex, gasTex);
 	        		
-	        		loader.setUniform("blurDirection", 1);
+	        		gaussianBlur.setUniform("blurDirection", 1);
 	        		gaussianBlur.use(gl);
 	    	    	fullscreenQuad2.draw(gl, new Mat4());
 	        		renderToTexture(gl, multiTex, gasTex);
@@ -360,15 +366,23 @@ public class GLWindow implements GLEventListener {
         canvasWidth = w;
         canvasHeight = h;
         
-        gl.glActiveTexture(GL3.GL_TEXTURE2);
+        gl.glActiveTexture(GL3.GL_TEXTURE1);
+        axesTex.delete(gl);
+		axesTex = new PostProcessTexture(canvasWidth, canvasHeight);
+		axesTex.init(gl);
+		
+		gl.glActiveTexture(GL3.GL_TEXTURE2);
+		gasColorTex.delete(gl);
 		gasColorTex = new PostProcessTexture(canvasWidth, canvasHeight);
 		gasColorTex.init(gl);
 		
 		gl.glActiveTexture(GL3.GL_TEXTURE3);
+		gasTex.delete(gl);
 		gasTex = new PostProcessTexture(canvasWidth, canvasHeight);
 		gasTex.init(gl);
 		
 		gl.glActiveTexture(GL3.GL_TEXTURE4);
+		starTex.delete(gl);
 		starTex = new PostProcessTexture(canvasWidth, canvasHeight);
 		starTex.init(gl);
 	}
@@ -447,7 +461,7 @@ public class GLWindow implements GLEventListener {
 		}
 	}
 	
-	public void setCubeRoot(CubeNode cubeRoot) {
+	public void setCubeRoot(OctreeNode cubeRoot) {
 		synchronized (this) {
 			this.cubeRoot2 = cubeRoot;
 			newCubeRoot = true;
@@ -457,10 +471,10 @@ public class GLWindow implements GLEventListener {
 	private SGNode initSGRoot(GL3 gl) {
 		synchronized (this) {
 			if (newRoot) {
-				if (HDFTimer.currentState == states.CLEANUP) {
+				if (Hdf5TimedPlayer.currentState == states.CLEANUP) {
 					root.delete(gl);
 					cubeRoot.delete(gl);
-					HDFTimer.setState(states.REDRAWING);
+					Hdf5TimedPlayer.setState(states.REDRAWING);
 				}
 				root = root2;			
 				root.init(gl);
@@ -471,7 +485,7 @@ public class GLWindow implements GLEventListener {
 		return root;
 	}
 	
-	private CubeNode initCubeRoot(GL3 gl) {
+	private OctreeNode initCubeRoot(GL3 gl) {
 		synchronized (this) {
 			if (newCubeRoot) {
 				cubeRoot = cubeRoot2;
@@ -483,7 +497,7 @@ public class GLWindow implements GLEventListener {
 		return cubeRoot;
 	}
 
-	public void startAnimation(HDFTimer timer) {
+	public void startAnimation(Hdf5TimedPlayer timer) {
 		this.timer = timer;
 		timer.init(this, ppl, gas, animatedTurbulence);
 		new Thread(timer).start();	
@@ -493,7 +507,7 @@ public class GLWindow implements GLEventListener {
 	public void stopAnimation() {
 		if (timerInitialized) {
 			setRoot(new SGNode());
-			setCubeRoot(new CubeNode());
+			setCubeRoot(new OctreeNode());
 			timer.close();
 			timer.stop();
 		}
@@ -514,7 +528,7 @@ public class GLWindow implements GLEventListener {
 	
 	public static void setResolution(int newSetting) {
 		MAX_ELEMENTS_PER_OCTREE_NODE = newSetting;
-		HDFTimer.setState(states.REDRAWING);
+		Hdf5TimedPlayer.setState(states.REDRAWING);
 	}
 	
 	public static void setAxes(boolean newSetting) {

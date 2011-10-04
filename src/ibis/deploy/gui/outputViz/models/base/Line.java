@@ -1,6 +1,9 @@
 package ibis.deploy.gui.outputViz.models.base;
 
 import ibis.deploy.gui.outputViz.common.*;
+import ibis.deploy.gui.outputViz.common.math.Vec3;
+import ibis.deploy.gui.outputViz.common.math.Vec4;
+import ibis.deploy.gui.outputViz.common.math.VectorMath;
 import ibis.deploy.gui.outputViz.models.Model;
 import ibis.deploy.gui.outputViz.shaders.Program;
 
@@ -20,7 +23,7 @@ public class Line extends Model {
 		normals[1] = VectorMath.normalize(end).neg();
 		
 		this.numVertices = numVertices;
-	    this.vertices  = Vec4.toBuffer(points);
-	    this.normals  = Vec3.toBuffer(normals);
+	    this.vertices  = VectorMath.toBuffer(points);
+	    this.normals  = VectorMath.toBuffer(normals);
 	}
 }

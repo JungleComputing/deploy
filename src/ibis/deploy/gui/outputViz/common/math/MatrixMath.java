@@ -1,4 +1,4 @@
-package ibis.deploy.gui.outputViz.common;
+package ibis.deploy.gui.outputViz.common.math;
 
 public class MatrixMath {
 	

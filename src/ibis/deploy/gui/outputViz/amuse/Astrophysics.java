@@ -1,7 +1,7 @@
-package ibis.deploy.gui.outputViz.hfd5reader;
+package ibis.deploy.gui.outputViz.amuse;
 
-import ibis.deploy.gui.outputViz.common.Vec3;
-import ibis.deploy.gui.outputViz.common.Vec4;
+import ibis.deploy.gui.outputViz.common.math.Vec3;
+import ibis.deploy.gui.outputViz.common.math.Vec4;
 
 public class Astrophysics {
 	static double sigma = 5.67037321E-8;
@@ -12,9 +12,10 @@ public class Astrophysics {
 	static double earth_radius = 6371;
 	
 	static double parsec =  3.08568025E16;
-	static int DISTANCE_FACTOR = 25;
+	static double DISTANCE_FACTOR = 25.0;
+	static double STAR_RADIUS_FACTOR = 0.05f;
 	
-	public static Vec3 toScreenCoord(double x, double y, double z) {
+	public static Vec3 locationToScreenCoord(double x, double y, double z) {
 		float fx = (float) (DISTANCE_FACTOR * (x / parsec));
 		float fy = (float) (DISTANCE_FACTOR * (y / parsec));
 		float fz = (float) (DISTANCE_FACTOR * (z / parsec));
@@ -22,8 +23,8 @@ public class Astrophysics {
 		return new Vec3(fx, fy, fz);
 	}
 	
-	public static float starToScreenCoord(double size) {
-		float fs = (float) (DISTANCE_FACTOR * (size / parsec));
+	public static float starToScreenRadius(double size) {
+		float fs = (float) (STAR_RADIUS_FACTOR * Math.sqrt(size / solar_radius));
 		
 		return fs;
 	}

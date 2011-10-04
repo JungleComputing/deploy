@@ -1,4 +1,4 @@
-package ibis.deploy.gui.outputViz.common;
+package ibis.deploy.gui.outputViz.common.math;
 
 public class Color4 extends Vec4{
 	public static Color4 black 	= new Color4(0.0f, 0.0f, 0.0f, 1.0f);
@@ -19,15 +19,35 @@ public class Color4 extends Vec4{
 	public static Color4 t_white 	= new Color4(1.0f, 1.0f, 1.0f, 0.2f);
 	public static Color4 t_cyan 	= new Color4(0.0f, 1.0f, 1.0f, 0.2f);
 	
+	
+	/**
+	 * Stand-in for a vector, in which the places represent R, G, B and A values. 
+	 */
 	public Color4() {
 		super();
 	}
 	
+	/**
+	 * Stand-in for a vector, in which the places represent R, G, B and A values.	 
+	 * @param v
+	 * 		A vector to be cloned as a color value.
+	 */
 	public Color4(Vec4 v) {
 		super(v);
 	}
 	
-	public Color4(float x, float y, float z, float w) {
-		super(x, y, z, w);
+	/**
+	 * Stand-in for a vector, in which the places represent R, G, B and A values.	 
+	 * @param r
+	 * 		The Red component to this color.
+	 * @param g
+	 * 		The Green component to this color.
+	 * @param b
+	 * 		The Blue component to this color.
+	 * @param a
+	 * 		The Alpha component to this color.
+	 */
+	public Color4(float r, float g, float b, float a) {
+		super(r, g, b, a);
 	}
 }

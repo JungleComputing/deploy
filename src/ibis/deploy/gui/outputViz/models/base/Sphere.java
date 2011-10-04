@@ -1,6 +1,7 @@
 package ibis.deploy.gui.outputViz.models.base;
 
 import ibis.deploy.gui.outputViz.common.*;
+import ibis.deploy.gui.outputViz.common.math.*;
 import ibis.deploy.gui.outputViz.exceptions.UninitializedException;
 import ibis.deploy.gui.outputViz.models.Model;
 import ibis.deploy.gui.outputViz.shaders.Program;
@@ -74,8 +75,8 @@ public class Sphere extends Model {
 	    
 	    numVertices = pointsList.size();
 	    
-	    vertices  = Vec4.toBuffer(pointsList);
-	    normals = Vec3.toBuffer(normals3List);
+	    vertices  = VectorMath.vec4ListToBuffer(pointsList);
+	    normals = VectorMath.vec3ListToBuffer(normals3List);
 	}
 
 	private void makeVertices(List<Vec3> pointsList, List<Vec3> normalsList, Vec3 a, Vec3 b, Vec3 c, int div, float r) {		

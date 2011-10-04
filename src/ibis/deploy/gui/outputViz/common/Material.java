@@ -1,5 +1,7 @@
 package ibis.deploy.gui.outputViz.common;
 
+import ibis.deploy.gui.outputViz.common.math.Vec4;
+
 public class Material {
 	public Vec4 ambient, diffuse, specular;
 	

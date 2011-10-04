@@ -1,6 +1,7 @@
-package ibis.deploy.gui.outputViz.hfd5reader;
+package ibis.deploy.gui.outputViz.amuse;
 
 import ibis.deploy.gui.outputViz.GLWindow;
+import ibis.deploy.gui.outputViz.common.scenegraph.OctreeNode;
 import ibis.deploy.gui.outputViz.exceptions.FileOpeningException;
 
 import java.util.*;
@@ -12,7 +13,7 @@ public class Hdf5GasCloudReader {
 	
 	//public long[] keys;
     
-	public Hdf5GasCloudReader(int frame, CubeNode cubeRoot, String gasName) throws FileOpeningException {
+	public Hdf5GasCloudReader(int frame, OctreeNode cubeRoot, String gasName) throws FileOpeningException {
 		
 		HashMap<String, Dataset> result = new HashMap<String, Dataset>();
 		
@@ -40,8 +41,7 @@ public class Hdf5GasCloudReader {
 		    	if (!(px < -GLWindow.GAS_EDGES && px > GLWindow.GAS_EDGES &&
 		    		  py < -GLWindow.GAS_EDGES && py > GLWindow.GAS_EDGES &&
 		    		  pz < -GLWindow.GAS_EDGES && pz > GLWindow.GAS_EDGES)) {
-		    		cubeRoot.addGas(Astrophysics.toScreenCoord(x[i], y[i], z[i]), u[i]);
-//		    		cubeRoot.addElement(new Vec3((float)(x[i] / 10E14), (float)(y[i] / 10E14), (float)(z[i] / 10E14)));
+		    		cubeRoot.addGas(Astrophysics.locationToScreenCoord(x[i], y[i], z[i]), u[i]);
 		    	}
 		    }
 		    cubeRoot.doneAddingGas();

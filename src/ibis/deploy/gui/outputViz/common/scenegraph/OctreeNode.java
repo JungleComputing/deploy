@@ -1,4 +1,4 @@
-package ibis.deploy.gui.outputViz.hfd5reader;
+package ibis.deploy.gui.outputViz.common.scenegraph;
 
 import java.util.HashMap;
 import java.util.List;
@@ -7,15 +7,15 @@ import java.util.Map;
 import javax.media.opengl.GL3;
 
 import ibis.deploy.gui.outputViz.GLWindow;
-import ibis.deploy.gui.outputViz.common.Mat4;
-import ibis.deploy.gui.outputViz.common.MatrixMath;
-import ibis.deploy.gui.outputViz.common.Vec3;
-import ibis.deploy.gui.outputViz.common.Vec4;
+import ibis.deploy.gui.outputViz.common.math.Mat4;
+import ibis.deploy.gui.outputViz.common.math.MatrixMath;
+import ibis.deploy.gui.outputViz.common.math.Vec3;
+import ibis.deploy.gui.outputViz.common.math.Vec4;
 import ibis.deploy.gui.outputViz.models.Model;
 
-public class CubeNode {
+public class OctreeNode {
 	private int maxElements;
-	private CubeNode ppp,ppn,pnp,pnn,npp,npn,nnp,nnn;
+	private OctreeNode ppp,ppn,pnp,pnn,npp,npn,nnp,nnn;
 	
 	private HashMap<Vec3, Double> elements;
 	private int childCounter;
@@ -39,7 +39,7 @@ public class CubeNode {
 	//private Program program;
 	//private Material material;
 	
-	public CubeNode(int maxElements, int depth, List<Model> models, Vec3 corner, float halfSize) {
+	public OctreeNode(int maxElements, int depth, List<Model> models, Vec3 corner, float halfSize) {
 		this.maxElements = maxElements;
 		this.cubeSize = halfSize;
 		center = corner.add(new Vec3(halfSize, halfSize, halfSize));
@@ -63,7 +63,7 @@ public class CubeNode {
 		initialized = true;
 	}
 	
-	public CubeNode() {
+	public OctreeNode() {
 		// Dummy constructor
 	}
 
@@ -103,14 +103,14 @@ public class CubeNode {
 	
 	private void subDiv() {	
 		float size = cubeSize/2f;
-		ppp = new CubeNode(maxElements, depth+1, models, center.add(new Vec3(       0f,       0f,       0f)), size);
-		ppn = new CubeNode(maxElements, depth+1, models, center.add(new Vec3(       0f,       0f,-cubeSize)), size);
-		pnp = new CubeNode(maxElements, depth+1, models, center.add(new Vec3(       0f,-cubeSize,       0f)), size);
-		pnn = new CubeNode(maxElements, depth+1, models, center.add(new Vec3(       0f,-cubeSize,-cubeSize)), size);
-		npp = new CubeNode(maxElements, depth+1, models, center.add(new Vec3(-cubeSize,       0f,       0f)), size);
-		npn = new CubeNode(maxElements, depth+1, models, center.add(new Vec3(-cubeSize,       0f,-cubeSize)), size);
-		nnp = new CubeNode(maxElements, depth+1, models, center.add(new Vec3(-cubeSize,-cubeSize,       0f)), size);
-		nnn = new CubeNode(maxElements, depth+1, models, center.add(new Vec3(-cubeSize,-cubeSize,-cubeSize)), size);
+		ppp = new OctreeNode(maxElements, depth+1, models, center.add(new Vec3(       0f,       0f,       0f)), size);
+		ppn = new OctreeNode(maxElements, depth+1, models, center.add(new Vec3(       0f,       0f,-cubeSize)), size);
+		pnp = new OctreeNode(maxElements, depth+1, models, center.add(new Vec3(       0f,-cubeSize,       0f)), size);
+		pnn = new OctreeNode(maxElements, depth+1, models, center.add(new Vec3(       0f,-cubeSize,-cubeSize)), size);
+		npp = new OctreeNode(maxElements, depth+1, models, center.add(new Vec3(-cubeSize,       0f,       0f)), size);
+		npn = new OctreeNode(maxElements, depth+1, models, center.add(new Vec3(-cubeSize,       0f,-cubeSize)), size);
+		nnp = new OctreeNode(maxElements, depth+1, models, center.add(new Vec3(-cubeSize,-cubeSize,       0f)), size);
+		nnn = new OctreeNode(maxElements, depth+1, models, center.add(new Vec3(-cubeSize,-cubeSize,-cubeSize)), size);
 		
 		for (Map.Entry<Vec3, Double> element : elements.entrySet()) {
 			addSubdivided(element.getKey(), element.getValue());

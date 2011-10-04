@@ -51,6 +51,10 @@ public class Texture2D {
 		);		
 	}
 	
+	public void delete(GL3 gl) {
+		gl.glDeleteTextures(1, pointer);
+	}
+	
 	public void use(GL3 gl, int multiTexUnit) throws UninitializedException {
 		if (pixelBuffer == null) System.out.println("init first!");
 		gl.glActiveTexture(Texture.getGLMultiTexUnit(multiTexUnit));

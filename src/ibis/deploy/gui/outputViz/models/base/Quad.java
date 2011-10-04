@@ -1,6 +1,7 @@
 package ibis.deploy.gui.outputViz.models.base;
 
 import ibis.deploy.gui.outputViz.common.*;
+import ibis.deploy.gui.outputViz.common.math.*;
 import ibis.deploy.gui.outputViz.models.Model;
 import ibis.deploy.gui.outputViz.shaders.Program;
 
@@ -20,8 +21,8 @@ public class Quad extends Model {
 		arrayindex = newQuad(points, arrayindex, vertices, 1, 0, 3, 2 ); //FRONT
 		
 		this.numVertices = numVertices;
-	    this.vertices  = Vec4.toBuffer(points);
-	    this.normals = Vec3.toBuffer(normals);
+	    this.vertices  = VectorMath.toBuffer(points);
+	    this.normals = VectorMath.toBuffer(normals);
 	}
 	
 	private Point4[] makeVertices(float height, float width, Vec3 center) {
