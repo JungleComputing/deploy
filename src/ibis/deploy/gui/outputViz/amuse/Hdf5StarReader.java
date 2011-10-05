@@ -66,11 +66,12 @@ public class Hdf5StarReader {
 		    	Material material = new Material(color,color,color);
 		    	
 		    	Model sphere;
-		    	int index = (int) Math.round(Astrophysics.starToScreenRadius(realRadius[i])/ (float) Astrophysics.STAR_RADIUS_FACTOR);
+		    	int index = Astrophysics.indexOfStarRadius(realRadius[i]);
 	    		if (!models.containsKey(index)) {
-	    			sphere = new Sphere(models.get(0).program, material, 3, index, new Vec3());
+	    			sphere = new Sphere(models.get(0).program, material, 3, Astrophysics.starToScreenRadius(realRadius[i]), new Vec3());
+//	    			System.out.println("had to add: "+index);
 	    			models.put(index, sphere);
-	    		} else {		    	
+	    		} else {
 		    		sphere = models.get(index);
 	    		}
 

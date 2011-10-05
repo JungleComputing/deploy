@@ -11,6 +11,16 @@ const float pi = 3.14159265;
 const vec2 vertical = vec2(0.0, 1.0);
 const vec2 horizontal = vec2(1.0, 0.0);
 
+// The sigma value for the gaussian function: higher value means more blur
+// A good value for 9x9 is around 3 to 5
+// A good value for 7x7 is around 2.5 to 4
+// A good value for 5x5 is around 2 to 3.5
+// ... play around with this based on what you need :)
+
+// blurSize should usually be equal to
+// 1.0f / texture_pixel_width for a horizontal blur, and
+// 1.0f / texture_pixel_height for a vertical blur.
+
 vec4 gaussianBlur(sampler2D tex, vec2 tCoord, vec2 multiplyVec, int maxTexSize, float blurSize, float numPixelsPerSide, float sigma) {
 	// Incremental Gaussian Coefficent Calculation (See GPU Gems 3 pp. 877 - 889)
 	vec3 incrementalGaussian;
@@ -54,16 +64,16 @@ void main() {
 	float numPixelsPerSide;
 	
 	if (blurType == 2) {
-		blurSize = 2.0;
+		blurSize = 1.0;
 		sigma = 2.0;
 		numPixelsPerSide = 2.0;
 	} else if(blurType == 4) {
-		blurSize = 4.0;
+		blurSize = 1.0;
 		sigma = 4.0;
 		numPixelsPerSide = 4.0;
 	} else {
-		blurSize = 8.0;
-		sigma = 4.0;
+		blurSize = 2.0;
+		sigma = 7.0;
 		numPixelsPerSide = 8.0;
 	}
 	

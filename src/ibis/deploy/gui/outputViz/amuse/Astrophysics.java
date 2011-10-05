@@ -1,19 +1,24 @@
 package ibis.deploy.gui.outputViz.amuse;
 
+import ibis.deploy.gui.outputViz.GLWindow;
 import ibis.deploy.gui.outputViz.common.math.Vec3;
 import ibis.deploy.gui.outputViz.common.math.Vec4;
 
 public class Astrophysics {
-	static double sigma = 5.67037321E-8;
-	static double wien = 2.8977685E-3;
+	public final static double SIGMA = 5.67037321E-8;
+	public final static double WIEN = 2.8977685E-3;
 	
-	static double solar_luminosity = 3.839E26;
-	static double solar_radius = 6.955E8;
-	static double earth_radius = 6371;
+	public final static double solar_luminosity = 3.839E26;
+	public final static double solar_radius = 6.955E8;
+	public final static double earth_radius = 6371;
 	
-	static double parsec =  3.08568025E16;
-	static double DISTANCE_FACTOR = 25.0;
-	static double STAR_RADIUS_FACTOR = 0.05f;
+	public final static double parsec =  3.08568025E16;
+	public final static double DISTANCE_FACTOR = 25.0;
+	public final static double STAR_RADIUS_FACTOR_SMALL = 0.1f;
+	public final static double STAR_RADIUS_FACTOR_LARGE = 0.05f;
+	public final static double STAR_RADIUS_AT_1000_SOLAR_RADII = 4.0;
+	
+	public final static double STAR_FORMULAE_INTERSECTION = find_intersection();
 	
 	public static Vec3 locationToScreenCoord(double x, double y, double z) {
 		float fx = (float) (DISTANCE_FACTOR * (x / parsec));
@@ -24,9 +29,35 @@ public class Astrophysics {
 	}
 	
 	public static float starToScreenRadius(double size) {
-		float fs = (float) (STAR_RADIUS_FACTOR * Math.sqrt(size / solar_radius));
+		double radius_in_solar = size / solar_radius;
+		double radius_factor = 1000.0/Math.pow(STAR_RADIUS_AT_1000_SOLAR_RADII,2);
+		
+		float fs;
+		if (radius_in_solar < STAR_FORMULAE_INTERSECTION) {
+			fs = (float) (radius_in_solar * STAR_RADIUS_FACTOR_SMALL);
+		} else {			
+			fs = (float) (Math.sqrt(radius_in_solar/radius_factor));
+		} 
 		
 		return fs;
+	}
+	
+	private static double find_intersection() {
+		double radius_factor = 1000.0/Math.pow(STAR_RADIUS_AT_1000_SOLAR_RADII,2);
+		
+		for (double i=0.1; i<10000.0; i+=0.01) {
+			double diff = (i * STAR_RADIUS_FACTOR_SMALL) - (Math.sqrt(i/radius_factor));
+			if (diff > 0.0) {
+				return i;
+			}
+		}
+		return 0;
+	}
+	
+	public static int indexOfStarRadius(double size) {
+		double radius_in_solar = size / solar_radius;
+		
+		return (int) Math.round(radius_in_solar*10);		
 	}
 	
 	public static float toScreenCoord(double parsecs) {
@@ -38,7 +69,7 @@ public class Astrophysics {
 	public static Vec4 toColor(double luminosity, double radius) {
 		luminosity *= solar_luminosity;
 		//radius /= parsec;
-		double temperature = Math.pow((luminosity/(4 * Math.PI * (radius*radius) * sigma)), 0.25);
+		double temperature = Math.pow((luminosity/(4 * Math.PI * (radius*radius) * SIGMA)), 0.25);
 		
 		//System.out.println(temperature);
 			
@@ -80,7 +111,7 @@ public class Astrophysics {
 			color = new Vec4(0.5f-intensity, 1f-intensity, 1f, 1f);
 		} else {																		//O
 			float intensity = (float) ((temperature - 28000)/(35000 - 28000) * 0.5);
-			color = new Vec4(0.2f,0.75f-intensity, 1f, 1f);
+			color = new Vec4(0.05f,0.75f-intensity, 1f, 1f);
 		}
 		
 		

@@ -31,11 +31,12 @@ public class GLWindow implements GLEventListener {
 	public static boolean GAS_ON = true;
 	public static boolean PREDICTION_ON = false;
 	public static boolean DEPTH_TESTED_GAS = false;
+	public static boolean SAVE_MODE = true;
 	
 	public static long WAITTIME = 200;
 	public static long LONGWAITTIME = 10000;
 	public static int MAX_CLOUD_DEPTH = 25;
-	public static int MAX_PREGENERATED_STAR_SIZE = 50;
+	public static double MAX_PREGENERATED_STAR_SIZE = 10.0;
 	public static float GAS_EDGES = 800f;
 	public static int MAX_ELEMENTS_PER_OCTREE_NODE = 100;
 	public static float EPSILON = 1.0E-7f;
@@ -48,7 +49,7 @@ public class GLWindow implements GLEventListener {
 	private ProgramLoader loader;
 	
 	Program animatedTurbulence;
-	Program ppl, axes, gas, postprocess;
+	Program ppl, axesShader, gas, postprocess;
 	Program gaussianBlur;
 	
 	Perlin3D noiseTex;
@@ -133,7 +134,7 @@ public class GLWindow implements GLEventListener {
 			animatedTurbulence = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_sunsurface.vp", "src/ibis/deploy/gui/outputViz/shaders/src/fs_animatedTurbulence.fp");
 //			gas = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_sunsurface.vp", "src/ibis/deploy/gui/outputViz/shaders/src/fs_animatedTurbulence.fp");
 			ppl = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_ppl.vp", "src/ibis/deploy/gui/outputViz/shaders/src/fs_ppl.fp");
-			axes = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_gas.vp", "src/ibis/deploy/gui/outputViz/shaders/src/fs_axes.fp");
+			axesShader = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_gas.vp", "src/ibis/deploy/gui/outputViz/shaders/src/fs_axes.fp");
 			gas = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_gas.vp", "src/ibis/deploy/gui/outputViz/shaders/src/fs_gas.fp");
 //			gas = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_gas.vp", "src/ibis/deploy/gui/outputViz/shaders/src/fs_volumerendering.fp");
 //			gas = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_gas.vp", "src/ibis/deploy/gui/outputViz/shaders/src/fs_turbulence.fp");
@@ -158,18 +159,18 @@ public class GLWindow implements GLEventListener {
 		root.init(gl);
 		cubeRoot.init(gl);
 		
-		if (AXES) {
+//		if (AXES) {
 			Color4 axisColor = new Color4(0f,1f,0f,.3f);
 			Material axisMaterial = new Material(axisColor, axisColor, axisColor);
-			xAxis = new Axis(axes, axisMaterial, new Vec3(-800f,0f,0f), new Vec3(800f,0f,0f), Astrophysics.toScreenCoord(1), Astrophysics.toScreenCoord(.2));
+			xAxis = new Axis(axesShader, axisMaterial, new Vec3(-800f,0f,0f), new Vec3(800f,0f,0f), Astrophysics.toScreenCoord(1), Astrophysics.toScreenCoord(.2));
 			xAxis.init(gl);
-			yAxis = new Axis(axes, axisMaterial, new Vec3(0f,-800f,0f), new Vec3(0f,800f,0f), Astrophysics.toScreenCoord(1), Astrophysics.toScreenCoord(.2));
+			yAxis = new Axis(axesShader, axisMaterial, new Vec3(0f,-800f,0f), new Vec3(0f,800f,0f), Astrophysics.toScreenCoord(1), Astrophysics.toScreenCoord(.2));
 			yAxis.init(gl);			
-			zAxis = new Axis(axes, axisMaterial, new Vec3(0f,0f,-800f), new Vec3(0f,0f,800f), Astrophysics.toScreenCoord(1), Astrophysics.toScreenCoord(.2));
+			zAxis = new Axis(axesShader, axisMaterial, new Vec3(0f,0f,-800f), new Vec3(0f,0f,800f), Astrophysics.toScreenCoord(1), Astrophysics.toScreenCoord(.2));
 			zAxis.init(gl);
-		}
+//		}
 		
-		if (POST_PROCESS) {
+//		if (POST_PROCESS) {
 			fullscreenQuad = new Quad(postprocess, Material.random(), 2, 2, new Vec3(0,0,0.1f));
 			fullscreenQuad.init(gl);
 			
@@ -197,7 +198,7 @@ public class GLWindow implements GLEventListener {
 			gl.glActiveTexture(GL3.GL_TEXTURE4);
 			starTex = new PostProcessTexture(canvasWidth, canvasHeight);
 			starTex.init(gl);
-		}
+//		}
 		
 		//Cube map test
 		//enableCubemaps(gl);	
@@ -288,7 +289,7 @@ public class GLWindow implements GLEventListener {
 	    			
 		    		gaussianBlur.setUniformMatrix("PMatrix", new Mat4().asBuffer());
 	        		
-	        		gaussianBlur.setUniform("blurType", 2);
+	        		gaussianBlur.setUniform("blurType", 8);
 	        		gaussianBlur.setUniform("blurDirection", 0);  
 	        		gaussianBlur.use(gl);
 	    	    	fullscreenQuad1.draw(gl, new Mat4());
@@ -296,7 +297,7 @@ public class GLWindow implements GLEventListener {
 	        		
 	        		gaussianBlur.setUniform("blurDirection", 1);
 	        		gaussianBlur.use(gl);
-	    	    	fullscreenQuad2.draw(gl, new Mat4());
+	    	    	fullscreenQuad1.draw(gl, new Mat4());
 	        		renderToTexture(gl, multiTex, gasTex);
 		    	}
 		    	
@@ -315,25 +316,19 @@ public class GLWindow implements GLEventListener {
 		    		multiTex = 4;
 		    		renderToTexture(gl, multiTex, starTex);
 		    	}
+		    			    	
+		    	axesShader.use(gl);
 		    	
 		    	if (AXES) {
-		    		axes.use(gl);
-		    		
 		    		xAxis.draw(gl, mv);
 		    		yAxis.draw(gl, mv);
 		    		zAxis.draw(gl, mv);
-		    		
-		    		if (POST_PROCESS) {
-		        		multiTex = 1;
-		        		renderToTexture(gl, multiTex, axesTex);
-		    		}
-		    	} else {
-		    		if (POST_PROCESS) {
-		        		multiTex = 1;
-		        		gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
-		        		renderToTexture(gl, multiTex, axesTex);
-		    		}
 		    	}
+		    	
+	    		if (POST_PROCESS) {
+	        		multiTex = 1;
+	        		renderToTexture(gl, multiTex, axesTex);
+	    		}
 		    	
 		    	if (POST_PROCESS) {		
 	    			loader.setUniform("axesTexture", 1);
@@ -346,6 +341,11 @@ public class GLWindow implements GLEventListener {
 			    	    	    	
 			    	loader.setUniformMatrix("PMatrix", new Mat4().asBuffer());
 			    	fullscreenQuad.draw(gl, new Mat4());
+			    	
+//			    	if (SAVE_MODE) {
+//			    		saveToPicture(gl);
+//			    		SAVE_MODE = false;
+//			    	}
 		    	}
     		}
 		} catch (UninitializedException e) {
@@ -361,6 +361,11 @@ public class GLWindow implements GLEventListener {
 		} catch (UninitializedException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private void saveToPicture(GL3 gl) {
+		Picture p = new Picture(canvasWidth, canvasHeight);
+		p.copyFrameBuffer(gl);
 	}
 
 	public void reshape(GLAutoDrawable drawable, int x, int y, int w, int h) {

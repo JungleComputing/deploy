@@ -50,12 +50,8 @@ public class Hdf5Snapshotter {
 		
 		HashMap<String, Dataset> particleResult = new HashMap<String, Dataset>();
 		List<HObject> particleMemberList;
-		
-		float starSize = (float) Astrophysics.STAR_RADIUS_FACTOR;
-		for (int i=0; i < GLWindow.MAX_PREGENERATED_STAR_SIZE; i++ ) {				 
-			starModels.put(i, new Sphere(ppl, starMaterial, 3, starSize, new Vec3()));
-			starSize = starSize + (float) Astrophysics.STAR_RADIUS_FACTOR;
-		}
+				
+		starModels.put(0, new Sphere(ppl, starMaterial, 2, 0.0001f, new Vec3()));
 		
 		if (GLWindow.GAS_ON) {
 			cloudModels = new ArrayList<Model>();

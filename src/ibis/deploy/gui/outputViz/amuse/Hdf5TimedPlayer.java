@@ -110,11 +110,10 @@ public class Hdf5TimedPlayer implements Runnable {
 		List<HObject> particleMemberList;
 		
 		starModels = new HashMap<Integer, Model>();
-		float starSize = (float) Astrophysics.STAR_RADIUS_FACTOR;
-		for (int i=0; i < GLWindow.MAX_PREGENERATED_STAR_SIZE; i++ ) {				 
-			starModels.put(i, new Sphere(ppl, starMaterial, 2, starSize, new Vec3()));
-			starSize = starSize + (float) Astrophysics.STAR_RADIUS_FACTOR;
-		}
+		starModels.put(0, new Sphere(ppl, starMaterial, 2, 0.0001f, new Vec3()));
+//		for (double i=0.0; i < GLWindow.MAX_PREGENERATED_STAR_SIZE; i += 0.1 ) {
+//			starModels.put(Astrophysics.indexOfStarRadius(i), new Sphere(ppl, starMaterial, 2, (float) i, new Vec3()));
+//		}
 		
 		if (GLWindow.GAS_ON) {
 			cloudModels = new ArrayList<Model>();
