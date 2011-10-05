@@ -20,7 +20,7 @@ import ibis.deploy.gui.outputViz.models.base.Sphere;
 import ibis.deploy.gui.outputViz.shaders.Program;
 
 public class Hdf5TimedPlayer implements Runnable {	
-	public static enum states { UNOPENED, UNINITIALIZED, INITIALIZED, STOPPED, REDRAWING, SNAPSHOTTING, CLEANUP, WAITINGONFRAME, PLAYING};
+	public static enum states { UNOPENED, UNINITIALIZED, INITIALIZED, STOPPED, REDRAWING, SNAPSHOTTING, MOVIEMAKING, CLEANUP, WAITINGONFRAME, PLAYING};
 	
 	public static states currentState = states.UNOPENED;
 	public int currentFrame;
@@ -214,23 +214,36 @@ public class Hdf5TimedPlayer implements Runnable {
 					timeBar.setValue(currentFrame);
 					frameCounter.setValue(currentFrame);
 					
-					currentFrame++;					
+					currentFrame++;
+					
 					updateFrame();
 										
 					stopTime = System.currentTimeMillis();
-//					System.out.println("Frame "+currentFrame+" built in "+(stopTime-startTime)+" ms.");
 				    if (startTime-stopTime < GLWindow.WAITTIME) {
 						Thread.sleep(GLWindow.WAITTIME - (startTime-stopTime));
 					} else {
 						Thread.yield();
 					}
-//				} catch (FileOpeningException e) {
-//					System.out.println(e.getMessage());
-//					currentState = states.STOPPED;
 				} catch (InterruptedException e) {
 					//Bla
 				}
 				if (currentState == states.REDRAWING) currentState = states.STOPPED;
+			} else if (currentState == states.MOVIEMAKING) {
+				if (GLWindow.saved_once) {
+					timeBar.setValue(currentFrame);
+					frameCounter.setValue(currentFrame);
+					
+					currentFrame++;
+					GLWindow.saved_once = false;
+					Hdf5Snapshotter snappy = new Hdf5Snapshotter();
+					snappy.open(namePrefix, glw, animatedTurbulence, gas, currentFrame);
+				} else {
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
 			} else if (currentState == states.STOPPED || currentState == states.SNAPSHOTTING || currentState == states.CLEANUP) {
 				try {
 					Thread.sleep(GLWindow.WAITTIME);
@@ -350,13 +363,19 @@ public class Hdf5TimedPlayer implements Runnable {
 		}
 	}
 	
-	public void makeSnapshot() {
+	public void movieMode() {
+		synchronized (this) {
+			GLWindow.AXES = false;
+			currentState = states.MOVIEMAKING;
+		}
+	}
+	
+	public void makeSnapshot() {	
 		synchronized (this) {
 			GLWindow.AXES = false;
 			currentState = states.SNAPSHOTTING;
-			System.out.println("Snapshotting "+currentFrame);
 			Hdf5Snapshotter snappy = new Hdf5Snapshotter();
-			snappy.open(namePrefix, glw, animatedTurbulence, gas, currentFrame);
+			snappy.open(namePrefix, glw, animatedTurbulence, gas, currentFrame);			
 		}
 	}
 

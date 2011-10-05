@@ -54,11 +54,8 @@ public class Model {
 	
 	public void draw(GL3 gl, Mat4 MVMatrix) {
 		vbo.bind(gl);
-		
-		GLSLAttrib vAttrib = new GLSLAttrib(vertices, "MCvertex", 4);
-		GLSLAttrib nAttrib = new GLSLAttrib(normals, "MCnormal", 3);
-			
-    	program.linkAttribs(gl, vAttrib, nAttrib);
+					
+    	program.linkAttribs(gl, vbo.getAttribs());
     	
     	program.setUniformVector("DiffuseMaterial", material.diffuse.asBuffer());
     	program.setUniformVector("AmbientMaterial", material.ambient.asBuffer());

@@ -66,7 +66,7 @@ void main() {
 	vec4 axesColor = texture2D(axesTexture, tCoord) * 10;
   	vec4 gasColor = texture2D(gasTexture, tCoord) * 10;
 	
-	vec4 starColor = texture2D(starTexture, tCoord);
+	vec4 starColor = texture2D(starTexture, tCoord) * 10;
 	
 	//float blurSize = 2.0;
 	//vec4 starColor = gaussianBlur(starTexture, tCoord, horizontal, blurSize) * 10;

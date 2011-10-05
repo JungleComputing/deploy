@@ -31,7 +31,7 @@ public class GLWindow implements GLEventListener {
 	public static boolean GAS_ON = true;
 	public static boolean PREDICTION_ON = false;
 	public static boolean DEPTH_TESTED_GAS = false;
-	public static boolean SAVE_MODE = true;
+	public static boolean movie_mode = true;
 	
 	public static long WAITTIME = 200;
 	public static long LONGWAITTIME = 10000;
@@ -40,9 +40,11 @@ public class GLWindow implements GLEventListener {
 	public static float GAS_EDGES = 800f;
 	public static int MAX_ELEMENTS_PER_OCTREE_NODE = 100;
 	public static float EPSILON = 1.0E-7f;
-	public static float GAS_OPACITY_FACTOR = 1f;
+	public static float GAS_OPACITY_FACTOR = .8f;
 	
 	public static enum octants { PPP, PPN, PNP, PNN, NPP, NPN, NNP, NNN }
+	
+	public static boolean saved_once = true;
 	public static octants current_view_octant = octants.PPP; 
 	
 	private OutputVizPanel panel;
@@ -341,11 +343,11 @@ public class GLWindow implements GLEventListener {
 			    	    	    	
 			    	loader.setUniformMatrix("PMatrix", new Mat4().asBuffer());
 			    	fullscreenQuad.draw(gl, new Mat4());
-			    	
-//			    	if (SAVE_MODE) {
-//			    		saveToPicture(gl);
-//			    		SAVE_MODE = false;
-//			    	}
+		    	}
+		    	
+		    	if (!saved_once && (Hdf5TimedPlayer.currentState == states.SNAPSHOTTING || Hdf5TimedPlayer.currentState == states.MOVIEMAKING)) {
+		    		saveToPicture(gl, timer.currentFrame);
+		    		saved_once = true;
 		    	}
     		}
 		} catch (UninitializedException e) {
@@ -363,9 +365,9 @@ public class GLWindow implements GLEventListener {
 		}
 	}
 	
-	private void saveToPicture(GL3 gl) {
+	private void saveToPicture(GL3 gl, int currentFrame) {
 		Picture p = new Picture(canvasWidth, canvasHeight);
-		p.copyFrameBuffer(gl);
+		p.copyFrameBufferToFile(gl, panel.getPath(), currentFrame);
 	}
 
 	public void reshape(GLAutoDrawable drawable, int x, int y, int w, int h) {
@@ -480,10 +482,10 @@ public class GLWindow implements GLEventListener {
 	private SGNode initSGRoot(GL3 gl) {
 		synchronized (this) {
 			if (newRoot) {
-				if (Hdf5TimedPlayer.currentState == states.CLEANUP) {
+				if (Hdf5TimedPlayer.currentState == states.CLEANUP || Hdf5TimedPlayer.currentState == states.MOVIEMAKING) {
 					root.delete(gl);
 					cubeRoot.delete(gl);
-					Hdf5TimedPlayer.setState(states.REDRAWING);
+					if (Hdf5TimedPlayer.currentState == states.CLEANUP) Hdf5TimedPlayer.setState(states.REDRAWING);
 				}
 				root = root2;			
 				root.init(gl);

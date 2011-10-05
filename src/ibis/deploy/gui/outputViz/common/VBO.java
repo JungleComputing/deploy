@@ -10,7 +10,11 @@ import com.jogamp.common.nio.Buffers;
 public class VBO {
 	private IntBuffer vboPointer;
 	
+	private GLSLAttrib[] attribs;
+
 	public VBO(GL3 gl, GLSLAttrib... attribs) {
+		this.attribs = attribs;
+		
 		vboPointer = Buffers.newDirectIntBuffer(1);
 		gl.glGenVertexArrays(1, vboPointer);
 		gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, vboPointer.get(0));
@@ -35,5 +39,9 @@ public class VBO {
 	
 	public void delete(GL3 gl) {
 		gl.glDeleteVertexArrays(1, vboPointer);
+	}
+	
+	public GLSLAttrib[] getAttribs() {
+		return attribs;
 	}
 }

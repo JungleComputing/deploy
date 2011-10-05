@@ -51,6 +51,8 @@ public class OutputVizPanel extends JPanel {
 	public JSlider timeBar;
 	public JFormattedTextField frameCounter;
 	
+	private String path;
+
 	public OutputVizPanel(final GUI gui) {		
 	    final JButton initButton = new JButton("Initialize 3D Visualization");
 	    add(initButton);
@@ -120,7 +122,8 @@ public class OutputVizPanel extends JPanel {
 					public void actionPerformed(ActionEvent arg0) {						
 						File file = openFile();
 						if (file != null) { 
-							String path = file.getPath().substring(0, file.getPath().length()-file.getName().length());
+							path = file.getPath().substring(0, file.getPath().length()-file.getName().length());
+							
 							String name = file.getName();
 							String fullPath = path + name;
 							String[] ext = fullPath.split("[.]");
@@ -207,6 +210,14 @@ public class OutputVizPanel extends JPanel {
 					});
 					resolution.add(twohundred);
 				options.add(resolution);
+				
+				JMenuItem makeMovie = new JMenuItem("Make movie from this angle.");
+				makeMovie.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent arg0) {
+						timer.movieMode();
+					}					
+				});
+				options.add(makeMovie);
 				
 //				JMenuItem axes = new JMenuItem("Axes Toggle");
 //				axes.addActionListener(new ActionListener() {
@@ -303,7 +314,7 @@ public class OutputVizPanel extends JPanel {
 		if (cmdlnfileName != null) {
 			File cmdlnfile = new File(cmdlnfileName);
 			if (cmdlnfile != null) { 
-				String path = cmdlnfile.getPath().substring(0, cmdlnfile.getPath().length()-cmdlnfile.getName().length());
+				path = cmdlnfile.getPath().substring(0, cmdlnfile.getPath().length()-cmdlnfile.getName().length());
 				String name = cmdlnfile.getName();
 				String fullPath = path + name;
 				String[] ext = fullPath.split("[.]");
@@ -386,5 +397,9 @@ public class OutputVizPanel extends JPanel {
 			return null;
 		else
 			return fileChooser.getSelectedFile();
+	}
+	
+	public String getPath() {
+		return path;
 	}
 }
