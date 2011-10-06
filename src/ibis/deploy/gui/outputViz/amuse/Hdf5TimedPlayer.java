@@ -205,6 +205,12 @@ public class Hdf5TimedPlayer implements Runnable {
 				
 		glw.timerInitialized = true;
 		currentState = states.PLAYING;
+		
+		//TODO REMOVE!!!
+		glw.setRotation(new Vec3(20f,-20f,0f));
+		glw.setViewDist(-200f);
+		currentFrame = 78;
+		makeSnapshot();
 	    		
 		while(running) {
 			if (currentState == states.PLAYING || currentState == states.REDRAWING) {
@@ -373,6 +379,7 @@ public class Hdf5TimedPlayer implements Runnable {
 	public void makeSnapshot() {	
 		synchronized (this) {
 			GLWindow.AXES = false;
+			GLWindow.saved_once = false;
 			currentState = states.SNAPSHOTTING;
 			Hdf5Snapshotter snappy = new Hdf5Snapshotter();
 			snappy.open(namePrefix, glw, animatedTurbulence, gas, currentFrame);			

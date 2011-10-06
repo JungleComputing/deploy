@@ -72,7 +72,7 @@ void main() {
 		sigma = 4.0;
 		numPixelsPerSide = 4.0;
 	} else {
-		blurSize = 2.0;
+		blurSize = 8.0;
 		sigma = 7.0;
 		numPixelsPerSide = 8.0;
 	}

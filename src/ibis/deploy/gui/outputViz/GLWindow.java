@@ -362,7 +362,7 @@ public class GLWindow implements GLEventListener {
 		    			}
 		    			moviemaker_rotation_offset = 0f;
 		    			
-		    			saveToPicture(gl, ""+timer.currentFrame*1000);
+		    			saveToPicture(gl, fileName);
 			    		saved_once = true;
 		    		}
 		    	}

@@ -27,6 +27,7 @@ public class Picture {
 			if (newFile.createNewFile()) {
 				System.out.println("Writing screenshot: "+path+"screenshots/"+fileName+".png");
 				Screenshot.writeToFile(newFile, width, height);
+				System.out.println("Screesnhot done.");
 			}
 		} catch (IOException e) {			
 			System.err.println(e.getMessage());

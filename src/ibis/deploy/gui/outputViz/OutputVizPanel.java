@@ -39,9 +39,9 @@ import javax.swing.event.ChangeListener;
 public class OutputVizPanel extends JPanel {
 	private static final long serialVersionUID = 4754345291079348455L;
 	
-	public static final int DEFAULT_SCREEN_WIDTH = 1024;
+	public static final int DEFAULT_SCREEN_WIDTH = 4096;//1024;
 
-    public static final int DEFAULT_SCREEN_HEIGHT = 768;
+    public static final int DEFAULT_SCREEN_HEIGHT = 3072; //768;
 
     private static String cmdlnfileName;
 	private GLWindow window;
@@ -87,7 +87,7 @@ public class OutputVizPanel extends JPanel {
 		glCapabilities.setNumSamples(4);
 
 		glcanvas = new GLCanvas(glCapabilities);
-		glcanvas.setPreferredSize(new Dimension(800, 600));
+//		glcanvas.setPreferredSize(new Dimension(800, 600));
 		glcanvas.addGLEventListener(window);
 
 		// Add Mouse event listener
