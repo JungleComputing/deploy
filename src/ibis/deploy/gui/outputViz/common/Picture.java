@@ -18,14 +18,14 @@ public class Picture {
 		frameBufferPixels = new byte[width*height*4];
 	}
 	
-	public void copyFrameBufferToFile(GL3 gl, String path, int currentFrame) {
+	public void copyFrameBufferToFile(GL3 gl, String path, String fileName) {
 		try {
 			File newDir = new File(path+"screenshots");
 			if (!newDir.exists()) newDir.mkdir();
 			
-			File newFile = new File(path+"screenshots/"+currentFrame+".png");	
+			File newFile = new File(path+"screenshots/"+fileName+".png");	
 			if (newFile.createNewFile()) {
-				System.out.println("Writing screenshot: "+path+"screenshots/"+currentFrame+".png");
+				System.out.println("Writing screenshot: "+path+"screenshots/"+fileName+".png");
 				Screenshot.writeToFile(newFile, width, height);
 			}
 		} catch (IOException e) {			

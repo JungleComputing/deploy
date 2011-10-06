@@ -99,6 +99,8 @@ public class GLWindow implements GLEventListener {
 	Model fullscreenQuad, fullscreenQuad0, fullscreenQuad1, fullscreenQuad2, volumeGas;
 	Model xAxis, yAxis, zAxis;
 	
+	float moviemaker_rotation_offset = 0f;
+	
 	public GLWindow(OutputVizPanel panel) {
 		this.panel = panel;
 		loader = new ProgramLoader();
@@ -346,8 +348,23 @@ public class GLWindow implements GLEventListener {
 		    	}
 		    	
 		    	if (!saved_once && (Hdf5TimedPlayer.currentState == states.SNAPSHOTTING || Hdf5TimedPlayer.currentState == states.MOVIEMAKING)) {
-		    		saveToPicture(gl, timer.currentFrame);
-		    		saved_once = true;
+		    		if (Hdf5TimedPlayer.currentState == states.MOVIEMAKING && timer.currentFrame == 78 && (moviemaker_rotation_offset < 360f)) {		    			
+		    			moviemaker_rotation_offset += 4.8f;
+		    			rotation.set(1, rotation.get(1)+4.8f);
+		    			
+		    			saveToPicture(gl, ""+timer.currentFrame+(int)(moviemaker_rotation_offset/4.8f));
+		    		} else  {
+		    			String fileName = "";
+		    			if (timer.currentFrame > 78) {
+		    				fileName += timer.currentFrame+75;
+		    			} else {
+		    				fileName += timer.currentFrame;
+		    			}
+		    			moviemaker_rotation_offset = 0f;
+		    			
+		    			saveToPicture(gl, ""+timer.currentFrame*1000);
+			    		saved_once = true;
+		    		}
 		    	}
     		}
 		} catch (UninitializedException e) {
@@ -365,9 +382,9 @@ public class GLWindow implements GLEventListener {
 		}
 	}
 	
-	private void saveToPicture(GL3 gl, int currentFrame) {
+	private void saveToPicture(GL3 gl, String fileName) {
 		Picture p = new Picture(canvasWidth, canvasHeight);
-		p.copyFrameBufferToFile(gl, panel.getPath(), currentFrame);
+		p.copyFrameBufferToFile(gl, panel.getPath(), fileName);
 	}
 
 	public void reshape(GLAutoDrawable drawable, int x, int y, int w, int h) {
