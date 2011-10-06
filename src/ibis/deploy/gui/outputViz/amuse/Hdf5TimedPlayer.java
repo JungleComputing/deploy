@@ -207,10 +207,10 @@ public class Hdf5TimedPlayer implements Runnable {
 		currentState = states.PLAYING;
 		
 		//TODO REMOVE!!!
-		glw.setRotation(new Vec3(20f,-20f,0f));
-		glw.setViewDist(-200f);
-		currentFrame = 78;
-		makeSnapshot();
+		//glw.setRotation(new Vec3(20f,-20f,0f));
+		//glw.setViewDist(-200f);
+		//currentFrame = 78;
+		//makeSnapshot();
 	    		
 		while(running) {
 			if (currentState == states.PLAYING || currentState == states.REDRAWING) {
