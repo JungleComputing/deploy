@@ -66,7 +66,7 @@ public class Hdf5Snapshotter {
 			if (GLWindow.GAS_ON) {				
 				gasName = namePrefix + intToString(currentFrame) + gasNamePostfix;
 								
-				cubeRoot = new OctreeNode(5, 0, cloudModels, new Vec3(-GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES), GLWindow.GAS_EDGES);
+				cubeRoot = new OctreeNode(GLWindow.MAX_ELEMENTS_PER_OCTREE_NODE_IN_SNAPSHOT, 0, cloudModels, new Vec3(-GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES), GLWindow.GAS_EDGES);
 				gasReader = new Hdf5GasCloudReader(currentFrame, cubeRoot, gasName);
 				
 				glw.setCubeRoot(cubeRoot);				

@@ -39,11 +39,13 @@ public class GLWindow implements GLEventListener {
 	public static double MAX_PREGENERATED_STAR_SIZE = 10.0;
 	public static float GAS_EDGES = 800f;
 	public static int MAX_ELEMENTS_PER_OCTREE_NODE = 100;
+	public static int MAX_ELEMENTS_PER_OCTREE_NODE_IN_SNAPSHOT = 3;
 	public static float EPSILON = 1.0E-7f;
 	public static float GAS_OPACITY_FACTOR = .8f;
 	
 	public static enum octants { PPP, PPN, PNP, PNN, NPP, NPN, NNP, NNN }
 	
+	public static int selected_blur_type = 4;
 	public static boolean saved_once = true;
 	public static octants current_view_octant = octants.PPP; 
 	
@@ -293,8 +295,8 @@ public class GLWindow implements GLEventListener {
 	    			
 		    		gaussianBlur.setUniformMatrix("PMatrix", new Mat4().asBuffer());
 	        		
-	        		gaussianBlur.setUniform("blurType", 8);
-	        		gaussianBlur.setUniform("blurDirection", 0);  
+	        		gaussianBlur.setUniform("blurType", selected_blur_type);
+	        		gaussianBlur.setUniform("blurDirection", 0);
 	        		gaussianBlur.use(gl);
 	    	    	fullscreenQuad1.draw(gl, new Mat4());
 	        		renderToTexture(gl, multiTex, gasTex);

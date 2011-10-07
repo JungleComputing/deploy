@@ -30,7 +30,7 @@ void main() {
 	                        noisevecZ[2] +
 	                        noisevecZ[3]) * 0.33);
 	
-	    vec3 color   	= mix(Color1, Color2, intensity) * 10;
+	    vec3 color   	= mix(Color1, Color2, intensity) * 5;
 	    
 		gl_FragColor = vec4(color, 1.0);
 	} else {

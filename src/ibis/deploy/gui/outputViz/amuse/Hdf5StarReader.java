@@ -59,7 +59,7 @@ public class Hdf5StarReader {
 		    	Star current = particles.get(keys[i]);		    	
 		    	current.radius = realRadius[i];
 		    	
-		    	Vec4 color =  Astrophysics.toColor(luminosity[i], realRadius[i]);
+		    	Vec4 color =  Astrophysics.starColor(luminosity[i], realRadius[i]);
 		    	current.luminosity = luminosity[i];
 		    	current.color = color;
 		    	

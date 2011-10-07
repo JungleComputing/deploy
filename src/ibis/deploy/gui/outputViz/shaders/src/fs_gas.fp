@@ -16,7 +16,7 @@ void main() {
 		
 	    gl_FragColor = vec4(color.rgb, AmbientMaterial.a);
 	} else {
-		gl_FragColor = AmbientMaterial;
+		gl_FragColor = AmbientMaterial*10;
 	}
 	    
 }

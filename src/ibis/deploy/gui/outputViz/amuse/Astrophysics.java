@@ -1,5 +1,7 @@
 package ibis.deploy.gui.outputViz.amuse;
 
+import java.util.HashMap;
+
 import ibis.deploy.gui.outputViz.GLWindow;
 import ibis.deploy.gui.outputViz.common.math.Vec3;
 import ibis.deploy.gui.outputViz.common.math.Vec4;
@@ -8,27 +10,27 @@ public class Astrophysics {
 	public final static double SIGMA = 5.67037321E-8;
 	public final static double WIEN = 2.8977685E-3;
 	
-	public final static double solar_luminosity = 3.839E26;
-	public final static double solar_radius = 6.955E8;
-	public final static double earth_radius = 6371;
+	public final static double SOLAR_LUMINOSITY = 3.839E26;
+	public final static double SOLAR_RADIUS = 6.955E8;
+	public final static double EARTH_RADIUS = 6371;
 	
-	public final static double parsec =  3.08568025E16;
+	public final static double PARSEC =  3.08568025E16;
 	public final static double DISTANCE_FACTOR = 25.0;
-	public final static double STAR_RADIUS_FACTOR_SMALL = 0.25f;
-	public final static double STAR_RADIUS_AT_1000_SOLAR_RADII = 4.0;
+	public final static double STAR_RADIUS_FACTOR_SMALL = 0.75;
+	public final static double STAR_RADIUS_AT_1000_SOLAR_RADII = 20.0;
 	
 	public final static double STAR_FORMULAE_INTERSECTION = find_intersection();
 	
 	public static Vec3 locationToScreenCoord(double x, double y, double z) {
-		float fx = (float) (DISTANCE_FACTOR * (x / parsec));
-		float fy = (float) (DISTANCE_FACTOR * (y / parsec));
-		float fz = (float) (DISTANCE_FACTOR * (z / parsec));
+		float fx = (float) (DISTANCE_FACTOR * (x / PARSEC));
+		float fy = (float) (DISTANCE_FACTOR * (y / PARSEC));
+		float fz = (float) (DISTANCE_FACTOR * (z / PARSEC));
 		
 		return new Vec3(fx, fy, fz);
 	}
 	
 	public static float starToScreenRadius(double size) {
-		double radius_in_solar = size / solar_radius;
+		double radius_in_solar = size / SOLAR_RADIUS;
 		double radius_factor = 1000.0/Math.pow(STAR_RADIUS_AT_1000_SOLAR_RADII,2);
 		
 		float fs;
@@ -54,7 +56,7 @@ public class Astrophysics {
 	}
 	
 	public static int indexOfStarRadius(double size) {
-		double radius_in_solar = size / solar_radius;
+		double radius_in_solar = size / SOLAR_RADIUS;
 		
 		return (int) Math.round(radius_in_solar*10);		
 	}
@@ -65,108 +67,48 @@ public class Astrophysics {
 		return fx;
 	}
 	
-	public static Vec4 toColor(double luminosity, double radius) {
-		luminosity *= solar_luminosity;
-		//radius /= parsec;
-		double temperature = Math.pow((luminosity/(4 * Math.PI * (radius*radius) * SIGMA)), 0.25);
+	public static double starTemperature(double luminosity_in_solar_luminosities, double radius) {
+		return Math.pow((luminosity_in_solar_luminosities/(4 * Math.PI * (radius*radius) * SIGMA)), 0.25);
+	}
+	
+	private static double colorIntensity(double max, double min, double current) {
+		return (current - min)/(max - min);
+	}
+	
+	public static Vec4 starColor(double luminosity, double radius) {
+		luminosity *= SOLAR_LUMINOSITY;
 		
-		//System.out.println(temperature);
+		double temperature = starTemperature(luminosity, radius);
 			
 		Vec4 color;
+		float intensity = 0f;
 		
-//		if (temperature <= 3500) {
-//			color = new Vec4( 1f, 0f, 0f, 1f);
-//		} else if (temperature > 3500 && temperature <= 4900) {
-//			color = new Vec4( 1f,.5f, 0f, 1f);
-//		} else if (temperature > 4900 && temperature <= 6000) {
-//			color = new Vec4( 1f, 1f, 0f, 1f);
-//		} else if (temperature > 6000 && temperature <= 7500) {
-//			color = new Vec4( 1f, 1f,.5f, 1f);
-//		} else if (temperature > 7500 && temperature <= 10000) {
-//			color = new Vec4( 1f, 1f, 1f, 1f);
-//		} else if (temperature > 10000 && temperature <= 28000) {
-//			color = new Vec4(.5f, 1f, 1f, 1f);
-//		} else {
-//			color = new Vec4( 0f,.2f, 1f, 1f);
-//		}
+		HashMap<Integer, Double> temperatureBands = new HashMap<Integer, Double>();
+		temperatureBands.put(0, 2000.0);
+		temperatureBands.put(1, 3500.0);
+		temperatureBands.put(2, 5000.0);
+		temperatureBands.put(3, 6000.0);
+		temperatureBands.put(4, 7500.0);
+		temperatureBands.put(5,10000.0);
+		temperatureBands.put(6,30000.0);
+		temperatureBands.put(7,60000.0);
 		
-		if (temperature <= 3500) {														//M
-			float intensity = (float) ((temperature - 2750)/(3500 - 2750) * 0.5);
-			color = new Vec4( 0.5f+intensity, 0f, 0f, 1f);
-		} else if (temperature > 3500 && temperature <= 4900) {							//K
-			float intensity = (float) ((temperature - 3500)/(4900 - 3500) * 0.5);
-			color = new Vec4( 1f,intensity, 0f, 1f);
-		} else if (temperature > 4900 && temperature <= 6000) {							//G
-			float intensity = (float) ((temperature - 4900)/(6000 - 4900) * 0.5);
-			color = new Vec4( 1f, 0.5f+intensity, 0f, 1f);
-		} else if (temperature > 6000 && temperature <= 7500) {							//F
-			float intensity = (float) ((temperature - 6000)/(7500 - 6000) * 0.5);
-			color = new Vec4( 1f, 1f,intensity, 1f);
-		} else if (temperature > 7500 && temperature <= 10000) {						//A
-			float intensity = (float) ((temperature - 7500)/(10000 - 7500) * 0.5);
-			color = new Vec4( 1f-intensity, 1f, 0.5f+intensity, 1f);
-		} else if (temperature > 10000 && temperature <= 28000) {						//B
-			float intensity = (float) ((temperature - 10000)/(28000 - 10000) * 0.5);
-			color = new Vec4(0.5f-intensity, 1f-intensity, 1f, 1f);
-		} else {																		//O
-			float intensity = (float) ((temperature - 28000)/(35000 - 28000) * 0.5);
-			color = new Vec4(0.05f,0.75f-intensity, 1f, 1f);
+		for (int i=1; i<temperatureBands.size(); i++) {
+			if (temperature <= temperatureBands.get(i)) {
+				intensity = (float) (colorIntensity(temperatureBands.get(i), temperatureBands.get(i-1), temperature));
+			}
 		}
 		
+		intensity *= 0.5f;
 		
-		
-		//float r, g, b, SSS;
-		//double wavelength = wien / temperature * 1E9;
-		
-				//System.out.println(luminosity + " W");
-				//System.out.println(radius + " m");
-				//System.out.println(wavelength + " nm");
-				
-				//int w = (int)wavelength;
-		
-		/*
-		if (w >= 380 && w < 440) {	    	
-			r = -(w - 440f) / (440f - 350f);
-			g = 0f;
-			b = 1f;
-		} else if (w >= 440 && w < 490) {
-			r = 0f;
-			g = (w - 440f) / (490f - 440f);
-			b = 1f;
-		} else if (w >= 490 && w < 510) {
-			r = 0f;
-			g = 1f;
-			b = -(w - 510f) / (510f - 490f);
-		} else if (w >= 510 && w < 580) {
-			r = (w - 510f) / (580f - 510f);
-			g = 1f;
-			b = 0f;
-		} else if (w >= 580 && w < 645) {
-			r = 1f;
-			g = -(w - 645f) / (645f - 580f);
-			b = 0f;
-		} else if (w >= 645 && w <= 780) {
-			r = 1f;
-			g = 0f;
-			b = 0f;
-		} else {
-			r = 1f;
-			g = 1f;
-			b = 1f;
+		if      /* temperature > 2000 */(temperature <= 3500) {	  color = new Vec4( 0.5f+intensity,             0f,             0f, 1f); //M
+		} else if (temperature > 3500 && temperature <= 5000) {	  color = new Vec4(             1f,      intensity,             0f, 1f); //K
+		} else if (temperature > 5000 && temperature <= 6000) {	  color = new Vec4(             1f, 0.5f+intensity,             0f, 1f); //G
+		} else if (temperature > 6000 && temperature <= 7500) {	  color = new Vec4(             1f,             1f,      intensity, 1f); //F
+		} else if (temperature > 7500 && temperature <= 10000) {  color = new Vec4(   1f-intensity,             1f, 0.5f+intensity, 1f); //A
+		} else if (temperature > 10000 && temperature <= 30000) { color = new Vec4( 0.5f-intensity,   1f-intensity,             1f, 1f); //B
+		} else { /*temperature > 30000 && temperature <= 60000 */ color = new Vec4(             0f,0.75f-intensity,             1f, 1f); //O
 		}
-
-		if (w >= 380 && w < 420) {
-			SSS = 0.3f + 0.7f*(w - 350f) / (420f - 350f);
-		} else if (w >= 420f && w <= 700f) {
-			SSS = 1f;
-		} else if ( w > 700f && w <= 780f) {
-			SSS = 0.3f + 0.7f*(780f - w) / (780f - 700f);
-		} else {
-			SSS = 1f;			
-		}
-		
-		return new Vec4(SSS*r, SSS*g, SSS*b);
-		*/
 		
 		return color;
 	}
