@@ -12,7 +12,7 @@ public class VBO {
 	
 	private GLSLAttrib[] attribs;
 
-	public VBO(GL3 gl, GLSLAttrib... attribs) {
+	public VBO(GL3 gl, GLSLAttrib... attribs) {		
 		this.attribs = attribs;
 		
 		vboPointer = Buffers.newDirectIntBuffer(1);
