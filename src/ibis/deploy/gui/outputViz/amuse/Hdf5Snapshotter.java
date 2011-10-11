@@ -27,7 +27,7 @@ public class Hdf5Snapshotter {
     public Hdf5Snapshotter() {
     }
 	
-    public void open(String namePrefix, GLWindow glw, Program ppl, Program gas, int currentFrame) {    	
+    public void open(String namePrefix, GLWindow glw, Program starProgram, Program gas, int currentFrame) {    	
     	@SuppressWarnings("unused")
 		Hdf5StarReader starReader = null;		
     	@SuppressWarnings("unused")
@@ -51,7 +51,7 @@ public class Hdf5Snapshotter {
 		HashMap<String, Dataset> particleResult = new HashMap<String, Dataset>();
 		List<HObject> particleMemberList;
 				
-		starModels.put(0, new Sphere(ppl, starMaterial, 2, 0.0001f, new Vec3()));
+		starModels.put(0, new Sphere(starProgram, starMaterial, 2, 0.0001f, new Vec3()));
 		
 		if (GLWindow.GAS_ON) {
 			cloudModels = new ArrayList<Model>();

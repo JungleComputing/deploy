@@ -69,7 +69,7 @@ void main() {
 		numPixelsPerSide = 2.0;
 	} else if(blurType == 4) {
 		blurSize = 4.0;
-		sigma = 3.0;
+		sigma = 3.5;
 		numPixelsPerSide = 4.0;
 	} else if(blurType == 6) {
 		blurSize = 6.0;

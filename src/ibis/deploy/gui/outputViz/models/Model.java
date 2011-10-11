@@ -14,7 +14,7 @@ import javax.media.opengl.GL3;
 public class Model {	
 	public static enum vertex_format { TRIANGLES, POINTS, LINES };
 	public vertex_format format; 
-	public FloatBuffer vertices, normals;	
+	public FloatBuffer vertices, normals, texCoords;	
 	public VBO vbo;
 	public int numVertices;
 	
@@ -25,7 +25,8 @@ public class Model {
 	
 	public Model(Program program, Material material, vertex_format format) {
 		vertices  = null;
-		normals = null;		
+		normals = null;
+		texCoords = null;	
 		numVertices = 0;
 		
 		this.program = program;
@@ -37,8 +38,9 @@ public class Model {
 		if (!initialized) {
 			GLSLAttrib vAttrib = new GLSLAttrib(vertices, "MCvertex", 4);
 			GLSLAttrib nAttrib = new GLSLAttrib(normals, "MCnormal", 3);
+			GLSLAttrib tAttrib = new GLSLAttrib(texCoords, "MCtexCoord", 3);
 			
-			vbo = new VBO(gl, vAttrib, nAttrib);
+			vbo = new VBO(gl, vAttrib, nAttrib, tAttrib);
 		}
 		initialized = true;
 	}
@@ -46,6 +48,7 @@ public class Model {
 	public void delete(GL3 gl) {
 		vertices  = null;
 		normals = null;
+		texCoords = null;
 		
 		if (initialized) {
 			vbo.delete(gl);

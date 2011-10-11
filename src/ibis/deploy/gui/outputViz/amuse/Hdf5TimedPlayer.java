@@ -57,7 +57,7 @@ public class Hdf5TimedPlayer implements Runnable {
     private boolean running = true;
 
     private GLWindow glw;
-    private Program ppl, gas, animatedTurbulence;
+    private Program starProgram, gas, animatedTurbulence;
 
     private String path;
     private String namePrefix;
@@ -90,7 +90,7 @@ public class Hdf5TimedPlayer implements Runnable {
     public void init(GLWindow glw, Program ppl, Program gas,
             Program animatedTurbulence) {
         this.glw = glw;
-        this.ppl = ppl;
+        this.starProgram = ppl;
         this.gas = gas;
         this.animatedTurbulence = animatedTurbulence;
 
@@ -116,7 +116,7 @@ public class Hdf5TimedPlayer implements Runnable {
 
         starModels = new HashMap<Integer, Model>();
         starModels
-                .put(0, new Sphere(ppl, starMaterial, 2, 0.0001f, new Vec3()));
+                .put(0, new Sphere(starProgram, starMaterial, 2, 0.0001f, new Vec3()));
         // for (double i=0.0; i < GLWindow.MAX_PREGENERATED_STAR_SIZE; i += 0.1
         // ) {
         // starModels.put(Astrophysics.indexOfStarRadius(i), new Sphere(ppl,

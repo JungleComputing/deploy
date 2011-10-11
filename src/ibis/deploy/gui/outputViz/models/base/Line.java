@@ -15,6 +15,7 @@ public class Line extends Model {
 				
 		Vec4[] points = new Vec4[numVertices];
 		Vec3[] normals = new Vec3[numVertices];
+		Vec3[] tCoords = new Vec3[numVertices];
 		
 		points[0] = new Vec4(start, 1f);		
 		points[1] = new Vec4(end, 1f);
@@ -22,8 +23,12 @@ public class Line extends Model {
 		normals[0] = VectorMath.normalize(start).neg();
 		normals[1] = VectorMath.normalize(end).neg();
 		
+		tCoords[0] = new Vec3(0,0,0);
+		tCoords[1] = new Vec3(1,1,1);
+		
 		this.numVertices = numVertices;
 	    this.vertices  = VectorMath.toBuffer(points);
 	    this.normals  = VectorMath.toBuffer(normals);
+	    this.texCoords  = VectorMath.toBuffer(tCoords);
 	}
 }

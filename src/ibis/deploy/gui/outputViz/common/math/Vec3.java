@@ -40,7 +40,14 @@ public class Vec3 extends Vector {
     }
 
     
-    /**
+    public Vec3(Vec4 v) {
+    	super(3);
+    	this.v[0] = v.v[0];
+        this.v[1] = v.v[1];
+        this.v[2] = v.v[2];    	
+	}
+
+	/**
      * Gives the negated vector of this vector. 
      * @return
      * 		The new negated vector.

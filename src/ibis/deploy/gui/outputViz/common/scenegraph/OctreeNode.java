@@ -69,7 +69,7 @@ public class OctreeNode {
 
 	public void init(GL3 gl) {
 		if (initialized) {
-			model.init(gl);			
+			model.init(gl);
 			
 			if (subdivided) {
 				ppp.init(gl);

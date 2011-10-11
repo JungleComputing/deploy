@@ -46,7 +46,7 @@ public class GLWindow implements GLEventListener {
     public static double MAX_PREGENERATED_STAR_SIZE = 10.0;
     public static float GAS_EDGES = 800f;
     public static int MAX_ELEMENTS_PER_OCTREE_NODE = 100;
-    public static int MAX_ELEMENTS_PER_OCTREE_NODE_IN_SNAPSHOT = 1;
+    public static int MAX_ELEMENTS_PER_OCTREE_NODE_IN_SNAPSHOT = 2;
     public static float EPSILON = 1.0E-7f;
     public static float GAS_OPACITY_FACTOR = 1f;
 
@@ -54,12 +54,16 @@ public class GLWindow implements GLEventListener {
         PPP, PPN, PNP, PNN, NPP, NPN, NNP, NNN
     }
 
-    public static int selected_blur_type = 8;
+    public static int selected_blur_type = 4;
+    public static int blur_passes = 2;
+
     public static boolean saved_once = true;
     public static octants current_view_octant = octants.PPP;
 
     private final OutputVizPanel panel;
     private final ProgramLoader loader;
+
+    private int movieCounter = 0;
 
     Program animatedTurbulence;
     Program ppl, axesShader, gas, postprocess;
@@ -107,8 +111,7 @@ public class GLWindow implements GLEventListener {
 
     Texture2D gasTex, starTex;
 
-    Model fullscreenQuad, fullscreenQuad0, fullscreenQuad1, fullscreenQuad2,
-            volumeGas;
+    Model fullscreenQuad, fullscreenQuad0, fullscreenQuad1, fullscreenQuad2, volumeGas;
     Model xAxis, yAxis, zAxis;
 
     float moviemaker_rotation_offset = 0f;
@@ -116,10 +119,9 @@ public class GLWindow implements GLEventListener {
     public GLWindow(OutputVizPanel panel) {
         this.panel = panel;
         loader = new ProgramLoader();
-
-        noiseTex = new Perlin3D(128);
     }
 
+    @Override
     public void init(GLAutoDrawable drawable) {
         GL3 gl = drawable.getGL().getGL3();
 
@@ -148,22 +150,16 @@ public class GLWindow implements GLEventListener {
 
         // Load and compile shaders, then use program.
         try {
-            animatedTurbulence = loader
-                    .createProgram(
-                            gl,
-                            "src/ibis/deploy/gui/outputViz/shaders/src/vs_sunsurface.vp",
-                            "src/ibis/deploy/gui/outputViz/shaders/src/fs_animatedTurbulence.fp");
+            animatedTurbulence = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_sunsurface.vp",
+                    "src/ibis/deploy/gui/outputViz/shaders/src/fs_animatedTurbulence.fp");
             // gas = loader.createProgram(gl,
             // "src/ibis/deploy/gui/outputViz/shaders/src/vs_sunsurface.vp",
             // "src/ibis/deploy/gui/outputViz/shaders/src/fs_animatedTurbulence.fp");
-            ppl = loader.createProgram(gl,
-                    "src/ibis/deploy/gui/outputViz/shaders/src/vs_ppl.vp",
+            ppl = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_ppl.vp",
                     "src/ibis/deploy/gui/outputViz/shaders/src/fs_ppl.fp");
-            axesShader = loader.createProgram(gl,
-                    "src/ibis/deploy/gui/outputViz/shaders/src/vs_gas.vp",
+            axesShader = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_gas.vp",
                     "src/ibis/deploy/gui/outputViz/shaders/src/fs_axes.fp");
-            gas = loader.createProgram(gl,
-                    "src/ibis/deploy/gui/outputViz/shaders/src/vs_gas.vp",
+            gas = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_gas.vp",
                     "src/ibis/deploy/gui/outputViz/shaders/src/fs_gas.fp");
             // gas = loader.createProgram(gl,
             // "src/ibis/deploy/gui/outputViz/shaders/src/vs_gas.vp",
@@ -179,24 +175,16 @@ public class GLWindow implements GLEventListener {
             // "src/ibis/deploy/gui/outputViz/shaders/src/vs_star.vp",
             // "src/ibis/deploy/gui/outputViz/shaders/src/fs_star.fp");
             if (POST_PROCESS)
-                postprocess = loader
-                        .createProgram(
-                                gl,
-                                "src/ibis/deploy/gui/outputViz/shaders/src/vs_postprocess.vp",
-                                "src/ibis/deploy/gui/outputViz/shaders/src/fs_postprocess.fp");
+                postprocess = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_postprocess.vp",
+                        "src/ibis/deploy/gui/outputViz/shaders/src/fs_postprocess.fp");
             if (POST_PROCESS)
-                gaussianBlur = loader
-                        .createProgram(
-                                gl,
-                                "src/ibis/deploy/gui/outputViz/shaders/src/vs_postprocess.vp",
-                                "src/ibis/deploy/gui/outputViz/shaders/src/fs_gaussian_blur.fp");
+                gaussianBlur = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_postprocess.vp",
+                        "src/ibis/deploy/gui/outputViz/shaders/src/fs_gaussian_blur.fp");
         } catch (Exception e) {
             System.err.println(e.getMessage());
             e.printStackTrace();
             System.exit(1);
         }
-
-        noiseTex.init(gl);
 
         root = new SGNode();
         newRoot = false;
@@ -207,76 +195,62 @@ public class GLWindow implements GLEventListener {
         root.init(gl);
         cubeRoot.init(gl);
 
-        // if (AXES) {
+        // AXES
         Color4 axisColor = new Color4(0f, 1f, 0f, .3f);
         Material axisMaterial = new Material(axisColor, axisColor, axisColor);
-        xAxis = new Axis(axesShader, axisMaterial, new Vec3(-800f, 0f, 0f),
-                new Vec3(800f, 0f, 0f), Astrophysics.toScreenCoord(1),
-                Astrophysics.toScreenCoord(.2));
+        xAxis = new Axis(axesShader, axisMaterial, new Vec3(-800f, 0f, 0f), new Vec3(800f, 0f, 0f),
+                Astrophysics.toScreenCoord(1), Astrophysics.toScreenCoord(.2));
         xAxis.init(gl);
-        yAxis = new Axis(axesShader, axisMaterial, new Vec3(0f, -800f, 0f),
-                new Vec3(0f, 800f, 0f), Astrophysics.toScreenCoord(1),
-                Astrophysics.toScreenCoord(.2));
+        yAxis = new Axis(axesShader, axisMaterial, new Vec3(0f, -800f, 0f), new Vec3(0f, 800f, 0f),
+                Astrophysics.toScreenCoord(1), Astrophysics.toScreenCoord(.2));
         yAxis.init(gl);
-        zAxis = new Axis(axesShader, axisMaterial, new Vec3(0f, 0f, -800f),
-                new Vec3(0f, 0f, 800f), Astrophysics.toScreenCoord(1),
-                Astrophysics.toScreenCoord(.2));
+        zAxis = new Axis(axesShader, axisMaterial, new Vec3(0f, 0f, -800f), new Vec3(0f, 0f, 800f),
+                Astrophysics.toScreenCoord(1), Astrophysics.toScreenCoord(.2));
         zAxis.init(gl);
-        // }
 
-        // if (POST_PROCESS) {
-        fullscreenQuad = new Quad(postprocess, Material.random(), 2, 2,
-                new Vec3(0, 0, 0.1f));
+        // FULL SCREEN QUADS
+        fullscreenQuad = new Quad(postprocess, Material.random(), 2, 2, new Vec3(0, 0, 0.1f));
         fullscreenQuad.init(gl);
 
-        fullscreenQuad0 = new Quad(ppl, Material.random(), 2, 2, new Vec3(0, 0,
-                0.1f));
+        fullscreenQuad0 = new Quad(ppl, Material.random(), 2, 2, new Vec3(0, 0, 0.1f));
         fullscreenQuad0.init(gl);
 
-        fullscreenQuad1 = new Quad(gaussianBlur, Material.random(), 2, 2,
-                new Vec3(0, 0, 0.1f));
+        fullscreenQuad1 = new Quad(gaussianBlur, Material.random(), 2, 2, new Vec3(0, 0, 0.1f));
         fullscreenQuad1.init(gl);
 
-        fullscreenQuad2 = new Quad(gaussianBlur, Material.random(), 2, 2,
-                new Vec3(0, 0, 0.1f));
+        fullscreenQuad2 = new Quad(gaussianBlur, Material.random(), 2, 2, new Vec3(0, 0, 0.1f));
         fullscreenQuad2.init(gl);
 
-        gl.glActiveTexture(GL3.GL_TEXTURE1);
-        axesTex = new PostProcessTexture(canvasWidth, canvasHeight);
+        // TEXTURES
+        noiseTex = new Perlin3D(128, GL3.GL_TEXTURE0);
+        noiseTex.init(gl);
+
+        axesTex = new PostProcessTexture(canvasWidth, canvasHeight, GL3.GL_TEXTURE1);
         axesTex.init(gl);
 
-        gl.glActiveTexture(GL3.GL_TEXTURE2);
-        gasColorTex = new PostProcessTexture(canvasWidth, canvasHeight);
+        gasColorTex = new PostProcessTexture(canvasWidth, canvasHeight, GL3.GL_TEXTURE2);
         gasColorTex.init(gl);
 
-        gl.glActiveTexture(GL3.GL_TEXTURE3);
-        gasTex = new PostProcessTexture(canvasWidth, canvasHeight);
+        gasTex = new PostProcessTexture(canvasWidth, canvasHeight, GL3.GL_TEXTURE3);
         gasTex.init(gl);
 
-        gl.glActiveTexture(GL3.GL_TEXTURE4);
-        starTex = new PostProcessTexture(canvasWidth, canvasHeight);
+        starTex = new PostProcessTexture(canvasWidth, canvasHeight, GL3.GL_TEXTURE4);
         starTex.init(gl);
-        // }
-
-        // Cube map test
-        // enableCubemaps(gl);
 
         gl.glClearColor(0f, 0f, 0f, 0f);
 
         panel.callback();
     }
 
+    @Override
     public void display(GLAutoDrawable drawable) {
         try {
             GL3 gl = drawable.getGL().getGL3();
 
             gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
 
-            int multiTex;
-
-            Point4 eye = new Point4((float) (radius * Math.sin(ftheta) * Math
-                    .cos(phi)), (float) (radius * Math.sin(ftheta) * Math
-                    .sin(phi)), (float) (radius * Math.cos(ftheta)), 1.0f);
+            Point4 eye = new Point4((float) (radius * Math.sin(ftheta) * Math.cos(phi)), (float) (radius
+                    * Math.sin(ftheta) * Math.sin(phi)), (float) (radius * Math.cos(ftheta)), 1.0f);
             Point4 at = new Point4(0.0f, 0.0f, 0.0f, 1.0f);
             Vec4 up = new Vec4(0.0f, 1.0f, 0.0f, 0.0f);
 
@@ -295,8 +269,7 @@ public class GLWindow implements GLEventListener {
 
             // Vertex shader
             loader.setUniformVector("LightPos", lightPos);
-            loader.setUniformMatrix("SMatrix", MatrixMath.scale(1, 1, 1)
-                    .asBuffer());
+            loader.setUniformMatrix("SMatrix", MatrixMath.scale(1, 1, 1).asBuffer());
 
             // Fragment shader
             loader.setUniformVector("Color1", color1);
@@ -315,30 +288,26 @@ public class GLWindow implements GLEventListener {
                     OctreeNode cubeRoot = initCubeRoot(gl);
 
                     if (GAS_COLORMAP) {
-                        multiTex = 2;
-
-                        loader.setUniformMatrix("SMatrix", MatrixMath.scale(2,
-                                2, 2).asBuffer());
+                        loader.setUniformMatrix("SMatrix", MatrixMath.scale(2).asBuffer());
                         loader.setUniform("Mode", 1);
-                        loader.setUniform("Multicolor", 1);
+                        loader.setUniform("Multicolor", true);
 
                         if (!DEPTH_TESTED_GAS)
                             gl.glEnable(GL3.GL_DEPTH_TEST);
 
                         root.draw(gl, mv);
 
-                        renderToTexture(gl, multiTex, gasColorTex);
+                        renderToTexture(gl, gasColorTex);
 
-                        loader.setUniformMatrix("SMatrix", MatrixMath.scale(1,
-                                1, 1).asBuffer());
-                        loader.setUniform("Colormap", multiTex);
+                        loader.setUniformMatrix("SMatrix", MatrixMath.scale(1).asBuffer());
+                        loader.setUniform("Colormap", gasColorTex.getMultitexNumber());
 
                         gas.use(gl);
                         if (!DEPTH_TESTED_GAS)
                             gl.glDisable(GL3.GL_DEPTH_TEST);
                         cubeRoot.draw(gl, mv);
                     } else {
-                        loader.setUniform("Multicolor", 0);
+                        loader.setUniform("Multicolor", false);
 
                         gas.use(gl);
                         if (!DEPTH_TESTED_GAS)
@@ -347,28 +316,13 @@ public class GLWindow implements GLEventListener {
                     }
 
                     if (POST_PROCESS) {
-                        multiTex = 3;
-                        renderToTexture(gl, multiTex, gasTex);
-                        gaussianBlur.setUniform("Texture", multiTex);
+                        renderToTexture(gl, gasTex);
 
-                        gaussianBlur.setUniformMatrix("PMatrix", new Mat4()
-                                .asBuffer());
-
-                        gaussianBlur.setUniform("blurType", selected_blur_type);
-                        gaussianBlur.setUniform("blurDirection", 0);
-                        gaussianBlur.use(gl);
-                        fullscreenQuad1.draw(gl, new Mat4());
-                        renderToTexture(gl, multiTex, gasTex);
-
-                        gaussianBlur.setUniform("blurDirection", 1);
-                        gaussianBlur.use(gl);
-                        fullscreenQuad1.draw(gl, new Mat4());
-                        renderToTexture(gl, multiTex, gasTex);
+                        blur(gl, gasTex, blur_passes, selected_blur_type);
                     }
 
-                    multiTex = 0;
-                    noiseTex.use(gl, multiTex);
-                    loader.setUniform("Noise", multiTex);
+                    noiseTex.use(gl);
+                    loader.setUniform("Noise", noiseTex.getMultitexNumber());
                     loader.setUniformMatrix("PMatrix", p.asBuffer());
                     loader.setUniform("Mode", 0);
                     ppl.use(gl);
@@ -378,8 +332,7 @@ public class GLWindow implements GLEventListener {
                     root.draw(gl, mv);
 
                     if (POST_PROCESS) {
-                        multiTex = 4;
-                        renderToTexture(gl, multiTex, starTex);
+                        renderToTexture(gl, starTex);
                     }
 
                     axesShader.use(gl);
@@ -391,36 +344,41 @@ public class GLWindow implements GLEventListener {
                     }
 
                     if (POST_PROCESS) {
-                        multiTex = 1;
-                        renderToTexture(gl, multiTex, axesTex);
+                        renderToTexture(gl, axesTex);
                     }
 
                     if (POST_PROCESS) {
-                        loader.setUniform("axesTexture", 1);
-                        loader.setUniform("gasTexture", 3);
-                        loader.setUniform("starTexture", 4);
+                        loader.setUniform("axesTexture", axesTex.getMultitexNumber());
+                        loader.setUniform("gasTexture", gasTex.getMultitexNumber());
+                        loader.setUniform("starTexture", starTex.getMultitexNumber());
 
                         loader.setUniform("scrWidth", canvasWidth);
                         loader.setUniform("scrHeight", canvasHeight);
                         postprocess.use(gl);
 
-                        loader.setUniformMatrix("PMatrix", new Mat4()
-                                .asBuffer());
+                        loader.setUniformMatrix("PMatrix", new Mat4().asBuffer());
                         fullscreenQuad.draw(gl, new Mat4());
                     }
 
-                    if (Hdf5TimedPlayer.currentState == states.SNAPSHOTTING
-                            || Hdf5TimedPlayer.currentState == states.MOVIEMAKING) {
-                        String fileName = "" + timer.currentFrame + " {"
-                                + rotation.get(0) + "," + rotation.get(1)
+                    if (!saved_once
+                            && (Hdf5TimedPlayer.currentState == states.SNAPSHOTTING || Hdf5TimedPlayer.currentState == states.MOVIEMAKING)) {
+                        String fileName = "" + timer.currentFrame + " {" + rotation.get(0) + "," + rotation.get(1)
                                 + " - " + translation.get(2) + "} ";
-                        if (Hdf5TimedPlayer.currentState == states.MOVIEMAKING) {
-                            rotation.set(1, rotation.get(1) + 1f);
+                        if (Hdf5TimedPlayer.currentState == states.MOVIEMAKING && movieCounter < 2) {
+                            rotation.set(1, rotation.get(1) + .5f);
+                            saveToPicture(gl, "" + (timer.currentFrame * 3 + movieCounter));
+                            movieCounter++;
 
-                            saveToPicture(gl, fileName);
+                        } else if (Hdf5TimedPlayer.currentState == states.MOVIEMAKING) {
+                            saveToPicture(gl, "" + (timer.currentFrame * 3 + movieCounter));
+                            movieCounter = 0;
+
+                            saved_once = true;
                         } else {
                             saveToPicture(gl, fileName);
                             Hdf5TimedPlayer.setState(states.CLEANUP);
+
+                            saved_once = true;
                         }
                     }
                 }
@@ -429,11 +387,32 @@ public class GLWindow implements GLEventListener {
         }
     }
 
-    private void renderToTexture(GL3 gl, int multiTex, Texture2D target) {
+    private void blur(GL3 gl, Texture2D target, int passes, int blurType) {
+        gaussianBlur.setUniform("Texture", target.getMultitexNumber());
+        gaussianBlur.setUniformMatrix("PMatrix", new Mat4().asBuffer());
+        gaussianBlur.setUniform("blurType", blurType);
+
         try {
-            target.use(gl, multiTex);
-            gl.glCopyTexImage2D(GL3.GL_TEXTURE_2D, 0, GL3.GL_RGBA, 0, 0,
-                    canvasWidth, canvasHeight, 0);
+            gaussianBlur.use(gl);
+
+            for (int i = 0; i < passes; i++) {
+                gaussianBlur.setUniform("blurDirection", 0);
+                fullscreenQuad1.draw(gl, new Mat4());
+                renderToTexture(gl, target);
+
+                gaussianBlur.setUniform("blurDirection", 1);
+                fullscreenQuad1.draw(gl, new Mat4());
+                renderToTexture(gl, target);
+            }
+        } catch (UninitializedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void renderToTexture(GL3 gl, Texture2D target) {
+        try {
+            target.use(gl);
+            gl.glCopyTexImage2D(GL3.GL_TEXTURE_2D, 0, GL3.GL_RGBA, 0, 0, canvasWidth, canvasHeight, 0);
             gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
         } catch (UninitializedException e) {
             e.printStackTrace();
@@ -445,6 +424,7 @@ public class GLWindow implements GLEventListener {
         p.copyFrameBufferToFile(gl, panel.getPath(), fileName);
     }
 
+    @Override
     public void reshape(GLAutoDrawable drawable, int x, int y, int w, int h) {
         GL3 gl = drawable.getGL().getGL3();
         gl.glViewport(0, 0, w, h);
@@ -452,31 +432,27 @@ public class GLWindow implements GLEventListener {
         canvasWidth = w;
         canvasHeight = h;
 
-        gl.glActiveTexture(GL3.GL_TEXTURE1);
         axesTex.delete(gl);
-        axesTex = new PostProcessTexture(canvasWidth, canvasHeight);
+        axesTex = new PostProcessTexture(canvasWidth, canvasHeight, GL3.GL_TEXTURE1);
         axesTex.init(gl);
 
-        gl.glActiveTexture(GL3.GL_TEXTURE2);
         gasColorTex.delete(gl);
-        gasColorTex = new PostProcessTexture(canvasWidth, canvasHeight);
+        gasColorTex = new PostProcessTexture(canvasWidth, canvasHeight, GL3.GL_TEXTURE2);
         gasColorTex.init(gl);
 
-        gl.glActiveTexture(GL3.GL_TEXTURE3);
         gasTex.delete(gl);
-        gasTex = new PostProcessTexture(canvasWidth, canvasHeight);
+        gasTex = new PostProcessTexture(canvasWidth, canvasHeight, GL3.GL_TEXTURE3);
         gasTex.init(gl);
 
-        gl.glActiveTexture(GL3.GL_TEXTURE4);
         starTex.delete(gl);
-        starTex = new PostProcessTexture(canvasWidth, canvasHeight);
+        starTex = new PostProcessTexture(canvasWidth, canvasHeight, GL3.GL_TEXTURE4);
         starTex.init(gl);
     }
 
-    public void displayChanged(GLAutoDrawable drawable, boolean modeChanged,
-            boolean deviceChanged) {
+    public void displayChanged(GLAutoDrawable drawable, boolean modeChanged, boolean deviceChanged) {
     }
 
+    @Override
     public void dispose(GLAutoDrawable drawable) {
         GL3 gl = drawable.getGL().getGL3();
         loader.cleanup(gl);

@@ -1,4 +1,3 @@
-varying in float LightIntensity; 
 varying in vec3  MCposition;
 
 uniform sampler3D Noise;  
@@ -13,9 +12,9 @@ void main() {
 	vec3 Color2 = AmbientMaterial.rgb;
 
 	if (Mode == 0) { 
-	    vec4 noisevecX 		= texture(Noise,      NoiseScale * .33 * MCposition + vec3(Offset, 0, 0));
-	    vec4 noisevecY 		= texture(Noise,      NoiseScale * .5  * MCposition + vec3(0, Offset*2, 0));
-	    vec4 noisevecZ 		= texture(Noise,      NoiseScale *       MCposition + vec3(0, 0, Offset*3));
+	    vec4 noisevecX 		= texture(Noise, .33 * MCposition); //NoiseScale * .33 * MCposition);  + vec3(Offset,        0,        0));
+	    vec4 noisevecY 		= texture(Noise, .50 * MCposition); //NoiseScale * .5  * MCposition);  + vec3(0     , Offset*2,        0));
+	    vec4 noisevecZ 		= texture(Noise,       MCposition); //NoiseScale *       MCposition);  + vec3(0     ,        0, Offset*3));
 	
 	    float intensity = ((noisevecX[0] +
 	                        noisevecX[1] +
@@ -30,7 +29,7 @@ void main() {
 	                        noisevecZ[2] +
 	                        noisevecZ[3]) * 0.33);
 	
-	    vec3 color   	= mix(Color1, Color2, intensity) * 10;
+		vec3 color   	= mix(Color1, Color2, intensity) * 8;
 	    
 		gl_FragColor = vec4(color, 1.0);
 	} else {
