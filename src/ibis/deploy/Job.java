@@ -520,10 +520,12 @@ public class Job implements Runnable {
 
         // class path
         boolean foundClasspathOption = false;
-        for(String option: application.getJVMOptions()) {
-            if (option.equals("-classpath") || option.equals("-cp")) {
-                foundClasspathOption = true;
-            }
+        if (application.getJVMOptions() != null) {
+        	for(String option: application.getJVMOptions()) {
+        		if (option.equals("-classpath") || option.equals("-cp")) {
+        			foundClasspathOption = true;
+        		}
+        	}
         }
         
         if (!foundClasspathOption) {
