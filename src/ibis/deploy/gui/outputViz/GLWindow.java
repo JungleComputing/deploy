@@ -156,6 +156,7 @@ public class GLWindow implements GLEventListener {
             // "src/ibis/deploy/gui/outputViz/shaders/src/vs_sunsurface.vp",
             // "src/ibis/deploy/gui/outputViz/shaders/src/fs_animatedTurbulence.fp");
             ppl = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_ppl.vp",
+            // "src/ibis/deploy/gui/outputViz/shaders/src/gs_passthrough.fp",
                     "src/ibis/deploy/gui/outputViz/shaders/src/fs_ppl.fp");
             axesShader = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_gas.vp",
                     "src/ibis/deploy/gui/outputViz/shaders/src/fs_axes.fp");
@@ -269,7 +270,7 @@ public class GLWindow implements GLEventListener {
 
             // Vertex shader
             loader.setUniformVector("LightPos", lightPos);
-            loader.setUniformMatrix("SMatrix", MatrixMath.scale(1, 1, 1).asBuffer());
+            loader.setUniformMatrix("SMatrix", MatrixMath.scale(1).asBuffer());
 
             // Fragment shader
             loader.setUniformVector("Color1", color1);

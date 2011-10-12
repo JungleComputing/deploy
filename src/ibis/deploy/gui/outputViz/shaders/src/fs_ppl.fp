@@ -1,4 +1,4 @@
-varying in  vec3 EyespaceNormal;
+varying in vec3 EyespaceNormal;
 
 uniform vec3 LightPos;
 uniform vec4 AmbientMaterial;
