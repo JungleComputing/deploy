@@ -50,8 +50,7 @@ public class Hdf5TimedPlayer implements Runnable {
 
     private final Vec4 gasColor = new Vec4(.6f, .3f, .3f, 0f);
     private final Vec4 transparent = new Vec4(0, 0, 0, 0);
-    private final Material gasMaterial = new Material(gasColor, transparent,
-            transparent);
+    private final Material gasMaterial = new Material(gasColor, transparent, transparent);
     private List<Model> cloudModels;
 
     private boolean running = true;
@@ -87,8 +86,7 @@ public class Hdf5TimedPlayer implements Runnable {
         currentState = states.UNINITIALIZED;
     }
 
-    public void init(GLWindow glw, Program ppl, Program gas,
-            Program animatedTurbulence) {
+    public void init(GLWindow glw, Program ppl, Program gas, Program animatedTurbulence) {
         this.glw = glw;
         this.starProgram = ppl;
         this.gas = gas;
@@ -97,6 +95,7 @@ public class Hdf5TimedPlayer implements Runnable {
         currentState = states.INITIALIZED;
     }
 
+    @Override
     public void run() {
         if (currentState != states.INITIALIZED) {
             System.err.println("HDFTimer started while not initialized.");
@@ -115,8 +114,7 @@ public class Hdf5TimedPlayer implements Runnable {
         List<HObject> particleMemberList;
 
         starModels = new HashMap<Integer, Model>();
-        starModels
-                .put(0, new Sphere(starProgram, starMaterial, 2, 0.0001f, new Vec3()));
+        starModels.put(0, new Sphere(starProgram, starMaterial, 2, 0.0001f, new Vec3()));
         // for (double i=0.0; i < GLWindow.MAX_PREGENERATED_STAR_SIZE; i += 0.1
         // ) {
         // starModels.put(Astrophysics.indexOfStarRadius(i), new Sphere(ppl,
@@ -127,23 +125,18 @@ public class Hdf5TimedPlayer implements Runnable {
             cloudModels = new ArrayList<Model>();
             float gasSize = GLWindow.GAS_EDGES;
             for (int i = 0; i < GLWindow.MAX_CLOUD_DEPTH; i++) {
-                cloudModels.add(new Sphere(gas, gasMaterial, 0, gasSize * 3f,
-                        new Vec3()));
+                cloudModels.add(new Sphere(gas, gasMaterial, 0, gasSize * 3f, new Vec3()));
                 gasSize = gasSize / 2f;
             }
         }
 
         try {
             if (GLWindow.GAS_ON) {
-                gasName = namePrefix + intToString(currentFrame)
-                        + gasNamePostfix;
+                gasName = namePrefix + intToString(currentFrame) + gasNamePostfix;
 
-                cubeRoot = new OctreeNode(
-                        GLWindow.MAX_ELEMENTS_PER_OCTREE_NODE, 0, cloudModels,
-                        new Vec3(-GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES,
-                                -GLWindow.GAS_EDGES), GLWindow.GAS_EDGES);
-                gasReader = new Hdf5GasCloudReader(currentFrame, cubeRoot,
-                        gasName);
+                cubeRoot = new OctreeNode(GLWindow.MAX_ELEMENTS_PER_OCTREE_NODE, 0, cloudModels, new Vec3(
+                        -GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES), GLWindow.GAS_EDGES);
+                gasReader = new Hdf5GasCloudReader(currentFrame, cubeRoot, gasName);
 
                 // maxGasDensity = cubeRoot.getMaxDensity();
                 // System.out.println(maxGasDensity);
@@ -158,22 +151,16 @@ public class Hdf5TimedPlayer implements Runnable {
 
             }
 
-            int initialMaxBar = Hdf5StarReader.getNumFiles(path,
-                    gravNamePostfix);
+            int initialMaxBar = Hdf5StarReader.getNumFiles(path, gravNamePostfix);
             timeBar.setMaximum(initialMaxBar);
 
-            particleMemberList = Hdf5StarReader.getRoot(
-                    namePrefix + intToString(0) + evoNamePostfix)
-                    .getMemberList();
+            particleMemberList = Hdf5StarReader.getRoot(namePrefix + intToString(0) + evoNamePostfix).getMemberList();
             Hdf5StarReader.traverse("evo", particleResult, particleMemberList);
 
-            particleMemberList = Hdf5StarReader.getRoot(
-                    namePrefix + intToString(0) + gravNamePostfix)
-                    .getMemberList();
+            particleMemberList = Hdf5StarReader.getRoot(namePrefix + intToString(0) + gravNamePostfix).getMemberList();
             Hdf5StarReader.traverse("grav", particleResult, particleMemberList);
 
-            Dataset keysSet = particleResult
-                    .get("evo/particles/0000000001/keys");
+            Dataset keysSet = particleResult.get("evo/particles/0000000001/keys");
             particleMemberList = null;
 
             // Pre-make all the particles in the hashmap
@@ -195,8 +182,7 @@ public class Hdf5TimedPlayer implements Runnable {
             gravName = namePrefix + intToString(currentFrame) + gravNamePostfix;
             // reader = new Hdf5Reader(currentFrame, program, particles,
             // evoName, gravName);
-            reader = new Hdf5StarReader(starModels, particles, evoName,
-                    gravName);
+            reader = new Hdf5StarReader(starModels, particles, evoName, gravName);
 
             // Construct the Scene graph
             root = new StarSGNode();
@@ -232,14 +218,13 @@ public class Hdf5TimedPlayer implements Runnable {
         currentState = states.PLAYING;
 
         // TODO REMOVE!!!
-        glw.setRotation(new Vec3(8f, 350f, 0f));
-        glw.setViewDist(-310f);
-        currentFrame = 90;
-        makeSnapshot();
+        // glw.setRotation(new Vec3(8f, 350f, 0f));
+        // glw.setViewDist(-310f);
+        // currentFrame = 90;
+        // makeSnapshot();
 
         while (running) {
-            if (currentState == states.PLAYING
-                    || currentState == states.REDRAWING) {
+            if (currentState == states.PLAYING || currentState == states.REDRAWING) {
                 try {
                     startTime = System.currentTimeMillis();
 
@@ -252,9 +237,7 @@ public class Hdf5TimedPlayer implements Runnable {
 
                     stopTime = System.currentTimeMillis();
                     if (startTime - stopTime < GLWindow.WAITTIME) {
-                        Thread
-                                .sleep(GLWindow.WAITTIME
-                                        - (startTime - stopTime));
+                        Thread.sleep(GLWindow.WAITTIME - (startTime - stopTime));
                     } else {
                         Thread.yield();
                     }
@@ -271,8 +254,7 @@ public class Hdf5TimedPlayer implements Runnable {
                     currentFrame++;
                     GLWindow.saved_once = false;
                     Hdf5Snapshotter snappy = new Hdf5Snapshotter();
-                    snappy.open(namePrefix, glw, animatedTurbulence, gas,
-                            currentFrame);
+                    snappy.open(namePrefix, glw, animatedTurbulence, gas, currentFrame);
                 } else {
                     try {
                         Thread.sleep(100);
@@ -280,8 +262,7 @@ public class Hdf5TimedPlayer implements Runnable {
                         e.printStackTrace();
                     }
                 }
-            } else if (currentState == states.STOPPED
-                    || currentState == states.SNAPSHOTTING
+            } else if (currentState == states.STOPPED || currentState == states.SNAPSHOTTING
                     || currentState == states.CLEANUP) {
                 try {
                     Thread.sleep(GLWindow.WAITTIME);
@@ -304,13 +285,10 @@ public class Hdf5TimedPlayer implements Runnable {
         synchronized (this) {
             try {
                 String gasName, evoName, gravName;
-                evoName = namePrefix + intToString(currentFrame)
-                        + evoNamePostfix;
-                gravName = namePrefix + intToString(currentFrame)
-                        + gravNamePostfix;
+                evoName = namePrefix + intToString(currentFrame) + evoNamePostfix;
+                gravName = namePrefix + intToString(currentFrame) + gravNamePostfix;
 
-                reader = new Hdf5StarReader(starModels, particles, evoName,
-                        gravName);
+                reader = new Hdf5StarReader(starModels, particles, evoName, gravName);
 
                 for (int i = 0; i < particles.size(); i++) {
                     StarSGNode node = nodes.get(particleKeys[i]);
@@ -329,16 +307,11 @@ public class Hdf5TimedPlayer implements Runnable {
                 glw.setRoot(root);
 
                 if (GLWindow.GAS_ON) {
-                    gasName = namePrefix + intToString(currentFrame)
-                            + gasNamePostfix;
+                    gasName = namePrefix + intToString(currentFrame) + gasNamePostfix;
 
-                    cubeRoot = new OctreeNode(
-                            GLWindow.MAX_ELEMENTS_PER_OCTREE_NODE, 0,
-                            cloudModels, new Vec3(-GLWindow.GAS_EDGES,
-                                    -GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES),
-                            GLWindow.GAS_EDGES);
-                    gasReader = new Hdf5GasCloudReader(currentFrame, cubeRoot,
-                            gasName);
+                    cubeRoot = new OctreeNode(GLWindow.MAX_ELEMENTS_PER_OCTREE_NODE, 0, cloudModels, new Vec3(
+                            -GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES), GLWindow.GAS_EDGES);
+                    gasReader = new Hdf5GasCloudReader(currentFrame, cubeRoot, gasName);
 
                     glw.setCubeRoot(cubeRoot);
                 }
