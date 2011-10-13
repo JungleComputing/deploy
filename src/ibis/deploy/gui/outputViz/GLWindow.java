@@ -38,7 +38,7 @@ public class GLWindow implements GLEventListener {
     public static boolean GAS_ON = true;
     public static boolean PREDICTION_ON = false;
     public static boolean DEPTH_TESTED_GAS = false;
-    public static boolean movie_mode = true;
+    public static boolean EXAGGERATE_COLORS = true;
 
     public static long WAITTIME = 200;
     public static long LONGWAITTIME = 10000;

@@ -1,5 +1,6 @@
 package ibis.deploy.gui.outputViz.amuse;
 
+import ibis.deploy.gui.outputViz.GLWindow;
 import ibis.deploy.gui.outputViz.common.math.Vec3;
 import ibis.deploy.gui.outputViz.common.math.Vec4;
 
@@ -91,123 +92,34 @@ public class Astrophysics {
         temperatureBands.put(6, 30000.0);
         temperatureBands.put(7, 60000.0);
 
+        float r = 0f, g = 0f, b = 0f;
+
         for (int i = 1; i < temperatureBands.size(); i++) {
             if (temperature <= temperatureBands.get(i)) {
                 intensity = (float) (colorIntensity(temperatureBands.get(i), temperatureBands.get(i - 1), temperature));
+
+                // Mix colors to create star color for x between 1 and 7.
+                // Easy reference for function here:
+                // http://fooplot.com/index.php?&type0=0&type1=0&type2=0&type3=0&type4=0&y0=&y1=%28sin%28%28.33*%28x-1%29%29%2B%28.5*pi%29%29%2B1%29/2&y2=%28sin%28%28.33*%28x-7%29%29%2B%28.5*pi%29%29%2B1%29/2&y3=%28sin%28%28.65*%28x-4%29%29%2B%28.5*pi%29%29%2B1%29/2&y4=&r0=&r1=&r2=&r3=&r4=&px0=&px1=&px2=&px3=&px4=&py0=&py1=&py2=&py3=&py4=&smin0=0&smin1=0&smin2=0&smin3=0&smin4=0&smax0=2pi&smax1=2pi&smax2=2pi&smax3=2pi&smax4=2pi&thetamin0=0&thetamin1=0&thetamin2=0&thetamin3=0&thetamin4=0&thetamax0=2pi&thetamax1=2pi&thetamax2=2pi&thetamax3=2pi&thetamax4=2pi&ipw=0&ixmin=-5&ixmax=5&iymin=-3&iymax=3&igx=1&igy=1&igl=1&igs=0&iax=1&ila=1&xmin=-1.58&xmax=8.42&ymin=-0.9199999999999998&ymax=5.080000000000001
+                float x = i - 1 + intensity;
+                r = (float) ((Math.sin((.33 * (x - 1.0)) + (0.5 * Math.PI)) + 1.0) / 2.0);
+                g = (float) ((Math.sin((.66 * (x - 4.0)) + (0.5 * Math.PI)) + 1.0) / 2.0);
+                b = (float) ((Math.sin((.33 * (x - 7.0)) + (0.5 * Math.PI)) + 1.0) / 2.0);
+
+                System.out.println(i + " " + r + " " + g + " " + b + " ");
+
+                // Color components are a fraction of 1, so multiplying them
+                // with themselves makes the prevalent one more distinct.
+                if (GLWindow.EXAGGERATE_COLORS) {
+                    r *= r;
+                    g *= g;
+                    b *= b;
+                }
+
+                return new Vec4(r, g, b, 1f);
             }
         }
 
-        float r = 0f, g = 0f, b = 0f;
-        float lr, lg, lb, hr, hg, hb;
-
-        if /* temperature > 2000 */(temperature <= 3500) { // M
-            lr = 255f;
-            hr = 255f;
-            lg = 180f;
-            hg = 210f;
-            lb = 111f;
-            hb = 160f;
-
-            r = 255f / 255f;
-            g = 204f / 255f;
-            b = 111f / 255f;
-        } else if (temperature > 3500 && temperature <= 5000) { // K
-            lr = 255f;
-            hr = 255f;
-            lg = 210f;
-            hg = 244f;
-            lb = 161f;
-            hb = 234f;
-
-            r = 255f / 255f;
-            g = 210f / 255f;
-            b = 161f / 255f;
-        } else if (temperature > 5000 && temperature <= 6000) { // G
-            lr = 255f;
-            hr = 248f;
-            lg = 244f;
-            hg = 247f;
-            lb = 234f;
-            hb = 255f;
-
-            r = 255f / 255f;
-            g = 244f / 255f;
-            b = 234f / 255f;
-        } else if (temperature > 6000 && temperature <= 7500) { // F
-            lr = 248f;
-            hr = 202f;
-            lg = 247f;
-            hg = 215f;
-            lb = 255f;
-            hb = 255f;
-
-            r = 248f / 255f;
-            g = 247f / 255f;
-            b = 255f / 255f;
-        } else if (temperature > 7500 && temperature <= 10000) {// A
-            lr = 202f;
-            hr = 170f;
-            lg = 215f;
-            hg = 191f;
-            lb = 255f;
-            hb = 255f;
-
-            r = 202f / 255f;
-            g = 215f / 255f;
-            b = 255f / 255f;
-        } else if (temperature > 10000 && temperature <= 30000) {// B
-            lr = 170f;
-            hr = 155f;
-            lg = 191f;
-            hg = 176f;
-            lb = 255f;
-            hb = 255f;
-
-            r = 170f / 255f;
-            g = 191f / 255f;
-            b = 255f / 255f;
-        } else { /* temperature > 30000 && temperature <= 60000 */// O
-            lr = 155f;
-            hr = 135f;
-            lg = 176f;
-            hg = 158f;
-            lb = 255f;
-            hb = 255f;
-
-            r = 155f / 255f;
-            g = 176f / 255f;
-            b = 255f / 255f;
-        }
-
-        float scale = Math.abs(hr - lr) * intensity;
-        if (hr > lr) {
-            r = lr + scale;
-        } else {
-            r = hr + scale;
-        }
-        r = r / 255f;
-
-        scale = Math.abs(hg - lg) * intensity;
-        if (hg > lg) {
-            g = lg + scale;
-        } else {
-            g = hg + scale;
-        }
-        g = g / 255f;
-
-        scale = Math.abs(hb - lb) * intensity;
-        if (hb > lb) {
-            b = lb + scale;
-        } else {
-            b = hb + scale;
-        }
-        b = b / 255f;
-
-        // Exaggerate the color
-        r *= r;
-        g *= g;
-        b *= b;
-
-        return new Vec4(r, g, b, 1f); // M;
+        return new Vec4(r, g, b, 1f);
     }
 }
