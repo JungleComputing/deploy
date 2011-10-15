@@ -207,7 +207,7 @@ public class OctreeNode {
 					Mat4 newM = MVMatrix.mul(TMatrix);
 					
 					model.material.setColor(color);
-					model.material.setTransparency(density * GLWindow.GAS_OPACITY_FACTOR);
+					model.material.setTransparency(density * GLWindow.gas_opacity_factor);
 					model.draw(gl, newM);
 				}
 			}

@@ -6,7 +6,7 @@ uniform mat3 NormalMatrix;
 varying in vec4 MCvertex;
 varying in vec3 MCnormal;
 varying in vec3 MCtexCoord;
-varying out vec3  MCposition;
+varying out vec3 MCposition;
 
 void main()
 {

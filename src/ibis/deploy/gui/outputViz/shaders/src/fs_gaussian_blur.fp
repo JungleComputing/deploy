@@ -4,6 +4,7 @@ uniform int scrWidth;
 uniform int scrHeight;
 
 uniform int blurDirection;
+uniform float blurSize;
 uniform int blurType;
 
 const float pi = 3.14159265;
@@ -59,26 +60,24 @@ vec4 gaussianBlur(sampler2D tex, vec2 tCoord, vec2 multiplyVec, int maxTexSize, 
 void main() {
 	vec2 tCoord   = vec2(gl_FragCoord.x/float(scrWidth), gl_FragCoord.y/float(scrHeight));
 	
-	float blurSize;
 	float sigma;
 	float numPixelsPerSide;
 	
 	if (blurType == 2) {
-		blurSize = 1.0;
 		sigma = 2.0;
-		numPixelsPerSide = 2.0;
+		numPixelsPerSide = 2.0; // 5x5
+	} else if(blurType == 3) {
+		sigma = 2.5;
+		numPixelsPerSide = 3.0; // 7x7
 	} else if(blurType == 4) {
-		blurSize = 4.0;
-		sigma = 3.5;
-		numPixelsPerSide = 4.0;
+		sigma = 3.0;
+		numPixelsPerSide = 4.0; // 9x9
 	} else if(blurType == 6) {
-		blurSize = 6.0;
-		sigma = 5.0;
-		numPixelsPerSide = 6.0;
+		sigma = 4.0;
+		numPixelsPerSide = 6.0; // 13x13
 	} else {
-		blurSize = 8.0;
-		sigma = 7.0;
-		numPixelsPerSide = 8.0;
+		sigma = 6.0;
+		numPixelsPerSide = 8.0; // 17x17
 	}
 	
 	vec2 direction;

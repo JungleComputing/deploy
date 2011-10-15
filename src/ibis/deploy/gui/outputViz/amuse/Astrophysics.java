@@ -16,8 +16,8 @@ public class Astrophysics {
 
     public final static double PARSEC = 3.08568025E16;
     public final static double DISTANCE_FACTOR = 25.0;
-    public final static double STAR_RADIUS_FACTOR_SMALL = 0.5;
-    public final static double STAR_RADIUS_AT_1000_SOLAR_RADII = 15.0;
+    public final static double STAR_RADIUS_FACTOR_SMALL = 0.33;
+    public final static double STAR_RADIUS_AT_1000_SOLAR_RADII = 9.0;
 
     public final static double STAR_FORMULAE_INTERSECTION = find_intersection();
 
@@ -103,14 +103,14 @@ public class Astrophysics {
                 // http://fooplot.com/index.php?&type0=0&type1=0&type2=0&type3=0&type4=0&y0=&y1=%28sin%28%28.33*%28x-1%29%29%2B%28.5*pi%29%29%2B1%29/2&y2=%28sin%28%28.33*%28x-7%29%29%2B%28.5*pi%29%29%2B1%29/2&y3=%28sin%28%28.65*%28x-4%29%29%2B%28.5*pi%29%29%2B1%29/2&y4=&r0=&r1=&r2=&r3=&r4=&px0=&px1=&px2=&px3=&px4=&py0=&py1=&py2=&py3=&py4=&smin0=0&smin1=0&smin2=0&smin3=0&smin4=0&smax0=2pi&smax1=2pi&smax2=2pi&smax3=2pi&smax4=2pi&thetamin0=0&thetamin1=0&thetamin2=0&thetamin3=0&thetamin4=0&thetamax0=2pi&thetamax1=2pi&thetamax2=2pi&thetamax3=2pi&thetamax4=2pi&ipw=0&ixmin=-5&ixmax=5&iymin=-3&iymax=3&igx=1&igy=1&igl=1&igs=0&iax=1&ila=1&xmin=-1.58&xmax=8.42&ymin=-0.9199999999999998&ymax=5.080000000000001
                 float x = i - 1 + intensity;
                 r = (float) ((Math.sin((.33 * (x - 1.0)) + (0.5 * Math.PI)) + 1.0) / 2.0);
-                g = (float) ((Math.sin((.66 * (x - 4.0)) + (0.5 * Math.PI)) + 1.0) / 2.0);
+                g = (float) ((Math.sin((.66 * (x - 4.0)) + (0.5 * Math.PI)) + 1.0) / 2.5);
                 b = (float) ((Math.sin((.33 * (x - 7.0)) + (0.5 * Math.PI)) + 1.0) / 2.0);
 
-                System.out.println(i + " " + r + " " + g + " " + b + " ");
+                // System.out.println(i + " " + r + " " + g + " " + b + " ");
 
                 // Color components are a fraction of 1, so multiplying them
                 // with themselves makes the prevalent one more distinct.
-                if (GLWindow.EXAGGERATE_COLORS) {
+                if (GLWindow.exaggerate_colors) {
                     r *= r;
                     g *= g;
                     b *= b;

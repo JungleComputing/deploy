@@ -116,24 +116,20 @@ public class Hdf5TimedPlayer implements Runnable {
         starModels = new HashMap<Integer, Model>();
         starModels.put(0, new Sphere(starProgram, starMaterial, 2, 0.0001f, new Vec3()));
 
-        if (GLWindow.GAS_ON) {
-            cloudModels = new ArrayList<Model>();
-            float gasSize = GLWindow.GAS_EDGES;
-            for (int i = 0; i < GLWindow.MAX_CLOUD_DEPTH; i++) {
-                cloudModels.add(new Sphere(gas, gasMaterial, 0, gasSize * 3f, new Vec3()));
-                gasSize = gasSize / 2f;
-            }
+        cloudModels = new ArrayList<Model>();
+        float gasSize = GLWindow.GAS_EDGES;
+        for (int i = 0; i < GLWindow.MAX_CLOUD_DEPTH; i++) {
+            cloudModels.add(new Sphere(gas, gasMaterial, 0, gasSize * 3f, new Vec3()));
+            gasSize = gasSize / 2f;
         }
 
         try {
-            if (GLWindow.GAS_ON) {
-                gasName = namePrefix + intToString(currentFrame) + gasNamePostfix;
+            gasName = namePrefix + intToString(currentFrame) + gasNamePostfix;
 
-                cubeRoot = new OctreeNode(GLWindow.MAX_ELEMENTS_PER_OCTREE_NODE, 0, cloudModels, new Vec3(
-                        -GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES), GLWindow.GAS_EDGES);
-                gasReader = new Hdf5GasCloudReader(currentFrame, cubeRoot, gasName);
-                glw.setCubeRoot(cubeRoot);
-            }
+            cubeRoot = new OctreeNode(GLWindow.max_elements_per_octree_node, 0, cloudModels, new Vec3(
+                    -GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES), GLWindow.GAS_EDGES);
+            gasReader = new Hdf5GasCloudReader(currentFrame, cubeRoot, gasName);
+            glw.setCubeRoot(cubeRoot);
 
             int initialMaxBar = Hdf5StarReader.getNumFiles(path, gravNamePostfix);
             timeBar.setMaximum(initialMaxBar);
@@ -213,8 +209,8 @@ public class Hdf5TimedPlayer implements Runnable {
                     updateFrame();
 
                     stopTime = System.currentTimeMillis();
-                    if (startTime - stopTime < GLWindow.WAITTIME) {
-                        Thread.sleep(GLWindow.WAITTIME - (startTime - stopTime));
+                    if (startTime - stopTime < GLWindow.waittime) {
+                        Thread.sleep(GLWindow.waittime - (startTime - stopTime));
                     } else {
                         Thread.yield();
                     }
@@ -242,7 +238,7 @@ public class Hdf5TimedPlayer implements Runnable {
             } else if (currentState == states.STOPPED || currentState == states.SNAPSHOTTING
                     || currentState == states.CLEANUP) {
                 try {
-                    Thread.sleep(GLWindow.WAITTIME);
+                    Thread.sleep(GLWindow.waittime);
                 } catch (InterruptedException e) {
                     // Bla
                 }
@@ -283,15 +279,13 @@ public class Hdf5TimedPlayer implements Runnable {
 
                 glw.setRoot(root);
 
-                if (GLWindow.GAS_ON) {
-                    gasName = namePrefix + intToString(currentFrame) + gasNamePostfix;
+                gasName = namePrefix + intToString(currentFrame) + gasNamePostfix;
 
-                    cubeRoot = new OctreeNode(GLWindow.MAX_ELEMENTS_PER_OCTREE_NODE, 0, cloudModels, new Vec3(
-                            -GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES), GLWindow.GAS_EDGES);
-                    gasReader = new Hdf5GasCloudReader(currentFrame, cubeRoot, gasName);
+                cubeRoot = new OctreeNode(GLWindow.max_elements_per_octree_node, 0, cloudModels, new Vec3(
+                        -GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES), GLWindow.GAS_EDGES);
+                gasReader = new Hdf5GasCloudReader(currentFrame, cubeRoot, gasName);
 
-                    glw.setCubeRoot(cubeRoot);
-                }
+                glw.setCubeRoot(cubeRoot);
             } catch (FileOpeningException e) {
                 currentState = states.WAITINGONFRAME;
                 currentFrame--;
@@ -320,7 +314,7 @@ public class Hdf5TimedPlayer implements Runnable {
     }
 
     public void start() {
-        GLWindow.AXES = true;
+        GLWindow.axes = true;
         if (currentState == states.SNAPSHOTTING) {
             currentState = states.CLEANUP;
         } else {
@@ -363,14 +357,14 @@ public class Hdf5TimedPlayer implements Runnable {
 
     public void movieMode() {
         synchronized (this) {
-            GLWindow.AXES = false;
+            GLWindow.axes = false;
             currentState = states.MOVIEMAKING;
         }
     }
 
     public void makeSnapshot() {
         synchronized (this) {
-            GLWindow.AXES = false;
+            GLWindow.axes = false;
             GLWindow.saved_once = false;
             currentState = states.SNAPSHOTTING;
             Hdf5Snapshotter snappy = new Hdf5Snapshotter();

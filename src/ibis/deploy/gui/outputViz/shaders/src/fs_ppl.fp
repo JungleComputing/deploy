@@ -6,10 +6,10 @@ uniform vec4 SpecularMaterial;
 uniform vec4 DiffuseMaterial;
 uniform float Shininess;
 
-uniform int Mode;
+uniform int StarDrawMode;
 
 void main() {
-	if (Mode == 0) {
+	if (StarDrawMode == 0) {
 	    vec3 N = normalize(EyespaceNormal);
 	    vec3 L = normalize(LightPos);
 	    vec3 E = vec3(0, 0, 1);

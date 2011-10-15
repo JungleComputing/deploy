@@ -6,12 +6,12 @@ uniform mat4 MVMatrix;
 uniform mat3 NormalMatrix;
 uniform mat4 SMatrix;
 
-uniform int Mode;
+uniform int StarDrawMode;
 
 varying out vec3 EyespaceNormal;
 
 void main() {
-	if (Mode == 0) {
+	if (StarDrawMode == 0) {
 	    EyespaceNormal = NormalMatrix * MCnormal;
 	    gl_Position = PMatrix * MVMatrix * MCvertex;
 	} else {
