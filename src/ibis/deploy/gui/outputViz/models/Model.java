@@ -37,6 +37,16 @@ public class Model {
         this.format = format;
     }
 
+    public Model(Material material, vertex_format format) {
+        vertices = null;
+        normals = null;
+        texCoords = null;
+        numVertices = 0;
+
+        this.material = material;
+        this.format = format;
+    }
+
     public void init(GL3 gl) {
         if (!initialized) {
             GLSLAttrib vAttrib = new GLSLAttrib(vertices, "MCvertex", 4);
@@ -74,6 +84,33 @@ public class Model {
         } catch (UninitializedException e) {
             e.printStackTrace();
         }
+
+        if (format == vertex_format.TRIANGLES) {
+            gl.glDrawArrays(GL3.GL_TRIANGLES, 0, numVertices);
+        } else if (format == vertex_format.POINTS) {
+            gl.glDrawArrays(GL3.GL_POINTS, 0, numVertices);
+        } else if (format == vertex_format.LINES) {
+            gl.glDrawArrays(GL3.GL_LINES, 0, numVertices);
+        }
+    }
+
+    public void draw(GL3 gl, Program program, Mat4 MVMatrix) {
+
+        program.setUniformVector("DiffuseMaterial", material.diffuse.asBuffer());
+        program.setUniformVector("AmbientMaterial", material.ambient.asBuffer());
+        program.setUniformVector("SpecularMaterial", material.specular.asBuffer());
+
+        program.setUniformMatrix("MVMatrix", MVMatrix.asBuffer());
+
+        try {
+            program.use(gl);
+        } catch (UninitializedException e) {
+            e.printStackTrace();
+        }
+
+        vbo.bind(gl);
+
+        program.linkAttribs(gl, vbo.getAttribs());
 
         if (format == vertex_format.TRIANGLES) {
             gl.glDrawArrays(GL3.GL_TRIANGLES, 0, numVertices);

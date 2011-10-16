@@ -77,27 +77,24 @@ public class OutputVizPanel extends JPanel {
         JPopupMenu.setDefaultLightWeightPopupEnabled(false);
         setLayout(new BorderLayout(0, 0));
 
-        // Make the GLEventListener
-        window = new GLWindow(this);
-
         GLProfile glp = GLProfile.getDefault();
         GLDrawableFactory factory = GLDrawableFactory.getFactory(glp);
 
-        GLPbuffer pbuffer;
-
-        GLCapabilities offScreenCapabilities = new GLCapabilities(glp);
-        offScreenCapabilities.setHardwareAccelerated(true);
-        offScreenCapabilities.setDoubleBuffered(false);
-
-        // Anti-Aliasing
-        offScreenCapabilities.setSampleBuffers(true);
-        offScreenCapabilities.setNumSamples(4);
-
+        // Make the offscreen context for screenshotting
         if (factory.canCreateGLPbuffer(factory.getDefaultDevice())) {
-            pbuffer = factory.createGLPbuffer(factory.getDefaultDevice(), offScreenCapabilities,
+            GLCapabilities offScreenCapabilities = new GLCapabilities(glp);
+            offScreenCapabilities.setHardwareAccelerated(true);
+            offScreenCapabilities.setDoubleBuffered(false);
+
+            // Anti-Aliasing
+            offScreenCapabilities.setSampleBuffers(true);
+            offScreenCapabilities.setNumSamples(4);
+
+            GLPbuffer pbuffer = factory.createGLPbuffer(factory.getDefaultDevice(), offScreenCapabilities,
                     new DefaultGLCapabilitiesChooser(), 4096, 3112, null);
 
             offScreenContext = pbuffer.createContext(null);
+            offScreenContext.setSynchronized(true);
 
             if (pbuffer == null || offScreenContext == null) {
                 System.err.println("PBuffer failed.");
@@ -117,7 +114,9 @@ public class OutputVizPanel extends JPanel {
         glCapabilities.setNumSamples(4);
 
         glcanvas = new GLCanvas(glCapabilities, offScreenContext);
-        // glcanvas.setPreferredSize(new Dimension(800, 600));
+
+        // Make the GLEventListener
+        window = new GLWindow(this, offScreenContext);
         glcanvas.addGLEventListener(window);
 
         // Add Mouse event listener
@@ -142,7 +141,7 @@ public class OutputVizPanel extends JPanel {
         timeBar.setPaintTicks(true);
         timeBar.setSnapToTicks(true);
 
-        timer = new Hdf5TimedPlayer(timeBar, frameCounter);
+        timer = new Hdf5TimedPlayer(window, timeBar, frameCounter);
 
         // Make the menu bar
         JMenuBar menuBar = new JMenuBar();
@@ -167,7 +166,7 @@ public class OutputVizPanel extends JPanel {
                     } else {
                         prefix = ext[0].substring(0, ext[0].length() - 6);
                         window.stopAnimation();
-                        timer = new Hdf5TimedPlayer(timeBar, frameCounter);
+                        timer = new Hdf5TimedPlayer(window, timeBar, frameCounter);
                         timer.open(path, prefix);
                         window.startAnimation(timer);
                     }
@@ -202,48 +201,48 @@ public class OutputVizPanel extends JPanel {
         });
         options.add(postprocess);
 
-        JMenu resolution = new JMenu("Gas cloud resolution.");
-        JMenuItem five = new JMenuItem("5 elements per node.");
-        five.addActionListener(new ActionListener() {
+        JMenu lod = new JMenu("Level of detail.");
+        JMenuItem zero = new JMenuItem("Low.");
+        zero.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent arg0) {
-                GLWindow.setResolution(5);
+                GLWindow.setLOD(0);
             }
         });
-        resolution.add(five);
-        JMenuItem ten = new JMenuItem("10 elements per node.");
-        ten.addActionListener(new ActionListener() {
+        lod.add(zero);
+        JMenuItem one = new JMenuItem("High.");
+        one.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent arg0) {
-                GLWindow.setResolution(10);
+                GLWindow.setLOD(1);
             }
         });
-        resolution.add(ten);
-        JMenuItem twentyfive = new JMenuItem("25 elements per node.");
-        twentyfive.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                GLWindow.setResolution(25);
-            }
-        });
-        resolution.add(twentyfive);
-        JMenuItem hundred = new JMenuItem("100 elements per node.");
-        hundred.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                GLWindow.setResolution(100);
-            }
-        });
-        resolution.add(hundred);
-        JMenuItem twohundred = new JMenuItem("200 elements per node.");
-        twohundred.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                GLWindow.setResolution(200);
-            }
-        });
-        resolution.add(twohundred);
-        options.add(resolution);
+        lod.add(one);
+        // JMenuItem twentyfive = new JMenuItem("25 elements per node.");
+        // twentyfive.addActionListener(new ActionListener() {
+        // @Override
+        // public void actionPerformed(ActionEvent arg0) {
+        // GLWindow.setLOD(25);
+        // }
+        // });
+        // lod.add(twentyfive);
+        // JMenuItem hundred = new JMenuItem("100 elements per node.");
+        // hundred.addActionListener(new ActionListener() {
+        // @Override
+        // public void actionPerformed(ActionEvent arg0) {
+        // GLWindow.setLOD(100);
+        // }
+        // });
+        // lod.add(hundred);
+        // JMenuItem twohundred = new JMenuItem("200 elements per node.");
+        // twohundred.addActionListener(new ActionListener() {
+        // @Override
+        // public void actionPerformed(ActionEvent arg0) {
+        // GLWindow.setLOD(200);
+        // }
+        // });
+        // lod.add(twohundred);
+        options.add(lod);
 
         JMenuItem makeMovie = new JMenuItem("Make movie from this angle.");
         makeMovie.addActionListener(new ActionListener() {
@@ -296,8 +295,8 @@ public class OutputVizPanel extends JPanel {
         button2.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                timer.stop();
-                window.makeSnapshot(offScreenContext, prefix);
+                // timer.stop();
+                window.makeSnapshot(prefix);
             }
         });
         bottomPanel.add(button2);
@@ -368,7 +367,7 @@ public class OutputVizPanel extends JPanel {
                 } else {
                     prefix = ext[0].substring(0, ext[0].length() - 6);
                     window.stopAnimation();
-                    timer = new Hdf5TimedPlayer(timeBar, frameCounter);
+                    timer = new Hdf5TimedPlayer(window, timeBar, frameCounter);
                     timer.open(path, prefix);
                     window.startAnimation(timer);
                 }

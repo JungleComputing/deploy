@@ -1,10 +1,8 @@
 package ibis.deploy.gui.outputViz;
 
 import ibis.deploy.gui.outputViz.amuse.Astrophysics;
-import ibis.deploy.gui.outputViz.amuse.Hdf5Snapshotter;
 import ibis.deploy.gui.outputViz.amuse.Hdf5TimedPlayer;
-import ibis.deploy.gui.outputViz.amuse.Hdf5TimedPlayer.states;
-import ibis.deploy.gui.outputViz.common.FBO;
+import ibis.deploy.gui.outputViz.amuse.StarSGNode;
 import ibis.deploy.gui.outputViz.common.Material;
 import ibis.deploy.gui.outputViz.common.Perlin3D;
 import ibis.deploy.gui.outputViz.common.Picture;
@@ -32,6 +30,7 @@ import javax.media.opengl.GL3;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLContext;
 import javax.media.opengl.GLEventListener;
+import javax.media.opengl.GLException;
 
 public class GLWindow implements GLEventListener {
     public static boolean post_process = true;
@@ -39,20 +38,22 @@ public class GLWindow implements GLEventListener {
     public static boolean exaggerate_colors = true;
     public static boolean offscreen_rendering = true;
     public static long waittime = 200;
-    public static int max_elements_per_octree_node = 100;
-    public static int max_elements_per_octree_node_in_snapshot = 2;
+
+    public static int level_of_detail = 0;
     public static float gas_opacity_factor = 1.5f;
 
     public static int gas_blur_passes = 2;
     public static float gas_blur_size = 2;
     public static int gas_blur_type = 8;
+
     public static int star_halo_blur_passes = 1;
     public static float star_halo_blur_size = 1;
     public static int star_halo_blur_type = 6;
 
-    public static int gas_blur_passes4k = 3;
-    public static float gas_blur_size4k = 16;
+    public static int gas_blur_passes4k = 2;
+    public static float gas_blur_size4k = 4;
     public static int gas_blur_type4k = 8;
+
     public static int star_halo_blur_passes4k = 2;
     public static float star_halo_blur_size4k = 1;
     public static int star_halo_blur_type4k = 6;
@@ -72,8 +73,6 @@ public class GLWindow implements GLEventListener {
     private final OutputVizPanel panel;
     private final ProgramLoader loader;
 
-    private final int movieCounter = 0;
-
     private Program animatedTurbulenceShader, pplShader, axesShader, gasShader, postprocessShader, gaussianBlurShader;
 
     private Perlin3D noiseTex;
@@ -84,9 +83,9 @@ public class GLWindow implements GLEventListener {
 
     public boolean timerInitialized = false;
 
-    private SGNode root, root2;
-    private OctreeNode cubeRoot, cubeRoot2;
-    private boolean newRoot = true, newCubeRoot = true;
+    // private SGNode sgRoot, root2;
+    // private OctreeNode octreeRoot, cubeRoot2;
+    // private final boolean newRoot = true, newCubeRoot = true;
 
     private final FloatBuffer shininess = FloatBuffer.wrap(new float[] { 50f });
 
@@ -95,7 +94,6 @@ public class GLWindow implements GLEventListener {
     private final float phi = 0.0f;
 
     private final float fovy = 45.0f;
-    private float aspect;
     private final float zNear = 0.1f, zFar = 3000.0f;
 
     private int canvasWidth, canvasHeight;
@@ -111,12 +109,14 @@ public class GLWindow implements GLEventListener {
     private Model FSQ_postprocess, FSQ_blur;
     private Model xAxis, yAxis, zAxis;
 
-    private FBO fbo;
-
     private boolean snapshotting = false;
+    private StarSGNode sgRoot;
+    private OctreeNode octreeRoot;
+    private final GLContext offScreenContext;
 
-    public GLWindow(OutputVizPanel panel) {
+    public GLWindow(OutputVizPanel panel, GLContext offScreenContext) {
         this.panel = panel;
+        this.offScreenContext = offScreenContext;
         loader = new ProgramLoader();
     }
 
@@ -196,14 +196,14 @@ public class GLWindow implements GLEventListener {
             e.printStackTrace();
             System.exit(1);
         }
-
-        root = new SGNode();
-        newRoot = false;
-        root.init(gl);
-
-        cubeRoot = new OctreeNode();
-        newCubeRoot = false;
-        cubeRoot.init(gl);
+        //
+        // sgRoot = new SGNode();
+        // newRoot = false;
+        // sgRoot.init(gl);
+        //
+        // octreeRoot = new OctreeNode();
+        // newCubeRoot = false;
+        // octreeRoot.init(gl);
 
         // AXES
         Color4 axisColor = new Color4(0f, 1f, 0f, .3f);
@@ -271,24 +271,44 @@ public class GLWindow implements GLEventListener {
 
     @Override
     public void display(GLAutoDrawable drawable) {
-        GL3 gl = drawable.getGL().getGL3();
-
         if (timerInitialized) {
-            synchronized (timer) {
-                SGNode root = initSGRoot(gl);
-                OctreeNode cubeRoot = initCubeRoot(gl);
+            synchronized (this) {
+                try {
+                    int status = drawable.getContext().makeCurrent();
+                    if (status != GLContext.CONTEXT_CURRENT && status != GLContext.CONTEXT_CURRENT_NEW) {
+                        System.err.println("Error swapping context to onscreen.");
+                    }
+                } catch (GLException e) {
+                    System.err.println("Exception while swapping context to onscreen.");
+                    e.printStackTrace();
+                }
 
-                displayContext(drawable.getContext(), root, cubeRoot, starTex, starHaloTex, gasTex, axesTex);
+                GL3 gl = drawable.getContext().getGL().getGL3();
+                gl.glViewport(0, 0, canvasWidth, canvasHeight);
+
+                sgRoot = timer.getSgRoot();
+                octreeRoot = timer.getOctreeRoot();
+
+                displayContext(sgRoot, octreeRoot, starTex, starHaloTex, gasTex, axesTex);
+
+                try {
+                    drawable.getContext().release();
+                } catch (GLException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
 
-    private void displayContext(GLContext glContext, SGNode root, OctreeNode cubeRoot, Texture2D starTex,
-            Texture2D starHaloTex, Texture2D gasTex, Texture2D axesTex) {
-        GL3 gl = glContext.getGL().getGL3();
+    private void displayContext(SGNode sgRoot, OctreeNode octreeRoot, Texture2D starTex, Texture2D starHaloTex,
+            Texture2D gasTex, Texture2D axesTex) {
+        GL3 gl = GLContext.getCurrentGL().getGL3();
 
-        int width = glContext.getGLDrawable().getWidth();
-        int height = glContext.getGLDrawable().getHeight();
+        sgRoot.init(gl);
+        octreeRoot.init(gl);
+
+        int width = GLContext.getCurrent().getGLDrawable().getWidth();
+        int height = GLContext.getCurrent().getGLDrawable().getHeight();
         float aspect = (float) width / (float) height;
 
         gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
@@ -311,48 +331,33 @@ public class GLWindow implements GLEventListener {
         loader.setUniformMatrix("PMatrix", p.asBuffer());
         loader.setUniformMatrix("SMatrix", MatrixMath.scale(1).asBuffer());
 
-        pplShader.setUniformVector("LightPos", lightPos);
-        pplShader.setUniformVector("Shininess", shininess);
-
-        // Fragment Shader variables
-        animatedTurbulenceShader.setUniform("Noise", noiseTex.getMultitexNumber());
-
-        renderScene(gl, mv, root, cubeRoot, starHaloTex, starTex, gasTex, axesTex);
+        renderScene(gl, mv, sgRoot, octreeRoot, starHaloTex, starTex, gasTex, axesTex);
 
         if (post_process) {
             renderTexturesToScreen(gl, width, height, starHaloTex, starTex, gasTex, axesTex);
         }
+
     }
 
-    private void renderScene(GL3 gl, Mat4 mv, SGNode root, OctreeNode cubeRoot, Texture2D starHaloTex,
+    private void renderScene(GL3 gl, Mat4 mv, SGNode sgRoot, OctreeNode octreeRoot, Texture2D starHaloTex,
             Texture2D starTex, Texture2D gasTex, Texture2D axesTex) {
         try {
             if (post_process) {
+                pplShader.setUniformVector("LightPos", lightPos);
+                pplShader.setUniformVector("Shininess", shininess);
+
                 pplShader.setUniformMatrix("SMatrix", MatrixMath.scale(2).asBuffer());
-                animatedTurbulenceShader.setUniformMatrix("SMatrix", MatrixMath.scale(2).asBuffer());
                 pplShader.setUniform("StarDrawMode", 1);
-                animatedTurbulenceShader.setUniform("StarDrawMode", 1);
 
-                root.draw(gl, mv);
-
-                root.draw(gl, mv);
+                sgRoot.draw(gl, pplShader, mv);
 
                 renderToTexture(gl, starHaloTex);
-
-                if (snapshotting) {
-                    blur(gl, starHaloTex, FSQ_blur, star_halo_blur_passes4k, star_halo_blur_type4k,
-                            star_halo_blur_size4k);
-                } else {
-                    blur(gl, starHaloTex, FSQ_blur, star_halo_blur_passes, star_halo_blur_type, star_halo_blur_size);
-                }
-
-                pplShader.setUniformMatrix("SMatrix", MatrixMath.scale(1).asBuffer());
-                animatedTurbulenceShader.setUniformMatrix("SMatrix", MatrixMath.scale(1).asBuffer());
+                blur(gl, starHaloTex, FSQ_blur, star_halo_blur_passes, star_halo_blur_type, star_halo_blur_size);
             }
 
             gl.glDisable(GL3.GL_DEPTH_TEST);
 
-            cubeRoot.draw(gl, mv);
+            octreeRoot.draw(gl, gasShader, mv);
 
             if (post_process) {
                 renderToTexture(gl, gasTex);
@@ -365,11 +370,23 @@ public class GLWindow implements GLEventListener {
 
             gl.glEnable(GL3.GL_DEPTH_TEST);
 
-            noiseTex.use(gl);
-            pplShader.setUniform("StarDrawMode", 0);
-            animatedTurbulenceShader.setUniform("StarDrawMode", 0);
+            if (snapshotting) {
+                noiseTex.use(gl);
+                animatedTurbulenceShader.setUniform("Noise", noiseTex.getMultitexNumber());
 
-            root.draw(gl, mv);
+                animatedTurbulenceShader.setUniformMatrix("SMatrix", MatrixMath.scale(1).asBuffer());
+                animatedTurbulenceShader.setUniform("StarDrawMode", 0);
+
+                sgRoot.draw(gl, animatedTurbulenceShader, mv);
+            } else {
+                pplShader.setUniformVector("LightPos", lightPos);
+                pplShader.setUniformVector("Shininess", shininess);
+
+                pplShader.setUniformMatrix("SMatrix", MatrixMath.scale(1).asBuffer());
+                pplShader.setUniform("StarDrawMode", 0);
+
+                sgRoot.draw(gl, pplShader, mv);
+            }
 
             if (post_process) {
                 renderToTexture(gl, starTex);
@@ -377,9 +394,9 @@ public class GLWindow implements GLEventListener {
 
             axesShader.use(gl);
             if (axes) {
-                xAxis.draw(gl, mv);
-                yAxis.draw(gl, mv);
-                zAxis.draw(gl, mv);
+                xAxis.draw(gl, axesShader, mv);
+                yAxis.draw(gl, axesShader, mv);
+                zAxis.draw(gl, axesShader, mv);
             }
 
             if (post_process) {
@@ -409,7 +426,7 @@ public class GLWindow implements GLEventListener {
 
         try {
             postprocessShader.use(gl);
-            FSQ_postprocess.draw(gl, new Mat4());
+            FSQ_postprocess.draw(gl, postprocessShader, new Mat4());
         } catch (UninitializedException e) {
             e.printStackTrace();
         }
@@ -454,7 +471,7 @@ public class GLWindow implements GLEventListener {
     public void reshape(GLAutoDrawable drawable, int x, int y, int w, int h) {
         GL3 gl = drawable.getGL().getGL3();
         gl.glViewport(0, 0, w, h);
-        aspect = (float) w / h;
+
         canvasWidth = w;
         canvasHeight = h;
 
@@ -477,6 +494,21 @@ public class GLWindow implements GLEventListener {
     @Override
     public void dispose(GLAutoDrawable drawable) {
         GL3 gl = drawable.getGL().getGL3();
+
+        timer.delete(gl);
+
+        noiseTex.delete(gl);
+
+        starTex.delete(gl);
+        starHaloTex.delete(gl);
+        gasTex.delete(gl);
+        axesTex.delete(gl);
+
+        starTex4k.delete(gl);
+        starHaloTex4k.delete(gl);
+        gasTex4k.delete(gl);
+        axesTex4k.delete(gl);
+
         loader.cleanup(gl);
     }
 
@@ -538,64 +570,16 @@ public class GLWindow implements GLEventListener {
         return current_view_octant;
     }
 
-    public void setRoot(SGNode root) {
-        synchronized (this) {
-            this.root2 = root;
-            newRoot = true;
-        }
-    }
-
-    public void setCubeRoot(OctreeNode cubeRoot) {
-        synchronized (this) {
-            this.cubeRoot2 = cubeRoot;
-            newCubeRoot = true;
-        }
-    }
-
-    private SGNode initSGRoot(GL3 gl) {
-        synchronized (this) {
-            if (newRoot) {
-                if (Hdf5TimedPlayer.currentState == states.CLEANUP
-                        || Hdf5TimedPlayer.currentState == states.MOVIEMAKING) {
-                    root.delete(gl);
-                    cubeRoot.delete(gl);
-                    if (Hdf5TimedPlayer.currentState == states.CLEANUP)
-                        Hdf5TimedPlayer.setState(states.REDRAWING);
-                }
-                root = root2;
-                root.init(gl);
-            }
-            newRoot = false;
-        }
-
-        return root;
-    }
-
-    private OctreeNode initCubeRoot(GL3 gl) {
-        synchronized (this) {
-            if (newCubeRoot) {
-                cubeRoot = cubeRoot2;
-                cubeRoot.init(gl);
-            }
-            newCubeRoot = false;
-        }
-
-        return cubeRoot;
-    }
-
     public void startAnimation(Hdf5TimedPlayer timer) {
         this.timer = timer;
-        timer.init(this, pplShader, gasShader, animatedTurbulenceShader);
+        timer.init();
         new Thread(timer).start();
         timerInitialized = true;
     }
 
     public void stopAnimation() {
         if (timerInitialized) {
-            setRoot(new SGNode());
-            setCubeRoot(new OctreeNode());
             timer.close();
-            timer.stop();
         }
         timerInitialized = false;
     }
@@ -604,85 +588,88 @@ public class GLWindow implements GLEventListener {
         post_process = newSetting;
     }
 
-    public static void setResolution(int newSetting) {
-        max_elements_per_octree_node = newSetting;
-        Hdf5TimedPlayer.setState(states.REDRAWING);
+    public static void setLOD(int newSetting) {
+        level_of_detail = newSetting;
     }
 
     public static void setAxes(boolean newSetting) {
         axes = newSetting;
     }
 
-    public void makeSnapshot(GLContext context, String prefix) {
-        synchronized (this) {
-            snapshotting = true;
-            axes = false;
+    public void makeSnapshot(String prefix) {
+        synchronized (timer) {
+            synchronized (this) {
+                snapshotting = true;
+                // Hdf5TimedPlayer.setState(states.SNAPSHOTTING);
 
-            OctreeNode oldCubeRoot = cubeRoot;
-            SGNode oldRoot = root;
+                axes = false;
 
-            Hdf5Snapshotter snappy = new Hdf5Snapshotter();
-            snappy.open(prefix, this, animatedTurbulenceShader, gasShader, timer.currentFrame);
+                try {
+                    int status = offScreenContext.makeCurrent();
+                    if (status != GLContext.CONTEXT_CURRENT && status != GLContext.CONTEXT_CURRENT_NEW) {
+                        System.err.println("Error swapping context to offscreen.");
+                    }
+                } catch (GLException e) {
+                    System.err.println("Exception while swapping context to offscreen.");
+                    e.printStackTrace();
+                }
 
-            int status = context.makeCurrent();
-            if (status != GLContext.CONTEXT_CURRENT && status != GLContext.CONTEXT_CURRENT_NEW) {
-                System.err.println("Error swapping context to offscreen.");
+                int width = offScreenContext.getGLDrawable().getWidth();
+                int height = offScreenContext.getGLDrawable().getHeight();
+
+                GL3 gl = offScreenContext.getGL().getGL3();
+                gl.glViewport(0, 0, width, height);
+
+                // Anti-Aliasing
+                gl.glEnable(GL3.GL_LINE_SMOOTH);
+                gl.glHint(GL3.GL_LINE_SMOOTH_HINT, GL3.GL_NICEST);
+                gl.glEnable(GL3.GL_POLYGON_SMOOTH);
+                gl.glHint(GL3.GL_POLYGON_SMOOTH_HINT, GL3.GL_NICEST);
+
+                // Depth testing
+                gl.glEnable(GL3.GL_DEPTH_TEST);
+                gl.glDepthFunc(GL3.GL_LEQUAL);
+                gl.glClearDepth(1.0f);
+
+                // Culling
+                gl.glEnable(GL3.GL_CULL_FACE);
+                gl.glCullFace(GL3.GL_BACK);
+
+                // Enable Blending (needed for both Transparency and
+                // Anti-Aliasing
+                gl.glBlendFunc(GL3.GL_SRC_ALPHA, GL3.GL_ONE_MINUS_SRC_ALPHA);
+                gl.glEnable(GL3.GL_BLEND);
+
+                gl.glClearColor(0f, 0f, 0f, 0f);
+
+                starTex4k.init(gl);
+                starHaloTex4k.init(gl);
+                gasTex4k.init(gl);
+                axesTex4k.init(gl);
+
+                displayContext(sgRoot, octreeRoot, starTex4k, starHaloTex4k, gasTex4k, axesTex4k);
+
+                String fileName = "" + timer.getFrame() + " {" + rotation.get(0) + "," + rotation.get(1) + " - "
+                        + translation.get(2) + "} ";
+
+                Picture p = new Picture(width, height);
+                p.copyFrameBufferToFile(panel.getPath(), fileName);
+
+                try {
+                    offScreenContext.release();
+                } catch (GLException e) {
+                    e.printStackTrace();
+                }
+
+                axes = true;
+                snapshotting = false;
             }
-
-            int width = context.getGLDrawable().getWidth();
-            int height = context.getGLDrawable().getHeight();
-
-            GL3 gl = context.getGL().getGL3();
-            gl.glViewport(0, 0, width, height);
-
-            // Anti-Aliasing
-            gl.glEnable(GL3.GL_LINE_SMOOTH);
-            gl.glHint(GL3.GL_LINE_SMOOTH_HINT, GL3.GL_NICEST);
-            gl.glEnable(GL3.GL_POLYGON_SMOOTH);
-            gl.glHint(GL3.GL_POLYGON_SMOOTH_HINT, GL3.GL_NICEST);
-
-            // Depth testing
-            gl.glEnable(GL3.GL_DEPTH_TEST);
-            gl.glDepthFunc(GL3.GL_LEQUAL);
-            gl.glClearDepth(1.0f);
-
-            // Culling
-            gl.glEnable(GL3.GL_CULL_FACE);
-            gl.glCullFace(GL3.GL_BACK);
-
-            // Enable Blending (needed for both Transparency and
-            // Anti-Aliasing
-            gl.glBlendFunc(GL3.GL_SRC_ALPHA, GL3.GL_ONE_MINUS_SRC_ALPHA);
-            gl.glEnable(GL3.GL_BLEND);
-
-            gl.glClearColor(0f, 0f, 0f, 0f);
-
-            starTex4k.delete(gl);
-            starHaloTex4k.delete(gl);
-            gasTex4k.delete(gl);
-            axesTex4k.delete(gl);
-
-            starTex4k.init(gl);
-            starHaloTex4k.init(gl);
-            gasTex4k.init(gl);
-            axesTex4k.init(gl);
-
-            displayContext(context, root, cubeRoot, starTex4k, starHaloTex4k, gasTex4k, axesTex4k);
-
-            String fileName = "" + timer.currentFrame + " {" + rotation.get(0) + "," + rotation.get(1) + " - "
-                    + translation.get(2) + "} ";
-
-            Picture p = new Picture(width, height);
-            p.copyFrameBufferToFile(panel.getPath(), fileName);
-
-            context.release();
-
-            root = oldRoot;
-            cubeRoot = oldCubeRoot;
-
-            axes = true;
-            snapshotting = false;
         }
     }
 
+    // public void doSnapshot(String namePrefix) {
+    // displayed = false;
+    //
+    // GL3 gl = GLContext.getCurrent().getGL().getGL3();
+    // }
 }

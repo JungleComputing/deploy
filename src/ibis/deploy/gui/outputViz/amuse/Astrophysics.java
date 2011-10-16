@@ -1,6 +1,7 @@
 package ibis.deploy.gui.outputViz.amuse;
 
 import ibis.deploy.gui.outputViz.GLWindow;
+import ibis.deploy.gui.outputViz.common.Material;
 import ibis.deploy.gui.outputViz.common.math.Vec3;
 import ibis.deploy.gui.outputViz.common.math.Vec4;
 
@@ -20,6 +21,14 @@ public class Astrophysics {
     public final static double STAR_RADIUS_AT_1000_SOLAR_RADII = 9.0;
 
     public final static double STAR_FORMULAE_INTERSECTION = find_intersection();
+
+    private final static Vec4 gasColor = new Vec4(.6f, .3f, .3f, 0f);
+    private final static Vec4 transparent = new Vec4(0, 0, 0, 0);
+    private final static Material gasMaterial = new Material(gasColor, transparent, transparent);
+
+    public static Material getGasMaterial() {
+        return gasMaterial;
+    }
 
     public static Vec3 locationToScreenCoord(double x, double y, double z) {
         float fx = (float) (DISTANCE_FACTOR * (x / PARSEC));

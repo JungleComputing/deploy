@@ -1,9 +1,10 @@
 varying in vec3 EyespaceNormal;
 
-uniform vec3 LightPos;
 uniform vec4 AmbientMaterial;
 uniform vec4 SpecularMaterial;
 uniform vec4 DiffuseMaterial;
+
+uniform vec3 LightPos;
 uniform float Shininess;
 
 uniform int StarDrawMode;

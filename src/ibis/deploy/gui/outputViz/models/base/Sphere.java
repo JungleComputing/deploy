@@ -1,24 +1,18 @@
 package ibis.deploy.gui.outputViz.models.base;
 
 import ibis.deploy.gui.outputViz.common.Material;
-import ibis.deploy.gui.outputViz.common.math.Mat4;
 import ibis.deploy.gui.outputViz.common.math.Vec3;
 import ibis.deploy.gui.outputViz.common.math.Vec4;
 import ibis.deploy.gui.outputViz.common.math.VectorMath;
-import ibis.deploy.gui.outputViz.exceptions.UninitializedException;
 import ibis.deploy.gui.outputViz.models.Model;
 import ibis.deploy.gui.outputViz.shaders.Program;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.media.opengl.GL3;
-
 public class Sphere extends Model {
     private static float X = 0.525731112119133606f;
     private static float Z = 0.850650808352039932f;
-
-    private final float radius;
 
     static Vec3[] vdata = { new Vec3(-X, 0f, Z), new Vec3(X, 0f, Z), new Vec3(-X, 0f, -Z), new Vec3(X, 0f, -Z),
             new Vec3(0f, Z, X), new Vec3(0f, Z, -X), new Vec3(0f, -Z, X), new Vec3(0f, -Z, -X), new Vec3(Z, X, 0f),
@@ -31,7 +25,30 @@ public class Sphere extends Model {
     public Sphere(Program program, Material material, int ndiv, float radius, Vec3 center) {
         super(program, material, vertex_format.TRIANGLES);
 
-        this.radius = radius;
+        List<Vec3> points3List = new ArrayList<Vec3>();
+        List<Vec3> normals3List = new ArrayList<Vec3>();
+        List<Vec3> tCoords3List = new ArrayList<Vec3>();
+
+        for (int i = 0; i < 20; i++) {
+            makeVertices(points3List, normals3List, tCoords3List, vdata[tindices[i][0]], vdata[tindices[i][1]],
+                    vdata[tindices[i][2]], ndiv, radius);
+        }
+
+        List<Vec4> pointsList = new ArrayList<Vec4>();
+
+        for (int i = 0; i < points3List.size(); i++) {
+            pointsList.add(new Vec4(points3List.get(i).add(center), 1f));
+        }
+
+        numVertices = pointsList.size();
+
+        vertices = VectorMath.vec4ListToBuffer(pointsList);
+        normals = VectorMath.vec3ListToBuffer(normals3List);
+        texCoords = VectorMath.vec3ListToBuffer(tCoords3List);
+    }
+
+    public Sphere(Material material, int ndiv, float radius, Vec3 center) {
+        super(material, vertex_format.TRIANGLES);
 
         List<Vec3> points3List = new ArrayList<Vec3>();
         List<Vec3> normals3List = new ArrayList<Vec3>();
@@ -105,38 +122,6 @@ public class Sphere extends Model {
             makeVertices(pointsList, normalsList, tCoords3List, b, bc, ab, div - 1, r);
             makeVertices(pointsList, normalsList, tCoords3List, c, ac, bc, div - 1, r);
             makeVertices(pointsList, normalsList, tCoords3List, ab, bc, ac, div - 1, r);
-        }
-    }
-
-    @Override
-    public void draw(GL3 gl, Mat4 MVMatrix) {
-        vbo.bind(gl);
-
-        program.linkAttribs(gl, vbo.getAttribs());
-
-        program.setUniformVector("DiffuseMaterial", material.diffuse.asBuffer());
-        program.setUniformVector("AmbientMaterial", material.ambient.asBuffer());
-        program.setUniformVector("SpecularMaterial", material.specular.asBuffer());
-
-        program.setUniform("NoiseScale", 4f / radius);
-
-        program.setUniformVector("Color", material.ambient.asBuffer());
-
-        program.setUniformMatrix("MVMatrix", MVMatrix.asBuffer());
-
-        try {
-            program.use(gl);
-        } catch (UninitializedException e) {
-            e.printStackTrace();
-        }
-
-        if (format == vertex_format.TRIANGLES) {
-            // gl.glDrawElements(GL3.GL_TRIANGLES, 3, GL3.GL_FLOAT, 0);
-            gl.glDrawArrays(GL3.GL_TRIANGLES, 0, numVertices);
-        } else if (format == vertex_format.POINTS) {
-            gl.glDrawArrays(GL3.GL_POINTS, 0, numVertices);
-        } else if (format == vertex_format.LINES) {
-            gl.glDrawArrays(GL3.GL_LINES, 0, numVertices);
         }
     }
 }
