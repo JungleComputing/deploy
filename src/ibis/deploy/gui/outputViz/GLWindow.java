@@ -40,7 +40,7 @@ public class GLWindow implements GLEventListener {
     public static long waittime = 200;
 
     public static int level_of_detail = 0;
-    public static float gas_opacity_factor = 1.5f;
+    public static float gas_opacity_factor = 1.75f;
 
     public static int gas_blur_passes = 2;
     public static float gas_blur_size = 2;
@@ -416,8 +416,8 @@ public class GLWindow implements GLEventListener {
 
         postprocessShader.setUniform("starBrightness", 2f);
         postprocessShader.setUniform("starHaloBrightness", 1f);
-        postprocessShader.setUniform("gasBrightness", 1.5f);
-        postprocessShader.setUniform("axesBrightness", 2f);
+        postprocessShader.setUniform("gasBrightness", 1.75f);
+        postprocessShader.setUniform("axesBrightness", 3f);
         postprocessShader.setUniform("overallBrightness", 4f);
 
         postprocessShader.setUniformMatrix("PMatrix", new Mat4().asBuffer());
@@ -566,6 +566,10 @@ public class GLWindow implements GLEventListener {
         this.rotation = rotation;
     }
 
+    public Vec3 getRotation() {
+        return rotation;
+    }
+
     public static octants getCurrentOctant() {
         return current_view_octant;
     }
@@ -596,7 +600,7 @@ public class GLWindow implements GLEventListener {
         axes = newSetting;
     }
 
-    public void makeSnapshot(String prefix) {
+    public void makeSnapshot(String fileName) {
         synchronized (timer) {
             synchronized (this) {
                 snapshotting = true;
@@ -648,9 +652,6 @@ public class GLWindow implements GLEventListener {
                 axesTex4k.init(gl);
 
                 displayContext(sgRoot, octreeRoot, starTex4k, starHaloTex4k, gasTex4k, axesTex4k);
-
-                String fileName = "" + timer.getFrame() + " {" + rotation.get(0) + "," + rotation.get(1) + " - "
-                        + translation.get(2) + "} ";
 
                 Picture p = new Picture(width, height);
                 p.copyFrameBufferToFile(panel.getPath(), fileName);

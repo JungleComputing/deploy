@@ -210,7 +210,7 @@ public class OutputVizPanel extends JPanel {
             }
         });
         lod.add(zero);
-        JMenuItem one = new JMenuItem("High.");
+        JMenuItem one = new JMenuItem("Medium.");
         one.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent arg0) {
@@ -218,14 +218,14 @@ public class OutputVizPanel extends JPanel {
             }
         });
         lod.add(one);
-        // JMenuItem twentyfive = new JMenuItem("25 elements per node.");
-        // twentyfive.addActionListener(new ActionListener() {
-        // @Override
-        // public void actionPerformed(ActionEvent arg0) {
-        // GLWindow.setLOD(25);
-        // }
-        // });
-        // lod.add(twentyfive);
+        JMenuItem two = new JMenuItem("High.");
+        two.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                GLWindow.setLOD(2);
+            }
+        });
+        lod.add(two);
         // JMenuItem hundred = new JMenuItem("100 elements per node.");
         // hundred.addActionListener(new ActionListener() {
         // @Override
@@ -296,7 +296,9 @@ public class OutputVizPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // timer.stop();
-                window.makeSnapshot(prefix);
+                String fileName = "" + timer.getFrame() + " {" + window.getRotation().get(0) + ","
+                        + window.getRotation().get(1) + " - " + window.getViewDist() + "} ";
+                window.makeSnapshot(fileName);
             }
         });
         bottomPanel.add(button2);

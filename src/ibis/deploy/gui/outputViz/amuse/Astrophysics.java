@@ -17,8 +17,8 @@ public class Astrophysics {
 
     public final static double PARSEC = 3.08568025E16;
     public final static double DISTANCE_FACTOR = 25.0;
-    public final static double STAR_RADIUS_FACTOR_SMALL = 0.33;
-    public final static double STAR_RADIUS_AT_1000_SOLAR_RADII = 9.0;
+    public final static double STAR_RADIUS_FACTOR_SMALL = 0.4;
+    public final static double STAR_RADIUS_AT_1000_SOLAR_RADII = 12.0;
 
     public final static double STAR_FORMULAE_INTERSECTION = find_intersection();
 

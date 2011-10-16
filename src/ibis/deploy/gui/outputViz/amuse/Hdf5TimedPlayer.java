@@ -1,6 +1,7 @@
 package ibis.deploy.gui.outputViz.amuse;
 
 import ibis.deploy.gui.outputViz.GLWindow;
+import ibis.deploy.gui.outputViz.common.math.Vec3;
 import ibis.deploy.gui.outputViz.common.scenegraph.OctreeNode;
 import ibis.deploy.gui.outputViz.models.Model;
 
@@ -103,16 +104,26 @@ public class Hdf5TimedPlayer implements Runnable {
                 try {
                     startTime = System.currentTimeMillis();
 
+                    System.out.println("stars: " + starModels.size() + " clouds: " + cloudModels.size());
+
+                    if (currentState == states.MOVIEMAKING) {
+                        Vec3 rotation = glw.getRotation();
+                        for (int i = 0; i < 5; i++) {
+                            glw.makeSnapshot("" + (currentFrame * 5 + i));
+
+                            rotation.set(1, rotation.get(1) + .5f);
+                            glw.setRotation(rotation);
+
+                            Thread.sleep(GLWindow.waittime);
+                        }
+                    }
+
                     currentFrame++;
 
                     timeBar.setValue(currentFrame);
                     frameCounter.setValue(currentFrame);
 
                     updateFrame();
-
-                    if (currentState == states.MOVIEMAKING) {
-                        glw.makeSnapshot(namePrefix);
-                    }
 
                     stopTime = System.currentTimeMillis();
                     if (startTime - stopTime < GLWindow.waittime) {
@@ -169,6 +180,7 @@ public class Hdf5TimedPlayer implements Runnable {
     }
 
     public void setFrame(int value) {
+        System.out.println("setValue?");
         currentState = states.STOPPED;
         currentFrame = value;
 
@@ -179,7 +191,6 @@ public class Hdf5TimedPlayer implements Runnable {
     }
 
     public void movieMode() {
-        GLWindow.axes = false;
         currentState = states.MOVIEMAKING;
     }
 

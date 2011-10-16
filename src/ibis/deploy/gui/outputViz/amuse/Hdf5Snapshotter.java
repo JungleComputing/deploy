@@ -21,14 +21,18 @@ public class Hdf5Snapshotter {
 
     public void open(String namePrefix, int currentFrame, int levelOfDetail, HashMap<Integer, Model> starModels,
             HashMap<Integer, Model> cloudModels) {
-        int gasSubdivision = 0, starSubdivision = 0, gasParticlesPerOctreeNode = 100;
+        int gasSubdivision = 0, starSubdivision = 0, gasParticlesPerOctreeNode = 200;
         if (levelOfDetail == 0) {
             gasSubdivision = 0;
-            starSubdivision = 3;
+            starSubdivision = 1;
             gasParticlesPerOctreeNode = 100;
         } else if (levelOfDetail == 1) {
             gasSubdivision = 1;
-            starSubdivision = 4;
+            starSubdivision = 2;
+            gasParticlesPerOctreeNode = 25;
+        } else if (levelOfDetail == 2) {
+            gasSubdivision = 1;
+            starSubdivision = 3;
             gasParticlesPerOctreeNode = 2;
         }
 
