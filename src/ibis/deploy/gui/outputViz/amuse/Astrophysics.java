@@ -24,7 +24,8 @@ public class Astrophysics {
 
     private final static Vec4 gasColor = new Vec4(.6f, .3f, .3f, 0f);
     private final static Vec4 transparent = new Vec4(0, 0, 0, 0);
-    private final static Material gasMaterial = new Material(gasColor, transparent, transparent);
+    private final static Material gasMaterial = new Material(gasColor,
+            transparent, transparent);
 
     public static Material getGasMaterial() {
         return gasMaterial;
@@ -40,7 +41,8 @@ public class Astrophysics {
 
     public static float starToScreenRadius(double size) {
         double radius_in_solar = size / SOLAR_RADIUS;
-        double radius_factor = 1000.0 / Math.pow(STAR_RADIUS_AT_1000_SOLAR_RADII, 2);
+        double radius_factor = 1000.0 / Math.pow(
+                STAR_RADIUS_AT_1000_SOLAR_RADII, 2);
 
         float fs;
         if (radius_in_solar < STAR_FORMULAE_INTERSECTION) {
@@ -53,10 +55,12 @@ public class Astrophysics {
     }
 
     private static double find_intersection() {
-        double radius_factor = 1000.0 / Math.pow(STAR_RADIUS_AT_1000_SOLAR_RADII, 2);
+        double radius_factor = 1000.0 / Math.pow(
+                STAR_RADIUS_AT_1000_SOLAR_RADII, 2);
 
         for (double i = 0.1; i < 10000.0; i += 0.01) {
-            double diff = (i * STAR_RADIUS_FACTOR_SMALL) - (Math.sqrt(i / radius_factor));
+            double diff = (i * STAR_RADIUS_FACTOR_SMALL)
+                    - (Math.sqrt(i / radius_factor));
             if (diff > 0.0) {
                 return i;
             }
@@ -76,8 +80,10 @@ public class Astrophysics {
         return fx;
     }
 
-    public static double starTemperature(double luminosity_in_solar_luminosities, double radius) {
-        return Math.pow((luminosity_in_solar_luminosities / (4 * Math.PI * (radius * radius) * SIGMA)), 0.25);
+    public static double starTemperature(
+            double luminosity_in_solar_luminosities, double radius) {
+        return Math.pow((luminosity_in_solar_luminosities / (4 * Math.PI
+                * (radius * radius) * SIGMA)), 0.25);
     }
 
     private static double colorIntensity(double max, double min, double current) {
@@ -105,7 +111,8 @@ public class Astrophysics {
 
         for (int i = 1; i < temperatureBands.size(); i++) {
             if (temperature <= temperatureBands.get(i)) {
-                intensity = (float) (colorIntensity(temperatureBands.get(i), temperatureBands.get(i - 1), temperature));
+                intensity = (float) (colorIntensity(temperatureBands.get(i),
+                        temperatureBands.get(i - 1), temperature));
 
                 // Mix colors to create star color for x between 1 and 7.
                 // Easy reference for function here:
@@ -119,7 +126,7 @@ public class Astrophysics {
 
                 // Color components are a fraction of 1, so multiplying them
                 // with themselves makes the prevalent one more distinct.
-                if (GLWindow.exaggerate_colors) {
+                if (GLWindow.isExaggerate_colors()) {
                     r *= r;
                     g *= g;
                     b *= b;

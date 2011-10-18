@@ -6,6 +6,7 @@ import ibis.deploy.gui.outputViz.common.math.MatrixMath;
 import ibis.deploy.gui.outputViz.common.math.Vec3;
 import ibis.deploy.gui.outputViz.common.scenegraph.SGNode;
 import ibis.deploy.gui.outputViz.models.Model;
+import ibis.deploy.gui.outputViz.models.StarModel;
 import ibis.deploy.gui.outputViz.shaders.Program;
 
 import java.util.HashMap;
@@ -51,7 +52,7 @@ public class StarSGNode extends SGNode {
 
         for (Model m : models) {
             m.material = materials.get(m);
-            m.draw(gl, program, newM);
+            ((StarModel) m).draw(gl, program, newM);
         }
 
         for (SGNode child : children) {

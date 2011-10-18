@@ -6,6 +6,7 @@ uniform float NoiseScale;
 uniform float Offset;
 
 uniform int StarDrawMode;
+uniform vec4 HaloColor;
 
 const float brightnessMultiplyer = 6.0;
 
@@ -35,6 +36,6 @@ void main() {
 	    
 		gl_FragColor = vec4(color * brightnessMultiplyer, 1.0);
 	} else {
-		gl_FragColor = AmbientMaterial;
+		gl_FragColor = HaloColor;
 	}
 }

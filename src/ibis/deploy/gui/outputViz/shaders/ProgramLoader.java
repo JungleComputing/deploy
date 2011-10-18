@@ -1,11 +1,12 @@
 package ibis.deploy.gui.outputViz.shaders;
 
 import ibis.deploy.gui.outputViz.common.GLSLAttrib;
+import ibis.deploy.gui.outputViz.common.math.Matrix;
+import ibis.deploy.gui.outputViz.common.math.Vector;
 import ibis.deploy.gui.outputViz.exceptions.CompilationFailedException;
 
 import java.io.FileNotFoundException;
 import java.nio.Buffer;
-import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,8 +23,8 @@ public class ProgramLoader {
         programs = new HashMap<Integer, Program>();
     }
 
-    public Program createProgram(GL3 gl, String vs_src, String fs_src) throws FileNotFoundException,
-            CompilationFailedException {
+    public Program createProgram(GL3 gl, String vs_src, String fs_src)
+            throws FileNotFoundException, CompilationFailedException {
         VertexShader vs = new VertexShader(vs_src);
         vs.init(gl);
         FragmentShader fs = new FragmentShader(fs_src);
@@ -36,7 +37,8 @@ public class ProgramLoader {
         return program;
     }
 
-    public Program createProgram(GL3 gl, String vs_src, String gs_src, String fs_src) throws FileNotFoundException,
+    public Program createProgram(GL3 gl, String vs_src, String gs_src,
+            String fs_src) throws FileNotFoundException,
             CompilationFailedException {
         VertexShader vs = new VertexShader(vs_src);
         vs.init(gl);
@@ -99,12 +101,14 @@ public class ProgramLoader {
             size += attrib.buffer.capacity() * Buffers.SIZEOF_FLOAT;
         }
 
-        gl.glBufferData(GL3.GL_ARRAY_BUFFER, size, (Buffer) null, GL3.GL_STATIC_DRAW);
+        gl.glBufferData(GL3.GL_ARRAY_BUFFER, size, (Buffer) null,
+                GL3.GL_STATIC_DRAW);
 
         int nextStart = 0;
         for (GLSLAttrib attrib : attribs) {
-            gl.glBufferSubData(GL3.GL_ARRAY_BUFFER, nextStart, attrib.buffer.capacity() * Buffers.SIZEOF_FLOAT,
-                    attrib.buffer);
+            gl.glBufferSubData(GL3.GL_ARRAY_BUFFER, nextStart, attrib.buffer
+                    .capacity()
+                    * Buffers.SIZEOF_FLOAT, attrib.buffer);
             nextStart += attrib.buffer.capacity() * Buffers.SIZEOF_FLOAT;
         }
     }
@@ -116,14 +120,14 @@ public class ProgramLoader {
         }
     }
 
-    public void setUniformVector(String pointerNameInShader, FloatBuffer var) {
+    public void setUniformVector(String pointerNameInShader, Vector var) {
         for (Map.Entry<Integer, Program> e : programs.entrySet()) {
             Program p = e.getValue();
             p.setUniformVector(pointerNameInShader, var);
         }
     }
 
-    public void setUniformMatrix(String pointerNameInShader, FloatBuffer var) {
+    public void setUniformMatrix(String pointerNameInShader, Matrix var) {
         for (Map.Entry<Integer, Program> e : programs.entrySet()) {
             Program p = e.getValue();
             p.setUniformMatrix(pointerNameInShader, var);

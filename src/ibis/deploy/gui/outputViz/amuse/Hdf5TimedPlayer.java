@@ -40,7 +40,8 @@ public class Hdf5TimedPlayer implements Runnable {
     private boolean initialized = false;
     private final GLWindow glw;
 
-    public Hdf5TimedPlayer(GLWindow glw, JSlider timeBar, JFormattedTextField frameCounter) {
+    public Hdf5TimedPlayer(GLWindow glw, JSlider timeBar,
+            JFormattedTextField frameCounter) {
         this.glw = glw;
         this.timeBar = timeBar;
         this.frameCounter = frameCounter;
@@ -100,11 +101,13 @@ public class Hdf5TimedPlayer implements Runnable {
         currentState = states.PLAYING;
 
         while (running) {
-            if (currentState == states.PLAYING || currentState == states.MOVIEMAKING) {
+            if (currentState == states.PLAYING
+                    || currentState == states.MOVIEMAKING) {
                 try {
                     startTime = System.currentTimeMillis();
 
-                    System.out.println("stars: " + starModels.size() + " clouds: " + cloudModels.size());
+                    // System.out.println("stars: " + starModels.size() +
+                    // " clouds: " + cloudModels.size());
 
                     if (currentState == states.MOVIEMAKING) {
                         Vec3 rotation = glw.getRotation();
@@ -114,7 +117,7 @@ public class Hdf5TimedPlayer implements Runnable {
                             rotation.set(1, rotation.get(1) + .5f);
                             glw.setRotation(rotation);
 
-                            Thread.sleep(GLWindow.waittime);
+                            Thread.sleep(GLWindow.getWaittime());
                         }
                     }
 
@@ -126,8 +129,9 @@ public class Hdf5TimedPlayer implements Runnable {
                     updateFrame();
 
                     stopTime = System.currentTimeMillis();
-                    if (startTime - stopTime < GLWindow.waittime) {
-                        Thread.sleep(GLWindow.waittime - (startTime - stopTime));
+                    if (startTime - stopTime < GLWindow.getWaittime()) {
+                        Thread.sleep(GLWindow.getWaittime()
+                                - (startTime - stopTime));
                     } else {
                         // Keep interactivity intact
                         Thread.sleep(1);
@@ -156,7 +160,8 @@ public class Hdf5TimedPlayer implements Runnable {
 
     private void updateFrame() {
         Hdf5Snapshotter snappy = new Hdf5Snapshotter();
-        snappy.open(namePrefix, currentFrame, GLWindow.level_of_detail, starModels, cloudModels);
+        snappy.open(namePrefix, currentFrame, GLWindow.getLOD(), starModels,
+                cloudModels);
         StarSGNode newSgRoot = snappy.getSgRoot();
         OctreeNode newOctreeRoot = snappy.getOctreeRoot();
 
@@ -167,7 +172,6 @@ public class Hdf5TimedPlayer implements Runnable {
     }
 
     public void start() {
-        GLWindow.axes = true;
         currentState = states.PLAYING;
     }
 
@@ -180,7 +184,7 @@ public class Hdf5TimedPlayer implements Runnable {
     }
 
     public void setFrame(int value) {
-        System.out.println("setValue?");
+        // System.out.println("setValue?");
         currentState = states.STOPPED;
         currentFrame = value;
 

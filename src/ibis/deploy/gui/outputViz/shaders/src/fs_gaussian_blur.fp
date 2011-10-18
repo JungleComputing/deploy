@@ -7,6 +7,10 @@ uniform int blurDirection;
 uniform float blurSize;
 uniform int blurType;
 
+uniform float Sigma;
+uniform float NumPixelsPerSide;
+uniform float Alpha;
+
 const float pi = 3.14159265;
 
 const vec2 vertical = vec2(0.0, 1.0);
@@ -44,7 +48,7 @@ vec4 gaussianBlur(sampler2D tex, vec2 tCoord, vec2 multiplyVec, int maxTexSize, 
   		if (
   		tCoord.x - offset.x < 0.0 || tCoord.x + offset.x > 1.0 ||
   			tCoord.y - offset.y < 0.0 || tCoord.y + offset.y > 1.0) {
-  			avgValue += 2 * texture2D(tex, tCoord) * incrementalGaussian.x;  			
+  			avgValue += 2 * texture2D(tex, tCoord) * incrementalGaussian.x;
   		} else {
   			avgValue += texture2D(tex, tCoord - offset) * incrementalGaussian.x;  		         
 	    	avgValue += texture2D(tex, tCoord + offset) * incrementalGaussian.x;
@@ -63,7 +67,10 @@ void main() {
 	float sigma;
 	float numPixelsPerSide;
 	
-	if (blurType == 2) {
+	if (blurType == 0) {
+		sigma = Sigma;
+		numPixelsPerSide = NumPixelsPerSide;
+	} else if (blurType == 2) {
 		sigma = 2.0;
 		numPixelsPerSide = 2.0; // 5x5
 	} else if(blurType == 3) {
@@ -83,10 +90,10 @@ void main() {
 	vec2 direction;
 	if (blurDirection == 0) {
 		direction = horizontal;
-		gl_FragColor = gaussianBlur(Texture, tCoord, direction, scrWidth, blurSize, numPixelsPerSide, sigma);
+		gl_FragColor = vec4(gaussianBlur(Texture, tCoord, direction, scrWidth, blurSize, numPixelsPerSide, sigma).rgb, Alpha);
 	} else {
 		direction = vertical;
-		gl_FragColor = gaussianBlur(Texture, tCoord, direction, scrHeight, blurSize, numPixelsPerSide, sigma);
+		gl_FragColor = vec4(gaussianBlur(Texture, tCoord, direction, scrHeight, blurSize, numPixelsPerSide, sigma).rgb, Alpha);
 	}
 	
   	

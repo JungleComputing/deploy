@@ -1,6 +1,7 @@
 package ibis.deploy.gui.outputViz.amuse;
 
 import ibis.deploy.gui.outputViz.GLWindow;
+import ibis.deploy.gui.outputViz.Settings;
 import ibis.deploy.gui.outputViz.common.math.Vec3;
 import ibis.deploy.gui.outputViz.common.scenegraph.OctreeNode;
 import ibis.deploy.gui.outputViz.exceptions.FileOpeningException;
@@ -19,22 +20,14 @@ public class Hdf5Snapshotter {
     public Hdf5Snapshotter() {
     }
 
-    public void open(String namePrefix, int currentFrame, int levelOfDetail, HashMap<Integer, Model> starModels,
+    public void open(String namePrefix, int currentFrame, int levelOfDetail,
+            HashMap<Integer, Model> starModels,
             HashMap<Integer, Model> cloudModels) {
-        int gasSubdivision = 0, starSubdivision = 0, gasParticlesPerOctreeNode = 200;
-        if (levelOfDetail == 0) {
-            gasSubdivision = 0;
-            starSubdivision = 1;
-            gasParticlesPerOctreeNode = 100;
-        } else if (levelOfDetail == 1) {
-            gasSubdivision = 1;
-            starSubdivision = 2;
-            gasParticlesPerOctreeNode = 25;
-        } else if (levelOfDetail == 2) {
-            gasSubdivision = 1;
-            starSubdivision = 3;
-            gasParticlesPerOctreeNode = 2;
-        }
+
+        int gasSubdivision = Settings.getGasSubdivision(levelOfDetail);
+        int starSubdivision = Settings.getStarSubdivision(levelOfDetail);
+        int gasParticlesPerOctreeNode = Settings
+                .getGasParticlesPerOctreeNode(levelOfDetail);
 
         String evoName, gravName, gasName;
 
@@ -43,12 +36,15 @@ public class Hdf5Snapshotter {
             evoName = namePrefix + intToString(currentFrame) + evoNamePostfix;
             gravName = namePrefix + intToString(currentFrame) + gravNamePostfix;
 
-            cubeRoot = new OctreeNode(gasParticlesPerOctreeNode, 0, gasSubdivision, cloudModels, new Vec3(
-                    -GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES), GLWindow.GAS_EDGES);
+            cubeRoot = new OctreeNode(gasParticlesPerOctreeNode, 0,
+                    gasSubdivision, cloudModels, new Vec3(-GLWindow.GAS_EDGES,
+                            -GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES),
+                    GLWindow.GAS_EDGES);
             Hdf5GasCloudReader.read(cubeRoot, gasName);
 
             sgRoot = new StarSGNode();
-            Hdf5StarReader.read(sgRoot, starModels, starSubdivision, evoName, gravName);
+            Hdf5StarReader.read(sgRoot, starModels, starSubdivision, evoName,
+                    gravName);
         } catch (FileOpeningException e) {
             e.printStackTrace();
             System.exit(1);

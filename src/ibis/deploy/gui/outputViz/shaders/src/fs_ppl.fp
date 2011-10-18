@@ -8,6 +8,7 @@ uniform vec3 LightPos;
 uniform float Shininess;
 
 uniform int StarDrawMode;
+uniform vec4 HaloColor;
 
 void main() {
 	if (StarDrawMode == 0) {
@@ -23,6 +24,6 @@ void main() {
 	    vec4 color = AmbientMaterial + df * DiffuseMaterial + sf * SpecularMaterial;
 	    gl_FragColor = color;
 	} else {
-		gl_FragColor = AmbientMaterial;
+		gl_FragColor = HaloColor;
 	}
 }

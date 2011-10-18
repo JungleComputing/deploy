@@ -73,11 +73,11 @@ public class Model {
 
         program.linkAttribs(gl, vbo.getAttribs());
 
-        program.setUniformVector("DiffuseMaterial", material.diffuse.asBuffer());
-        program.setUniformVector("AmbientMaterial", material.ambient.asBuffer());
-        program.setUniformVector("SpecularMaterial", material.specular.asBuffer());
+        program.setUniformVector("DiffuseMaterial", material.diffuse);
+        program.setUniformVector("AmbientMaterial", material.ambient);
+        program.setUniformVector("SpecularMaterial", material.specular);
 
-        program.setUniformMatrix("MVMatrix", MVMatrix.asBuffer());
+        program.setUniformMatrix("MVMatrix", MVMatrix);
 
         try {
             program.use(gl);
@@ -96,11 +96,11 @@ public class Model {
 
     public void draw(GL3 gl, Program program, Mat4 MVMatrix) {
 
-        program.setUniformVector("DiffuseMaterial", material.diffuse.asBuffer());
-        program.setUniformVector("AmbientMaterial", material.ambient.asBuffer());
-        program.setUniformVector("SpecularMaterial", material.specular.asBuffer());
+        program.setUniformVector("DiffuseMaterial", material.diffuse);
+        program.setUniformVector("AmbientMaterial", material.ambient);
+        program.setUniformVector("SpecularMaterial", material.specular);
 
-        program.setUniformMatrix("MVMatrix", MVMatrix.asBuffer());
+        program.setUniformMatrix("MVMatrix", MVMatrix);
 
         try {
             program.use(gl);
