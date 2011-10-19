@@ -14,8 +14,7 @@ import javax.media.opengl.GL3;
 public class StarModel extends Sphere {
     float radius;
 
-    public StarModel(Program program, Material material, int ndiv,
-            float radius, Vec3 center) {
+    public StarModel(Program program, Material material, int ndiv, float radius, Vec3 center) {
         super(program, material, ndiv, radius, center);
         this.radius = radius;
     }
@@ -33,7 +32,7 @@ public class StarModel extends Sphere {
         program.setUniformVector("SpecularMaterial", material.specular);
 
         Vec4 haloColor = new Vec4(material.ambient);
-        float haloAlpha = (float) (1f - (radius / Astrophysics.STAR_RADIUS_AT_1000_SOLAR_RADII));
+        float haloAlpha = (float) (0.5f - (radius / Astrophysics.STAR_RADIUS_AT_1000_SOLAR_RADII));
         haloColor.set(3, haloAlpha);
 
         program.setUniformVector("HaloColor", haloColor);

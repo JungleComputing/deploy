@@ -1,6 +1,6 @@
 package ibis.deploy.gui.outputViz.amuse;
 
-import ibis.deploy.gui.outputViz.GLWindow;
+import ibis.deploy.gui.outputViz.Settings;
 import ibis.deploy.gui.outputViz.common.scenegraph.OctreeNode;
 import ibis.deploy.gui.outputViz.exceptions.FileOpeningException;
 
@@ -46,8 +46,8 @@ public class Hdf5GasCloudReader {
                 float py = (float) (y[i] / 10E14);
                 float pz = (float) (z[i] / 10E14);
 
-                if (!(px < -GLWindow.GAS_EDGES && px > GLWindow.GAS_EDGES && py < -GLWindow.GAS_EDGES
-                        && py > GLWindow.GAS_EDGES && pz < -GLWindow.GAS_EDGES && pz > GLWindow.GAS_EDGES)) {
+                if (!(px < -Settings.getGasEdges() && px > Settings.getGasEdges() && py < -Settings.getGasEdges()
+                        && py > Settings.getGasEdges() && pz < -Settings.getGasEdges() && pz > Settings.getGasEdges())) {
                     cubeRoot.addGas(Astrophysics.locationToScreenCoord(x[i], y[i], z[i]), u[i]);
                 }
             }

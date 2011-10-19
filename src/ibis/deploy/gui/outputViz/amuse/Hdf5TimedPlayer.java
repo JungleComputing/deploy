@@ -3,6 +3,7 @@ package ibis.deploy.gui.outputViz.amuse;
 import ibis.deploy.gui.outputViz.GLWindow;
 import ibis.deploy.gui.outputViz.common.math.Vec3;
 import ibis.deploy.gui.outputViz.common.scenegraph.OctreeNode;
+import ibis.deploy.gui.outputViz.exceptions.FileOpeningException;
 import ibis.deploy.gui.outputViz.models.Model;
 
 import java.util.HashMap;
@@ -40,8 +41,7 @@ public class Hdf5TimedPlayer implements Runnable {
     private boolean initialized = false;
     private final GLWindow glw;
 
-    public Hdf5TimedPlayer(GLWindow glw, JSlider timeBar,
-            JFormattedTextField frameCounter) {
+    public Hdf5TimedPlayer(GLWindow glw, JSlider timeBar, JFormattedTextField frameCounter) {
         this.glw = glw;
         this.timeBar = timeBar;
         this.frameCounter = frameCounter;
@@ -86,7 +86,12 @@ public class Hdf5TimedPlayer implements Runnable {
         int initialMaxBar = Hdf5StarReader.getNumFiles(path, gravNamePostfix);
         timeBar.setMaximum(initialMaxBar);
 
-        updateFrame();
+        try {
+            updateFrame();
+        } catch (FileOpeningException e) {
+            System.err.println("Failed to open file.");
+            System.exit(1);
+        }
 
         initialized = true;
     }
@@ -101,8 +106,7 @@ public class Hdf5TimedPlayer implements Runnable {
         currentState = states.PLAYING;
 
         while (running) {
-            if (currentState == states.PLAYING
-                    || currentState == states.MOVIEMAKING) {
+            if (currentState == states.PLAYING || currentState == states.MOVIEMAKING) {
                 try {
                     startTime = System.currentTimeMillis();
 
@@ -126,12 +130,18 @@ public class Hdf5TimedPlayer implements Runnable {
                     timeBar.setValue(currentFrame);
                     frameCounter.setValue(currentFrame);
 
-                    updateFrame();
+                    try {
+                        updateFrame();
+                    } catch (FileOpeningException e) {
+                        setFrame(currentFrame - 1);
+                        currentState = states.WAITINGONFRAME;
+                        System.err.println("File not found, retrying from frame " + currentFrame + ".");
+                        continue;
+                    }
 
                     stopTime = System.currentTimeMillis();
                     if (startTime - stopTime < GLWindow.getWaittime()) {
-                        Thread.sleep(GLWindow.getWaittime()
-                                - (startTime - stopTime));
+                        Thread.sleep(GLWindow.getWaittime() - (startTime - stopTime));
                     } else {
                         // Keep interactivity intact
                         Thread.sleep(1);
@@ -139,7 +149,6 @@ public class Hdf5TimedPlayer implements Runnable {
                 } catch (InterruptedException e) {
                     System.err.println("Interrupted while playing.");
                 }
-
             } else if (currentState == states.STOPPED) {
                 try {
                     Thread.sleep(GLWindow.LONGWAITTIME);
@@ -158,14 +167,13 @@ public class Hdf5TimedPlayer implements Runnable {
         }
     }
 
-    private void updateFrame() {
-        Hdf5Snapshotter snappy = new Hdf5Snapshotter();
-        snappy.open(namePrefix, currentFrame, GLWindow.getLOD(), starModels,
-                cloudModels);
-        StarSGNode newSgRoot = snappy.getSgRoot();
-        OctreeNode newOctreeRoot = snappy.getOctreeRoot();
-
+    private void updateFrame() throws FileOpeningException {
         synchronized (this) {
+            Hdf5Snapshotter snappy = new Hdf5Snapshotter();
+            snappy.open(namePrefix, currentFrame, GLWindow.getLOD(), starModels, cloudModels);
+            StarSGNode newSgRoot = snappy.getSgRoot();
+            OctreeNode newOctreeRoot = snappy.getOctreeRoot();
+
             sgRoot = newSgRoot;
             octreeRoot = newOctreeRoot;
         }
@@ -191,7 +199,13 @@ public class Hdf5TimedPlayer implements Runnable {
         timeBar.setValue(currentFrame);
         frameCounter.setValue(currentFrame);
 
-        updateFrame();
+        try {
+            updateFrame();
+        } catch (FileOpeningException e) {
+            setFrame(value - 1);
+            currentState = states.WAITINGONFRAME;
+            System.err.println("File not found, retrying from frame " + currentFrame + ".");
+        }
     }
 
     public void movieMode() {

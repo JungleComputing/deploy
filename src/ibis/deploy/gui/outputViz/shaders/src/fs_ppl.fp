@@ -24,6 +24,10 @@ void main() {
 	    vec4 color = AmbientMaterial + df * DiffuseMaterial + sf * SpecularMaterial;
 	    gl_FragColor = color;
 	} else {
+		if (HaloColor.a > 1.0) {
+			HaloColor.rgb = HaloColor.rgb * HaloColor.a;
+		}
+		
 		gl_FragColor = HaloColor;
 	}
 }

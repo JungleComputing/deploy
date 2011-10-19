@@ -1,6 +1,7 @@
 package ibis.deploy.gui.outputViz.common.scenegraph;
 
 import ibis.deploy.gui.outputViz.GLWindow;
+import ibis.deploy.gui.outputViz.Settings;
 import ibis.deploy.gui.outputViz.amuse.Astrophysics;
 import ibis.deploy.gui.outputViz.common.math.Mat4;
 import ibis.deploy.gui.outputViz.common.math.MatrixMath;
@@ -16,7 +17,6 @@ import java.util.Map;
 import javax.media.opengl.GL3;
 
 public class OctreeNode {
-    private static final int MAX_EXPECTED_MODELS = 1000;
 
     private final int maxElements;
     private OctreeNode ppp, ppn, pnp, pnn, npp, npn, nnp, nnn;
@@ -30,8 +30,6 @@ public class OctreeNode {
     private boolean initialized = false;
 
     private final Mat4 TMatrix;
-    // private Mat4 RMatrix;
-    // private Mat4 SMatrix;
 
     private final int depth;
     private final HashMap<Integer, Model> models;
@@ -43,20 +41,14 @@ public class OctreeNode {
 
     private int subdivision;
 
-    // private Program program;
-    // private Material material;
-
     public OctreeNode(int maxElements, int depth, int subdivision, HashMap<Integer, Model> cloudModels, Vec3 corner,
             float halfSize) {
         this.maxElements = maxElements;
         this.cubeSize = halfSize;
         this.subdivision = subdivision;
         center = corner.add(new Vec3(halfSize, halfSize, halfSize));
-        // System.out.println("Cube! center: "+center);
 
         TMatrix = MatrixMath.translate(center);
-        // RMatrix = new Mat4();
-        // SMatrix = new Mat4();
 
         elements = new HashMap<Vec3, Double>();
 
@@ -65,7 +57,7 @@ public class OctreeNode {
         this.depth = depth;
         this.models = cloudModels;
 
-        int index = depth + MAX_EXPECTED_MODELS * subdivision;
+        int index = depth + Settings.getMaxExpectedModels() * subdivision;
         if (!models.containsKey(index)) {
             model = new Sphere(Astrophysics.getGasMaterial(), 0, halfSize * 3f, new Vec3());
             models.put(index, model);
@@ -73,7 +65,6 @@ public class OctreeNode {
             model = models.get(index);
         }
 
-        // color = new Vec4(.6f,.3f,.3f,0f);
         total_u = 0.0;
     }
 
@@ -172,7 +163,7 @@ public class OctreeNode {
                 && (location.get(2) > center.get(2) - cubeSize) && (location.get(0) < center.get(0) + cubeSize)
                 && (location.get(1) < center.get(1) + cubeSize) && (location.get(2) < center.get(2) + cubeSize)) {
             if (childCounter > maxElements && !subdivided) {
-                if (depth < GLWindow.MAX_CLOUD_DEPTH) {
+                if (depth < Settings.getMaxCloudDepth()) {
                     subDiv();
                     total_u = 0.0;
                 } else {
@@ -203,10 +194,7 @@ public class OctreeNode {
             nnn.doneAddingGas();
         } else {
             density = (childCounter / (cubeSize * cubeSize * cubeSize * 6));
-            float u = (float) (Math.sqrt(total_u / childCounter) / 5000.0);
-            if (Float.isNaN(u))
-                u = 0f;
-            color = new Vec4(1f - u, 0f + u, 0f + u, density);
+            color = Astrophysics.gasColor(density, (float) total_u, childCounter);
         }
     }
 

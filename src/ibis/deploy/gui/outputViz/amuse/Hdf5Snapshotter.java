@@ -1,6 +1,5 @@
 package ibis.deploy.gui.outputViz.amuse;
 
-import ibis.deploy.gui.outputViz.GLWindow;
 import ibis.deploy.gui.outputViz.Settings;
 import ibis.deploy.gui.outputViz.common.math.Vec3;
 import ibis.deploy.gui.outputViz.common.scenegraph.OctreeNode;
@@ -20,14 +19,12 @@ public class Hdf5Snapshotter {
     public Hdf5Snapshotter() {
     }
 
-    public void open(String namePrefix, int currentFrame, int levelOfDetail,
-            HashMap<Integer, Model> starModels,
-            HashMap<Integer, Model> cloudModels) {
+    public void open(String namePrefix, int currentFrame, int levelOfDetail, HashMap<Integer, Model> starModels,
+            HashMap<Integer, Model> cloudModels) throws FileOpeningException {
 
         int gasSubdivision = Settings.getGasSubdivision(levelOfDetail);
         int starSubdivision = Settings.getStarSubdivision(levelOfDetail);
-        int gasParticlesPerOctreeNode = Settings
-                .getGasParticlesPerOctreeNode(levelOfDetail);
+        int gasParticlesPerOctreeNode = Settings.getGasParticlesPerOctreeNode(levelOfDetail);
 
         String evoName, gravName, gasName;
 
@@ -36,18 +33,12 @@ public class Hdf5Snapshotter {
             evoName = namePrefix + intToString(currentFrame) + evoNamePostfix;
             gravName = namePrefix + intToString(currentFrame) + gravNamePostfix;
 
-            cubeRoot = new OctreeNode(gasParticlesPerOctreeNode, 0,
-                    gasSubdivision, cloudModels, new Vec3(-GLWindow.GAS_EDGES,
-                            -GLWindow.GAS_EDGES, -GLWindow.GAS_EDGES),
-                    GLWindow.GAS_EDGES);
+            cubeRoot = new OctreeNode(gasParticlesPerOctreeNode, 0, gasSubdivision, cloudModels, new Vec3(
+                    -Settings.getGasEdges(), -Settings.getGasEdges(), -Settings.getGasEdges()), Settings.getGasEdges());
             Hdf5GasCloudReader.read(cubeRoot, gasName);
 
             sgRoot = new StarSGNode();
-            Hdf5StarReader.read(sgRoot, starModels, starSubdivision, evoName,
-                    gravName);
-        } catch (FileOpeningException e) {
-            e.printStackTrace();
-            System.exit(1);
+            Hdf5StarReader.read(sgRoot, starModels, starSubdivision, evoName, gravName);
         } catch (OutOfMemoryError e) {
             e.printStackTrace();
             System.exit(1);

@@ -1,15 +1,31 @@
 package ibis.deploy.gui.outputViz;
 
 public class Settings {
+
+    // Size settings for default startup and screenshots
+    private static final int DEFAULT_SCREEN_WIDTH = 1024;
+    private static final int DEFAULT_SCREEN_HEIGHT = 768;
+
+    private static final int SCREENSHOT_SCREEN_WIDTH = 8080;
+    private static final int SCREENSHOT_SCREEN_HEIGHT = 5200;
+
+    // Settings for the gas cloud octree
+    public static final int MAX_CLOUD_DEPTH = 25;
+    public static final float GAS_EDGES = 800f;
+
+    // Settings that should never change, but are listed here to make sure they
+    // can be found if necessary
+    private static final int MAX_EXPECTED_MODELS = 1000;
+
     // Settings for the postprocessing shader
     private static final float POSTPROCESSING_OVERALL_BRIGHTNESS = 4f;
     private static final float POSTPROCESSING_AXES_BRIGHTNESS = 1f;
     private static final float POSTPROCESSING_GAS_BRIGHTNESS = 1.75f;
-    private static final float POSTPROCESSING_STAR_HALO_BRIGHTNESS = 1f;
+    private static final float POSTPROCESSING_STAR_HALO_BRIGHTNESS = 2f;
     private static final float POSTPROCESSING_STAR_BRIGHTNESS = 2f;
 
     // Settings for the star-shape blur method (the + shape of stars)
-    private static final int STAR_SHAPE_BLUR_SIZE = 2;
+    private static final int STAR_SHAPE_BLUR_SIZE = 1;
     private static final float STAR_SHAPE_BLURFILTER_SIZE = 8f;
     private static final float STAR_SHAPE_SIGMA = 100f;
     private static final float STAR_SHAPE_ALPHA = 0.5f;
@@ -55,8 +71,8 @@ public class Settings {
     // Snaphots have different settings, since they are rendered at extremely
     // high resolutions pixels
     private static final int SNAPSHOT_GAS_BLUR_PASSES = 2;
-    private static final float SNAPSHOT_GAS_BLUR_SIZE = 4;
-    private static final int SNAPSHOT_GAS_BLUR_TYPE = 8;
+    private static final float SNAPSHOT_GAS_BLUR_SIZE = 6;
+    private static final int SNAPSHOT_GAS_BLUR_TYPE = 10;
 
     private static final int SNAPSHOT_STAR_HALO_BLUR_PASSES = 2;
     private static final float SNAPSHOT_STAR_HALO_BLUR_SIZE = 1;
@@ -232,5 +248,33 @@ public class Settings {
 
     public static int getSnapshotStarHaloBlurType() {
         return SNAPSHOT_STAR_HALO_BLUR_TYPE;
+    }
+
+    public static int getDefaultScreenWidth() {
+        return DEFAULT_SCREEN_WIDTH;
+    }
+
+    public static int getDefaultScreenHeight() {
+        return DEFAULT_SCREEN_HEIGHT;
+    }
+
+    public static int getScreenshotScreenWidth() {
+        return SCREENSHOT_SCREEN_WIDTH;
+    }
+
+    public static int getScreenshotScreenHeight() {
+        return SCREENSHOT_SCREEN_HEIGHT;
+    }
+
+    public static int getMaxCloudDepth() {
+        return MAX_CLOUD_DEPTH;
+    }
+
+    public static float getGasEdges() {
+        return GAS_EDGES;
+    }
+
+    public static int getMaxExpectedModels() {
+        return MAX_EXPECTED_MODELS;
     }
 }

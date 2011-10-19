@@ -82,9 +82,12 @@ void main() {
 	} else if(blurType == 6) {
 		sigma = 4.0;
 		numPixelsPerSide = 6.0; // 13x13
-	} else {
+	} else if(blurType == 8) {
 		sigma = 6.0;
 		numPixelsPerSide = 8.0; // 17x17
+	} else {
+		sigma = 7.0;
+		numPixelsPerSide = 10.0; // 21x21
 	}
 	
 	vec2 direction;

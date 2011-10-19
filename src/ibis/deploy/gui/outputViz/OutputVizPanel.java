@@ -42,12 +42,6 @@ import com.jogamp.opengl.util.FPSAnimator;
 public class OutputVizPanel extends JPanel {
     private static final long serialVersionUID = 4754345291079348455L;
 
-    public static final int DEFAULT_SCREEN_WIDTH = 1024;
-    public static final int DEFAULT_SCREEN_HEIGHT = 768;
-
-    public static final int SCREENSHOT_SCREEN_WIDTH = 8080;
-    public static final int SCREENSHOT_SCREEN_HEIGHT = 5200;
-
     private static String cmdlnfileName;
     private GLWindow window;
     private GLCanvas glcanvas;
@@ -92,10 +86,9 @@ public class OutputVizPanel extends JPanel {
             offScreenCapabilities.setSampleBuffers(true);
             offScreenCapabilities.setNumSamples(4);
 
-            GLPbuffer pbuffer = factory.createGLPbuffer(factory
-                    .getDefaultDevice(), offScreenCapabilities,
-                    new DefaultGLCapabilitiesChooser(),
-                    SCREENSHOT_SCREEN_WIDTH, SCREENSHOT_SCREEN_HEIGHT, null);
+            GLPbuffer pbuffer = factory.createGLPbuffer(factory.getDefaultDevice(), offScreenCapabilities,
+                    new DefaultGLCapabilitiesChooser(), Settings.getScreenshotScreenWidth(),
+                    Settings.getScreenshotScreenHeight(), null);
 
             offScreenContext = pbuffer.createContext(null);
             offScreenContext.setSynchronized(true);
@@ -156,17 +149,13 @@ public class OutputVizPanel extends JPanel {
             public void actionPerformed(ActionEvent arg0) {
                 File file = openFile();
                 if (file != null) {
-                    path = file.getPath().substring(0,
-                            file.getPath().length() - file.getName().length());
+                    path = file.getPath().substring(0, file.getPath().length() - file.getName().length());
 
                     String name = file.getName();
                     String fullPath = path + name;
                     String[] ext = fullPath.split("[.]");
-                    if (!(ext[1].compareTo("evo") == 0
-                            || ext[1].compareTo("grav") == 0
-                            || ext[1].compareTo("add") == 0
-                            || ext[1].compareTo("gas") == 0 || ext[1]
-                            .compareTo("data") == 0)) {
+                    if (!(ext[1].compareTo("evo") == 0 || ext[1].compareTo("grav") == 0 || ext[1].compareTo("add") == 0
+                            || ext[1].compareTo("gas") == 0 || ext[1].compareTo("data") == 0)) {
                         JOptionPane pane = new JOptionPane();
                         pane.setMessage("Tried to open invalid file type.");
                         JDialog dialog = pane.createDialog("Alert");
@@ -174,8 +163,7 @@ public class OutputVizPanel extends JPanel {
                     } else {
                         prefix = ext[0].substring(0, ext[0].length() - 6);
                         window.stopAnimation();
-                        timer = new Hdf5TimedPlayer(window, timeBar,
-                                frameCounter);
+                        timer = new Hdf5TimedPlayer(window, timeBar, frameCounter);
                         timer.open(path, prefix);
                         window.startAnimation(timer);
                     }
@@ -305,10 +293,8 @@ public class OutputVizPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // timer.stop();
-                String fileName = "" + timer.getFrame() + " {"
-                        + window.getRotation().get(0) + ","
-                        + window.getRotation().get(1) + " - "
-                        + window.getViewDist() + "} ";
+                String fileName = "" + timer.getFrame() + " {" + window.getRotation().get(0) + ","
+                        + window.getRotation().get(1) + " - " + window.getViewDist() + "} ";
                 window.makeSnapshot(fileName);
             }
         });
@@ -331,13 +317,11 @@ public class OutputVizPanel extends JPanel {
         frameCounter.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent e) {
-                JFormattedTextField source = (JFormattedTextField) e
-                        .getSource();
+                JFormattedTextField source = (JFormattedTextField) e.getSource();
                 if (source.hasFocus()) {
                     if (source == frameCounter) {
-                        if (window.timerInitialized)
-                            timer.setFrame(((Number) frameCounter.getValue())
-                                    .intValue());
+                        if (window.isTimerInitialized())
+                            timer.setFrame(((Number) frameCounter.getValue()).intValue());
                     }
                 }
             }
@@ -369,18 +353,12 @@ public class OutputVizPanel extends JPanel {
         if (cmdlnfileName != null) {
             File cmdlnfile = new File(cmdlnfileName);
             if (cmdlnfile != null) {
-                path = cmdlnfile.getPath().substring(
-                        0,
-                        cmdlnfile.getPath().length()
-                                - cmdlnfile.getName().length());
+                path = cmdlnfile.getPath().substring(0, cmdlnfile.getPath().length() - cmdlnfile.getName().length());
                 String name = cmdlnfile.getName();
                 String fullPath = path + name;
                 String[] ext = fullPath.split("[.]");
-                if (!(ext[1].compareTo("evo") == 0
-                        || ext[1].compareTo("grav") == 0
-                        || ext[1].compareTo("add") == 0
-                        || ext[1].compareTo("gas") == 0 || ext[1]
-                        .compareTo("data") == 0)) {
+                if (!(ext[1].compareTo("evo") == 0 || ext[1].compareTo("grav") == 0 || ext[1].compareTo("add") == 0
+                        || ext[1].compareTo("gas") == 0 || ext[1].compareTo("data") == 0)) {
                     JOptionPane pane = new JOptionPane();
                     pane.setMessage("Tried to open invalid file type.");
                     JDialog dialog = pane.createDialog("Alert");
@@ -407,8 +385,7 @@ public class OutputVizPanel extends JPanel {
         }
 
         final JFrame frame = new JFrame("Ibis Deploy - OutputViz Testframe");
-        frame.setPreferredSize(new Dimension(DEFAULT_SCREEN_WIDTH,
-                DEFAULT_SCREEN_HEIGHT));
+        frame.setPreferredSize(new Dimension(Settings.getDefaultScreenWidth(), Settings.getDefaultScreenHeight()));
 
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             @Override
