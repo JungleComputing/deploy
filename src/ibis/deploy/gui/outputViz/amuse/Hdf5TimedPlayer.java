@@ -173,9 +173,9 @@ public class Hdf5TimedPlayer implements Runnable {
             snappy.open(namePrefix, currentFrame, GLWindow.getLOD(), starModels, cloudModels);
             StarSGNode newSgRoot = snappy.getSgRoot();
             OctreeNode newOctreeRoot = snappy.getOctreeRoot();
-
-            sgRoot = newSgRoot;
-            octreeRoot = newOctreeRoot;
+            
+            sgRoot = newSgRoot;            
+            octreeRoot = newOctreeRoot;            
         }
     }
 
@@ -198,13 +198,17 @@ public class Hdf5TimedPlayer implements Runnable {
 
         timeBar.setValue(currentFrame);
         frameCounter.setValue(currentFrame);
-
+        
         try {
             updateFrame();
         } catch (FileOpeningException e) {
+            System.err.println("File not found, retrying from frame " + currentFrame + ".");
+            
             setFrame(value - 1);
             currentState = states.WAITINGONFRAME;
-            System.err.println("File not found, retrying from frame " + currentFrame + ".");
+        } catch (Throwable t) {
+            System.err.println("Got error in Hdf5TimedPlayer.setFrame!");
+            t.printStackTrace(System.err);
         }
     }
 

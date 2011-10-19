@@ -689,6 +689,9 @@ public class GLWindow implements GLEventListener {
                 displayContext(sgRoot, octreeRoot, starTex4k, starHaloTex4k, gasTex4k, axesTex4k);
 
                 Picture p = new Picture(width, height);
+                
+                gl.glFinish();
+                
                 p.copyFrameBufferToFile(panel.getPath(), fileName);
 
                 try {

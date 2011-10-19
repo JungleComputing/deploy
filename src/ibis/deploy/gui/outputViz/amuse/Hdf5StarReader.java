@@ -87,9 +87,11 @@ public class Hdf5StarReader {
 
                 sgRoot.addChild(newNode);
             }
-        } catch (OutOfMemoryError e) {
-            e.printStackTrace();
+        } catch (FileOpeningException e) {
+            throw e;
         } catch (Exception e) {
+            System.err
+            .println("General Exception cought in Hdf5StarReader.");
             e.printStackTrace();
         }
 
