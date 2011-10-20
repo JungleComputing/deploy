@@ -34,7 +34,7 @@
 
 		<copy todir="lib">
 			<fileset dir="external" includes="*.jar" />
-			<fileset dir="${jogl}" />
+			<fileset dir="${jogl}" includes="*.jar" excludes="*amd64.jar,*i586.jar,*universal.jar"/>
 			<fileset dir="${javagat}" />
 			<fileset dir="${ipl}" />
 		</copy>

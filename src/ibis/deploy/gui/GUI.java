@@ -314,7 +314,7 @@ public class GUI {
         if (isMonitoringEnabled()) {
             RegistryServiceInterface regInterface;
             ManagementServiceInterface manInterface;
-            logger.info("Collecting real data.");
+        	logger.info("Monitoring enabled");
             regInterface = deploy.getServer().getRegistryService();
             manInterface = deploy.getServer().getManagementService();
 
