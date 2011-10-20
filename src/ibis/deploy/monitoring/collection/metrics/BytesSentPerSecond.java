@@ -31,8 +31,9 @@ public class BytesSentPerSecond extends ibis.deploy.monitoring.collection.impl.M
 		color[0] =  64f/255f;
 		color[1] = 156f/255f;
 		color[2] = 255f/255f;
-				
+			
 		necessaryAttributes.add(new AttributeDescription("ibis", "sentBytesPerIbis"));
+		//necessaryAttributes.add(new AttributeDescription("ibis.amuse:type=MPIProfilingCollector", "SentBytesPerIbis"));
 		
 		//outputTypes.add(MetricOutput.N);
 		//outputTypes.add(MetricOutput.RPOS);

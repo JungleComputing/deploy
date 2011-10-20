@@ -31,6 +31,7 @@ public class BytesReceivedPerSecond extends ibis.deploy.monitoring.collection.im
 		color[2] = 1f;
 				
 		necessaryAttributes.add(new AttributeDescription("ibis", "receivedBytesPerIbis"));
+		//necessaryAttributes.add(new AttributeDescription("ibis.amuse:type=MPIProfilingCollector", "ReceivedBytesPerIbis"));
 		
 		//outputTypes.add(MetricOutput.N);
 		outputTypes.add(MetricOutput.RPOS);
