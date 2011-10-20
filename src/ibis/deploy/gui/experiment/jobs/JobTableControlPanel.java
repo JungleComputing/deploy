@@ -1,6 +1,7 @@
 package ibis.deploy.gui.experiment.jobs;
 
 import ibis.deploy.gui.GUI;
+import ibis.deploy.gui.Mode;
 import ibis.deploy.gui.misc.Utils;
 
 import java.awt.FlowLayout;
@@ -37,7 +38,7 @@ public class JobTableControlPanel extends JPanel {
 				new RemoveAction(false, table), "images/list-remove.png",
 				"Remove selected jobs from this experiment", "Remove Selected");
 
-		if (gui.isReadOnly()) {
+		if (gui.getMode() == Mode.READ_ONLY_WORKSPACE || gui.getMode() == Mode.MONITORING_ONLY) {
 			setLayout(new FlowLayout(FlowLayout.CENTER, 10, 2));
 			add(runAllButton);
 			add(runSelectedButton);

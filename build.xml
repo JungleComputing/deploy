@@ -17,7 +17,7 @@
 	<property name="javagat" location="external/javagat" />
 	<property name="jogl" location="external/jogl" />
 
-	<target name="build" description="Build with included JavaGAT and IPL" depends="clean,copy-external,compile" />
+	<target name="build" description="Build with included JavaGAT and IPL" depends="clean,copy-external,copy-native-libraries,compile" />
 
 	<path id="default.classpath">
 		<fileset dir="lib">
@@ -38,12 +38,25 @@
 			<fileset dir="${javagat}" />
 			<fileset dir="${ipl}" />
 		</copy>
+	</target>
 
-		<!--
-        <copy todir="lib-server">
-            <fileset dir="${ipl}" />
-        </copy>
--->
+	<target name="copy-native-libraries">
+		<mkdir dir="lib" />
+		<mkdir dir="lib/native_libraries" />
+		<mkdir dir="lib/native_libraries32" />
+
+		<unjar dest="lib/native_libraries">
+			<fileset dir="external/jogl" includes="*amd64.jar,*universal.jar" />
+		</unjar>
+
+		<!-- Unfortunatelly, we have to have a seperate directory for 32 bit
+		     libraries, as jogl gives them the exact same name as the 64 bit
+		     libraries. We should fix this in JOGL eventually, but for now this
+		     will do.
+		 -->
+		<unjar dest="lib/native_libraries32">
+			<fileset dir="external/jogl" includes="*i586.jar,*universal.jar" />
+		</unjar>
 
 	</target>
 

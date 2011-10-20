@@ -36,7 +36,7 @@ public class CollectorImpl implements Collector, Runnable {
 	private static final int workercount = 8;
 
 	private static CollectorImpl ref = null;	
-	private boolean skipParent = true, forceUpdate = false;
+	private boolean skipParent = false, forceUpdate = false;
 
 	// Interfaces to the IPL
 	private ManagementServiceInterface manInterface;

@@ -1,6 +1,7 @@
 package ibis.deploy.gui.experiment.composer;
 
 import ibis.deploy.gui.GUI;
+import ibis.deploy.gui.Mode;
 import ibis.deploy.gui.experiment.jobs.JobTableModel;
 import ibis.deploy.gui.worldmap.WorldMapPanel;
 
@@ -26,7 +27,7 @@ public class ExperimentEditorPanel extends JPanel {
 
 		ExperimentEditorTextPanel eetp = new ExperimentEditorTextPanel(gui,
 				model, worldMapPanel);
-		if (!gui.isReadOnly()) {
+		if (gui.getMode() == Mode.NORMAL) {
 			add(eetp, BorderLayout.EAST);
 		}
 

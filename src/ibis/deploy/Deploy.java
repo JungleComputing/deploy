@@ -53,7 +53,7 @@ public class Deploy {
 
     private boolean keepSandboxes;
     
-    private boolean collecting = false;
+    private final boolean monitoringEnabled;
 
     // submitted jobs
     private List<Job> jobs;
@@ -149,8 +149,8 @@ public class Deploy {
      *            If true, start Ibis-Deploy in verbose mode
      * @param keepSandboxes
      *            If true, will keep sandboxes of servers and jobs
-     * @param collecting
-     * 		  If true, set collecting system properties for the application.
+     * @param monitoringEnabled
+     * 		  If true, set collecting system properties when jobs are started.
      * @param port
      *            port used to bind local hub/server to. Defaults to
      *            automatically allocated free port.
@@ -166,7 +166,7 @@ public class Deploy {
      *             cannot be started.
      * 
      */
-    public Deploy(File home, boolean verbose, boolean keepSandboxes, boolean collecting, int port,
+    public Deploy(File home, boolean verbose, boolean keepSandboxes, boolean monitoringEnabled, int port,
             Cluster serverCluster, StateListener listener, boolean blocking)
             throws Exception {
     
@@ -175,7 +175,7 @@ public class Deploy {
 
         this.verbose = verbose;
         this.keepSandboxes = keepSandboxes;
-        this.collecting = collecting;
+        this.monitoringEnabled = monitoringEnabled;
 
         jobs = new ArrayList<Job>();
         hubs = new HashMap<String, Server>();
@@ -212,8 +212,8 @@ public class Deploy {
      * Returns whether the collecting flag is set.
      * @return the collecting flag.
      */
-    public boolean isCollecting() {
-        return collecting;
+    public boolean isMonitoringEnabled() {
+        return monitoringEnabled;
     }
 
     /**
@@ -365,7 +365,7 @@ public class Deploy {
         // start job
         Job job = new Job(resolvedDescription, hubPolicy, hub, keepSandboxes,
                 jobListener, hubListener, localServer, verbose, home,
-                getServerAddress(), this, collecting);
+                getServerAddress(), this, monitoringEnabled);
 
         jobs.add(job);
 

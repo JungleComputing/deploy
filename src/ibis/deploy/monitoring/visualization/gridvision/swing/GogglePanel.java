@@ -216,7 +216,7 @@ public class GogglePanel extends JPanel {
 		gatheringTweaks.add(GoggleSwing.titleBox("Gathering Tweaks", listener));
 		
 			String[] items = {"Skip"};
-			boolean[] selections = { true };
+			boolean[] selections = { false };
 			
 			GoggleListener selectionListener = new ParentSkipListener(goggles);			
 			GoggleListener[] listeners = new GoggleListener[items.length];
@@ -246,7 +246,7 @@ public class GogglePanel extends JPanel {
 		networkTweaks.add(GoggleSwing.verticalStrut(5));
 		
 			ChangeListener listener2 = new ThresholdSliderChangeListener(this, goggles);			
-		networkTweaks.add(GoggleSwing.sliderBox("Network bandwidth threshold.", listener2, 0, 9, 1, 4, thresholdText));		
+		networkTweaks.add(GoggleSwing.sliderBox("Network bandwidth threshold.", listener2, 0, 9, 1, 0, thresholdText));		
 	}
 	
 	private void createMetricTweakPanel() {	

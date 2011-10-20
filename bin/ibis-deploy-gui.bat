@@ -17,10 +17,10 @@ goto setupArgs
 :doneStart
 
 if "%PROCESSOR_ARCHITECTURE%"=="AMD64" goto 64BIT_ARCHITECTURE
-java -splash:images\ibis-splash.png -classpath "%CLASSPATH%;%DEPLOY_HOME%;%DEPLOY_HOME%\lib\*;%DEPLOY_HOME%\lib\castor-1.1.1-xml.jar" -Dgat.adaptor.path="%DEPLOY_HOME%"\lib\adaptors -Dibis.deploy.home="%DEPLOY_HOME%" -Djava.library.path="%DEPLOY_HOME%"\lib\natives ibis.deploy.gui.GUI %DEPLOY_ARGS%
+java -splash:images\ibis-splash.png -classpath "%CLASSPATH%;%DEPLOY_HOME%;%DEPLOY_HOME%\lib\*;%DEPLOY_HOME%\lib\castor-1.1.1-xml.jar" -Dgat.adaptor.path="%DEPLOY_HOME%"\lib\adaptors -Dibis.deploy.home="%DEPLOY_HOME%" -Djava.library.path="%DEPLOY_HOME%"\lib\native_libraries32 ibis.deploy.gui.GUI %DEPLOY_ARGS%
 goto END_ARCHITECTURE
 :64BIT_ARCHITECTURE
-java -splash:images\ibis-splash.png -classpath "%CLASSPATH%;%DEPLOY_HOME%;%DEPLOY_HOME%\lib\*;%DEPLOY_HOME%\lib\castor-1.1.1-xml.jar" -Dgat.adaptor.path="%DEPLOY_HOME%"\lib\adaptors -Dibis.deploy.home="%DEPLOY_HOME%" -Djava.library.path="%DEPLOY_HOME%"\lib\natives ibis.deploy.gui.GUI %DEPLOY_ARGS%
+java -splash:images\ibis-splash.png -classpath "%CLASSPATH%;%DEPLOY_HOME%;%DEPLOY_HOME%\lib\*;%DEPLOY_HOME%\lib\castor-1.1.1-xml.jar" -Dgat.adaptor.path="%DEPLOY_HOME%"\lib\adaptors -Dibis.deploy.home="%DEPLOY_HOME%" -Djava.library.path="%DEPLOY_HOME%"\lib\native_libraries ibis.deploy.gui.GUI %DEPLOY_ARGS%
 :END_ARCHITECTURE
 
 if "%OS%"=="Windows_NT" @endlocal

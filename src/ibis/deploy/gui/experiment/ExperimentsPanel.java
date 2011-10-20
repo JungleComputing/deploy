@@ -29,7 +29,7 @@ public class ExperimentsPanel extends JPanel {
 
         JPanel jobTable;
 
-        if (gui.getMode() == Mode.MONITOR) {
+        if (gui.getMode() == Mode.MONITORING_ONLY) {
             jobTable = new JobMonitorPanel(gui, logos);
         } else {
             jobTable = new JobTablePanel(gui, jobTableModel);
@@ -41,7 +41,7 @@ public class ExperimentsPanel extends JPanel {
                 JSplitPane.HORIZONTAL_SPLIT, editor, smartSockets);
         horizontalSplitPane.setOneTouchExpandable(true);
 
-        if (gui.isReadOnly()) {
+        if (gui.getMode() == Mode.READ_ONLY_WORKSPACE || gui.getMode() == Mode.MONITORING_ONLY) {
             horizontalSplitPane
                     .setDividerLocation((int) (GUI.DEFAULT_SCREEN_WIDTH * 0.5));
         } else {

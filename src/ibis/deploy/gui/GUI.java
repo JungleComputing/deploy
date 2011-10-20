@@ -91,9 +91,9 @@ public class GUI {
 
     private Mode mode;
     
-    private Collector collector;
+    private final Collector collector;
     
-    private boolean isCollecting = false;
+    private final boolean monitoringEnabled;
     
     private boolean nativeLoaded = false;
 
@@ -193,7 +193,7 @@ public class GUI {
         this.menuBar = new JMenuBar();
         JMenu menu = new JMenu("File");
 
-        if (isReadOnly()) {
+        if (mode == Mode.READ_ONLY_WORKSPACE || mode == Mode.MONITORING_ONLY) {
             menuItem = new JMenuItem("Exit");
             menuItem.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent arg0) {
@@ -225,7 +225,7 @@ public class GUI {
         
         menu.add(MapUtilities.getMapMenu());
 
-        if (!isReadOnly()) {
+        if (mode == Mode.NORMAL) {
             JMenu subMenu = new JMenu("Hub Policy");
             ButtonGroup hubPolicy = new ButtonGroup();
             menuItem = new JRadioButtonMenuItem(new HubPolicyAction("No hubs",
@@ -260,7 +260,7 @@ public class GUI {
         frame.setPreferredSize(new Dimension(DEFAULT_SCREEN_WIDTH,
                 DEFAULT_SCREEN_HEIGHT));
 
-        if (isReadOnly()) {
+        if (mode == Mode.READ_ONLY_WORKSPACE || mode == Mode.MONITORING_ONLY) {
             frame.addWindowListener(new WindowAdapter() {
                 public void windowClosing(WindowEvent we) {
                     close();
@@ -293,7 +293,7 @@ public class GUI {
         System.err.println("-k\t\tKeep sandboxes");
         System.err.println("-r\t\tRead only mode");
         System.err.println("-v\t\tVerbose mode");
-        System.err.println("-collecting\tCollect performance data from running applications.");
+        System.err.println("--monitoring-enabled | -m \tCollect performance data from running applications.");
         System.err.println("-f\t\tSimulate a grid (for monitor testing).");
         System.err
                 .println("-p PORT\t\tLocal port number (defaults to random free port)");
@@ -301,17 +301,17 @@ public class GUI {
     }
 
     public GUI(Deploy deploy, Workspace workspace, Mode mode, final String... logos) throws Exception {
-	this(deploy, workspace, mode, deploy.isCollecting(), logos);
+	this(deploy, workspace, mode, deploy.isMonitoringEnabled(), logos);
     }
     
-    public GUI(Deploy deploy, Workspace workspace, Mode mode, boolean collecting, final String... logos)
+    public GUI(Deploy deploy, Workspace workspace, Mode mode, boolean monitoringEnabled, final String... logos)
     throws Exception {
         this.deploy = deploy;
         this.mode = mode;
         this.workspace = workspace;
-        this.isCollecting = collecting;
+        this.monitoringEnabled = monitoringEnabled;
         
-        if (isCollecting()) {
+        if (isMonitoringEnabled()) {
             RegistryServiceInterface regInterface;
             ManagementServiceInterface manInterface;
             logger.info("Collecting real data.");
@@ -321,6 +321,8 @@ public class GUI {
             //Data interface
             collector = ibis.deploy.monitoring.collection.impl.CollectorImpl.getCollector(manInterface, regInterface);
             new Thread(collector).start();    		
+        } else {
+        	collector = null;
         }
         createAndShowGUI(logos);
     }
@@ -330,6 +332,8 @@ public class GUI {
         boolean verbose = false;
         boolean keepSandboxes = false;
         boolean monitoringFakeData = false;
+        boolean monitoringEnabled = false;
+        Collector collector = null;
         String serverCluster = null;
         int port = 0;
         mode = Mode.NORMAL;
@@ -351,11 +355,11 @@ public class GUI {
                     printUsage();
                     System.exit(0);
                 } else if (arguments[i].equals("-r")) {
-                    mode = Mode.READ_ONLY;
+                    mode = Mode.READ_ONLY_WORKSPACE;
                 } else if (arguments[i].equals("-f")) {
                     monitoringFakeData = true;
-                } else if (arguments[i].equals("-c")) {
-                	isCollecting = true;
+                } else if (arguments[i].equals("-m") || arguments.equals("--monitoring-enabled")) {
+                	monitoringEnabled = true;
                 } else {
                     File file = new File(arguments[i]);
                     if (file.isDirectory()) {
@@ -388,6 +392,8 @@ public class GUI {
             System.err.println("DEPLOY: Workspace:");
             System.err.println(workspace.toPrintString());
         }
+        
+        this.monitoringEnabled = monitoringEnabled;
 
         try {
             if (serverCluster == null) {
@@ -395,7 +401,7 @@ public class GUI {
 
                 // init with built-in server
 
-                deploy = new Deploy(null, verbose, keepSandboxes, isCollecting(), port, null,
+                deploy = new Deploy(null, verbose, keepSandboxes, isMonitoringEnabled(), port, null,
                         null, true);
             } else {
                 logger.info("Initializing Ibis Deploy"
@@ -410,14 +416,14 @@ public class GUI {
                 }
 
                 InitializationFrame initWindow = new InitializationFrame();
-                deploy = new Deploy(null, verbose, keepSandboxes, isCollecting(), port,
+                deploy = new Deploy(null, verbose, keepSandboxes, isMonitoringEnabled(), port,
                         cluster, initWindow, true);
                 // will call dispose in the Swing thread
                 initWindow.remove();
 
             }
                
-            if (isCollecting()) {
+            if (isMonitoringEnabled()) {
 	            RegistryServiceInterface regInterface;
 	            ManagementServiceInterface manInterface;
 	            if (monitoringFakeData) {
@@ -427,23 +433,21 @@ public class GUI {
 	            	regInterface = new FakeRegistryService(1,2,2,3,4);
 	            	manInterface = new FakeManagementService(regInterface);
 	            } else {
-	            	logger.info("Collecting real data.");
+	            	logger.info("Monitoring enabled");
 	            	regInterface = deploy.getServer().getRegistryService();
 	            	manInterface = deploy.getServer().getManagementService();
 	            }
-            
             
 	            //Data interface
 	            collector = ibis.deploy.monitoring.collection.impl.CollectorImpl.getCollector(manInterface, regInterface);
 	            new Thread(collector).start();    		
             }
-    		
         } catch (Exception e) {
             System.err.println("Could not initialize ibis-deploy: " + e);
             e.printStackTrace(System.err);
             System.exit(1);
-        }
-
+        } 
+        this.collector = collector;
     }
 
     public Deploy getDeploy() {
@@ -562,12 +566,8 @@ public class GUI {
         experimentListeners.add(listener);
     }
 
-    public boolean isReadOnly() {
-        return mode == Mode.READ_ONLY || mode == Mode.MONITOR;
-    }
-    
-    public boolean isCollecting() {
-        return isCollecting;
+    public boolean isMonitoringEnabled() {
+        return monitoringEnabled;
     }
 
     public JFrame getFrame() {
@@ -640,6 +640,11 @@ public class GUI {
     
     
     public void loadNativeLibs() throws IOException, URISyntaxException {
+    	if(true) {
+    		nativeLoaded = true;
+    		return;
+    	}
+    	
     	String filesep = System.getProperty("file.separator");
     	String os = System.getProperty("os.name").toLowerCase();
     	String dirname = deploy.getHome().getAbsolutePath() + filesep + "lib";

@@ -147,7 +147,7 @@ public class DeployVizPanel extends JPanel {
         // create the data collecting thread
         dataCollector = new DataCollector(manInterface, regInterface, this);
         dataCollector.start();
-        dataCollector.setCollectingState(false);
+        dataCollector.setCollectingState(true);
 
         add(vizPanel, BorderLayout.CENTER);
     }
@@ -392,25 +392,25 @@ public class DeployVizPanel extends JPanel {
 
         verticalpaJPanel.add(panel);
 
-        panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        // button for managing simulation
-        final JButton refreshDataButton = new JButton("Start monitoring");
-        refreshDataButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                if (dataCollector.isCollecting()) {
-                    dataCollector.setCollectingState(false);
-                    refreshDataButton.setText("Start monitoring");
-                } else {
-                    dataCollector.setCollectingState(true);
-                    refreshDataButton.setText("Stop monitoring");
-                }
-            }
-        });
-
-        panel.add(refreshDataButton);
-        verticalpaJPanel.add(panel);
+//        panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+//        // button for managing simulation
+//        final JButton refreshDataButton = new JButton("Start monitoring");
+//        refreshDataButton.addActionListener(new ActionListener() {
+//
+//            @Override
+//            public void actionPerformed(ActionEvent arg0) {
+//                if (dataCollector.isCollecting()) {
+//                    dataCollector.setCollectingState(false);
+//                    refreshDataButton.setText("Start monitoring");
+//                } else {
+//                    dataCollector.setCollectingState(true);
+//                    refreshDataButton.setText("Stop monitoring");
+//                }
+//            }
+//        });
+//
+//        panel.add(refreshDataButton);
+//        verticalpaJPanel.add(panel);
 
         // the left panel is initialized, so add it to the main panel
         topPanel.add(verticalpaJPanel);

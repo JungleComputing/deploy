@@ -39,7 +39,7 @@ public class BytesSentPerSecond extends ibis.deploy.monitoring.collection.impl.M
 		//outputTypes.add(MetricOutput.RPOS);
 		outputTypes.add(MetricOutput.PERCENT);
 		
-		maxForPercent = 102400;
+		maxForPercent = 1024;
 	}
 		
 	public void update(Object[] results, Metric metric)  throws IncorrectParametersException {

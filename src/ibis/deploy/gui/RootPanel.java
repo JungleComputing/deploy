@@ -36,7 +36,7 @@ public class RootPanel extends JPanel {
 		// "images/utilities-system-monitor.png",
 		// new ExperimentsPanel(gui), tabs);
 
-		if (!gui.isReadOnly()) {
+		if (gui.getMode() == Mode.NORMAL) {
 			applicationTab = new DetachableTab("Applications",
 					"images/applications-other.png",
 					new ApplicationEditorPanel(gui), tabs);
@@ -50,11 +50,13 @@ public class RootPanel extends JPanel {
                 "images/gridvision.png", new SmartsocketsViz(Color.BLACK,
                         Color.WHITE, false, true, false, gui.getDeploy()
                                 .getRootHubAddress()), tabs);
-
-		deployVizTab = new DetachableTab("Connection Overview",
-				"images/gridvision.png", new DeployVizPanel(gui), tabs);
 	
-		if (gui.isCollecting()) {
+		if (gui.isMonitoringEnabled()) {
+			deployVizTab = new DetachableTab("Connection Overview",
+					"images/gridvision.png", new DeployVizPanel(gui), tabs);
+
+			
+			
 			gridVisionTab = new DetachableTab("3D Visualization", 
 					"images/gridvision.png", new GogglePanel(gui, gui.getCollector()), tabs);
 		}
