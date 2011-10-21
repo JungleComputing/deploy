@@ -3,11 +3,14 @@ package ibis.deploy.gui.outputViz;
 import ibis.deploy.gui.GUI;
 import ibis.deploy.gui.outputViz.amuse.Hdf5TimedPlayer;
 import ibis.deploy.gui.outputViz.common.InputHandler;
+import ibis.deploy.monitoring.visualization.gridvision.swing.util.GoggleSwing;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
@@ -27,6 +30,7 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -42,6 +46,12 @@ import com.jogamp.opengl.util.FPSAnimator;
 public class OutputVizPanel extends JPanel {
     private static final long serialVersionUID = 4754345291079348455L;
 
+    public static enum TweakState {
+        NONE, GATHERING, METRICS, NETWORK, VISUAL
+    };
+
+    private TweakState currentTweakState = TweakState.VISUAL;
+
     private static String cmdlnfileName;
     private GLWindow window;
     private GLCanvas glcanvas;
@@ -50,6 +60,9 @@ public class OutputVizPanel extends JPanel {
     public Hdf5TimedPlayer timer;
     public JSlider timeBar;
     public JFormattedTextField frameCounter;
+
+    private JPanel tweakPanel;
+    private JPanel visualTweaks;
 
     private String path, prefix;
 
@@ -250,6 +263,15 @@ public class OutputVizPanel extends JPanel {
         });
         options.add(makeMovie);
 
+        JMenuItem showTweakPanel = new JMenuItem("Show tweak panel.");
+        showTweakPanel.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                setTweakState(TweakState.VISUAL);
+            }
+        });
+        options.add(showTweakPanel);
+
         // JMenuItem axes = new JMenuItem("Axes Toggle");
         // axes.addActionListener(new ActionListener() {
         // public void actionPerformed(ActionEvent arg0) {
@@ -341,6 +363,19 @@ public class OutputVizPanel extends JPanel {
         bottomPanel.add(timeBar);
 
         add(menuBar, BorderLayout.NORTH);
+
+        // Add the tweaks panels
+        tweakPanel = new JPanel();
+        add(tweakPanel, BorderLayout.WEST);
+        tweakPanel.setLayout(new BoxLayout(tweakPanel, BoxLayout.Y_AXIS));
+        tweakPanel.setPreferredSize(new Dimension(200, 0));
+        tweakPanel.setVisible(false);
+
+        visualTweaks = new JPanel();
+        visualTweaks.setLayout(new BoxLayout(visualTweaks, BoxLayout.Y_AXIS));
+        visualTweaks.setMinimumSize(tweakPanel.getPreferredSize());
+        createVisualTweakPanel();
+
         add(glcanvas, BorderLayout.CENTER);
         add(bottomPanel, BorderLayout.SOUTH);
 
@@ -372,6 +407,109 @@ public class OutputVizPanel extends JPanel {
                 }
             }
         }
+    }
+
+    // Callback methods for the various ui actions and listeners
+    public void setTweakState(TweakState newState) {
+        tweakPanel.setVisible(false);
+        tweakPanel.remove(visualTweaks);
+
+        currentTweakState = newState;
+
+        if (currentTweakState == TweakState.NONE) {
+        } else if (currentTweakState == TweakState.VISUAL) {
+            tweakPanel.setVisible(true);
+            tweakPanel.add(visualTweaks, BorderLayout.WEST);
+        }
+    }
+
+    private void createVisualTweakPanel() {
+        ItemListener listener = new ItemListener() {
+
+            @Override
+            public void itemStateChanged(ItemEvent arg0) {
+                setTweakState(TweakState.NONE);
+            }
+        };
+        visualTweaks.add(GoggleSwing.titleBox("Visual Tweaks", listener));
+
+        ChangeListener overallBrightnessSliderListener = new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                JSlider source = (JSlider) e.getSource();
+                if (source.hasFocus()) {
+                    Settings.setPostprocessingOverallBrightness(source.getValue());
+                }
+            }
+        };
+        visualTweaks.add(GoggleSwing.sliderBox("Overall Brightness", overallBrightnessSliderListener,
+                (int) (Settings.getPostprocessingOverallBrightnessMin()),
+                (int) (Settings.getPostprocessingOverallBrightnessMax()), (int) (0.1f * 10),
+                (int) (Settings.getPostprocessingOverallBrightness()), new JLabel("overall")));
+
+        visualTweaks.add(GoggleSwing.verticalStrut(5));
+
+        ChangeListener axesBrightnessSliderListener = new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                JSlider source = (JSlider) e.getSource();
+                if (source.hasFocus()) {
+                    Settings.setPostprocessingAxesBrightness(source.getValue());
+                }
+            }
+        };
+        visualTweaks.add(GoggleSwing.sliderBox("Axes Brightness", axesBrightnessSliderListener,
+                (int) (Settings.getPostprocessingAxesBrightnessMin()),
+                (int) (Settings.getPostprocessingAxesBrightnessMax()), (int) (0.1f * 10),
+                (int) (Settings.getPostprocessingAxesBrightness()), new JLabel("axes")));
+
+        visualTweaks.add(GoggleSwing.verticalStrut(5));
+
+        ChangeListener gasBrightnessSliderListener = new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                JSlider source = (JSlider) e.getSource();
+                if (source.hasFocus()) {
+                    Settings.setPostprocessingGasBrightness(source.getValue());
+                }
+            }
+        };
+        visualTweaks.add(GoggleSwing.sliderBox("Gas Brightness", gasBrightnessSliderListener,
+                (int) (Settings.getPostprocessingGasBrightnessMin()),
+                (int) (Settings.getPostprocessingGasBrightnessMax()), (int) (0.1f * 10),
+                (int) (Settings.getPostprocessingGasBrightness()), new JLabel("gas")));
+
+        visualTweaks.add(GoggleSwing.verticalStrut(5));
+
+        ChangeListener starHaloBrightnessSliderListener = new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                JSlider source = (JSlider) e.getSource();
+                if (source.hasFocus()) {
+                    Settings.setPostprocessingStarHaloBrightness(source.getValue());
+                }
+            }
+        };
+        visualTweaks.add(GoggleSwing.sliderBox("Star Halo Brightness", starHaloBrightnessSliderListener,
+                (int) (Settings.getPostprocessingStarHaloBrightnessMin()),
+                (int) (Settings.getPostprocessingStarHaloBrightnessMax()), (int) (0.1f * 10),
+                (int) (Settings.getPostprocessingStarHaloBrightness()), new JLabel("starHalo")));
+
+        visualTweaks.add(GoggleSwing.verticalStrut(5));
+
+        ChangeListener starBrightnessSliderListener = new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                JSlider source = (JSlider) e.getSource();
+                if (source.hasFocus()) {
+                    Settings.setPostprocessingStarBrightness(source.getValue());
+                }
+            }
+        };
+        visualTweaks.add(GoggleSwing.sliderBox("Star Brightness", starBrightnessSliderListener,
+                (int) (Settings.getPostprocessingStarBrightnessMin()),
+                (int) (Settings.getPostprocessingStarBrightnessMax()), (int) (0.1f * 10),
+                (int) (Settings.getPostprocessingStarBrightness()), new JLabel("star")));
     }
 
     public static void main(String[] arguments) {

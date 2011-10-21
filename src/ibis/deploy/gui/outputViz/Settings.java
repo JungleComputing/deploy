@@ -17,12 +17,24 @@ public class Settings {
     // can be found if necessary
     private static final int MAX_EXPECTED_MODELS = 1000;
 
+    // Minimum and maximum values for the brightness sliders
+    private static final float POSTPROCESSING_OVERALL_BRIGHTNESS_MIN = 0f;
+    private static final float POSTPROCESSING_OVERALL_BRIGHTNESS_MAX = 10f;
+    private static final float POSTPROCESSING_AXES_BRIGHTNESS_MIN = 0f;
+    private static final float POSTPROCESSING_AXES_BRIGHTNESS_MAX = 4f;
+    private static final float POSTPROCESSING_GAS_BRIGHTNESS_MIN = 0f;
+    private static final float POSTPROCESSING_GAS_BRIGHTNESS_MAX = 4f;
+    private static final float POSTPROCESSING_STAR_HALO_BRIGHTNESS_MIN = 0f;
+    private static final float POSTPROCESSING_STAR_HALO_BRIGHTNESS_MAX = 4f;
+    private static final float POSTPROCESSING_STAR_BRIGHTNESS_MIN = 0f;
+    private static final float POSTPROCESSING_STAR_BRIGHTNESS_MAX = 4f;
+
     // Settings for the postprocessing shader
-    private static final float POSTPROCESSING_OVERALL_BRIGHTNESS = 4f;
-    private static final float POSTPROCESSING_AXES_BRIGHTNESS = 1f;
-    private static final float POSTPROCESSING_GAS_BRIGHTNESS = 1.75f;
-    private static final float POSTPROCESSING_STAR_HALO_BRIGHTNESS = 2f;
-    private static final float POSTPROCESSING_STAR_BRIGHTNESS = 2f;
+    private static float postprocessing_overall_brightness = 4f;
+    private static float postprocessing_axes_brightness = 1f;
+    private static float postprocessing_gas_brightness = 1.75f;
+    private static float postprocessing_star_halo_brightness = 2f;
+    private static float postprocessing_star_brightness = 2f;
 
     // Settings for the star-shape blur method (the + shape of stars)
     private static final int STAR_SHAPE_BLUR_SIZE = 1;
@@ -187,23 +199,23 @@ public class Settings {
     }
 
     public static float getPostprocessingOverallBrightness() {
-        return POSTPROCESSING_OVERALL_BRIGHTNESS;
+        return postprocessing_overall_brightness;
     }
 
     public static float getPostprocessingAxesBrightness() {
-        return POSTPROCESSING_AXES_BRIGHTNESS;
+        return postprocessing_axes_brightness;
     }
 
     public static float getPostprocessingGasBrightness() {
-        return POSTPROCESSING_GAS_BRIGHTNESS;
+        return postprocessing_gas_brightness;
     }
 
     public static float getPostprocessingStarHaloBrightness() {
-        return POSTPROCESSING_STAR_HALO_BRIGHTNESS;
+        return postprocessing_star_halo_brightness;
     }
 
     public static float getPostprocessingStarBrightness() {
-        return POSTPROCESSING_STAR_BRIGHTNESS;
+        return postprocessing_star_brightness;
     }
 
     public static int getStarShapeBlurSize() {
@@ -276,5 +288,65 @@ public class Settings {
 
     public static int getMaxExpectedModels() {
         return MAX_EXPECTED_MODELS;
+    }
+
+    public static float getPostprocessingOverallBrightnessMin() {
+        return POSTPROCESSING_OVERALL_BRIGHTNESS_MIN;
+    }
+
+    public static float getPostprocessingOverallBrightnessMax() {
+        return POSTPROCESSING_OVERALL_BRIGHTNESS_MAX;
+    }
+
+    public static float getPostprocessingAxesBrightnessMin() {
+        return POSTPROCESSING_AXES_BRIGHTNESS_MIN;
+    }
+
+    public static float getPostprocessingAxesBrightnessMax() {
+        return POSTPROCESSING_AXES_BRIGHTNESS_MAX;
+    }
+
+    public static float getPostprocessingGasBrightnessMin() {
+        return POSTPROCESSING_GAS_BRIGHTNESS_MIN;
+    }
+
+    public static float getPostprocessingGasBrightnessMax() {
+        return POSTPROCESSING_GAS_BRIGHTNESS_MAX;
+    }
+
+    public static float getPostprocessingStarHaloBrightnessMin() {
+        return POSTPROCESSING_STAR_HALO_BRIGHTNESS_MIN;
+    }
+
+    public static float getPostprocessingStarHaloBrightnessMax() {
+        return POSTPROCESSING_STAR_HALO_BRIGHTNESS_MAX;
+    }
+
+    public static float getPostprocessingStarBrightnessMin() {
+        return POSTPROCESSING_STAR_BRIGHTNESS_MIN;
+    }
+
+    public static float getPostprocessingStarBrightnessMax() {
+        return POSTPROCESSING_STAR_BRIGHTNESS_MAX;
+    }
+
+    public static void setPostprocessingOverallBrightness(float value) {
+        postprocessing_overall_brightness = value;
+    }
+
+    public static void setPostprocessingAxesBrightness(float value) {
+        postprocessing_axes_brightness = value;
+    }
+
+    public static void setPostprocessingGasBrightness(float value) {
+        postprocessing_gas_brightness = value;
+    }
+
+    public static void setPostprocessingStarHaloBrightness(float value) {
+        postprocessing_star_halo_brightness = value;
+    }
+
+    public static void setPostprocessingStarBrightness(float value) {
+        postprocessing_star_brightness = value;
     }
 }
