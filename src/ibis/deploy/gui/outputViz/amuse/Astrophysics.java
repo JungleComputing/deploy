@@ -4,6 +4,7 @@ import ibis.deploy.gui.outputViz.GLWindow;
 import ibis.deploy.gui.outputViz.common.Material;
 import ibis.deploy.gui.outputViz.common.math.Vec3;
 import ibis.deploy.gui.outputViz.common.math.Vec4;
+import ibis.deploy.gui.outputViz.common.math.VectorMath;
 
 import java.util.HashMap;
 
@@ -24,7 +25,8 @@ public class Astrophysics {
 
     private final static Vec4 INITIAL_GAS_COLOR = new Vec4(.6f, .3f, .3f, 0f);
     private final static Vec4 transparent = new Vec4(0, 0, 0, 0);
-    private final static Material gasMaterial = new Material(INITIAL_GAS_COLOR, transparent, transparent);
+    private final static Material gasMaterial = new Material(INITIAL_GAS_COLOR,
+            transparent, transparent);
 
     public static Material getGasMaterial() {
         return gasMaterial;
@@ -40,7 +42,8 @@ public class Astrophysics {
 
     public static float starToScreenRadius(double size) {
         double radius_in_solar = size / SOLAR_RADIUS;
-        double radius_factor = 1000.0 / Math.pow(STAR_RADIUS_AT_1000_SOLAR_RADII, 2);
+        double radius_factor = 1000.0 / Math.pow(
+                STAR_RADIUS_AT_1000_SOLAR_RADII, 2);
 
         float fs;
         if (radius_in_solar < STAR_FORMULAE_INTERSECTION) {
@@ -53,10 +56,12 @@ public class Astrophysics {
     }
 
     private static double find_intersection() {
-        double radius_factor = 1000.0 / Math.pow(STAR_RADIUS_AT_1000_SOLAR_RADII, 2);
+        double radius_factor = 1000.0 / Math.pow(
+                STAR_RADIUS_AT_1000_SOLAR_RADII, 2);
 
         for (double i = 0.1; i < 10000.0; i += 0.01) {
-            double diff = (i * STAR_RADIUS_FACTOR_SMALL) - (Math.sqrt(i / radius_factor));
+            double diff = (i * STAR_RADIUS_FACTOR_SMALL)
+                    - (Math.sqrt(i / radius_factor));
             if (diff > 0.0) {
                 return i;
             }
@@ -76,8 +81,10 @@ public class Astrophysics {
         return fx;
     }
 
-    public static double starTemperature(double luminosity_in_solar_luminosities, double radius) {
-        return Math.pow((luminosity_in_solar_luminosities / (4 * Math.PI * (radius * radius) * SIGMA)), 0.25);
+    public static double starTemperature(
+            double luminosity_in_solar_luminosities, double radius) {
+        return Math.pow((luminosity_in_solar_luminosities / (4 * Math.PI
+                * (radius * radius) * SIGMA)), 0.25);
     }
 
     private static double colorIntensity(double max, double min, double current) {
@@ -105,7 +112,8 @@ public class Astrophysics {
 
         for (int i = 1; i < temperatureBands.size(); i++) {
             if (temperature <= temperatureBands.get(i)) {
-                intensity = (float) (colorIntensity(temperatureBands.get(i), temperatureBands.get(i - 1), temperature));
+                intensity = (float) (colorIntensity(temperatureBands.get(i),
+                        temperatureBands.get(i - 1), temperature));
 
                 // Mix colors to create star color for x between 1 and 7.
                 // Easy reference for function here:
@@ -125,14 +133,18 @@ public class Astrophysics {
                     b *= b;
                 }
 
-                return new Vec4(r, g, b, 1f);
+                // We normalize to make sure that the stars have the same
+                // brightness. This ensures that even almost completely white
+                // stars retain their color.
+                return VectorMath.normalize(new Vec4(r, g, b, 1f));
             }
         }
 
         return new Vec4(r, g, b, 1f);
     }
 
-    public static Vec4 gasColor(float density, float total_u_inNode, int membersOfnode) {
+    public static Vec4 gasColor(float density, float total_u_inNode,
+            int membersOfnode) {
         float u = (float) (Math.sqrt(total_u_inNode / membersOfnode) / 5000.0);
         if (Float.isNaN(u))
             u = 0f;

@@ -66,13 +66,19 @@ public class SGNode {
         this.TMatrix = MatrixMath.translate(translation);
     }
 
-    // public void translate(Vec3 translation) {
-    // this.TMatrix = TMatrix.mul(MatrixMath.translate(translation));
-    // }
+    public void translate(Vec3 translation) {
+        this.TMatrix = TMatrix.mul(MatrixMath.translate(translation));
+    }
 
-    // public void rotate(float rotation, Vec3 axis) {
-    // this.RMatrix = RMatrix.mul(MatrixMath.rotate(rotation, axis));
-    // }
+    public void rotate(float rotation, Vec3 axis) {
+        this.TMatrix = TMatrix.mul(MatrixMath.rotate(rotation, axis));
+    }
+
+    public void rotate(Vec3 rotation) {
+        this.TMatrix = TMatrix.mul(MatrixMath.rotationX(rotation.get(0)));
+        this.TMatrix = TMatrix.mul(MatrixMath.rotationY(rotation.get(1)));
+        this.TMatrix = TMatrix.mul(MatrixMath.rotationZ(rotation.get(2)));
+    }
 
     public synchronized void draw(GL3 gl, Mat4 MVMatrix) {
 

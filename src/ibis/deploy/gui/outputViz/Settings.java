@@ -6,8 +6,8 @@ public class Settings {
     private static final int DEFAULT_SCREEN_WIDTH = 1024;
     private static final int DEFAULT_SCREEN_HEIGHT = 768;
 
-    private static final int SCREENSHOT_SCREEN_WIDTH = 8080;
-    private static final int SCREENSHOT_SCREEN_HEIGHT = 5200;
+    private static final int SCREENSHOT_SCREEN_WIDTH = 1024;
+    private static final int SCREENSHOT_SCREEN_HEIGHT = 768;
 
     // Settings for the gas cloud octree
     public static final int MAX_CLOUD_DEPTH = 25;
