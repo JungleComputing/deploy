@@ -17,6 +17,11 @@ import ibis.deploy.gui.misc.SaveAsWorkSpaceAction;
 import ibis.deploy.gui.misc.SaveWorkSpaceAction;
 import ibis.deploy.gui.misc.Utils;
 import ibis.deploy.gui.worldmap.MapUtilities;
+import ibis.deploy.monitoring.collection.Collector;
+import ibis.deploy.monitoring.simulator.FakeManagementService;
+import ibis.deploy.monitoring.simulator.FakeRegistryService;
+import ibis.ipl.server.ManagementServiceInterface;
+import ibis.ipl.server.RegistryServiceInterface;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -52,12 +57,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.UIManager;
 
-import ibis.deploy.monitoring.collection.Collector;
-import ibis.deploy.monitoring.simulator.FakeManagementService;
-import ibis.deploy.monitoring.simulator.FakeRegistryService;
-import ibis.ipl.server.ManagementServiceInterface;
-import ibis.ipl.server.RegistryServiceInterface;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,13 +70,13 @@ public class GUI {
 
     private Deploy deploy;
 
-    private List<WorkSpaceChangedListener> gridListeners = new ArrayList<WorkSpaceChangedListener>();
+    private final List<WorkSpaceChangedListener> gridListeners = new ArrayList<WorkSpaceChangedListener>();
 
-    private List<WorkSpaceChangedListener> applicationSetListeners = new ArrayList<WorkSpaceChangedListener>();
+    private final List<WorkSpaceChangedListener> applicationSetListeners = new ArrayList<WorkSpaceChangedListener>();
 
-    private List<WorkSpaceChangedListener> experimentListeners = new ArrayList<WorkSpaceChangedListener>();
+    private final List<WorkSpaceChangedListener> experimentListeners = new ArrayList<WorkSpaceChangedListener>();
 
-    private List<SubmitJobListener> submitJobListeners = new ArrayList<SubmitJobListener>();
+    private final List<SubmitJobListener> submitJobListeners = new ArrayList<SubmitJobListener>();
 
     private Workspace workspace = null;
 
@@ -90,16 +89,14 @@ public class GUI {
     private RootPanel myRoot;
 
     private Mode mode;
-    
+
     private final Collector collector;
-    
+
     private final boolean monitoringEnabled;
-    
+
     private boolean nativeLoaded = false;
 
     // private Boolean sharedHubs;
-    
-    
 
     private static class Shutdown extends Thread {
         private final GUI gui;
@@ -108,6 +105,7 @@ public class GUI {
             this.gui = gui;
         }
 
+        @Override
         public void run() {
             gui.getDeploy().end();
         }
@@ -121,17 +119,17 @@ public class GUI {
 
         final GUI gui = new GUI(args);
         Runtime.getRuntime().addShutdownHook(new Shutdown(gui));
-        
+
         // Schedule a job for the event-dispatching thread:
         // creating and showing this application's GUI.
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-            	try {
-                gui.createAndShowGUI();
-            	} catch (Exception e) {
-            		e.printStackTrace(System.err);
-            		System.exit(1);
-            	}
+                try {
+                    gui.createAndShowGUI();
+                } catch (Exception e) {
+                    e.printStackTrace(System.err);
+                    System.exit(1);
+                }
             }
         });
     }
@@ -139,7 +137,7 @@ public class GUI {
     private void close() {
         int choice = JOptionPane.showConfirmDialog(frame, "Really exit?",
                 "Exiting Ibis-Deploy", JOptionPane.YES_NO_OPTION);
-                
+
         if (choice == JOptionPane.YES_OPTION) {
             frame.dispose();
             System.exit(0);
@@ -153,15 +151,15 @@ public class GUI {
 
         JOptionPane options = new JOptionPane(
                 "Exiting ibis-deploy. Save workspace to \"" + location + "\"?",
-                JOptionPane.QUESTION_MESSAGE,
-                JOptionPane.YES_NO_CANCEL_OPTION, null, new Object[] {"Yes", "No", "Cancel"}, "No");
-        
+                JOptionPane.QUESTION_MESSAGE, JOptionPane.YES_NO_CANCEL_OPTION,
+                null, new Object[] { "Yes", "No", "Cancel" }, "No");
+
         JDialog dialog = options.createDialog(frame, "Save Workspace?");
-        
+
         dialog.setVisible(true);
-        
+
         Object choice = options.getValue();
-        
+
         if (choice != null && choice.equals("Yes")) {
             try {
                 saveWorkspace();
@@ -222,7 +220,7 @@ public class GUI {
         this.menuBar.add(menu);
 
         menu = new JMenu("Options");
-        
+
         menu.add(MapUtilities.getMapMenu());
 
         if (mode == Mode.NORMAL) {
@@ -243,7 +241,7 @@ public class GUI {
             subMenu.add(menuItem);
             menu.add(subMenu);
         }
-      
+
         this.menuBar.add(menu);
 
         menu = new JMenu("Help");
@@ -262,12 +260,14 @@ public class GUI {
 
         if (mode == Mode.READ_ONLY_WORKSPACE || mode == Mode.MONITORING_ONLY) {
             frame.addWindowListener(new WindowAdapter() {
+                @Override
                 public void windowClosing(WindowEvent we) {
                     close();
                 }
             });
         } else {
             frame.addWindowListener(new WindowAdapter() {
+                @Override
                 public void windowClosing(WindowEvent we) {
                     saveAndClose();
                 }
@@ -293,41 +293,43 @@ public class GUI {
         System.err.println("-k\t\tKeep sandboxes");
         System.err.println("-r\t\tRead only mode");
         System.err.println("-v\t\tVerbose mode");
-        System.err.println("--monitoring-enabled | -m \tCollect performance data from running applications.");
+        System.err
+                .println("--monitoring-enabled | -m \tCollect performance data from running applications.");
         System.err.println("-f\t\tSimulate a grid (for monitor testing).");
         System.err
                 .println("-p PORT\t\tLocal port number (defaults to random free port)");
         System.err.println("-h | --help\tThis message");
     }
 
-    public GUI(Deploy deploy, Workspace workspace, Mode mode, final String... logos) throws Exception {
-	this(deploy, workspace, mode, deploy.isMonitoringEnabled(), logos);
+    public GUI(Deploy deploy, Workspace workspace, Mode mode,
+            final String... logos) throws Exception {
+        this(deploy, workspace, mode, deploy.isMonitoringEnabled(), logos);
     }
-    
-    public GUI(Deploy deploy, Workspace workspace, Mode mode, boolean monitoringEnabled, final String... logos)
-    throws Exception {
+
+    public GUI(Deploy deploy, Workspace workspace, Mode mode,
+            boolean monitoringEnabled, final String... logos) throws Exception {
         this.deploy = deploy;
         this.mode = mode;
         this.workspace = workspace;
         this.monitoringEnabled = monitoringEnabled;
-        
+
         if (isMonitoringEnabled()) {
             RegistryServiceInterface regInterface;
             ManagementServiceInterface manInterface;
-        	logger.info("Monitoring enabled");
+            logger.info("Monitoring enabled");
             regInterface = deploy.getServer().getRegistryService();
             manInterface = deploy.getServer().getManagementService();
 
-            //Data interface
-            collector = ibis.deploy.monitoring.collection.impl.CollectorImpl.getCollector(manInterface, regInterface);
-            new Thread(collector).start();    		
+            // Data interface
+            collector = ibis.deploy.monitoring.collection.impl.CollectorImpl
+                    .getCollector(manInterface, regInterface);
+            new Thread(collector).start();
         } else {
-        	collector = null;
+            collector = null;
         }
         createAndShowGUI(logos);
     }
-    
-    
+
     protected GUI(String[] arguments) {
         boolean verbose = false;
         boolean keepSandboxes = false;
@@ -358,8 +360,9 @@ public class GUI {
                     mode = Mode.READ_ONLY_WORKSPACE;
                 } else if (arguments[i].equals("-f")) {
                     monitoringFakeData = true;
-                } else if (arguments[i].equals("-m") || arguments.equals("--monitoring-enabled")) {
-                	monitoringEnabled = true;
+                } else if (arguments[i].equals("-m")
+                        || arguments.equals("--monitoring-enabled")) {
+                    monitoringEnabled = true;
                 } else {
                     File file = new File(arguments[i]);
                     if (file.isDirectory()) {
@@ -392,7 +395,7 @@ public class GUI {
             System.err.println("DEPLOY: Workspace:");
             System.err.println(workspace.toPrintString());
         }
-        
+
         this.monitoringEnabled = monitoringEnabled;
 
         try {
@@ -401,11 +404,13 @@ public class GUI {
 
                 // init with built-in server
 
-                deploy = new Deploy(null, verbose, keepSandboxes, isMonitoringEnabled(), port, null,
-                        null, true);
+                deploy = new Deploy(null, verbose, keepSandboxes,
+                        isMonitoringEnabled(), port, null, null, true);
             } else {
-                logger.info("Initializing Ibis Deploy"
-                        + ", using server on cluster \"" + serverCluster + "\"");
+                logger
+                        .info("Initializing Ibis Deploy"
+                                + ", using server on cluster \""
+                                + serverCluster + "\"");
 
                 Cluster cluster = workspace.getGrid().getCluster(serverCluster);
 
@@ -416,37 +421,38 @@ public class GUI {
                 }
 
                 InitializationFrame initWindow = new InitializationFrame();
-                deploy = new Deploy(null, verbose, keepSandboxes, isMonitoringEnabled(), port,
-                        cluster, initWindow, true);
+                deploy = new Deploy(null, verbose, keepSandboxes,
+                        isMonitoringEnabled(), port, cluster, initWindow, true);
                 // will call dispose in the Swing thread
                 initWindow.remove();
 
             }
-               
+
             if (isMonitoringEnabled()) {
-	            RegistryServiceInterface regInterface;
-	            ManagementServiceInterface manInterface;
-	            if (monitoringFakeData) {
-	            	logger.info("Collecting simulated data.");
-	            	
-	            	//Ibis/JMX variables
-	            	regInterface = new FakeRegistryService(1,2,2,3,4);
-	            	manInterface = new FakeManagementService(regInterface);
-	            } else {
-	            	logger.info("Monitoring enabled");
-	            	regInterface = deploy.getServer().getRegistryService();
-	            	manInterface = deploy.getServer().getManagementService();
-	            }
-            
-	            //Data interface
-	            collector = ibis.deploy.monitoring.collection.impl.CollectorImpl.getCollector(manInterface, regInterface);
-	            new Thread(collector).start();    		
+                RegistryServiceInterface regInterface;
+                ManagementServiceInterface manInterface;
+                if (monitoringFakeData) {
+                    logger.info("Collecting simulated data.");
+
+                    // Ibis/JMX variables
+                    regInterface = new FakeRegistryService(1, 1, 2, 3, 4);
+                    manInterface = new FakeManagementService(regInterface);
+                } else {
+                    logger.info("Monitoring enabled");
+                    regInterface = deploy.getServer().getRegistryService();
+                    manInterface = deploy.getServer().getManagementService();
+                }
+
+                // Data interface
+                collector = ibis.deploy.monitoring.collection.impl.CollectorImpl
+                        .getCollector(manInterface, regInterface);
+                new Thread(collector).start();
             }
         } catch (Exception e) {
             System.err.println("Could not initialize ibis-deploy: " + e);
             e.printStackTrace(System.err);
             System.exit(1);
-        } 
+        }
         this.collector = collector;
     }
 
@@ -577,125 +583,127 @@ public class GUI {
     public RootPanel getRootPanel() {
         return myRoot;
     }
-    
+
     public Mode getMode() {
         return mode;
     }
-    
-    
+
     public Collector getCollector() {
-    	return collector;
-    }	
-    
-    
-    //Methods to load native libraries depending on OS and architecture
+        return collector;
+    }
+
+    // Methods to load native libraries depending on OS and architecture
     private String arch() {
         String a = System.getProperty("os.arch");
-        if("amd64".equals(a) || "x86_64".equals(a)) {
+        if ("amd64".equals(a) || "x86_64".equals(a)) {
             return "amd64";
         }
         return "i586";
     }
-    
-    private String getNativeJarName(String os) {   
-    	String prefix = "-natives-";
-    	
+
+    private String getNativeJarName(String os) {
+        String prefix = "-natives-";
+
         if (os.indexOf("nt") >= 0 || os.indexOf("win") >= 0) {
-        	 return prefix+"windows-"+arch()+".jar";
+            return prefix + "windows-" + arch() + ".jar";
         }
-        if (os.indexOf( "mac" ) >= 0) {
-        	 return prefix+"macosx-universal.jar";
+        if (os.indexOf("mac") >= 0) {
+            return prefix + "macosx-universal.jar";
         }
-        if (os.indexOf( "nix" ) >= 0 || os.indexOf( "nux" ) >= 0) {
-        	return prefix+"linux-"+arch()+".jar";
+        if (os.indexOf("nix") >= 0 || os.indexOf("nux") >= 0) {
+            return prefix + "linux-" + arch() + ".jar";
         }
-       return null;
+        return null;
     }
 
-    private String[] getNativeLibNames(File jarFile) throws IOException {    	
-    	JarFile jar = new JarFile(jarFile);	    
-	    Enumeration<JarEntry> entries = jar.entries(); 
-	    ArrayList<String> fileNames = new ArrayList<String>();
-	    
-	    while (entries.hasMoreElements()) {
-	    	ZipEntry z = entries.nextElement();
-	    	String entryName = z.getName();
-	    	
-	    	if (entryName.indexOf("META") < 0) {
-	    		fileNames.add(entryName);
-	    	}
-	    }
+    private String[] getNativeLibNames(File jarFile) throws IOException {
+        JarFile jar = new JarFile(jarFile);
+        Enumeration<JarEntry> entries = jar.entries();
+        ArrayList<String> fileNames = new ArrayList<String>();
+
+        while (entries.hasMoreElements()) {
+            ZipEntry z = entries.nextElement();
+            String entryName = z.getName();
+
+            if (entryName.indexOf("META") < 0) {
+                fileNames.add(entryName);
+            }
+        }
         return fileNames.toArray(new String[0]);
     }
-    
-    private File makeNativeDir() throws IOException {    	
-    	File tmpdir = new File(deploy.getHome().getAbsolutePath()+System.getProperty("file.separator")+"lib"+System.getProperty("file.separator")+"natives");
-   	
-        if(!tmpdir.mkdir() && !tmpdir.exists()) {
-            throw new IOException("Could not create temp directory: " + tmpdir.getAbsolutePath());
+
+    private File makeNativeDir() throws IOException {
+        File tmpdir = new File(deploy.getHome().getAbsolutePath()
+                + System.getProperty("file.separator") + "lib"
+                + System.getProperty("file.separator") + "natives");
+
+        if (!tmpdir.mkdir() && !tmpdir.exists()) {
+            throw new IOException("Could not create temp directory: "
+                    + tmpdir.getAbsolutePath());
         }
-        
+
         return tmpdir;
     }
-    
-    
+
     public void loadNativeLibs() throws IOException, URISyntaxException {
-    	if(true) {
-    		nativeLoaded = true;
-    		return;
-    	}
-    	
-    	String filesep = System.getProperty("file.separator");
-    	String os = System.getProperty("os.name").toLowerCase();
-    	String dirname = deploy.getHome().getAbsolutePath() + filesep + "lib";
-    	
-    	String[] prefixes = { "jogl", "gluegen-rt", "nativewindow", "newt" };
-    	    	
-    	File tmpdir = makeNativeDir();
-    	String tmpPath = String.format(tmpdir.getAbsolutePath());
-    	
-    	HashMap<File, File[]> jarStore = new HashMap<File, File[]>();
-    	
-    	for (String prefix : prefixes) {
-    		//Select the correct jar file based on OS and architecture    		
-	        String jarname = dirname + filesep + prefix + getNativeJarName(os); 
-	    	
-	        File nativeJar = new File(jarname);
-	        
-	        String[] nativeLibNames =  getNativeLibNames(nativeJar);
-	        File[] nativeLibs = new File[nativeLibNames.length];
-	        	        
-	        for (int i = 0; i < nativeLibNames.length; i++) {
-	        	nativeLibs[i] = new File(tmpPath + filesep + nativeLibNames[i]);
-	        }
-	        
-	        jarStore.put(nativeJar, nativeLibs);
-    	}
-    	
-    	for (Entry<File, File[]> entry : jarStore.entrySet()) {
-    		for (File file : entry.getValue()) {
-    			extractNativeLib(entry.getKey(), file);
-    		}		
-    	} 
-    	nativeLoaded = true;
+        if (true) {
+            nativeLoaded = true;
+            return;
+        }
+
+        String filesep = System.getProperty("file.separator");
+        String os = System.getProperty("os.name").toLowerCase();
+        String dirname = deploy.getHome().getAbsolutePath() + filesep + "lib";
+
+        String[] prefixes = { "jogl", "gluegen-rt", "nativewindow", "newt" };
+
+        File tmpdir = makeNativeDir();
+        String tmpPath = String.format(tmpdir.getAbsolutePath());
+
+        HashMap<File, File[]> jarStore = new HashMap<File, File[]>();
+
+        for (String prefix : prefixes) {
+            // Select the correct jar file based on OS and architecture
+            String jarname = dirname + filesep + prefix + getNativeJarName(os);
+
+            File nativeJar = new File(jarname);
+
+            String[] nativeLibNames = getNativeLibNames(nativeJar);
+            File[] nativeLibs = new File[nativeLibNames.length];
+
+            for (int i = 0; i < nativeLibNames.length; i++) {
+                nativeLibs[i] = new File(tmpPath + filesep + nativeLibNames[i]);
+            }
+
+            jarStore.put(nativeJar, nativeLibs);
+        }
+
+        for (Entry<File, File[]> entry : jarStore.entrySet()) {
+            for (File file : entry.getValue()) {
+                extractNativeLib(entry.getKey(), file);
+            }
+        }
+        nativeLoaded = true;
     }
-    
-    private void extractNativeLib(File file, File target) throws IOException, URISyntaxException { 
-    	JarFile jar = new JarFile(file);
+
+    private void extractNativeLib(File file, File target) throws IOException,
+            URISyntaxException {
+        JarFile jar = new JarFile(file);
         ZipEntry z = jar.getEntry(target.getName());
-        if(z == null) {
-        	throw new UnsatisfiedLinkError("Could not find library: "+target.getName());
+        if (z == null) {
+            throw new UnsatisfiedLinkError("Could not find library: "
+                    + target.getName());
         }
 
         InputStream in = jar.getInputStream(z);
         try {
-            OutputStream out = new BufferedOutputStream(
-                new FileOutputStream(target));
+            OutputStream out = new BufferedOutputStream(new FileOutputStream(
+                    target));
             try {
                 byte[] buf = new byte[2048];
-                for(;;) {
+                for (;;) {
                     int n = in.read(buf);
-                    if(n < 0) {
+                    if (n < 0) {
                         break;
                     }
                     out.write(buf, 0, n);
@@ -706,5 +714,5 @@ public class GUI {
         } finally {
             in.close();
         }
-	}    
+    }
 }
