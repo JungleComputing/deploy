@@ -100,8 +100,10 @@ public class MPIBytesSentPerSecond extends
                     throw new IncorrectParametersException();
                 }
             }
+        } else if (results[0] == null) {
+            // Do nothing, apparently there are no results.
         } else {
-            logger.error("Parameter is not a map.");
+            logger.error("Parameter is not a map, nor is it null.");
             throw new IncorrectParametersException();
         }
 

@@ -223,19 +223,25 @@ public class FakeManagementService implements ManagementServiceInterface,
                     IbisIdentifier iArray[] = reg.getMembers(myPool);
 
                     Map<IbisIdentifier, Long> resultMap = new HashMap<IbisIdentifier, Long>();
-                    int destinations = (int) (Math.random() * iArray.length);
-                    int j = 0;
-                    while (j < destinations) {
-
-                        IbisIdentifier randomIbis = iArray[(int) (Math.random() * iArray.length)];
-                        while (resultMap.containsKey(randomIbis)) {
-                            randomIbis = iArray[(int) (Math.random() * iArray.length)];
+                    // Fke the fact that some ibises will not have any MPI
+                    // connections
+                    if (Math.random() < 0.5) {
+                        resultMap = null;
+                    } else {
+                        int destinations = (int) (Math.random() * iArray.length);
+                        int j = 0;
+                        while (j < destinations) {
+                            IbisIdentifier randomIbis = iArray[(int) (Math
+                                    .random() * iArray.length)];
+                            while (resultMap.containsKey(randomIbis)) {
+                                randomIbis = iArray[(int) (Math.random() * iArray.length)];
+                            }
+                            resultMap
+                                    .put(
+                                            randomIbis,
+                                            (long) (Math.random() * 5000 + currentIteration * 5000));
+                            j++;
                         }
-                        resultMap
-                                .put(
-                                        randomIbis,
-                                        (long) (Math.random() * 5000 + currentIteration * 5000));
-                        j++;
                     }
                     result[i] = resultMap;
                 } else {
