@@ -18,7 +18,7 @@ public enum Mode {
      * Read only mode. Jobs can be started and stopped, but not
      * created, deleted, edited, etc
      */
-    READ_ONLY_WORKSPACE,
+    READONLY_WORKSPACE,
     
     /**
      * Monitor only mode. The GUI can in no way be used to influence

@@ -41,7 +41,7 @@ public class ExperimentsPanel extends JPanel {
                 JSplitPane.HORIZONTAL_SPLIT, editor, smartSockets);
         horizontalSplitPane.setOneTouchExpandable(true);
 
-        if (gui.getMode() == Mode.READ_ONLY_WORKSPACE || gui.getMode() == Mode.MONITORING_ONLY) {
+        if (gui.getMode() == Mode.READONLY_WORKSPACE || gui.getMode() == Mode.MONITORING_ONLY) {
             horizontalSplitPane
                     .setDividerLocation((int) (GUI.DEFAULT_SCREEN_WIDTH * 0.5));
         } else {

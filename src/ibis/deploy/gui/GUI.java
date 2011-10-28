@@ -191,7 +191,7 @@ public class GUI {
         this.menuBar = new JMenuBar();
         JMenu menu = new JMenu("File");
 
-        if (mode == Mode.READ_ONLY_WORKSPACE || mode == Mode.MONITORING_ONLY) {
+        if (mode == Mode.READONLY_WORKSPACE || mode == Mode.MONITORING_ONLY) {
             menuItem = new JMenuItem("Exit");
             menuItem.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent arg0) {
@@ -258,7 +258,7 @@ public class GUI {
         frame.setPreferredSize(new Dimension(DEFAULT_SCREEN_WIDTH,
                 DEFAULT_SCREEN_HEIGHT));
 
-        if (mode == Mode.READ_ONLY_WORKSPACE || mode == Mode.MONITORING_ONLY) {
+        if (mode == Mode.READONLY_WORKSPACE || mode == Mode.MONITORING_ONLY) {
             frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent we) {
@@ -357,7 +357,7 @@ public class GUI {
                     printUsage();
                     System.exit(0);
                 } else if (arguments[i].equals("-r")) {
-                    mode = Mode.READ_ONLY_WORKSPACE;
+                    mode = Mode.READONLY_WORKSPACE;
                 } else if (arguments[i].equals("-f")) {
                     monitoringFakeData = true;
                 } else if (arguments[i].equals("-m")
