@@ -115,14 +115,12 @@ public class Hdf5TimedPlayer implements Runnable {
 
                     if (currentState == states.MOVIEMAKING) {
                         Vec3 rotation = glw.getRotation();
-                        for (int i = 0; i < 5; i++) {
-                            glw.makeSnapshot("" + (currentFrame * 5 + i));
+                            glw.makeSnapshot(String.format("%05d", (currentFrame)));
 
                             rotation.set(1, rotation.get(1) + .5f);
                             glw.setRotation(rotation);
 
                             Thread.sleep(GLWindow.getWaittime());
-                        }
                     }
 
                     currentFrame++;
@@ -168,15 +166,15 @@ public class Hdf5TimedPlayer implements Runnable {
     }
 
     private void updateFrame() throws FileOpeningException {
-        synchronized (this) {
             Hdf5Snapshotter snappy = new Hdf5Snapshotter();
             snappy.open(namePrefix, currentFrame, GLWindow.getLOD(), starModels, cloudModels);
             StarSGNode newSgRoot = snappy.getSgRoot();
             OctreeNode newOctreeRoot = snappy.getOctreeRoot();
             
-            sgRoot = newSgRoot;            
-            octreeRoot = newOctreeRoot;            
-        }
+            synchronized(this) {
+            	sgRoot = newSgRoot;            
+            	octreeRoot = newOctreeRoot;
+            }
     }
 
     public void start() {
@@ -224,15 +222,11 @@ public class Hdf5TimedPlayer implements Runnable {
         return currentFrame;
     }
 
-    public StarSGNode getSgRoot() {
-        synchronized (this) {
+    public synchronized StarSGNode getSgRoot() {
             return sgRoot;
-        }
     }
 
-    public OctreeNode getOctreeRoot() {
-        synchronized (this) {
+    public synchronized OctreeNode getOctreeRoot() {
             return octreeRoot;
-        }
     }
 }
