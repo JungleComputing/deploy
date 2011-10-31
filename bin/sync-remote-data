@@ -1,0 +1,6 @@
+#!/bin/bash
+
+for (( ; ; )) do
+	rsync -avt $1 .
+	sleep 10
+done
