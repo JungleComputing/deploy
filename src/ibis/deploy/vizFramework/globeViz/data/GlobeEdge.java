@@ -1,26 +1,20 @@
 package ibis.deploy.vizFramework.globeViz.data;
 
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.render.markers.Marker;
+import ibis.deploy.vizFramework.globeViz.viz.BSplinePolyline;
+import ibis.deploy.vizFramework.globeViz.viz.GlobeVisualization;
+import ibis.deploy.vizFramework.globeViz.viz.markers.MovingParticle;
+import ibis.deploy.vizFramework.globeViz.viz.markers.ParticlePool;
+import ibis.deploy.vizFramework.globeViz.viz.utils.UIConstants;
+
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Vector;
 
-import com.sun.org.apache.bcel.internal.generic.NEW;
-
-import ibis.deploy.vizFramework.globeViz.viz.GlobeVisualization;
-import ibis.deploy.vizFramework.globeViz.viz.BSplinePolyline;
-import ibis.deploy.vizFramework.globeViz.viz.markers.ParticlePool;
-import ibis.deploy.vizFramework.globeViz.viz.markers.MovingParticle;
-import ibis.deploy.vizFramework.globeViz.viz.utils.UIConstants;
-import gov.nasa.worldwind.geom.Position;
-import gov.nasa.worldwind.geom.Vec4;
-import gov.nasa.worldwind.render.Material;
-import gov.nasa.worldwind.render.markers.BasicMarkerAttributes;
-import gov.nasa.worldwind.render.markers.BasicMarkerShape;
-import gov.nasa.worldwind.render.markers.Marker;
-
 /**
  * @author Ana Vinatoru
- *
+ * 
  */
 
 public class GlobeEdge {
@@ -30,8 +24,8 @@ public class GlobeEdge {
     private final String name;
     private Color edgeColor = Color.green;
     private Color particleColor = Color.green;
-    private ParticlePool markerPool;
-    private boolean isSecondEdge;
+    private final ParticlePool markerPool;
+    private final boolean isSecondEdge;
     private boolean lastStateFollowGrid = false;
     ArrayList<Position> positions; // TODO - maybe remove this
     private double weight;
@@ -167,9 +161,8 @@ public class GlobeEdge {
         MovingParticle marker = null;
         if (weight > 0) {
             if (((ArrayList<Position>) polyline.getPositions()).size() > 0) {
-                marker = markerPool.getMarker(
-                        ((ArrayList<Position>) polyline.getPositions()).get(0),
-                        particleColor);
+                marker = markerPool.getMarker(((ArrayList<Position>) polyline
+                        .getPositions()).get(0), particleColor);
             }
         }
         return marker;

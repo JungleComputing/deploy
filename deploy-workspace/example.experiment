@@ -13,3 +13,63 @@
 # runtime             Maximum runtime of job (in minutes)
 # pool.name           Pool name. Defaults to name of experiment if unspecified
 # pool.size           Size of pool. Only used in a closed-world application
+
+DAS3-UvA-Job.application.name = Go
+DAS3-UvA-Job.process.count = 1
+DAS3-UvA-Job.resource.count = 1
+DAS3-UvA-Job.pool.name = go-pool
+DAS3-UvA-Job.cluster.name = DAS3-UvA
+
+DAS3-VU-Job.application.name = Go
+DAS3-VU-Job.process.count = 1
+DAS3-VU-Job.resource.count = 1
+DAS3-VU-Job.pool.name = go-pool
+DAS3-VU-Job.cluster.name = DAS3-VU
+
+DAS3-Delft-Job.application.name = Go
+DAS3-Delft-Job.process.count = 1
+DAS3-Delft-Job.resource.count = 1
+DAS3-Delft-Job.pool.name = go-pool
+DAS3-Delft-Job.cluster.name = DAS3-Delft
+
+DAS3-Leiden-Job.application.name = Go
+DAS3-Leiden-Job.process.count = 1
+DAS3-Leiden-Job.resource.count = 1
+DAS3-Leiden-Job.pool.name = go-pool
+DAS3-Leiden-Job.cluster.name = DAS3-Leiden
+
+DAS3-MultimediaN-Job.application.name = Go
+DAS3-MultimediaN-Job.process.count = 1
+DAS3-MultimediaN-Job.resource.count = 1
+DAS3-MultimediaN-Job.pool.name = go-pool
+DAS3-MultimediaN-Job.cluster.name = DAS3-MultimediaN
+
+DAS4-UvA-Job.application.name = Go
+DAS4-UvA-Job.process.count = 1
+DAS4-UvA-Job.resource.count = 1
+DAS4-UvA-Job.pool.name = go-pool
+DAS4-UvA-Job.cluster.name = DAS4-UvA
+
+DAS4-VU-Job.application.name = Go
+DAS4-VU-Job.process.count = 1
+DAS4-VU-Job.resource.count = 1
+DAS4-VU-Job.pool.name = go-pool
+DAS4-VU-Job.cluster.name = DAS4-VU
+
+DAS4-Delft-Job.application.name = Go
+DAS4-Delft-Job.process.count = 1
+DAS4-Delft-Job.resource.count = 1
+DAS4-Delft-Job.pool.name = go-pool
+DAS4-Delft-Job.cluster.name = DAS4-Delft
+
+DAS4-Leiden-Job.application.name = Go
+DAS4-Leiden-Job.process.count = 1
+DAS4-Leiden-Job.resource.count = 1
+DAS4-Leiden-Job.pool.name = go-pool
+DAS4-Leiden-Job.cluster.name = DAS4-Leiden
+
+DAS4-MultimediaN-Job.application.name = Go
+DAS4-MultimediaN-Job.process.count = 1
+DAS4-MultimediaN-Job.resource.count = 1
+DAS4-MultimediaN-Job.pool.name = go-pool
+DAS4-MultimediaN-Job.cluster.name = DAS4-MultimediaN
