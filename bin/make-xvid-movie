@@ -1,5 +1,5 @@
 #!/bin/bash
 #mencoder mf://*.png -mf fps=25 -ovc xvid -oac mp3lame -xvidencopts bitrate=10000:pass=1 -o simulation-movie.avi
 #mencoder mf://*.png -mf fps=25 -ovc xvid -oac mp3lame -xvidencopts bitrate=10000:pass=2 -o simulation-movie.avi
-
-mencoder mf://*.png -mf fps=25 -ovc x264 -oac mp3lame  -x264encopts bitrate=10000 -o simulation-movie.avi
+#mencoder mf://*.png -mf fps=25 -ovc x264 -oac mp3lame  -x264encopts bitrate=10000 -o simulation-movie.avi
+ffmpeg -f image2 -i %05d.png -vcodec mjpeg -qmax 1 simulation-movie.avi
