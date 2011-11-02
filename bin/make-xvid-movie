@@ -1,0 +1,3 @@
+#!/bin/bash
+mencoder mf://*.png -ovc xvid -oac mp3lame -xvidencopts bitrate=10000:pass=1 -o simulation-movie.avi
+mencoder mf://*.png -ovc xvid -oac mp3lame -xvidencopts bitrate=10000:pass=2 -o simulation-movie.avi
