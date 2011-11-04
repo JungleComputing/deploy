@@ -1,0 +1,217 @@
+<project name="deploy" default="build" basedir=".">
+    <description>
+	Build file for the deploy project
+    </description>	
+	 
+	<condition property="build.on.linux32">
+		<and>
+			<or>
+				<matches string="${os.name}" pattern=".*nix.*"/>
+				<matches string="${os.name}" pattern=".*nux.*"/>
+			</or>
+			<not>
+				<matches string="${os.arch}" pattern=".*64.*"/>
+			</not>
+		</and>
+	</condition>
+	
+	<condition property="build.on.linux64">
+		<and>
+			<or>
+				<matches string="${os.name}" pattern=".*nix.*"/>
+				<matches string="${os.name}" pattern=".*nux.*"/>
+			</or>
+			<matches string="${os.arch}" pattern=".*64.*"/>
+		</and>	
+	</condition>
+	
+	<condition property="build.on.windows32">
+		<and>
+			<or>
+				<matches string="${os.name}" pattern=".*nt.*"/>
+				<matches string="${os.name}" pattern=".*win.*"/>
+				<matches string="${os.name}" pattern=".*Win.*"/>
+			</or>
+			<not>
+				<matches string="${os.arch}" pattern=".*64.*"/>
+			</not>
+		</and>  
+	</condition>
+	
+	<condition property="build.on.windows64">
+		<and>
+			<or>
+				<matches string="${os.name}" pattern=".*nt.*"/>
+				<matches string="${os.name}" pattern=".*win.*"/>
+				<matches string="${os.name}" pattern=".*Win.*"/>
+			</or>
+			<matches string="${os.arch}" pattern=".*64.*"/>
+		</and>  
+	</condition>
+	
+	<condition property="build.on.macosx32">
+		<and>
+			<matches string="${os.name}" pattern=".*mac.*"/>
+			<matches string="${os.name}" pattern=".*Mac.*"/>
+			<not>
+				<matches string="${os.arch}" pattern=".*64.*"/>
+			</not>
+		</and>  
+	</condition>
+	
+	<condition property="build.on.macosx64">
+		<and>
+			<matches string="${os.name}" pattern=".*mac.*"/>
+			<matches string="${os.name}" pattern=".*Mac.*"/>
+			<matches string="${os.arch}" pattern=".*64.*"/>
+		</and>  
+	</condition>
+	
+	
+	
+    <property name="version" value="" />
+	
+    <property name="dist-name" value="${ant.project.name}${version}" />
+    <property name="lib-jar" value="deploy${version}.jar" />
+    <property name="gui-jar" value="deploy-gui${version}.jar" />
+    <property name="cli-jar" value="deploy-cli${version}.jar" />
+	<property name="mon-jar" value="deploy-mon${version}.jar" />
+	<property name="viz-jar" value="deploy-viz${version}.jar" />
+
+    <!-- Import environment properties -->
+    <property name="ipl" location="external/ipl" />
+    <property name="javagat" location="external/javagat" />
+	<property name="jogl" location="external/jogl" />
+
+    <target name="build" description="Build with included JavaGAT and IPL" depends="clean, copy-external, copy-natives, compile" />
+
+    <path id="default.classpath">
+        <fileset dir="lib">
+            <include name="*.jar" />
+        </fileset>
+        <pathelement path="tmp" />
+    </path>
+	
+    <!-- copy external dependancies -->
+    <target name="copy-external">
+        <mkdir dir="lib" />
+        <mkdir dir="lib-server" />
+
+        <copy todir="lib">
+            <fileset dir="external" includes="*.jar" />            
+        	<fileset dir="${jogl}" includes="*.jar" excludes="**/*natives*" />
+            <fileset dir="${javagat}" />
+            <fileset dir="${ipl}" />
+        </copy>
+
+        <!--
+        <copy todir="lib-server">
+            <fileset dir="${ipl}" />
+        </copy>
+-->
+    </target>	
+	
+	<target name="copy-natives" depends="make-native-dir, copy-win32, copy-win64, copy-linux32, copy-linux64, copy-macosx32, copy-macosx64" />
+	<target name="make-native-dir">
+		<mkdir dir="lib/natives" />
+	</target>
+	
+	<target name="copy-win32" if="build.on.windows32">		
+		<unzip dest="lib/natives">
+			<fileset dir="external/jogl" includes="*natives-windows-i586.jar" />
+		</unzip>
+	</target>
+	
+	<target name="copy-win64" if="build.on.windows64">
+		<unzip dest="lib/natives">
+			<fileset dir="external/jogl" includes="*natives-windows-amd64.jar" />
+		</unzip>
+	</target>
+	
+	<target name="copy-linux32" if="build.on.linux32">
+		<unzip dest="lib/natives">
+			<fileset dir="external/jogl" includes="*natives-linux-i586.jar" />
+		</unzip>
+	</target>
+		
+	<target name="copy-linux64" if="build.on.linux64">
+		<unzip dest="lib/natives">
+			<fileset dir="external/jogl" includes="*natives-linux-amd64.jar" />
+		</unzip>
+	</target>		
+	
+	<target name="copy-macosx32" if="build.on.macosx32">
+		<unzip dest="lib/natives">
+			<fileset dir="external/jogl" includes="*natives-macosx-universal.jar" />
+		</unzip>
+	</target>
+		
+	<target name="copy-macosx64" if="build.on.macosx32">
+		<unzip dest="lib/natives">
+			<fileset dir="external/jogl" includes="*natives-macosx-universal.jar" />
+		</unzip>
+	</target>
+
+    <!-- Compile -->
+    <target name="compile">
+        <mkdir dir="tmp" />
+        <mkdir dir="tmp/images" />
+        <mkdir dir="lib" />
+
+        <copy todir="tmp/images">
+            <fileset dir="images" includes="*" />
+        </copy>
+
+        <!-- Compile the java code from ${src} into ${tmp} -->
+        <javac srcdir="src" destdir="tmp" includeantruntime="false" debug="on" source="1.6" target="1.6" classpathref="default.classpath">
+            <compilerarg value="-Xlint:unchecked" />
+        </javac>
+
+        <!-- Create jar file -->
+        <jar destfile="lib/${lib-jar}" basedir="tmp" includes="ibis/deploy/*.class,ibis/deploy/util/*.class">
+        </jar>
+
+        <!-- Create jar file -->
+        <jar destfile="lib/${gui-jar}" basedir="tmp" includes="ibis/deploy/gui/**/*.class,images/*">
+        </jar>
+    	
+    	<!-- Create jar file -->
+    	<jar destfile="lib/${mon-jar}" basedir="tmp" includes="ibis/deploy/monitoring/**/*.class">
+    	</jar>
+    	
+    	<!-- Create jar file -->
+		<jar destfile="lib/${viz-jar}" basedir="tmp" includes="ibis/deploy/vizFramework/**/*.class">
+    	</jar>
+
+        <!-- Create jar file -->
+        <jar destfile="lib/${cli-jar}" basedir="tmp" includes="ibis/deploy/cli/**/*.class">
+        </jar>
+
+        <!-- Generate javadoc -->
+        <javadoc destdir="javadoc" access="public" classpathref="default.classpath" packagenames="ibis.deploy" sourcepath="src" windowtitle="Ibis ${ant.project.name} Documentation" doctitle="Ibis ${ant.project.name} Documentation" bottom="The Ibis project">
+        </javadoc>
+
+        <delete dir="tmp" />
+
+        <mkdir dir="lib-server" />
+
+		<!-- Re-package all the ipl jars into one jar for the server.
+    	     Exclude some unneeded jars to keep the file size down -->
+
+        <jar destfile="lib-server/server-all.jar">
+            <zipgroupfileset dir="${ipl}" includes="*.jar" excludes="antenna*,bcel*,TGGraphLayout*" />
+        </jar>
+
+    </target>
+
+    <!-- Clean up everything -->
+    <target name="clean" description="Clean up">
+        <delete dir="tmp" />
+        <delete dir="lib" />
+        <delete dir="lib-server" />
+	<!-- actually not created anymore, but to cleanup in old copies too -->
+        <delete dir="lib-zorilla" />
+        <delete dir="javadoc" />
+    </target>
+
+</project>
