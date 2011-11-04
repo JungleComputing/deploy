@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Ana Vinatoru
- *
+ * 
  */
 
 public class PersistenceRegistryService implements
@@ -19,7 +19,7 @@ public class PersistenceRegistryService implements
     private static final Logger logger = LoggerFactory
             .getLogger("ibis.deploy.vizFramework.persistence.PersistenceRegistryService");
 
-    private XMLImporter xmlImporter;
+    private final XMLImporter xmlImporter;
 
     public PersistenceRegistryService() {
         xmlImporter = XMLImporter.getImporter();
