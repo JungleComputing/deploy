@@ -9,9 +9,14 @@ public class Settings {
     private static final int SCREENSHOT_SCREEN_WIDTH = 1280;
     private static final int SCREENSHOT_SCREEN_HEIGHT = 720;
 
+    // Settings for the initial view
+    private static final float INITIAL_ROTATION_X = 34.0f;
+    private static final float INITIAL_ROTATION_Y = 335.0f;
+    private static final float INITIAL_ZOOM = -540.0f;
+
     // Settings for the gas cloud octree
-    public static final int MAX_CLOUD_DEPTH = 25;
-    public static final float GAS_EDGES = 800f;
+    private static final int MAX_CLOUD_DEPTH = 25;
+    private static final float GAS_EDGES = 800f;
 
     // Settings that should never change, but are listed here to make sure they
     // can be found if necessary
@@ -68,13 +73,13 @@ public class Settings {
     private static final int MEDIUM_STAR_SUBDIVISION = 2;
     private static final int MEDIUM_GAS_PARTICLES_PER_OCTREE_NODE = 25;
 
-    private static final int HIGH_GAS_BLUR_PASSES2 = 2;
-    private static final float HIGH_GAS_BLUR_SIZE2 = 2;
-    private static final int HIGH_GAS_BLUR_TYPE2 = 8;
+    private static final int HIGH_GAS_BLUR_PASSES = 2;
+    private static final float HIGH_GAS_BLUR_SIZE = 2;
+    private static final int HIGH_GAS_BLUR_TYPE = 8;
 
-    private static final int HIGH_STAR_HALO_BLUR_PASSES2 = 2;
-    private static final float HIGH_STAR_HALO_BLUR_SIZE2 = 1;
-    private static final int HIGH_STAR_HALO_BLUR_TYPE2 = 6;
+    private static final int HIGH_STAR_HALO_BLUR_PASSES = 2;
+    private static final float HIGH_STAR_HALO_BLUR_SIZE = 1;
+    private static final int HIGH_STAR_HALO_BLUR_TYPE = 6;
 
     private static final int HIGH_GAS_SUBDIVISION = 1;
     private static final int HIGH_STAR_SUBDIVISION = 3;
@@ -82,13 +87,13 @@ public class Settings {
 
     // Snaphots have different settings, since they are rendered at extremely
     // high resolutions pixels
-    private static final int SNAPSHOT_GAS_BLUR_PASSES = 2;
-    private static final float SNAPSHOT_GAS_BLUR_SIZE = 6;
-    private static final int SNAPSHOT_GAS_BLUR_TYPE = 10;
+    private static final int SNAPSHOT_GAS_BLUR_PASSES = 2; // 2
+    private static final float SNAPSHOT_GAS_BLUR_SIZE = 2; // 6
+    private static final int SNAPSHOT_GAS_BLUR_TYPE = 8; // 10
 
-    private static final int SNAPSHOT_STAR_HALO_BLUR_PASSES = 2;
-    private static final float SNAPSHOT_STAR_HALO_BLUR_SIZE = 1;
-    private static final int SNAPSHOT_STAR_HALO_BLUR_TYPE = 6;
+    private static final int SNAPSHOT_STAR_HALO_BLUR_PASSES = 2; // 2
+    private static final float SNAPSHOT_STAR_HALO_BLUR_SIZE = 1; // 1
+    private static final int SNAPSHOT_STAR_HALO_BLUR_TYPE = 6; // 6
 
     public static int getGasBlurPasses(int levelOfDetail) {
         switch (levelOfDetail) {
@@ -97,7 +102,7 @@ public class Settings {
         case 1:
             return MEDIUM_GAS_BLUR_PASSES;
         case 2:
-            return HIGH_GAS_BLUR_PASSES2;
+            return HIGH_GAS_BLUR_PASSES;
         }
         return 0;
     }
@@ -109,7 +114,7 @@ public class Settings {
         case 1:
             return MEDIUM_GAS_BLUR_SIZE;
         case 2:
-            return HIGH_GAS_BLUR_SIZE2;
+            return HIGH_GAS_BLUR_SIZE;
         }
         return 0;
     }
@@ -121,7 +126,7 @@ public class Settings {
         case 1:
             return MEDIUM_GAS_BLUR_TYPE;
         case 2:
-            return HIGH_GAS_BLUR_TYPE2;
+            return HIGH_GAS_BLUR_TYPE;
         }
         return 0;
     }
@@ -133,7 +138,7 @@ public class Settings {
         case 1:
             return MEDIUM_STAR_HALO_BLUR_PASSES;
         case 2:
-            return HIGH_STAR_HALO_BLUR_PASSES2;
+            return HIGH_STAR_HALO_BLUR_PASSES;
         }
         return 0;
     }
@@ -145,7 +150,7 @@ public class Settings {
         case 1:
             return MEDIUM_STAR_HALO_BLUR_SIZE;
         case 2:
-            return HIGH_STAR_HALO_BLUR_SIZE2;
+            return HIGH_STAR_HALO_BLUR_SIZE;
         }
         return 0;
     }
@@ -157,7 +162,7 @@ public class Settings {
         case 1:
             return MEDIUM_STAR_HALO_BLUR_TYPE;
         case 2:
-            return HIGH_STAR_HALO_BLUR_TYPE2;
+            return HIGH_STAR_HALO_BLUR_TYPE;
         }
         return 0;
     }
@@ -348,5 +353,17 @@ public class Settings {
 
     public static void setPostprocessingStarBrightness(float value) {
         postprocessing_star_brightness = value;
+    }
+
+    public static float getInitialRotationX() {
+        return INITIAL_ROTATION_X;
+    }
+
+    public static float getInitialRotationY() {
+        return INITIAL_ROTATION_Y;
+    }
+
+    public static float getInitialZoom() {
+        return INITIAL_ZOOM;
     }
 }

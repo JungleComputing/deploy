@@ -1,6 +1,5 @@
 package ibis.deploy.gui.outputViz;
 
-import ibis.deploy.gui.outputViz.amuse.Astrophysics;
 import ibis.deploy.gui.outputViz.amuse.Hdf5TimedPlayer;
 import ibis.deploy.gui.outputViz.amuse.StarSGNode;
 import ibis.deploy.gui.outputViz.common.Material;
@@ -8,7 +7,6 @@ import ibis.deploy.gui.outputViz.common.Perlin3D;
 import ibis.deploy.gui.outputViz.common.Picture;
 import ibis.deploy.gui.outputViz.common.PostProcessTexture;
 import ibis.deploy.gui.outputViz.common.Texture2D;
-import ibis.deploy.gui.outputViz.common.math.Color4;
 import ibis.deploy.gui.outputViz.common.math.Mat3;
 import ibis.deploy.gui.outputViz.common.math.Mat4;
 import ibis.deploy.gui.outputViz.common.math.MatrixMath;
@@ -18,7 +16,6 @@ import ibis.deploy.gui.outputViz.common.math.Vec4;
 import ibis.deploy.gui.outputViz.common.scenegraph.OctreeNode;
 import ibis.deploy.gui.outputViz.common.scenegraph.SGNode;
 import ibis.deploy.gui.outputViz.exceptions.UninitializedException;
-import ibis.deploy.gui.outputViz.models.Axis;
 import ibis.deploy.gui.outputViz.models.Model;
 import ibis.deploy.gui.outputViz.models.base.Quad;
 import ibis.deploy.gui.outputViz.shaders.Program;
@@ -27,10 +24,9 @@ import ibis.deploy.gui.outputViz.shaders.ProgramLoader;
 import javax.media.opengl.GL3;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLContext;
-import javax.media.opengl.GLEventListener;
 import javax.media.opengl.GLException;
 
-public class GLWindow implements GLEventListener {
+public class GLOffscreenWindow {
     private static boolean post_process = true;
     private static boolean axes = true;
     private static boolean exaggerate_colors = true;
@@ -49,7 +45,7 @@ public class GLWindow implements GLEventListener {
 
     public static octants current_view_octant = octants.PPP;
 
-    private final OutputVizPanel panel;
+    private final OutputVizCLI cli;
     private final ProgramLoader loader;
 
     private Program animatedTurbulenceShader, pplShader, axesShader, gasShader, postprocessShader, gaussianBlurShader;
@@ -71,13 +67,9 @@ public class GLWindow implements GLEventListener {
     private final float fovy = 45.0f;
     private final float zNear = 0.1f, zFar = 3000.0f;
 
-    private int canvasWidth, canvasHeight;
-
     private Vec3 rotation = new Vec3();
     private final Vec3 viewDistTranslation = new Vec3(0f, 0f, -150f);
-    private final Vec3 translation = new Vec3(0f, 1000f, 0f);
 
-    private Texture2D axesTex, starHaloTex, gasTex, starTex, intermediateTex;
     private Texture2D axesTex4k, starHaloTex4k, gasTex4k, starTex4k, intermediateTex4k;
 
     // private FBO starFBO, starHaloFBO, gasFBO, axesFBO;
@@ -90,23 +82,24 @@ public class GLWindow implements GLEventListener {
     private OctreeNode octreeRoot;
     private final GLContext offScreenContext;
 
-    public GLWindow(OutputVizPanel panel, GLContext offScreenContext) {
-        this.panel = panel;
+    public GLOffscreenWindow(OutputVizCLI cli, GLContext offScreenContext) {
+        this.cli = cli;
         this.offScreenContext = offScreenContext;
         loader = new ProgramLoader();
     }
 
-    @Override
-    public void init(GLAutoDrawable drawable) {
-        canvasWidth = drawable.getWidth();
-        canvasHeight = drawable.getHeight();
-        //
-        // initDrawable(drawable.getContext());
-        // initDrawable(context);
-        // }
-        //
-        // private void initDrawable(GLContext drawable) {
-        GL3 gl = drawable.getGL().getGL3();
+    public void init() {
+        try {
+            int status = offScreenContext.makeCurrent();
+            if (status != GLContext.CONTEXT_CURRENT && status != GLContext.CONTEXT_CURRENT_NEW) {
+                System.err.println("Error swapping context to offscreen.");
+            }
+        } catch (GLException e) {
+            System.err.println("Exception while swapping context to offscreen.");
+            e.printStackTrace();
+        }
+
+        GL3 gl = offScreenContext.getGL().getGL3();
 
         // Anti-Aliasing
         gl.glEnable(GL3.GL_LINE_SMOOTH);
@@ -136,29 +129,12 @@ public class GLWindow implements GLEventListener {
             animatedTurbulenceShader = loader.createProgram(gl,
                     "src/ibis/deploy/gui/outputViz/shaders/src/vs_sunsurface.vp",
                     "src/ibis/deploy/gui/outputViz/shaders/src/fs_animatedTurbulence.fp");
-            // gas = loader.createProgram(gl,
-            // "src/ibis/deploy/gui/outputViz/shaders/src/vs_sunsurface.vp",
-            // "src/ibis/deploy/gui/outputViz/shaders/src/fs_animatedTurbulence.fp");
             pplShader = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_ppl.vp",
-            // "src/ibis/deploy/gui/outputViz/shaders/src/gs_passthrough.fp",
                     "src/ibis/deploy/gui/outputViz/shaders/src/fs_ppl.fp");
             axesShader = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_axes.vp",
                     "src/ibis/deploy/gui/outputViz/shaders/src/fs_axes.fp");
             gasShader = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_gas.vp",
                     "src/ibis/deploy/gui/outputViz/shaders/src/fs_gas.fp");
-            // gas = loader.createProgram(gl,
-            // "src/ibis/deploy/gui/outputViz/shaders/src/vs_gas.vp",
-            // "src/ibis/deploy/gui/outputViz/shaders/src/fs_volumerendering.fp");
-            // gas = loader.createProgram(gl,
-            // "src/ibis/deploy/gui/outputViz/shaders/src/vs_gas.vp",
-            // "src/ibis/deploy/gui/outputViz/shaders/src/fs_turbulence.fp");
-            // glow = loader.createProgram(gl,
-            // "src/ibis/deploy/gui/outputViz/shaders/src/vs_glow.vp",
-            // "src/ibis/deploy/gui/outputViz/shaders/src/gs_glow.fp",
-            // "src/ibis/deploy/gui/outputViz/shaders/src/fs_glow.fp");
-            // star = loader.createProgram(gl,
-            // "src/ibis/deploy/gui/outputViz/shaders/src/vs_star.vp",
-            // "src/ibis/deploy/gui/outputViz/shaders/src/fs_star.fp");
             if (post_process)
                 postprocessShader = loader.createProgram(gl,
                         "src/ibis/deploy/gui/outputViz/shaders/src/vs_postprocess.vp",
@@ -172,27 +148,6 @@ public class GLWindow implements GLEventListener {
             e.printStackTrace();
             System.exit(1);
         }
-        //
-        // sgRoot = new SGNode();
-        // newRoot = false;
-        // sgRoot.init(gl);
-        //
-        // octreeRoot = new OctreeNode();
-        // newCubeRoot = false;
-        // octreeRoot.init(gl);
-
-        // AXES
-        Color4 axisColor = new Color4(0f, 1f, 0f, 1f);
-        Material axisMaterial = new Material(axisColor, axisColor, axisColor);
-        xAxis = new Axis(axesShader, axisMaterial, new Vec3(-800f, 0f, 0f), new Vec3(800f, 0f, 0f),
-                Astrophysics.toScreenCoord(1), Astrophysics.toScreenCoord(.2));
-        xAxis.init(gl);
-        yAxis = new Axis(axesShader, axisMaterial, new Vec3(0f, -800f, 0f), new Vec3(0f, 800f, 0f),
-                Astrophysics.toScreenCoord(1), Astrophysics.toScreenCoord(.2));
-        yAxis.init(gl);
-        zAxis = new Axis(axesShader, axisMaterial, new Vec3(0f, 0f, -800f), new Vec3(0f, 0f, 800f),
-                Astrophysics.toScreenCoord(1), Astrophysics.toScreenCoord(.2));
-        zAxis.init(gl);
 
         // FULL SCREEN QUADS
         FSQ_postprocess = new Quad(postprocessShader, Material.random(), 2, 2, new Vec3(0, 0, 0.1f));
@@ -206,18 +161,6 @@ public class GLWindow implements GLEventListener {
         noiseTex.init(gl);
 
         // Full screen textures (for post processing)
-        starTex = new PostProcessTexture(canvasWidth, canvasHeight, GL3.GL_TEXTURE1);
-        starTex.init(gl);
-
-        starHaloTex = new PostProcessTexture(canvasWidth, canvasHeight, GL3.GL_TEXTURE2);
-        starHaloTex.init(gl);
-
-        gasTex = new PostProcessTexture(canvasWidth, canvasHeight, GL3.GL_TEXTURE3);
-        gasTex.init(gl);
-
-        axesTex = new PostProcessTexture(canvasWidth, canvasHeight, GL3.GL_TEXTURE4);
-        axesTex.init(gl);
-
         starTex4k = new PostProcessTexture(Settings.getScreenshotScreenWidth(), Settings.getScreenshotScreenHeight(),
                 GL3.GL_TEXTURE5);
         starTex4k.init(gl);
@@ -234,55 +177,18 @@ public class GLWindow implements GLEventListener {
                 GL3.GL_TEXTURE8);
         axesTex4k.init(gl);
 
-        intermediateTex = new PostProcessTexture(Settings.getScreenshotScreenWidth(),
-                Settings.getScreenshotScreenHeight(), GL3.GL_TEXTURE9);
-        intermediateTex.init(gl);
-
         intermediateTex4k = new PostProcessTexture(Settings.getScreenshotScreenWidth(),
                 Settings.getScreenshotScreenHeight(), GL3.GL_TEXTURE10);
         intermediateTex4k.init(gl);
 
-        // if (offscreen_rendering) {
-        // fbo = new FBO(gl, 4096, 3112, GL3.GL_TEXTURE9);
-
-        // starFBO = new FBO(gl, canvasWidth, canvasHeight, GL3.GL_TEXTURE10);
-        // starHaloFBO = new FBO(gl, canvasWidth, canvasHeight,
-        // GL3.GL_TEXTURE11);
-        // gasFBO = new FBO(gl, canvasWidth, canvasHeight, GL3.GL_TEXTURE12);
-        // axesFBO = new FBO(gl, canvasWidth, canvasHeight, GL3.GL_TEXTURE13);
-        // }
-
         gl.glClearColor(0f, 0f, 0f, 0f);
 
-        panel.callback();
-    }
+        cli.callback();
 
-    @Override
-    public synchronized void display(GLAutoDrawable drawable) {
-        if (isTimerInitialized()) {
-            try {
-                int status = drawable.getContext().makeCurrent();
-                if (status != GLContext.CONTEXT_CURRENT && status != GLContext.CONTEXT_CURRENT_NEW) {
-                    System.err.println("Error swapping context to onscreen.");
-                }
-            } catch (GLException e) {
-                System.err.println("Exception while swapping context to onscreen.");
-                e.printStackTrace();
-            }
-
-            GL3 gl = drawable.getContext().getGL().getGL3();
-            gl.glViewport(0, 0, canvasWidth, canvasHeight);
-
-            sgRoot = timer.getSgRoot();
-            octreeRoot = timer.getOctreeRoot();
-
-            displayContext(sgRoot, octreeRoot, starTex, starHaloTex, gasTex, axesTex);
-
-            try {
-                drawable.getContext().release();
-            } catch (GLException e) {
-                e.printStackTrace();
-            }
+        try {
+            offScreenContext.release();
+        } catch (GLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -488,54 +394,7 @@ public class GLWindow implements GLEventListener {
         }
     }
 
-    @Override
-    public void reshape(GLAutoDrawable drawable, int x, int y, int w, int h) {
-        GL3 gl = drawable.getGL().getGL3();
-        gl.glViewport(0, 0, w, h);
-
-        canvasWidth = w;
-        canvasHeight = h;
-
-        starTex = new PostProcessTexture(canvasWidth, canvasHeight, GL3.GL_TEXTURE1);
-        starTex.init(gl);
-
-        starHaloTex = new PostProcessTexture(canvasWidth, canvasHeight, GL3.GL_TEXTURE2);
-        starHaloTex.init(gl);
-
-        gasTex = new PostProcessTexture(canvasWidth, canvasHeight, GL3.GL_TEXTURE3);
-        gasTex.init(gl);
-
-        axesTex = new PostProcessTexture(canvasWidth, canvasHeight, GL3.GL_TEXTURE4);
-        axesTex.init(gl);
-
-        intermediateTex = new PostProcessTexture(canvasWidth, canvasHeight, GL3.GL_TEXTURE9);
-        intermediateTex.init(gl);
-    }
-
     public void displayChanged(GLAutoDrawable drawable, boolean modeChanged, boolean deviceChanged) {
-    }
-
-    @Override
-    public void dispose(GLAutoDrawable drawable) {
-        GL3 gl = drawable.getGL().getGL3();
-
-        timer.delete(gl);
-
-        noiseTex.delete(gl);
-
-        starTex.delete(gl);
-        starHaloTex.delete(gl);
-        gasTex.delete(gl);
-        axesTex.delete(gl);
-        intermediateTex.delete(gl);
-
-        starTex4k.delete(gl);
-        starHaloTex4k.delete(gl);
-        gasTex4k.delete(gl);
-        axesTex4k.delete(gl);
-        intermediateTex4k.delete(gl);
-
-        loader.cleanup(gl);
     }
 
     public float getViewDist() {
@@ -656,6 +515,9 @@ public class GLWindow implements GLEventListener {
         GL3 gl = offScreenContext.getGL().getGL3();
         gl.glViewport(0, 0, width, height);
 
+        sgRoot = timer.getSgRoot();
+        octreeRoot = timer.getOctreeRoot();
+
         // Anti-Aliasing
         gl.glEnable(GL3.GL_LINE_SMOOTH);
         gl.glHint(GL3.GL_LINE_SMOOTH_HINT, GL3.GL_NICEST);
@@ -689,7 +551,7 @@ public class GLWindow implements GLEventListener {
 
         gl.glFinish();
 
-        p.copyFrameBufferToFile(panel.getPath(), fileName);
+        p.copyFrameBufferToFile(cli.getPath(), fileName);
 
         try {
             offScreenContext.release();
@@ -702,7 +564,7 @@ public class GLWindow implements GLEventListener {
     }
 
     public static void setWaittime(long newWaittime) {
-        GLWindow.waittime = newWaittime;
+        GLOffscreenWindow.waittime = newWaittime;
     }
 
     public static long getWaittime() {

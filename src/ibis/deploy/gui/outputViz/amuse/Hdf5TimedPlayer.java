@@ -1,6 +1,8 @@
 package ibis.deploy.gui.outputViz.amuse;
 
+import ibis.deploy.gui.outputViz.GLOffscreenWindow;
 import ibis.deploy.gui.outputViz.GLWindow;
+import ibis.deploy.gui.outputViz.Settings;
 import ibis.deploy.gui.outputViz.common.math.Vec3;
 import ibis.deploy.gui.outputViz.common.scenegraph.OctreeNode;
 import ibis.deploy.gui.outputViz.exceptions.FileOpeningException;
@@ -24,7 +26,7 @@ public class Hdf5TimedPlayer implements Runnable {
     private StarSGNode sgRoot;
     private OctreeNode octreeRoot;
 
-    private boolean running = true;
+    private boolean running = true, cli = false;
 
     private String path = null;
     private String namePrefix = null;
@@ -32,19 +34,25 @@ public class Hdf5TimedPlayer implements Runnable {
 
     private long startTime, stopTime;
 
-    private final JSlider timeBar;
-    private final JFormattedTextField frameCounter;
+    private JSlider timeBar;
+    private JFormattedTextField frameCounter;
 
     private HashMap<Integer, Model> starModels;
     private HashMap<Integer, Model> cloudModels;
 
     private boolean initialized = false;
-    private final GLWindow glw;
+    private GLWindow glw;
+    private GLOffscreenWindow glow;
 
     public Hdf5TimedPlayer(GLWindow glw, JSlider timeBar, JFormattedTextField frameCounter) {
         this.glw = glw;
         this.timeBar = timeBar;
         this.frameCounter = frameCounter;
+    }
+
+    public Hdf5TimedPlayer(GLOffscreenWindow glow) {
+        cli = true;
+        this.glow = glow;
     }
 
     public void close() {
@@ -84,7 +92,10 @@ public class Hdf5TimedPlayer implements Runnable {
         cloudModels = new HashMap<Integer, Model>();
 
         int initialMaxBar = Hdf5StarReader.getNumFiles(path, gravNamePostfix);
-        timeBar.setMaximum(initialMaxBar);
+
+        if (!cli) {
+            timeBar.setMaximum(initialMaxBar);
+        }
 
         try {
             updateFrame();
@@ -103,7 +114,17 @@ public class Hdf5TimedPlayer implements Runnable {
             System.exit(1);
         }
 
-        currentState = states.PLAYING;
+        if (!cli) {
+            glw.setRotation(new Vec3(Settings.getInitialRotationX(), Settings.getInitialRotationY(), 0f));
+            glw.setViewDist(Settings.getInitialZoom());
+
+            currentState = states.PLAYING;
+        } else {
+            glow.setRotation(new Vec3(Settings.getInitialRotationX(), Settings.getInitialRotationY(), 0f));
+            glow.setViewDist(Settings.getInitialZoom());
+
+            currentState = states.MOVIEMAKING;
+        }
 
         while (running) {
             if (currentState == states.PLAYING || currentState == states.MOVIEMAKING) {
@@ -114,19 +135,49 @@ public class Hdf5TimedPlayer implements Runnable {
                     // " clouds: " + cloudModels.size());
 
                     if (currentState == states.MOVIEMAKING) {
-                        Vec3 rotation = glw.getRotation();
-                            glw.makeSnapshot(String.format("%05d", (currentFrame)));
+                        if (!cli) {
+                            Vec3 rotation = glw.getRotation();
+                            glw.makeSnapshot(String.format("%05d", (currentFrame * 3 + 0)));
 
                             rotation.set(1, rotation.get(1) + .5f);
                             glw.setRotation(rotation);
 
-                            Thread.sleep(GLWindow.getWaittime());
+                            glw.makeSnapshot(String.format("%05d", (currentFrame * 3 + 1)));
+
+                            rotation.set(1, rotation.get(1) + .5f);
+                            glw.setRotation(rotation);
+
+                            glw.makeSnapshot(String.format("%05d", (currentFrame * 3 + 2)));
+
+                            rotation.set(1, rotation.get(1) + .5f);
+                            glw.setRotation(rotation);
+                        } else {
+                            Vec3 rotation = glow.getRotation();
+                            glow.makeSnapshot(String.format("%05d", (currentFrame * 3 + 0)));
+
+                            rotation.set(1, rotation.get(1) + .5f);
+                            glow.setRotation(rotation);
+
+                            glow.makeSnapshot(String.format("%05d", (currentFrame * 3 + 1)));
+
+                            rotation.set(1, rotation.get(1) + .5f);
+                            glow.setRotation(rotation);
+
+                            glow.makeSnapshot(String.format("%05d", (currentFrame * 3 + 2)));
+
+                            rotation.set(1, rotation.get(1) + .5f);
+                            glow.setRotation(rotation);
+                        }
+
+                        // Thread.sleep(GLWindow.getWaittime());
                     }
 
                     currentFrame++;
 
-                    timeBar.setValue(currentFrame);
-                    frameCounter.setValue(currentFrame);
+                    if (!cli) {
+                        timeBar.setValue(currentFrame);
+                        frameCounter.setValue(currentFrame);
+                    }
 
                     try {
                         updateFrame();
@@ -166,15 +217,15 @@ public class Hdf5TimedPlayer implements Runnable {
     }
 
     private void updateFrame() throws FileOpeningException {
-            Hdf5Snapshotter snappy = new Hdf5Snapshotter();
-            snappy.open(namePrefix, currentFrame, GLWindow.getLOD(), starModels, cloudModels);
-            StarSGNode newSgRoot = snappy.getSgRoot();
-            OctreeNode newOctreeRoot = snappy.getOctreeRoot();
-            
-            synchronized(this) {
-            	sgRoot = newSgRoot;            
-            	octreeRoot = newOctreeRoot;
-            }
+        Hdf5Snapshotter snappy = new Hdf5Snapshotter();
+        snappy.open(namePrefix, currentFrame, GLWindow.getLOD(), starModels, cloudModels);
+        StarSGNode newSgRoot = snappy.getSgRoot();
+        OctreeNode newOctreeRoot = snappy.getOctreeRoot();
+
+        synchronized (this) {
+            sgRoot = newSgRoot;
+            octreeRoot = newOctreeRoot;
+        }
     }
 
     public void start() {
@@ -196,12 +247,12 @@ public class Hdf5TimedPlayer implements Runnable {
 
         timeBar.setValue(currentFrame);
         frameCounter.setValue(currentFrame);
-        
+
         try {
             updateFrame();
         } catch (FileOpeningException e) {
             System.err.println("File not found, retrying from frame " + currentFrame + ".");
-            
+
             setFrame(value - 1);
             currentState = states.WAITINGONFRAME;
         } catch (Throwable t) {
@@ -223,10 +274,10 @@ public class Hdf5TimedPlayer implements Runnable {
     }
 
     public synchronized StarSGNode getSgRoot() {
-            return sgRoot;
+        return sgRoot;
     }
 
     public synchronized OctreeNode getOctreeRoot() {
-            return octreeRoot;
+        return octreeRoot;
     }
 }
