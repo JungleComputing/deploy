@@ -6,8 +6,8 @@ public class Settings {
     private static final int DEFAULT_SCREEN_WIDTH = 1024;
     private static final int DEFAULT_SCREEN_HEIGHT = 768;
 
-    private static final int SCREENSHOT_SCREEN_WIDTH = 1280;
-    private static final int SCREENSHOT_SCREEN_HEIGHT = 720;
+    private static final int SCREENSHOT_SCREEN_WIDTH = 8080;
+    private static final int SCREENSHOT_SCREEN_HEIGHT = 5200;
 
     // Settings for the initial view
     private static final float INITIAL_ROTATION_X = 34.0f;

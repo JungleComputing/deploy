@@ -189,9 +189,9 @@ public class Hdf5TimedPlayer implements Runnable {
                     }
 
                     stopTime = System.currentTimeMillis();
-                    if (startTime - stopTime < GLWindow.getWaittime()) {
+                    if (startTime - stopTime < GLWindow.getWaittime() && !cli) {
                         Thread.sleep(GLWindow.getWaittime() - (startTime - stopTime));
-                    } else {
+                    } else if (cli) {
                         // Keep interactivity intact
                         Thread.sleep(1);
                     }
@@ -218,7 +218,11 @@ public class Hdf5TimedPlayer implements Runnable {
 
     private void updateFrame() throws FileOpeningException {
         Hdf5Snapshotter snappy = new Hdf5Snapshotter();
-        snappy.open(namePrefix, currentFrame, GLWindow.getLOD(), starModels, cloudModels);
+        if (!cli) {
+            snappy.open(namePrefix, currentFrame, GLWindow.getLOD(), starModels, cloudModels);
+        } else {
+            snappy.open(namePrefix, currentFrame, GLOffscreenWindow.getLOD(), starModels, cloudModels);
+        }
         StarSGNode newSgRoot = snappy.getSgRoot();
         OctreeNode newOctreeRoot = snappy.getOctreeRoot();
 

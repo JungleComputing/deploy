@@ -30,9 +30,9 @@ public class GLOffscreenWindow {
     private static boolean post_process = true;
     private static boolean axes = true;
     private static boolean exaggerate_colors = true;
-    private static long waittime = 50;
+    private static long waittime = 0;
 
-    private static int levelOfDetail = 0;
+    private static int levelOfDetail = 2;
 
     public static float gas_opacity_factor = 1.75f;
 
