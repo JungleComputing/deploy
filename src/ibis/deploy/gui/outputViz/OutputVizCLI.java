@@ -25,6 +25,8 @@ public class OutputVizCLI {
     }
 
     public void initialize() {
+        GLProfile.initSingleton(true);
+
         GLProfile glp = GLProfile.getDefault();
         GLDrawableFactory factory = GLDrawableFactory.getFactory(glp);
 

@@ -14,6 +14,9 @@ public class Settings {
     private static final float INITIAL_ROTATION_Y = 335.0f;
     private static final float INITIAL_ZOOM = -540.0f;
 
+    // Setting per movie frame
+    private static final float PER_FRAME_ROTATION = 0;
+
     // Settings for the gas cloud octree
     private static final int MAX_CLOUD_DEPTH = 25;
     private static final float GAS_EDGES = 800f;
@@ -365,5 +368,9 @@ public class Settings {
 
     public static float getInitialZoom() {
         return INITIAL_ZOOM;
+    }
+
+    public static float getPerFrameRotation() {
+        return PER_FRAME_ROTATION;
     }
 }

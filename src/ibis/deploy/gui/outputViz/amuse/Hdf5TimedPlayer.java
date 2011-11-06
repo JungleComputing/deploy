@@ -135,38 +135,46 @@ public class Hdf5TimedPlayer implements Runnable {
                     // " clouds: " + cloudModels.size());
 
                     if (currentState == states.MOVIEMAKING) {
-                        if (!cli) {
-                            Vec3 rotation = glw.getRotation();
-                            glw.makeSnapshot(String.format("%05d", (currentFrame * 3 + 0)));
+                        if (Settings.getPerFrameRotation() > 0f) {
+                            if (!cli) {
+                                Vec3 rotation = glw.getRotation();
+                                glw.makeSnapshot(String.format("%05d", (currentFrame * 3 + 0)));
 
-                            rotation.set(1, rotation.get(1) + .5f);
-                            glw.setRotation(rotation);
+                                rotation.set(1, rotation.get(1) + Settings.getPerFrameRotation());
+                                glw.setRotation(rotation);
 
-                            glw.makeSnapshot(String.format("%05d", (currentFrame * 3 + 1)));
+                                glw.makeSnapshot(String.format("%05d", (currentFrame * 3 + 1)));
 
-                            rotation.set(1, rotation.get(1) + .5f);
-                            glw.setRotation(rotation);
+                                rotation.set(1, rotation.get(1) + Settings.getPerFrameRotation());
+                                glw.setRotation(rotation);
 
-                            glw.makeSnapshot(String.format("%05d", (currentFrame * 3 + 2)));
+                                glw.makeSnapshot(String.format("%05d", (currentFrame * 3 + 2)));
 
-                            rotation.set(1, rotation.get(1) + .5f);
-                            glw.setRotation(rotation);
+                                rotation.set(1, rotation.get(1) + Settings.getPerFrameRotation());
+                                glw.setRotation(rotation);
+                            } else {
+                                Vec3 rotation = glow.getRotation();
+                                glow.makeSnapshot(String.format("%05d", (currentFrame * 3 + 0)));
+
+                                rotation.set(1, rotation.get(1) + Settings.getPerFrameRotation());
+                                glow.setRotation(rotation);
+
+                                glow.makeSnapshot(String.format("%05d", (currentFrame * 3 + 1)));
+
+                                rotation.set(1, rotation.get(1) + Settings.getPerFrameRotation());
+                                glow.setRotation(rotation);
+
+                                glow.makeSnapshot(String.format("%05d", (currentFrame * 3 + 2)));
+
+                                rotation.set(1, rotation.get(1) + Settings.getPerFrameRotation());
+                                glow.setRotation(rotation);
+                            }
                         } else {
-                            Vec3 rotation = glow.getRotation();
-                            glow.makeSnapshot(String.format("%05d", (currentFrame * 3 + 0)));
-
-                            rotation.set(1, rotation.get(1) + .5f);
-                            glow.setRotation(rotation);
-
-                            glow.makeSnapshot(String.format("%05d", (currentFrame * 3 + 1)));
-
-                            rotation.set(1, rotation.get(1) + .5f);
-                            glow.setRotation(rotation);
-
-                            glow.makeSnapshot(String.format("%05d", (currentFrame * 3 + 2)));
-
-                            rotation.set(1, rotation.get(1) + .5f);
-                            glow.setRotation(rotation);
+                            if (!cli) {
+                                glw.makeSnapshot(String.format("%05d", currentFrame));
+                            } else {
+                                glow.makeSnapshot(String.format("%05d", currentFrame));
+                            }
                         }
 
                         // Thread.sleep(GLWindow.getWaittime());
