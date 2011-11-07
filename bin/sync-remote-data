@@ -1,6 +1,6 @@
 #!/bin/bash
 
 for (( ; ; )) do
-	rsync -at --out-format=%t\ %n $1 .
+	rsync -at --out-format=%M\ %n $1 .
 	sleep 10
 done
