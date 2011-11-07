@@ -40,9 +40,11 @@ public class OutputVizCLI {
             offScreenCapabilities.setSampleBuffers(true);
             offScreenCapabilities.setNumSamples(4);
 
-            GLPbuffer pbuffer = factory.createGLPbuffer(factory.getDefaultDevice(), offScreenCapabilities,
-                    new DefaultGLCapabilitiesChooser(), Settings.getScreenshotScreenWidth(),
-                    Settings.getScreenshotScreenHeight(), null);
+            GLPbuffer pbuffer = factory.createGLPbuffer(factory
+                    .getDefaultDevice(), offScreenCapabilities,
+                    new DefaultGLCapabilitiesChooser(), Settings
+                            .getScreenshotScreenWidth(), Settings
+                            .getScreenshotScreenHeight(), null);
 
             offScreenContext = pbuffer.createContext(null);
             offScreenContext.setSynchronized(true);
@@ -62,12 +64,18 @@ public class OutputVizCLI {
         if (cmdlnfileName != null) {
             File cmdlnfile = new File(cmdlnfileName);
             if (cmdlnfile != null) {
-                path = cmdlnfile.getPath().substring(0, cmdlnfile.getPath().length() - cmdlnfile.getName().length());
+                path = cmdlnfile.getPath().substring(
+                        0,
+                        cmdlnfile.getPath().length()
+                                - cmdlnfile.getName().length());
                 String name = cmdlnfile.getName();
                 String fullPath = path + name;
                 String[] ext = fullPath.split("[.]");
-                if (!(ext[1].compareTo("evo") == 0 || ext[1].compareTo("grav") == 0 || ext[1].compareTo("add") == 0
-                        || ext[1].compareTo("gas") == 0 || ext[1].compareTo("data") == 0)) {
+                if (!(ext[1].compareTo("evo") == 0
+                        || ext[1].compareTo("grav") == 0
+                        || ext[1].compareTo("add") == 0
+                        || ext[1].compareTo("gas") == 0 || ext[1]
+                        .compareTo("data") == 0)) {
                     System.out.println("Tried to open invalid file type.");
                 } else {
                     prefix = ext[0].substring(0, ext[0].length() - 6);
@@ -85,6 +93,14 @@ public class OutputVizCLI {
             if (arguments[i].equals("-o")) {
                 i++;
                 cmdlnfileName = arguments[i];
+            } else if (arguments[i].equals("-resume")) {
+                i++;
+                Settings.setInitial_simulation_frame(Integer
+                        .parseInt(arguments[i]));
+                i++;
+                Settings.setInitial_rotation_x(Float.parseFloat(arguments[i]));
+                i++;
+                Settings.setInitial_rotation_y(Float.parseFloat(arguments[i]));
             } else {
                 cmdlnfileName = null;
             }

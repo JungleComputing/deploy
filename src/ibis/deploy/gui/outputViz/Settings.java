@@ -6,16 +6,20 @@ public class Settings {
     private static final int DEFAULT_SCREEN_WIDTH = 1024;
     private static final int DEFAULT_SCREEN_HEIGHT = 768;
 
-    private static final int SCREENSHOT_SCREEN_WIDTH = 8080;
-    private static final int SCREENSHOT_SCREEN_HEIGHT = 5200;
+    private static final int SCREENSHOT_SCREEN_WIDTH = 1280;
+    private static final int SCREENSHOT_SCREEN_HEIGHT = 720;
 
     // Settings for the initial view
-    private static final float INITIAL_ROTATION_X = 34.0f;
-    private static final float INITIAL_ROTATION_Y = 335.0f;
+    private static final int INITIAL_SIMULATION_FRAME = 0;
+    private static int initial_simulation_frame = INITIAL_SIMULATION_FRAME;
+    private static final float INITIAL_ROTATION_X = 0f;
+    private static float initial_rotation_x = INITIAL_ROTATION_X;
+    private static final float INITIAL_ROTATION_Y = 0f;
+    private static float initial_rotation_y = INITIAL_ROTATION_Y;
     private static final float INITIAL_ZOOM = -540.0f;
 
     // Setting per movie frame
-    private static final float PER_FRAME_ROTATION = 0;
+    private static final float PER_FRAME_ROTATION = 0.5f / 3.0f;
 
     // Settings for the gas cloud octree
     private static final int MAX_CLOUD_DEPTH = 25;
@@ -359,11 +363,11 @@ public class Settings {
     }
 
     public static float getInitialRotationX() {
-        return INITIAL_ROTATION_X;
+        return initial_rotation_x;
     }
 
     public static float getInitialRotationY() {
-        return INITIAL_ROTATION_Y;
+        return initial_rotation_y;
     }
 
     public static float getInitialZoom() {
@@ -372,5 +376,21 @@ public class Settings {
 
     public static float getPerFrameRotation() {
         return PER_FRAME_ROTATION;
+    }
+
+    public static int getInitialSimulationFrame() {
+        return initial_simulation_frame;
+    }
+
+    public static void setInitial_simulation_frame(int initialSimulationFrame) {
+        initial_simulation_frame = initialSimulationFrame;
+    }
+
+    public static void setInitial_rotation_x(float initialRotationX) {
+        initial_rotation_x = initialRotationX;
+    }
+
+    public static void setInitial_rotation_y(float initialRotationY) {
+        initial_rotation_y = initialRotationY;
     }
 }
