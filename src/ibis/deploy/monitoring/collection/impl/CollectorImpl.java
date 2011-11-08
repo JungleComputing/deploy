@@ -250,12 +250,15 @@ public class CollectorImpl implements Collector, Runnable {
                 for (IbisIdentifier ibisid : poolIbises) {
                     // Get the lowest location
                     ibis.ipl.Location ibisLocation;
+
+                    String locationName;
                     if (skipParent) {
                         ibisLocation = ibisid.location().getParent();
+                        locationName = ibisid.location().toString();
                     } else {
                         ibisLocation = ibisid.location();
+                        locationName = ibisLocation.toString();
                     }
-                    String locationName = ibisLocation.toString();
 
                     Location current;
                     if (locations.containsKey(locationName)) {
