@@ -427,7 +427,7 @@ public class Job implements Runnable {
         }
 
         sd.addJavaSystemProperty(IbisProperties.LOCATION, description.getName()
-                + "-%HOSTNAME%@" + location);
+                + "@%HOSTNAME%@" + location);
         sd.addJavaSystemProperty(IbisProperties.LOCATION_COLOR,
                 Colors.color2colorCode(cluster.getColor()));
         sd.addJavaSystemProperty(IbisProperties.POOL_NAME,
