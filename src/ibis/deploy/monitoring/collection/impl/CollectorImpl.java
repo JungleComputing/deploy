@@ -251,7 +251,7 @@ public class CollectorImpl implements Collector, Runnable {
                     // Get the lowest location
                     ibis.ipl.Location ibisLocation;
 
-                    String locationName;
+                    String locationIdentifier, locationName;
                     if (skipParent) {
                         ibisLocation = ibisid.location().getParent();
                         locationName = ibisid.location().toString();
@@ -260,12 +260,14 @@ public class CollectorImpl implements Collector, Runnable {
                         locationName = ibisLocation.toString();
                     }
 
+                    locationIdentifier = ibisLocation.toString();
+
                     Location current;
-                    if (locations.containsKey(locationName)) {
-                        current = locations.get(locationName);
+                    if (locations.containsKey(locationIdentifier)) {
+                        current = locations.get(locationIdentifier);
                     } else {
                         current = new LocationImpl(locationName, color);
-                        locations.put(locationName, current);
+                        locations.put(locationIdentifier, current);
                     }
 
                     // And add the ibis to that location
