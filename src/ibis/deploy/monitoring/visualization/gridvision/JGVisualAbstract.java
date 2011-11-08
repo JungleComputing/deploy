@@ -12,8 +12,7 @@ import org.slf4j.LoggerFactory;
 import com.jogamp.opengl.util.awt.TextRenderer;
 
 public abstract class JGVisualAbstract implements JGVisual {
-    private static final Logger logger = LoggerFactory
-            .getLogger(JGLocation.class);
+    private static final Logger logger = LoggerFactory.getLogger(JGLocation.class);
     private final static float SPHERE_RADIUS_MULTIPLIER = 0.175f;
 
     protected JungleGoggles goggles;
@@ -71,6 +70,7 @@ public abstract class JGVisualAbstract implements JGVisual {
         name = "";
     }
 
+    @Override
     public void init(GL2 gl) {
         for (JGVisual child : locations) {
             child.init(gl);
@@ -83,6 +83,7 @@ public abstract class JGVisualAbstract implements JGVisual {
         }
     }
 
+    @Override
     public void setCoordinates(float[] newCoordinates) {
         coordinates[0] = newCoordinates[0];
         coordinates[1] = newCoordinates[1];
@@ -97,8 +98,7 @@ public abstract class JGVisualAbstract implements JGVisual {
             } else if (locationColShape == CollectionShape.CUBE) {
                 setCube(locations, locationSeparation);
             } else {
-                System.err
-                        .println("Collectionshape not defined while setting coordinates.");
+                System.err.println("Collectionshape not defined while setting coordinates.");
                 System.exit(0);
             }
         }
@@ -111,8 +111,7 @@ public abstract class JGVisualAbstract implements JGVisual {
             } else if (ibisColShape == CollectionShape.CUBE) {
                 setCube(ibises, ibisSeparation);
             } else {
-                System.err
-                        .println("Collectionshape not defined while setting coordinates.");
+                System.err.println("Collectionshape not defined while setting coordinates.");
                 System.exit(0);
             }
         }
@@ -128,8 +127,7 @@ public abstract class JGVisualAbstract implements JGVisual {
             } else if (metricColShape == CollectionShape.CUBE) {
                 setCube(metrics, metricSeparation);
             } else {
-                System.err
-                        .println("Collectionshape not defined while setting coordinates.");
+                System.err.println("Collectionshape not defined while setting coordinates.");
                 System.exit(0);
             }
         }
@@ -155,8 +153,7 @@ public abstract class JGVisualAbstract implements JGVisual {
         for (int i = 0; i < 3; i++) {
             maxShift[i] = (shift[i] * Math.max((count[i] - 1), 0) * 0.5f);
         }
-        float[] centeredCoordinates = FloatMatrixMath
-                .sub(coordinates, maxShift);
+        float[] centeredCoordinates = FloatMatrixMath.sub(coordinates, maxShift);
 
         // calculate my own new radius
         radius = FloatMatrixMath.max(maxShift);
@@ -169,8 +166,7 @@ public abstract class JGVisualAbstract implements JGVisual {
         float[] position = { 0, 0, 0 };
         for (JGVisual child : children) {
             // cascade the new location
-            childLocation = FloatMatrixMath.add(centeredCoordinates,
-                    FloatMatrixMath.mul(shift, position));
+            childLocation = FloatMatrixMath.add(centeredCoordinates, FloatMatrixMath.mul(shift, position));
 
             child.setCoordinates(childLocation);
 
@@ -196,15 +192,12 @@ public abstract class JGVisualAbstract implements JGVisual {
         float[][] pt = new float[childCount][3];
         double r = 0;
 
-        float radius = SPHERE_RADIUS_MULTIPLIER
-                * (maxRad + FloatMatrixMath.max(separation)) * childCount;
+        float radius = SPHERE_RADIUS_MULTIPLIER * (maxRad + FloatMatrixMath.max(separation)) * childCount;
 
         for (int k = 0; k < childCount; k++) {
             r = Math.sqrt(1 - (z * z));
-            pt[k][0] = coordinates[0] + radius
-                    * ((float) (Math.cos(olong) * r));
-            pt[k][1] = coordinates[1] + radius
-                    * ((float) (Math.sin(olong) * r));
+            pt[k][0] = coordinates[0] + radius * ((float) (Math.cos(olong) * r));
+            pt[k][1] = coordinates[1] + radius * ((float) (Math.sin(olong) * r));
             pt[k][2] = coordinates[2] + radius * ((float) z);
             z = z - dz;
             olong = olong + dlong;
@@ -222,8 +215,7 @@ public abstract class JGVisualAbstract implements JGVisual {
 
     private void setCube(List<JGVisual> children, float[] separation) {
         int childCount = children.size();
-        float[] maxDims = { maxWidth(children), maxHeight(children),
-                maxWidth(children), };
+        float[] maxDims = { maxWidth(children), maxHeight(children), maxWidth(children), };
 
         // get the breakoff point for rows, stacks and columns
         int[] count = new int[3];
@@ -238,8 +230,7 @@ public abstract class JGVisualAbstract implements JGVisual {
         for (int i = 0; i < 3; i++) {
             maxShift[i] = (shift[i] * Math.max((count[i] - 1), 0) * 0.5f);
         }
-        float[] centeredCoordinates = FloatMatrixMath
-                .sub(coordinates, maxShift);
+        float[] centeredCoordinates = FloatMatrixMath.sub(coordinates, maxShift);
 
         // calculate my own new radius
         radius = FloatMatrixMath.max(maxShift);
@@ -251,8 +242,7 @@ public abstract class JGVisualAbstract implements JGVisual {
         float[] position = { 0, 0, 0 };
         for (JGVisual child : children) {
             // cascade the new location
-            childLocation = FloatMatrixMath.add(centeredCoordinates,
-                    FloatMatrixMath.mul(shift, position));
+            childLocation = FloatMatrixMath.add(centeredCoordinates, FloatMatrixMath.mul(shift, position));
 
             child.setCoordinates(childLocation);
 
@@ -270,22 +260,26 @@ public abstract class JGVisualAbstract implements JGVisual {
         }
     }
 
+    @Override
     public void setRotation(float[] newRotation) {
         rotation[0] = newRotation[0];
         rotation[1] = newRotation[1];
         rotation[2] = newRotation[2];
     }
 
+    @Override
     public void setLocationCollectionShape(CollectionShape newShape) {
         locationColShape = newShape;
         goggles.doRepositioning();
     }
 
+    @Override
     public void setIbisCollectionShape(CollectionShape newShape) {
         ibisColShape = newShape;
         goggles.doRepositioning();
     }
 
+    @Override
     public void setAllCollectionsShape(CollectionShape newShape) {
         locationColShape = newShape;
         ibisColShape = newShape;
@@ -293,10 +287,12 @@ public abstract class JGVisualAbstract implements JGVisual {
         goggles.doRepositioning();
     }
 
+    @Override
     public CollectionShape getCollectionShape() {
         return locationColShape;
     }
 
+    @Override
     public void setMetricShape(MetricShape newShape) {
         mShape = newShape;
 
@@ -311,6 +307,7 @@ public abstract class JGVisualAbstract implements JGVisual {
         }
     }
 
+    @Override
     public float[] getCoordinates() {
         float[] myCoordinates = new float[3];
         myCoordinates[0] = coordinates[0];
@@ -320,18 +317,22 @@ public abstract class JGVisualAbstract implements JGVisual {
         return myCoordinates;
     }
 
+    @Override
     public float getRadius() {
         return radius;
     }
 
+    @Override
     public float getWidth() {
         return width;
     }
 
+    @Override
     public float getHeight() {
         return height;
     }
 
+    @Override
     public void update() {
         for (JGVisual child : locations) {
             child.update();
@@ -344,10 +345,12 @@ public abstract class JGVisualAbstract implements JGVisual {
         }
     }
 
+    @Override
     public JGVisual getParent() {
         return parent;
     }
 
+    @Override
     public void setState(State newState) {
         // If collapsing while we are already collapsed, collapse our parent
         // instead.
@@ -386,10 +389,12 @@ public abstract class JGVisualAbstract implements JGVisual {
         goggles.unselect();
     }
 
+    @Override
     public State getState() {
         return state;
     }
 
+    @Override
     public void drawSolids(GL2 gl, int renderMode) {
         if (this instanceof JGLocation || this instanceof JGUniverse) {
             if (state == State.UNFOLDED) {
@@ -413,6 +418,7 @@ public abstract class JGVisualAbstract implements JGVisual {
         }
     }
 
+    @Override
     public void drawTransparents(GL2 gl, int renderMode) {
         if (this instanceof JGLocation || this instanceof JGUniverse) {
             if (state == State.UNFOLDED) {
@@ -436,8 +442,7 @@ public abstract class JGVisualAbstract implements JGVisual {
                 } else {
                     tr.setColor(1f, 1f, 1f, 0.5f);
                 }
-                tr.draw3D(name, coordinates[0], coordinates[1] - height,
-                        coordinates[2], 0.005f);
+                tr.draw3D(name, coordinates[0], coordinates[1] - height, coordinates[2], 0.005f);
                 tr.end3DRendering();
 
                 // Restore the old modelview matrix
@@ -458,8 +463,7 @@ public abstract class JGVisualAbstract implements JGVisual {
                 } else {
                     tr.setColor(1f, 1f, 1f, 0.5f);
                 }
-                tr.draw3D(name, coordinates[0], coordinates[1] - height,
-                        coordinates[2], 0.005f);
+                tr.draw3D(name, coordinates[0], coordinates[1] - height, coordinates[2], 0.005f);
                 tr.end3DRendering();
 
                 // Restore the old modelview matrix
@@ -468,6 +472,7 @@ public abstract class JGVisualAbstract implements JGVisual {
         }
     }
 
+    @Override
     public void drawSelectionCube(GL2 gl) {
         if (!(this instanceof JGIbis || this instanceof JGLocation)) {
             return;
@@ -487,8 +492,7 @@ public abstract class JGVisualAbstract implements JGVisual {
 
         gl.glLineWidth(1.0f);
 
-        float Xn = -0.5f * HEIGHT, Xp = 0.5f * WIDTH, Yn = -0.5f * HEIGHT, Yp = 0.5f * HEIGHT, Zn = -0.5f
-                * WIDTH, Zp = 0.5f * WIDTH;
+        float Xn = -0.5f * HEIGHT, Xp = 0.5f * WIDTH, Yn = -0.5f * HEIGHT, Yp = 0.5f * HEIGHT, Zn = -0.5f * WIDTH, Zp = 0.5f * WIDTH;
 
         gl.glBegin(GL2.GL_QUADS);
         // TOP
@@ -615,19 +619,12 @@ public abstract class JGVisualAbstract implements JGVisual {
         return result;
     }
 
-    public void setLocationSeparation(float newSep, int level) {
-        float[] temp = new float[3];
-        temp[0] = newSep;
-        temp[1] = newSep;
-        temp[2] = newSep;
-
-        locationSeparation = FloatMatrixMath.div(temp, (float) Math.pow(
-                level + 1, 2.0));
-        logger.debug("Level: " + level + " Child separation: "
-                + locationSeparation[0]);
+    public void setLocationSeparation(float[] newSep, int level) {
+        locationSeparation = FloatMatrixMath.div(newSep, (level + 1));
+        logger.debug("Level: " + level + " Child separation: " + locationSeparation[0]);
 
         for (JGVisual child : locations) {
-            ((JGLocation) child).setLocationSeparation(newSep, level + 1);
+            ((JGLocation) child).setLocationSeparation(locationSeparation, level + 1);
         }
     }
 

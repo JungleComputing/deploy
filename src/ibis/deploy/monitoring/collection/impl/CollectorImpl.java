@@ -35,14 +35,12 @@ import org.slf4j.LoggerFactory;
  * Serves as the main class for the data collecting module.
  */
 public class CollectorImpl implements Collector, Runnable {
-    private static final Logger logger = LoggerFactory
-            .getLogger("ibis.deploy.monitoring.collection.impl.Collector");
-    private static final ibis.ipl.Location universe = new ibis.ipl.impl.Location(
-            new String[0]);
+    private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.collection.impl.Collector");
+    private static final ibis.ipl.Location universe = new ibis.ipl.impl.Location(new String[0]);
     private static final int workercount = 8;
 
     private static CollectorImpl ref = null;
-    private boolean skipParent = false, forceUpdate = false;
+    private boolean skipParent = true, forceUpdate = false;
 
     // Interfaces to the IPL
     private final ManagementServiceInterface manInterface;
@@ -73,8 +71,7 @@ public class CollectorImpl implements Collector, Runnable {
 
     private boolean change = false;
 
-    private CollectorImpl(ManagementServiceInterface manInterface,
-            RegistryServiceInterface regInterface) {
+    private CollectorImpl(ManagementServiceInterface manInterface, RegistryServiceInterface regInterface) {
         this.manInterface = manInterface;
         this.regInterface = regInterface;
 
@@ -106,10 +103,11 @@ public class CollectorImpl implements Collector, Runnable {
         MetricDescription bytesPerSecDesc = new BytesSentPerSecond();
         MetricDescription mpiBytesPerSecDesc = new MPIBytesSentPerSecond();
 
-        descriptions.add(cpuDesc);
+        // descriptions.add(cpuDesc);
+        descriptions.add(load);
         descriptions.add(sysmemDesc);
-        descriptions.add(heapmemDesc);
-        descriptions.add(nonheapmemDesc);
+        // descriptions.add(heapmemDesc);
+        // descriptions.add(nonheapmemDesc);
         // descriptions.add(new ThreadsMetric());
         // descriptions.add(new BytesReceivedPerSecond());
         descriptions.add(bytesPerSecDesc);
@@ -142,8 +140,7 @@ public class CollectorImpl implements Collector, Runnable {
         }
     }
 
-    public static CollectorImpl getCollector(
-            ManagementServiceInterface manInterface,
+    public static CollectorImpl getCollector(ManagementServiceInterface manInterface,
             RegistryServiceInterface regInterface) {
         if (ref == null) {
             ref = new CollectorImpl(manInterface, regInterface);
@@ -153,8 +150,7 @@ public class CollectorImpl implements Collector, Runnable {
         return ref;
     }
 
-    public static CollectorImpl getCollector()
-            throws SingletonObjectNotInstantiatedException {
+    public static CollectorImpl getCollector() throws SingletonObjectNotInstantiatedException {
         if (ref != null) {
             return ref;
         } else {
@@ -162,6 +158,7 @@ public class CollectorImpl implements Collector, Runnable {
         }
     }
 
+    @Override
     public void initUniverse() {
         // Check if there was a change in the pool sizes
         boolean change = initPools();
@@ -204,8 +201,7 @@ public class CollectorImpl implements Collector, Runnable {
             String poolName = entry.getKey();
             int newSize = entry.getValue();
 
-            if (!poolSizes.containsKey(poolName)
-                    || newSize != poolSizes.get(poolName)) {
+            if (!poolSizes.containsKey(poolName) || newSize != poolSizes.get(poolName)) {
                 pools.clear();
                 change = true;
 
@@ -271,15 +267,13 @@ public class CollectorImpl implements Collector, Runnable {
                     }
 
                     // And add the ibis to that location
-                    IbisImpl ibis = new IbisImpl(manInterface, ibisid, entry
-                            .getValue(), current);
+                    IbisImpl ibis = new IbisImpl(manInterface, ibisid, entry.getValue(), current);
                     ((LocationImpl) current).addIbis(ibis);
                     parents.put(ibis, current);
                     ibises.put(ibisid, ibis);
 
                     // for all location levels, get parent
-                    ibis.ipl.Location parentIPLLocation = ibisLocation
-                            .getParent();
+                    ibis.ipl.Location parentIPLLocation = ibisLocation.getParent();
                     while (!parentIPLLocation.equals(universe)) {
                         String name = parentIPLLocation.toString();
 
@@ -328,10 +322,8 @@ public class CollectorImpl implements Collector, Runnable {
         for (Location source : locations.values()) {
             for (Location destination : locations.values()) {
                 try {
-                    if (!isAncestorOf(source, destination)
-                            && !isAncestorOf(destination, source)) {
-                        LinkImpl newLink = (LinkImpl) source
-                                .getLink(destination);
+                    if (!isAncestorOf(source, destination) && !isAncestorOf(destination, source)) {
+                        LinkImpl newLink = (LinkImpl) source.getLink(destination);
                         links.add(newLink);
                     }
                 } catch (SelfLinkeageException ignored) {
@@ -344,10 +336,8 @@ public class CollectorImpl implements Collector, Runnable {
         for (Ibis source : ibises.values()) {
             for (Location destination : locations.values()) {
                 try {
-                    if (!isAncestorOf(source, destination)
-                            && !isAncestorOf(destination, source)) {
-                        LinkImpl newLink = (LinkImpl) source
-                                .getLink(destination);
+                    if (!isAncestorOf(source, destination) && !isAncestorOf(destination, source)) {
+                        LinkImpl newLink = (LinkImpl) source.getLink(destination);
                         links.add(newLink);
                     }
                 } catch (SelfLinkeageException ignored) {
@@ -378,10 +368,12 @@ public class CollectorImpl implements Collector, Runnable {
     }
 
     // Getters
+    @Override
     public Location getRoot() {
         return root;
     }
 
+    @Override
     public ArrayList<Pool> getPools() {
         ArrayList<Pool> result = new ArrayList<Pool>();
         for (Pool pool : pools.values()) {
@@ -390,10 +382,12 @@ public class CollectorImpl implements Collector, Runnable {
         return result;
     }
 
+    @Override
     public HashSet<MetricDescription> getAvailableMetrics() {
         return availableDescriptions;
     }
 
+    @Override
     public boolean change() {
         boolean temp = change;
         change = false;
@@ -401,14 +395,17 @@ public class CollectorImpl implements Collector, Runnable {
     }
 
     // Tryout for interface updates.
+    @Override
     public int getRefreshrate() {
         return refreshrate;
     }
 
+    @Override
     public void setRefreshrate(int newInterval) {
         refreshrate = newInterval;
     }
 
+    @Override
     public void toggleMetrics(MetricDescription[] myDescs) {
         synchronized (jobQueue) {
             HashSet<MetricDescription> newDescriptions = new HashSet<MetricDescription>();
@@ -436,6 +433,7 @@ public class CollectorImpl implements Collector, Runnable {
         }
     }
 
+    @Override
     public void toggleParentSkip() {
         skipParent = !skipParent;
         forceUpdate = true;
@@ -475,6 +473,7 @@ public class CollectorImpl implements Collector, Runnable {
         return false;
     }
 
+    @Override
     public void run() {
         // int iterations = 0;
 
@@ -513,16 +512,13 @@ public class CollectorImpl implements Collector, Runnable {
             synchronized (jobQueue) {
                 if (waiting >= workercount) {
                     if (!jobQueue.isEmpty()) {
-                        logger
-                                .debug("workers idling while jobqueue not empty.");
+                        logger.debug("workers idling while jobqueue not empty.");
                     }
                     logger.debug("Succesfully finished queue.");
                 } else {
                     // If they have not, give warning, and try again next turn.
-                    logger.debug("Workers still working: "
-                            + (workercount - waiting));
-                    logger.debug("Ibises left in queue: " + jobQueue.size()
-                            + " / " + ibises.size());
+                    logger.debug("Workers still working: " + (workercount - waiting));
+                    logger.debug("Ibises left in queue: " + jobQueue.size() + " / " + ibises.size());
                     logger.debug("Consider increasing the refresh time.");
                 }
             }

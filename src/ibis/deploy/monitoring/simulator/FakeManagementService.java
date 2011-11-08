@@ -22,8 +22,7 @@ import javax.management.openmbean.SimpleType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FakeManagementService implements ManagementServiceInterface,
-        FakeService {
+public class FakeManagementService implements ManagementServiceInterface, FakeService {
     private static final Logger logger = LoggerFactory
             .getLogger("ibis.deploy.monitoring.simulator.FakeManagementService");
 
@@ -42,8 +41,8 @@ public class FakeManagementService implements ManagementServiceInterface,
         new Thread(timer).start();
     }
 
-    public Object[] getAttributes(IbisIdentifier id,
-            AttributeDescription... desc) throws IOException,
+    @Override
+    public Object[] getAttributes(IbisIdentifier id, AttributeDescription... desc) throws IOException,
             NoSuchPropertyException {
         synchronized (ibises) {
             // if failing, go into an infinite loop, to simulate this ibis'
@@ -68,31 +67,25 @@ public class FakeManagementService implements ManagementServiceInterface,
             for (int i = 0; i < desc.length; i++) {
                 // logger.debug("working on "+desc[i].getAttribute());
 
-                if (desc[i].getBeanName().compareTo(
-                        "java.lang:type=OperatingSystem") == 0
+                if (desc[i].getBeanName().compareTo("java.lang:type=OperatingSystem") == 0
                         && desc[i].getAttribute().compareTo("ProcessCpuTime") == 0) {
                     result[i] = (long) (Math.random() * 5000 + currentIteration * 5000);
-                } else if (desc[i].getBeanName().compareTo(
-                        "java.lang:type=Runtime") == 0
+                } else if (desc[i].getBeanName().compareTo("java.lang:type=OperatingSystem") == 0
+                        && desc[i].getAttribute().compareTo("SystemLoadAverage") == 0) {
+                    result[i] = Math.random();
+                } else if (desc[i].getBeanName().compareTo("java.lang:type=Runtime") == 0
                         && desc[i].getAttribute().compareTo("Uptime") == 0) {
                     result[i] = (long) (Math.random() * 500 + currentIteration * 500);
-                } else if (desc[i].getBeanName().compareTo(
-                        "java.lang:type=OperatingSystem") == 0
-                        && desc[i].getAttribute().compareTo(
-                                "AvailableProcessors") == 0) {
+                } else if (desc[i].getBeanName().compareTo("java.lang:type=OperatingSystem") == 0
+                        && desc[i].getAttribute().compareTo("AvailableProcessors") == 0) {
                     result[i] = (int) 4;
-                } else if (desc[i].getBeanName().compareTo(
-                        "java.lang:type=OperatingSystem") == 0
-                        && desc[i].getAttribute().compareTo(
-                                "TotalPhysicalMemorySize") == 0) {
+                } else if (desc[i].getBeanName().compareTo("java.lang:type=OperatingSystem") == 0
+                        && desc[i].getAttribute().compareTo("TotalPhysicalMemorySize") == 0) {
                     result[i] = (long) 40000;
-                } else if (desc[i].getBeanName().compareTo(
-                        "java.lang:type=OperatingSystem") == 0
-                        && desc[i].getAttribute().compareTo(
-                                "FreePhysicalMemorySize") == 0) {
+                } else if (desc[i].getBeanName().compareTo("java.lang:type=OperatingSystem") == 0
+                        && desc[i].getAttribute().compareTo("FreePhysicalMemorySize") == 0) {
                     result[i] = (long) 20000;
-                } else if (desc[i].getBeanName().compareTo(
-                        "java.lang:type=Memory") == 0
+                } else if (desc[i].getBeanName().compareTo("java.lang:type=Memory") == 0
                         && desc[i].getAttribute().compareTo("HeapMemoryUsage") == 0) {
 
                     String[] itemNames = new String[2];
@@ -103,13 +96,11 @@ public class FakeManagementService implements ManagementServiceInterface,
                     itemDescriptions[0] = "used";
                     itemDescriptions[1] = "maximum";
 
-                    OpenType<?> itemTypes[] = new OpenType<?>[] {
-                            SimpleType.LONG, SimpleType.LONG };
+                    OpenType<?> itemTypes[] = new OpenType<?>[] { SimpleType.LONG, SimpleType.LONG };
 
                     CompositeType type = null;
                     try {
-                        type = new CompositeType("dummy", "test", itemNames,
-                                itemDescriptions, itemTypes);
+                        type = new CompositeType("dummy", "test", itemNames, itemDescriptions, itemTypes);
                     } catch (OpenDataException e) {
                         logger.error("opendata exception");
                         System.exit(0);
@@ -127,10 +118,8 @@ public class FakeManagementService implements ManagementServiceInterface,
                         System.exit(0);
                     }
                     result[i] = data;
-                } else if (desc[i].getBeanName().compareTo(
-                        "java.lang:type=Memory") == 0
-                        && desc[i].getAttribute().compareTo(
-                                "NonHeapMemoryUsage") == 0) {
+                } else if (desc[i].getBeanName().compareTo("java.lang:type=Memory") == 0
+                        && desc[i].getAttribute().compareTo("NonHeapMemoryUsage") == 0) {
 
                     String[] itemNames = new String[2];
                     itemNames[0] = "used";
@@ -140,13 +129,11 @@ public class FakeManagementService implements ManagementServiceInterface,
                     itemDescriptions[0] = "used";
                     itemDescriptions[1] = "maximum";
 
-                    OpenType<?> itemTypes[] = new OpenType<?>[] {
-                            SimpleType.LONG, SimpleType.LONG };
+                    OpenType<?> itemTypes[] = new OpenType<?>[] { SimpleType.LONG, SimpleType.LONG };
 
                     CompositeType type = null;
                     try {
-                        type = new CompositeType("dummy", "test", itemNames,
-                                itemDescriptions, itemTypes);
+                        type = new CompositeType("dummy", "test", itemNames, itemDescriptions, itemTypes);
                     } catch (OpenDataException e) {
                         logger.error("opendata exception");
                         System.exit(0);
@@ -165,14 +152,12 @@ public class FakeManagementService implements ManagementServiceInterface,
                     }
 
                     result[i] = data;
-                } else if (desc[i].getBeanName().compareTo(
-                        "java.lang:type=Threading") == 0
+                } else if (desc[i].getBeanName().compareTo("java.lang:type=Threading") == 0
                         && desc[i].getAttribute().compareTo("ThreadCount") == 0) {
 
                     result[i] = (int) (Math.random() * 100);
                 } else if (desc[i].getBeanName().compareTo("ibis") == 0
-                        && desc[i].getAttribute().compareTo(
-                                "receivedBytesPerIbis") == 0) {
+                        && desc[i].getAttribute().compareTo("receivedBytesPerIbis") == 0) {
 
                     String myPool = id.poolName();
                     IbisIdentifier iArray[] = reg.getMembers(myPool);
@@ -186,10 +171,7 @@ public class FakeManagementService implements ManagementServiceInterface,
                         while (resultMap.containsKey(randomIbis)) {
                             randomIbis = iArray[(int) (Math.random() * iArray.length)];
                         }
-                        resultMap
-                                .put(
-                                        randomIbis,
-                                        (long) (Math.random() * 5000 + currentIteration * 5000));
+                        resultMap.put(randomIbis, (long) (Math.random() * 5000 + currentIteration * 5000));
                         j++;
                     }
                     result[i] = resultMap;
@@ -208,15 +190,11 @@ public class FakeManagementService implements ManagementServiceInterface,
                         while (resultMap.containsKey(randomIbis)) {
                             randomIbis = iArray[(int) (Math.random() * iArray.length)];
                         }
-                        resultMap
-                                .put(
-                                        randomIbis,
-                                        (long) (Math.random() * 5000 + currentIteration * 5000));
+                        resultMap.put(randomIbis, (long) (Math.random() * 5000 + currentIteration * 5000));
                         j++;
                     }
                     result[i] = resultMap;
-                } else if (desc[i].getBeanName().compareTo(
-                        "ibis.amuse:type=MPIProfilingCollector") == 0
+                } else if (desc[i].getBeanName().compareTo("ibis.amuse:type=MPIProfilingCollector") == 0
                         && desc[i].getAttribute().compareTo("SentBytesPerIbis") == 0) {
 
                     String myPool = id.poolName();
@@ -231,15 +209,11 @@ public class FakeManagementService implements ManagementServiceInterface,
                         int destinations = (int) (Math.random() * iArray.length);
                         int j = 0;
                         while (j < destinations) {
-                            IbisIdentifier randomIbis = iArray[(int) (Math
-                                    .random() * iArray.length)];
+                            IbisIdentifier randomIbis = iArray[(int) (Math.random() * iArray.length)];
                             while (resultMap.containsKey(randomIbis)) {
                                 randomIbis = iArray[(int) (Math.random() * iArray.length)];
                             }
-                            resultMap
-                                    .put(
-                                            randomIbis,
-                                            (long) (Math.random() * 5000 + currentIteration * 5000));
+                            resultMap.put(randomIbis, (long) (Math.random() * 5000 + currentIteration * 5000));
                             j++;
                         }
                     }
@@ -258,6 +232,7 @@ public class FakeManagementService implements ManagementServiceInterface,
         }
     }
 
+    @Override
     public void doUpdate() {
         synchronized (ibises) {
             ibises = reg.getIbises();

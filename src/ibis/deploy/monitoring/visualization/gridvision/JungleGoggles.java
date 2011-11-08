@@ -53,8 +53,7 @@ public class JungleGoggles implements GLEventListener {
     private Float[] viewRotation;
 
     // picking
-    private boolean pickRequest, updateRequest, recenterRequest, resetRequest,
-            menuRequest, repositionRequest;
+    private boolean pickRequest, updateRequest, recenterRequest, resetRequest, menuRequest, repositionRequest;
     private Point pickPoint;
     private int selectedItem, menuCoordX, menuCoordY;
     private final HashMap<Integer, JGVisual> namesToVisuals;
@@ -152,6 +151,7 @@ public class JungleGoggles implements GLEventListener {
     /**
      * Init() will be called when Junglegoggles starts
      */
+    @Override
     public void init(GLAutoDrawable drawable) {
         gl = drawable.getGL().getGL2();
 
@@ -204,6 +204,7 @@ public class JungleGoggles implements GLEventListener {
     /**
      * Function that is called when the canvas is resized.
      */
+    @Override
     public void reshape(GLAutoDrawable drawable, int x, int y, int w, int h) {
         GL2 gl = drawable.getGL().getGL2();
 
@@ -231,10 +232,10 @@ public class JungleGoggles implements GLEventListener {
      * Mandatory functions to complete the implementation of GLEventListener,
      * but unneeded and therefore left blank.
      */
-    public void displayChanged(GLAutoDrawable drawable, boolean modeChanged,
-            boolean deviceChanged) {
+    public void displayChanged(GLAutoDrawable drawable, boolean modeChanged, boolean deviceChanged) {
     }
 
+    @Override
     public void dispose(GLAutoDrawable arg0) {
     }
 
@@ -257,8 +258,7 @@ public class JungleGoggles implements GLEventListener {
      * Function used to speed up the display process by using pre-built display
      * lists.
      */
-    public int[] getDisplayListPointer(
-            DisplayListBuilder.DisplayList whichPointer) {
+    public int[] getDisplayListPointer(DisplayListBuilder.DisplayList whichPointer) {
         return listBuilder.getPointer(whichPointer);
     }
 
@@ -316,8 +316,7 @@ public class JungleGoggles implements GLEventListener {
                 JGVisual v_source = visualRegistry.get(link.getSource());
                 JGVisual v_dest = visualRegistry.get(link.getDestination());
 
-                JGLink jglink = new JGLink(this, v_source, glu, v_source,
-                        v_dest, link);
+                JGLink jglink = new JGLink(this, v_source, glu, v_source, v_dest, link);
                 jglink.init(gl);
                 // jglink.setCoordinates(m.getCurrentCoordinates());
 
@@ -349,6 +348,7 @@ public class JungleGoggles implements GLEventListener {
      * Action listener for the fps counter
      */
     ActionListener fpsRecorder = new ActionListener() {
+        @Override
         public void actionPerformed(ActionEvent e) {
             fps = framesPassed;
             framesPassed = 0;
@@ -364,6 +364,7 @@ public class JungleGoggles implements GLEventListener {
      * display() will be called repeatedly by the Animator when Animator is done
      * it will swap buffers and update the display.
      */
+    @Override
     public void display(GLAutoDrawable drawable) {
         // Determine, if any, the selected item and it's parent
         JGVisual selectedVisual = namesToParents.get(selectedItem);
@@ -391,8 +392,7 @@ public class JungleGoggles implements GLEventListener {
 
         if (menuRequest) {
             if (selectedParent != null) {
-                ContextSensitiveMenu popup = new ContextSensitiveMenu(
-                        namesToParents.get(selectedItem));
+                ContextSensitiveMenu popup = new ContextSensitiveMenu(namesToParents.get(selectedItem));
                 GLJPanel canvas = panel.getPanel();
                 canvas.add(popup);
                 popup.show(canvas, menuCoordX, menuCoordY);
@@ -611,14 +611,11 @@ public class JungleGoggles implements GLEventListener {
         return collector.getAvailableMetrics();
     }
 
-    public MetricDescription getMetricDescription(String name)
-            throws MetricDescriptionNotAvailableException {
-        HashSet<MetricDescription> descriptions = collector
-                .getAvailableMetrics();
+    public MetricDescription getMetricDescription(String name) throws MetricDescriptionNotAvailableException {
+        HashSet<MetricDescription> descriptions = collector.getAvailableMetrics();
 
         for (MetricDescription md : descriptions) {
-            if (md.getVerboseName().compareTo(name) == 0
-                    || md.getName().compareTo(name) == 0) {
+            if (md.getVerboseName().compareTo(name) == 0 || md.getName().compareTo(name) == 0) {
                 return md;
             }
         }
@@ -643,7 +640,12 @@ public class JungleGoggles implements GLEventListener {
     }
 
     public void setLocationSpacing(int sliderSetting) {
-        universe.setLocationSeparation(sliderSetting, 0);
+        float[] temp = new float[3];
+        temp[0] = sliderSetting;
+        temp[1] = sliderSetting;
+        temp[2] = sliderSetting;
+
+        universe.setLocationSeparation(temp, 0);
         doRepositioning();
     }
 
@@ -684,8 +686,7 @@ public class JungleGoggles implements GLEventListener {
         gl.glLoadIdentity();
 
         // create 5x5 pixel picking region near cursor location
-        glu.gluPickMatrix(pickPoint.x, (viewport[3] - pickPoint.y), 3.0, 3.0,
-                viewport, 0);
+        glu.gluPickMatrix(pickPoint.x, (viewport[3] - pickPoint.y), 3.0, 3.0, viewport, 0);
 
         // Multiply by the perspective
         glu.gluPerspective(fovy, aspect, zNear, zFar);

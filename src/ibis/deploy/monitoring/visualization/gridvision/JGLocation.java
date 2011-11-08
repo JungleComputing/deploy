@@ -14,11 +14,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class JGLocation extends JGVisualAbstract implements JGVisual {
-    private static final Logger logger = LoggerFactory
-            .getLogger(JGLocation.class);
+    private static final Logger logger = LoggerFactory.getLogger(JGLocation.class);
 
-    public JGLocation(JungleGoggles goggles, JGVisual parent, GLUgl2 glu,
-            Location dataLocation, float[] newSeparation) {
+    public JGLocation(JungleGoggles goggles, JGVisual parent, GLUgl2 glu, Location dataLocation, float[] newSeparation) {
         super(goggles, parent);
 
         locationSeparation[0] = newSeparation[0];
@@ -36,11 +34,9 @@ public class JGLocation extends JGVisualAbstract implements JGVisual {
 
         ArrayList<Location> dataChildren = dataLocation.getChildren();
         for (Location datachild : dataChildren) {
-            JGLocation newLocation = new JGLocation(goggles, this, glu,
-                    datachild, FloatMatrixMath.div(locationSeparation,
-                            (float) Math.pow(datachild.getRank(), 2.0)));
-            logger.debug("JGLocation reports child rank: "
-                    + datachild.getRank() + " and separation: "
+            JGLocation newLocation = new JGLocation(goggles, this, glu, datachild, FloatMatrixMath.div(
+                    locationSeparation, datachild.getRank()));
+            logger.debug("JGLocation reports child rank: " + datachild.getRank() + " and separation: "
                     + locationSeparation[0]);
             locations.add(newLocation);
         }
@@ -52,12 +48,9 @@ public class JGLocation extends JGVisualAbstract implements JGVisual {
 
         Metric dataMetrics[] = dataLocation.getMetrics();
         for (Metric dataMetric : dataMetrics) {
-            metrics.add(new JGMetric(goggles, this, dataMetric,
-                    MetricModifier.MIN));
-            metrics.add(new JGMetric(goggles, this, dataMetric,
-                    MetricModifier.NORM));
-            metrics.add(new JGMetric(goggles, this, dataMetric,
-                    MetricModifier.MAX));
+            metrics.add(new JGMetric(goggles, this, dataMetric, MetricModifier.MIN));
+            metrics.add(new JGMetric(goggles, this, dataMetric, MetricModifier.NORM));
+            metrics.add(new JGMetric(goggles, this, dataMetric, MetricModifier.MAX));
         }
 
         name = dataLocation.getName();
@@ -91,8 +84,7 @@ public class JGLocation extends JGVisualAbstract implements JGVisual {
         for (int i = 0; i < 3; i++) {
             maxShift[i] = (shift[i] * Math.max((count[i] - 1), 0) * 0.5f);
         }
-        float[] centeredCoordinates = FloatMatrixMath
-                .sub(coordinates, maxShift);
+        float[] centeredCoordinates = FloatMatrixMath.sub(coordinates, maxShift);
 
         // calculate my own new radius
         radius = FloatMatrixMath.max(maxShift);
@@ -105,8 +97,7 @@ public class JGLocation extends JGVisualAbstract implements JGVisual {
         float[] position = { 0, 0, 0 };
         for (JGVisual child : children) {
             // cascade the new location
-            childLocation = FloatMatrixMath.add(centeredCoordinates,
-                    FloatMatrixMath.mul(shift, position));
+            childLocation = FloatMatrixMath.add(centeredCoordinates, FloatMatrixMath.mul(shift, position));
 
             child.setCoordinates(childLocation);
 
