@@ -31,11 +31,14 @@ public class Utils {
 
     // Bucharest, Barcelona, Amsterdam,
     // Delft, Los Angeles, Copenhagen, Moscow, Sydney, Tokyo, Leiden, Athens,
-    // Cape Town, New Delhi
-    private static double[] latitudes = { 44.433, 41.38, 52.35, 52, 34.05,
-            55.75, 55.66, -33.9, 35.68, 52.15, 37.98, -33.91, 24.73 };
-    private static double[] longitudes = { 26.1, 2.18, 4.91, 4.36, -118.24,
-            37.61, 12.58, 151.2, 139.75, 4.5, 23.73, 18.42, 81.33 };
+	//     Cape Town, New Delhi
+	//    private static double[] latitudes = { 44.433, 41.38, 52.35, 52, 34.05,
+	//            55.75, 55.66, -33.9, 35.68, 52.15, 37.98, -33.91, 24.73 };
+	//    private static double[] longitudes = { 26.1, 2.18, 4.91, 4.36, -118.24,
+	//            37.61, 12.58, 151.2, 139.75, 4.5, 23.73, 18.42, 81.33 };
+    
+    private static double[] latitudes = { 47.61159, 51.9979, 52.1686, 52.35505, 52.3328 };
+    private static double[] longitudes = { -122.33169, 4.3742, 4.4598, 4.95583, 4.8669 };
 
     private static HashMap<String, LatLon> latLonsPerLocation = new HashMap<String, LatLon>();
 

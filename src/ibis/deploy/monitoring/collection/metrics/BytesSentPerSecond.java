@@ -21,7 +21,7 @@ public class BytesSentPerSecond extends
     private static final Logger logger = LoggerFactory
             .getLogger("ibis.deploy.monitoring.collection.metrics.BytesSentPerSecond");
 
-    public static final float MAX = 512000; // 1/2 GB
+    public static final float MAX = 1024; // 1/2 GB
     private long overall_max = 1024;
 
     public static final String ATTRIBUTE_NAME_SENT_BYTES_PER_IBIS = "sentBytesPerIbis";
