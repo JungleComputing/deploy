@@ -28,7 +28,7 @@ public abstract class MetricDescriptionImpl implements MetricDescription {
     protected ArrayList<AttributeDescription> necessaryAttributes;
     protected ArrayList<MetricDescription> necessaryMetrics;
 
-    protected int maxForPercent = 1024;
+    protected int maxForPercent = 25600;
 
     protected MetricDescriptionImpl() {
         color = new Float[3];

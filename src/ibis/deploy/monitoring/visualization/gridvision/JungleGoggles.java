@@ -53,7 +53,8 @@ public class JungleGoggles implements GLEventListener {
     private Float[] viewRotation;
 
     // picking
-    private boolean pickRequest, updateRequest, recenterRequest, resetRequest, menuRequest, repositionRequest;
+    private boolean pickRequest, updateRequest, recenterRequest, resetRequest,
+            menuRequest, repositionRequest;
     private Point pickPoint;
     private int selectedItem, menuCoordX, menuCoordY;
     private final HashMap<Integer, JGVisual> namesToVisuals;
@@ -82,6 +83,14 @@ public class JungleGoggles implements GLEventListener {
     // Persistent Form storage
     MetricShape currentNWForm = MetricShape.PARTICLES;
     MetricShape currentMetricForm = MetricShape.BAR;
+    CollectionShape currentAllLocationsForm = CollectionShape.CUBE;
+    CollectionShape currentAllIbisesForm = CollectionShape.SPHERE;
+    CollectionShape currentAllMetricsForm = CollectionShape.CITYSCAPE;
+
+    // Persistent spacing storage
+    private int currentLocationSpacing = 13;
+    private float currentIbisSpacing = 0.5f;
+    private float currentMetricSpacing = 0.0f;
 
     /*
      * --------------------------------------------------------------------------
@@ -232,7 +241,8 @@ public class JungleGoggles implements GLEventListener {
      * Mandatory functions to complete the implementation of GLEventListener,
      * but unneeded and therefore left blank.
      */
-    public void displayChanged(GLAutoDrawable drawable, boolean modeChanged, boolean deviceChanged) {
+    public void displayChanged(GLAutoDrawable drawable, boolean modeChanged,
+            boolean deviceChanged) {
     }
 
     @Override
@@ -258,7 +268,8 @@ public class JungleGoggles implements GLEventListener {
      * Function used to speed up the display process by using pre-built display
      * lists.
      */
-    public int[] getDisplayListPointer(DisplayListBuilder.DisplayList whichPointer) {
+    public int[] getDisplayListPointer(
+            DisplayListBuilder.DisplayList whichPointer) {
         return listBuilder.getPointer(whichPointer);
     }
 
@@ -316,7 +327,8 @@ public class JungleGoggles implements GLEventListener {
                 JGVisual v_source = visualRegistry.get(link.getSource());
                 JGVisual v_dest = visualRegistry.get(link.getDestination());
 
-                JGLink jglink = new JGLink(this, v_source, glu, v_source, v_dest, link);
+                JGLink jglink = new JGLink(this, v_source, glu, v_source,
+                        v_dest, link);
                 jglink.init(gl);
                 // jglink.setCoordinates(m.getCurrentCoordinates());
 
@@ -330,9 +342,15 @@ public class JungleGoggles implements GLEventListener {
             particleInUse[i] = false;
         }
 
-        // Re-Apply the current Shapes
+        // Re-Apply the current Shapes and spacings
         setMetricForm(currentMetricForm);
         setNetworkForm(currentNWForm);
+        setLocationCollectionForm(currentAllLocationsForm);
+        setIbisCollectionForm(currentAllIbisesForm);
+
+        setLocationSpacing(currentLocationSpacing);
+        setIbisSpacing(currentIbisSpacing);
+        setMetricSpacing(currentMetricSpacing);
 
         rePositionUniverse();
     }
@@ -392,7 +410,8 @@ public class JungleGoggles implements GLEventListener {
 
         if (menuRequest) {
             if (selectedParent != null) {
-                ContextSensitiveMenu popup = new ContextSensitiveMenu(namesToParents.get(selectedItem));
+                ContextSensitiveMenu popup = new ContextSensitiveMenu(
+                        namesToParents.get(selectedItem));
                 GLJPanel canvas = panel.getPanel();
                 canvas.add(popup);
                 popup.show(canvas, menuCoordX, menuCoordY);
@@ -583,6 +602,7 @@ public class JungleGoggles implements GLEventListener {
     }
 
     public void setLocationCollectionForm(CollectionShape newShape) {
+        currentAllLocationsForm = newShape;
         universe.setLocationCollectionShape(newShape);
 
         for (Entry<Element, JGVisual> entry : visualRegistry.entrySet()) {
@@ -593,6 +613,7 @@ public class JungleGoggles implements GLEventListener {
     }
 
     public void setIbisCollectionForm(CollectionShape newShape) {
+        currentAllIbisesForm = newShape;
         universe.setIbisCollectionShape(newShape);
 
         for (Entry<Element, JGVisual> entry : visualRegistry.entrySet()) {
@@ -611,11 +632,14 @@ public class JungleGoggles implements GLEventListener {
         return collector.getAvailableMetrics();
     }
 
-    public MetricDescription getMetricDescription(String name) throws MetricDescriptionNotAvailableException {
-        HashSet<MetricDescription> descriptions = collector.getAvailableMetrics();
+    public MetricDescription getMetricDescription(String name)
+            throws MetricDescriptionNotAvailableException {
+        HashSet<MetricDescription> descriptions = collector
+                .getAvailableMetrics();
 
         for (MetricDescription md : descriptions) {
-            if (md.getVerboseName().compareTo(name) == 0 || md.getName().compareTo(name) == 0) {
+            if (md.getVerboseName().compareTo(name) == 0
+                    || md.getName().compareTo(name) == 0) {
                 return md;
             }
         }
@@ -640,6 +664,8 @@ public class JungleGoggles implements GLEventListener {
     }
 
     public void setLocationSpacing(int sliderSetting) {
+        currentLocationSpacing = sliderSetting;
+
         float[] temp = new float[3];
         temp[0] = sliderSetting;
         temp[1] = sliderSetting;
@@ -650,11 +676,14 @@ public class JungleGoggles implements GLEventListener {
     }
 
     public void setIbisSpacing(float sliderSetting) {
+        currentIbisSpacing = sliderSetting;
         universe.setIbisSeparation(sliderSetting);
         doRepositioning();
     }
 
     public void setMetricSpacing(float sliderSetting) {
+        currentMetricSpacing = sliderSetting;
+
         universe.setMetricSeparation(sliderSetting);
         doRepositioning();
     }
@@ -686,7 +715,8 @@ public class JungleGoggles implements GLEventListener {
         gl.glLoadIdentity();
 
         // create 5x5 pixel picking region near cursor location
-        glu.gluPickMatrix(pickPoint.x, (viewport[3] - pickPoint.y), 3.0, 3.0, viewport, 0);
+        glu.gluPickMatrix(pickPoint.x, (viewport[3] - pickPoint.y), 3.0, 3.0,
+                viewport, 0);
 
         // Multiply by the perspective
         glu.gluPerspective(fovy, aspect, zNear, zFar);

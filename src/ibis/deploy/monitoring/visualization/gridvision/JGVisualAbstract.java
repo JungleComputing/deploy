@@ -12,7 +12,8 @@ import org.slf4j.LoggerFactory;
 import com.jogamp.opengl.util.awt.TextRenderer;
 
 public abstract class JGVisualAbstract implements JGVisual {
-    private static final Logger logger = LoggerFactory.getLogger(JGLocation.class);
+    private static final Logger logger = LoggerFactory
+            .getLogger(JGLocation.class);
     private final static float SPHERE_RADIUS_MULTIPLIER = 0.175f;
 
     protected JungleGoggles goggles;
@@ -32,7 +33,7 @@ public abstract class JGVisualAbstract implements JGVisual {
     protected float radius, width, height;
 
     protected float[] locationSeparation = { 0, 0, 0 };
-    protected float[] ibisSeparation = { 0, 0, 0 };
+    protected float[] ibisSeparation = { 0.5f, 0.5f, 0.5f };
     protected float[] metricSeparation = { 0.05f, 0.05f, 0.05f };
 
     protected TextRenderer tr;
@@ -56,7 +57,7 @@ public abstract class JGVisualAbstract implements JGVisual {
         rotation[1] = 0.0f;
         rotation[2] = 0.0f;
 
-        locationColShape = CollectionShape.CITYSCAPE;
+        locationColShape = CollectionShape.CUBE;
         ibisColShape = CollectionShape.SPHERE;
         metricColShape = CollectionShape.CITYSCAPE;
         state = State.UNFOLDED;
@@ -98,7 +99,8 @@ public abstract class JGVisualAbstract implements JGVisual {
             } else if (locationColShape == CollectionShape.CUBE) {
                 setCube(locations, locationSeparation);
             } else {
-                System.err.println("Collectionshape not defined while setting coordinates.");
+                System.err
+                        .println("Collectionshape not defined while setting coordinates.");
                 System.exit(0);
             }
         }
@@ -111,7 +113,8 @@ public abstract class JGVisualAbstract implements JGVisual {
             } else if (ibisColShape == CollectionShape.CUBE) {
                 setCube(ibises, ibisSeparation);
             } else {
-                System.err.println("Collectionshape not defined while setting coordinates.");
+                System.err
+                        .println("Collectionshape not defined while setting coordinates.");
                 System.exit(0);
             }
         }
@@ -127,7 +130,8 @@ public abstract class JGVisualAbstract implements JGVisual {
             } else if (metricColShape == CollectionShape.CUBE) {
                 setCube(metrics, metricSeparation);
             } else {
-                System.err.println("Collectionshape not defined while setting coordinates.");
+                System.err
+                        .println("Collectionshape not defined while setting coordinates.");
                 System.exit(0);
             }
         }
@@ -153,7 +157,8 @@ public abstract class JGVisualAbstract implements JGVisual {
         for (int i = 0; i < 3; i++) {
             maxShift[i] = (shift[i] * Math.max((count[i] - 1), 0) * 0.5f);
         }
-        float[] centeredCoordinates = FloatMatrixMath.sub(coordinates, maxShift);
+        float[] centeredCoordinates = FloatMatrixMath
+                .sub(coordinates, maxShift);
 
         // calculate my own new radius
         radius = FloatMatrixMath.max(maxShift);
@@ -166,7 +171,8 @@ public abstract class JGVisualAbstract implements JGVisual {
         float[] position = { 0, 0, 0 };
         for (JGVisual child : children) {
             // cascade the new location
-            childLocation = FloatMatrixMath.add(centeredCoordinates, FloatMatrixMath.mul(shift, position));
+            childLocation = FloatMatrixMath.add(centeredCoordinates,
+                    FloatMatrixMath.mul(shift, position));
 
             child.setCoordinates(childLocation);
 
@@ -192,12 +198,15 @@ public abstract class JGVisualAbstract implements JGVisual {
         float[][] pt = new float[childCount][3];
         double r = 0;
 
-        float radius = SPHERE_RADIUS_MULTIPLIER * (maxRad + FloatMatrixMath.max(separation)) * childCount;
+        float radius = SPHERE_RADIUS_MULTIPLIER
+                * (maxRad + FloatMatrixMath.max(separation)) * childCount;
 
         for (int k = 0; k < childCount; k++) {
             r = Math.sqrt(1 - (z * z));
-            pt[k][0] = coordinates[0] + radius * ((float) (Math.cos(olong) * r));
-            pt[k][1] = coordinates[1] + radius * ((float) (Math.sin(olong) * r));
+            pt[k][0] = coordinates[0] + radius
+                    * ((float) (Math.cos(olong) * r));
+            pt[k][1] = coordinates[1] + radius
+                    * ((float) (Math.sin(olong) * r));
             pt[k][2] = coordinates[2] + radius * ((float) z);
             z = z - dz;
             olong = olong + dlong;
@@ -215,7 +224,8 @@ public abstract class JGVisualAbstract implements JGVisual {
 
     private void setCube(List<JGVisual> children, float[] separation) {
         int childCount = children.size();
-        float[] maxDims = { maxWidth(children), maxHeight(children), maxWidth(children), };
+        float[] maxDims = { maxWidth(children), maxHeight(children),
+                maxWidth(children), };
 
         // get the breakoff point for rows, stacks and columns
         int[] count = new int[3];
@@ -230,7 +240,8 @@ public abstract class JGVisualAbstract implements JGVisual {
         for (int i = 0; i < 3; i++) {
             maxShift[i] = (shift[i] * Math.max((count[i] - 1), 0) * 0.5f);
         }
-        float[] centeredCoordinates = FloatMatrixMath.sub(coordinates, maxShift);
+        float[] centeredCoordinates = FloatMatrixMath
+                .sub(coordinates, maxShift);
 
         // calculate my own new radius
         radius = FloatMatrixMath.max(maxShift);
@@ -242,7 +253,8 @@ public abstract class JGVisualAbstract implements JGVisual {
         float[] position = { 0, 0, 0 };
         for (JGVisual child : children) {
             // cascade the new location
-            childLocation = FloatMatrixMath.add(centeredCoordinates, FloatMatrixMath.mul(shift, position));
+            childLocation = FloatMatrixMath.add(centeredCoordinates,
+                    FloatMatrixMath.mul(shift, position));
 
             child.setCoordinates(childLocation);
 
@@ -442,7 +454,8 @@ public abstract class JGVisualAbstract implements JGVisual {
                 } else {
                     tr.setColor(1f, 1f, 1f, 0.5f);
                 }
-                tr.draw3D(name, coordinates[0], coordinates[1] - height, coordinates[2], 0.005f);
+                tr.draw3D(name, coordinates[0], coordinates[1] - height,
+                        coordinates[2], 0.005f);
                 tr.end3DRendering();
 
                 // Restore the old modelview matrix
@@ -463,7 +476,8 @@ public abstract class JGVisualAbstract implements JGVisual {
                 } else {
                     tr.setColor(1f, 1f, 1f, 0.5f);
                 }
-                tr.draw3D(name, coordinates[0], coordinates[1] - height, coordinates[2], 0.005f);
+                tr.draw3D(name, coordinates[0], coordinates[1] - height,
+                        coordinates[2], 0.005f);
                 tr.end3DRendering();
 
                 // Restore the old modelview matrix
@@ -492,7 +506,8 @@ public abstract class JGVisualAbstract implements JGVisual {
 
         gl.glLineWidth(1.0f);
 
-        float Xn = -0.5f * HEIGHT, Xp = 0.5f * WIDTH, Yn = -0.5f * HEIGHT, Yp = 0.5f * HEIGHT, Zn = -0.5f * WIDTH, Zp = 0.5f * WIDTH;
+        float Xn = -0.5f * HEIGHT, Xp = 0.5f * WIDTH, Yn = -0.5f * HEIGHT, Yp = 0.5f * HEIGHT, Zn = -0.5f
+                * WIDTH, Zp = 0.5f * WIDTH;
 
         gl.glBegin(GL2.GL_QUADS);
         // TOP
@@ -620,11 +635,14 @@ public abstract class JGVisualAbstract implements JGVisual {
     }
 
     public void setLocationSeparation(float[] newSep, int level) {
-        locationSeparation = FloatMatrixMath.div(newSep, (level + 1));
-        logger.debug("Level: " + level + " Child separation: " + locationSeparation[0]);
+        locationSeparation = FloatMatrixMath.div(newSep,
+                (level + 2 * level + 2));
+        logger.debug("Level: " + level + " Child separation: "
+                + locationSeparation[0]);
 
         for (JGVisual child : locations) {
-            ((JGLocation) child).setLocationSeparation(locationSeparation, level + 1);
+            ((JGLocation) child).setLocationSeparation(locationSeparation,
+                    level + 1);
         }
     }
 

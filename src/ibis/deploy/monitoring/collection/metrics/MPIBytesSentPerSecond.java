@@ -14,9 +14,11 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MPIBytesSentPerSecond extends ibis.deploy.monitoring.collection.impl.MetricDescriptionImpl implements
+public class MPIBytesSentPerSecond extends
+        ibis.deploy.monitoring.collection.impl.MetricDescriptionImpl implements
         ibis.deploy.monitoring.collection.MetricDescription {
-    private static final Logger logger = LoggerFactory.getLogger(MPIBytesSentPerSecond.class);
+    private static final Logger logger = LoggerFactory
+            .getLogger(MPIBytesSentPerSecond.class);
 
     // private static final float MAX = 512000; //1/2 GB
     // private long overall_max = 1024;
@@ -32,28 +34,33 @@ public class MPIBytesSentPerSecond extends ibis.deploy.monitoring.collection.imp
         color[1] = 156f / 255f;
         color[2] = 51f / 255f;
 
-        necessaryAttributes.add(new AttributeDescription("ibis.amuse:type=MPIProfilingCollector", "SentBytesPerIbis"));
+        necessaryAttributes.add(new AttributeDescription(
+                "ibis.amuse:type=MPIProfilingCollector", "SentBytesPerIbis"));
 
         // outputTypes.add(MetricOutput.N);
         // outputTypes.add(MetricOutput.RPOS);
         outputTypes.add(MetricOutput.PERCENT);
 
-        maxForPercent = 1024;
+        maxForPercent = 25600;
     }
 
     @Override
-    public void update(Object[] results, Metric metric) throws IncorrectParametersException {
+    public void update(Object[] results, Metric metric)
+            throws IncorrectParametersException {
         ibis.deploy.monitoring.collection.impl.MetricImpl castMetric = ((ibis.deploy.monitoring.collection.impl.MetricImpl) metric);
         HashMap<IbisIdentifier, Number> result = new HashMap<IbisIdentifier, Number>();
         HashMap<IbisIdentifier, Number> percentResult = new HashMap<IbisIdentifier, Number>();
 
         if (results[0] instanceof Map<?, ?>) {
             long time_now = System.currentTimeMillis();
-            long time_elapsed = time_now - (Long) castMetric.getHelperVariable(this.name + "_time_prev");
+            long time_elapsed = time_now
+                    - (Long) castMetric.getHelperVariable(this.name
+                            + "_time_prev");
             castMetric.setHelperVariable(this.name + "_time_prev", time_now);
 
             for (Map.Entry<?, ?> incoming : ((Map<?, ?>) results[0]).entrySet()) {
-                if (incoming.getKey() instanceof IbisIdentifier && incoming.getValue() instanceof Long) {
+                if (incoming.getKey() instanceof IbisIdentifier
+                        && incoming.getValue() instanceof Long) {
                     @SuppressWarnings("unchecked")
                     // we've just checked it!
                     Map.Entry<IbisIdentifier, Long> received = (Entry<IbisIdentifier, Long>) incoming;
@@ -63,8 +70,11 @@ public class MPIBytesSentPerSecond extends ibis.deploy.monitoring.collection.imp
                         float time_seconds = time_elapsed / 1000.0f;
 
                         long sent_now = received.getValue();
-                        long sent = sent_now - (Long) castMetric.getHelperVariable(this.name + "_" + id + "_sent_prev");
-                        castMetric.setHelperVariable(this.name + "_" + id + "_sent_prev", sent_now);
+                        long sent = sent_now
+                                - (Long) castMetric.getHelperVariable(this.name
+                                        + "_" + id + "_sent_prev");
+                        castMetric.setHelperVariable(this.name + "_" + id
+                                + "_sent_prev", sent_now);
 
                         long perSec = (long) (sent / time_seconds);
                         if (perSec < 0)
@@ -102,9 +112,11 @@ public class MPIBytesSentPerSecond extends ibis.deploy.monitoring.collection.imp
             // castMetric.setValue(MetricModifier.NORM, MetricOutput.N, total);
             // castMetric.setValue(MetricModifier.NORM, MetricOutput.RPOS,
             // result);
-            castMetric.setValue(MetricModifier.NORM, MetricOutput.PERCENT, percentResult);
+            castMetric.setValue(MetricModifier.NORM, MetricOutput.PERCENT,
+                    percentResult);
         } catch (BeyondAllowedRangeException e) {
-            logger.debug(name + " metric failed trying to set value out of bounds.");
+            logger.debug(name
+                    + " metric failed trying to set value out of bounds.");
         }
     }
 }

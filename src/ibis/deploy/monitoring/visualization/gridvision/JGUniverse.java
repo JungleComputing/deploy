@@ -11,18 +11,20 @@ public class JGUniverse extends JGVisualAbstract implements JGVisual {
             Location root) {
         super(goggles, parent);
 
-        locationSeparation[0] = 16;
-        locationSeparation[1] = 16;
-        locationSeparation[2] = 16;
+        locationSeparation[0] = 13;
+        locationSeparation[1] = 13;
+        locationSeparation[2] = 13;
 
-        locationColShape = CollectionShape.CITYSCAPE;
+        locationColShape = CollectionShape.CUBE;
         state = State.UNFOLDED;
 
         ArrayList<Location> dataChildren = root.getChildren();
 
         for (Location datachild : dataChildren) {
             locations.add(new JGLocation(goggles, this, glu, datachild,
-                    locationSeparation));
+                    FloatMatrixMath.div(locationSeparation, (datachild
+                            .getRank()
+                            + 1 * datachild.getRank() + 1))));
         }
     }
 }

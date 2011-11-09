@@ -35,8 +35,10 @@ import org.slf4j.LoggerFactory;
  * Serves as the main class for the data collecting module.
  */
 public class CollectorImpl implements Collector, Runnable {
-    private static final Logger logger = LoggerFactory.getLogger("ibis.deploy.monitoring.collection.impl.Collector");
-    private static final ibis.ipl.Location universe = new ibis.ipl.impl.Location(new String[0]);
+    private static final Logger logger = LoggerFactory
+            .getLogger("ibis.deploy.monitoring.collection.impl.Collector");
+    private static final ibis.ipl.Location universe = new ibis.ipl.impl.Location(
+            new String[0]);
     private static final int workercount = 8;
 
     private static CollectorImpl ref = null;
@@ -71,7 +73,8 @@ public class CollectorImpl implements Collector, Runnable {
 
     private boolean change = false;
 
-    private CollectorImpl(ManagementServiceInterface manInterface, RegistryServiceInterface regInterface) {
+    private CollectorImpl(ManagementServiceInterface manInterface,
+            RegistryServiceInterface regInterface) {
         this.manInterface = manInterface;
         this.regInterface = regInterface;
 
@@ -92,7 +95,7 @@ public class CollectorImpl implements Collector, Runnable {
         root = new LocationImpl("root", color);
 
         // Set the default refreshrate
-        refreshrate = 5000;
+        refreshrate = 1000;
 
         // Set the default metrics
         MetricDescription cpuDesc = new CPUUsage();
@@ -140,7 +143,8 @@ public class CollectorImpl implements Collector, Runnable {
         }
     }
 
-    public static CollectorImpl getCollector(ManagementServiceInterface manInterface,
+    public static CollectorImpl getCollector(
+            ManagementServiceInterface manInterface,
             RegistryServiceInterface regInterface) {
         if (ref == null) {
             ref = new CollectorImpl(manInterface, regInterface);
@@ -150,7 +154,8 @@ public class CollectorImpl implements Collector, Runnable {
         return ref;
     }
 
-    public static CollectorImpl getCollector() throws SingletonObjectNotInstantiatedException {
+    public static CollectorImpl getCollector()
+            throws SingletonObjectNotInstantiatedException {
         if (ref != null) {
             return ref;
         } else {
@@ -201,7 +206,8 @@ public class CollectorImpl implements Collector, Runnable {
             String poolName = entry.getKey();
             int newSize = entry.getValue();
 
-            if (!poolSizes.containsKey(poolName) || newSize != poolSizes.get(poolName)) {
+            if (!poolSizes.containsKey(poolName)
+                    || newSize != poolSizes.get(poolName)) {
                 pools.clear();
                 change = true;
 
@@ -267,13 +273,15 @@ public class CollectorImpl implements Collector, Runnable {
                     }
 
                     // And add the ibis to that location
-                    IbisImpl ibis = new IbisImpl(manInterface, ibisid, entry.getValue(), current);
+                    IbisImpl ibis = new IbisImpl(manInterface, ibisid, entry
+                            .getValue(), current);
                     ((LocationImpl) current).addIbis(ibis);
                     parents.put(ibis, current);
                     ibises.put(ibisid, ibis);
 
                     // for all location levels, get parent
-                    ibis.ipl.Location parentIPLLocation = ibisLocation.getParent();
+                    ibis.ipl.Location parentIPLLocation = ibisLocation
+                            .getParent();
                     while (!parentIPLLocation.equals(universe)) {
                         String name = parentIPLLocation.toString();
 
@@ -322,8 +330,10 @@ public class CollectorImpl implements Collector, Runnable {
         for (Location source : locations.values()) {
             for (Location destination : locations.values()) {
                 try {
-                    if (!isAncestorOf(source, destination) && !isAncestorOf(destination, source)) {
-                        LinkImpl newLink = (LinkImpl) source.getLink(destination);
+                    if (!isAncestorOf(source, destination)
+                            && !isAncestorOf(destination, source)) {
+                        LinkImpl newLink = (LinkImpl) source
+                                .getLink(destination);
                         links.add(newLink);
                     }
                 } catch (SelfLinkeageException ignored) {
@@ -336,8 +346,10 @@ public class CollectorImpl implements Collector, Runnable {
         for (Ibis source : ibises.values()) {
             for (Location destination : locations.values()) {
                 try {
-                    if (!isAncestorOf(source, destination) && !isAncestorOf(destination, source)) {
-                        LinkImpl newLink = (LinkImpl) source.getLink(destination);
+                    if (!isAncestorOf(source, destination)
+                            && !isAncestorOf(destination, source)) {
+                        LinkImpl newLink = (LinkImpl) source
+                                .getLink(destination);
                         links.add(newLink);
                     }
                 } catch (SelfLinkeageException ignored) {
@@ -512,13 +524,16 @@ public class CollectorImpl implements Collector, Runnable {
             synchronized (jobQueue) {
                 if (waiting >= workercount) {
                     if (!jobQueue.isEmpty()) {
-                        logger.debug("workers idling while jobqueue not empty.");
+                        logger
+                                .debug("workers idling while jobqueue not empty.");
                     }
                     logger.debug("Succesfully finished queue.");
                 } else {
                     // If they have not, give warning, and try again next turn.
-                    logger.debug("Workers still working: " + (workercount - waiting));
-                    logger.debug("Ibises left in queue: " + jobQueue.size() + " / " + ibises.size());
+                    logger.debug("Workers still working: "
+                            + (workercount - waiting));
+                    logger.debug("Ibises left in queue: " + jobQueue.size()
+                            + " / " + ibises.size());
                     logger.debug("Consider increasing the refresh time.");
                 }
             }
