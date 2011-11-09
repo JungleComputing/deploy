@@ -118,7 +118,7 @@ public class DataCollector extends Thread {
                     // array only contains unique names
                     for (int i = 0; i < locationList.length; i++) {
                         if (locationList[i].contains("@")) {
-                            locationList[i] = locationList[i].split("@")[1];
+                            locationList[i] = locationList[i].substring(locationList[i].lastIndexOf("@") + 1);
                         }
 
                         // if the location didn't previously exist in the list,
@@ -132,7 +132,10 @@ public class DataCollector extends Thread {
 
                     // add all the ibises
                     for (IbisIdentifier ibis : ibises) {
-                        ibisLocation = ibis.location().toString().split("@")[1];
+                        ibisLocation = ibis.location().toString();
+                        if (ibisLocation.contains("@")) {
+                            ibisLocation = ibisLocation.substring(ibisLocation.lastIndexOf("@") + 1);
+                        }
 
                         ibisName = ibis.name() + "-" + ibis.location();
 
