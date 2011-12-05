@@ -322,7 +322,7 @@ public class Job implements Runnable {
         String user = cluster.getUserName();
         String keyFile = cluster.getKeyFile();
         File clusterCacheDir = cluster.getCacheDir();
-        // org.gridlab.gat.io.File gatCwd = GAT.createFile(context, ".");
+        org.gridlab.gat.io.File gatCwd = GAT.createFile(context, ".");
 
         if (clusterCacheDir == null
                 || cluster.getJobAdaptor().equalsIgnoreCase("zorilla")) {
@@ -333,8 +333,9 @@ public class Job implements Runnable {
             // netURI.toString() is
             // handled wrong! --Ceriel
 
-            // sd.addPreStagedFile(gatFile, gatCwd);
-            sd.addPreStagedFile(gatFile);
+            //de-optimize for better functionality :-)
+            sd.addPreStagedFile(gatFile, gatCwd);
+            //sd.addPreStagedFile(gatFile);
             return;
         }
 
