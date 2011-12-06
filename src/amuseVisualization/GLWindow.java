@@ -1,6 +1,5 @@
 package amuseVisualization;
 
-
 import javax.media.opengl.GL3;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLContext;
@@ -50,7 +49,7 @@ public class GLWindow implements GLEventListener {
 
     public static octants current_view_octant = octants.PPP;
 
-    private final OutputVizPanel panel;
+    private final AmuseVisualization panel;
     private final ProgramLoader loader;
 
     private Program animatedTurbulenceShader, pplShader, axesShader, gasShader, postprocessShader, gaussianBlurShader;
@@ -59,7 +58,7 @@ public class GLWindow implements GLEventListener {
 
     private final Vec3 lightPos = new Vec3(2f, 2f, 2f);
 
-    private Hdf5TimedPlayer timer;
+    private Hdf5TimedPlayer timer = null;
 
     private boolean timerInitialized = false;
 
@@ -91,7 +90,7 @@ public class GLWindow implements GLEventListener {
     private OctreeNode octreeRoot;
     private final GLContext offScreenContext;
 
-    public GLWindow(OutputVizPanel panel, GLContext offScreenContext) {
+    public GLWindow(AmuseVisualization panel, GLContext offScreenContext) {
         this.panel = panel;
         this.offScreenContext = offScreenContext;
         loader = new ProgramLoader();
@@ -135,18 +134,18 @@ public class GLWindow implements GLEventListener {
         // Load and compile shaders, then use program.
         try {
             animatedTurbulenceShader = loader.createProgram(gl,
-                    "src/ibis/deploy/gui/outputViz/shaders/src/vs_sunsurface.vp",
-                    "src/ibis/deploy/gui/outputViz/shaders/src/fs_animatedTurbulence.fp");
+                    "src/amuseVisualization/openglCommon/shaders/src/vs_sunsurface.vp",
+                    "src/amuseVisualization/openglCommon/shaders/src/fs_animatedTurbulence.fp");
             // gas = loader.createProgram(gl,
             // "src/ibis/deploy/gui/outputViz/shaders/src/vs_sunsurface.vp",
             // "src/ibis/deploy/gui/outputViz/shaders/src/fs_animatedTurbulence.fp");
-            pplShader = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_ppl.vp",
+            pplShader = loader.createProgram(gl, "src/amuseVisualization/openglCommon/shaders/src/vs_ppl.vp",
             // "src/ibis/deploy/gui/outputViz/shaders/src/gs_passthrough.fp",
-                    "src/ibis/deploy/gui/outputViz/shaders/src/fs_ppl.fp");
-            axesShader = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_axes.vp",
-                    "src/ibis/deploy/gui/outputViz/shaders/src/fs_axes.fp");
-            gasShader = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_gas.vp",
-                    "src/ibis/deploy/gui/outputViz/shaders/src/fs_gas.fp");
+                    "src/amuseVisualization/openglCommon/shaders/src/fs_ppl.fp");
+            axesShader = loader.createProgram(gl, "src/amuseVisualization/openglCommon/shaders/src/vs_axes.vp",
+                    "src/amuseVisualization/openglCommon/shaders/src/fs_axes.fp");
+            gasShader = loader.createProgram(gl, "src/amuseVisualization/openglCommon/shaders/src/vs_gas.vp",
+                    "src/amuseVisualization/openglCommon/shaders/src/fs_gas.fp");
             // gas = loader.createProgram(gl,
             // "src/ibis/deploy/gui/outputViz/shaders/src/vs_gas.vp",
             // "src/ibis/deploy/gui/outputViz/shaders/src/fs_volumerendering.fp");
@@ -162,12 +161,12 @@ public class GLWindow implements GLEventListener {
             // "src/ibis/deploy/gui/outputViz/shaders/src/fs_star.fp");
             if (post_process)
                 postprocessShader = loader.createProgram(gl,
-                        "src/ibis/deploy/gui/outputViz/shaders/src/vs_postprocess.vp",
-                        "src/ibis/deploy/gui/outputViz/shaders/src/fs_postprocess.fp");
+                        "src/amuseVisualization/openglCommon/shaders/src/vs_postprocess.vp",
+                        "src/amuseVisualization/openglCommon/shaders/src/fs_postprocess.fp");
             if (post_process)
                 gaussianBlurShader = loader.createProgram(gl,
-                        "src/ibis/deploy/gui/outputViz/shaders/src/vs_postprocess.vp",
-                        "src/ibis/deploy/gui/outputViz/shaders/src/fs_gaussian_blur.fp");
+                        "src/amuseVisualization/openglCommon/shaders/src/vs_postprocess.vp",
+                        "src/amuseVisualization/openglCommon/shaders/src/fs_gaussian_blur.fp");
         } catch (Exception e) {
             System.err.println(e.getMessage());
             e.printStackTrace();
@@ -520,7 +519,9 @@ public class GLWindow implements GLEventListener {
     public void dispose(GLAutoDrawable drawable) {
         GL3 gl = drawable.getGL().getGL3();
 
-        timer.delete(gl);
+        if (timer != null) {
+            timer.delete(gl);
+        }
 
         noiseTex.delete(gl);
 

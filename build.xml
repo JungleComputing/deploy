@@ -1,4 +1,4 @@
-<project name="deploy" default="build" basedir=".">
+<project name="amuseVisualization" default="build" basedir=".">
     <description>
 	Build file for the deploy project
     </description>	
@@ -66,24 +66,17 @@
 			<matches string="${os.arch}" pattern=".*64.*"/>
 		</and>  
 	</condition>
-	
-	
-	
+		
     <property name="version" value="" />
 	
     <property name="dist-name" value="${ant.project.name}${version}" />
     <property name="lib-jar" value="deploy${version}.jar" />
-    <property name="gui-jar" value="deploy-gui${version}.jar" />
-    <property name="cli-jar" value="deploy-cli${version}.jar" />
-	<property name="mon-jar" value="deploy-mon${version}.jar" />
 
     <!-- Import environment properties -->
-    <property name="ipl" location="external/ipl" />
-    <property name="javagat" location="external/javagat" />
 	<property name="jogl" location="external/jogl" />
 	<property name="hdf" location="external/hdf" />
 
-    <target name="build" description="Build with included JavaGAT and IPL" depends="clean, copy-external, copy-natives, compile" />
+    <target name="build" description="Build" depends="clean, copy-external, copy-natives, compile" />
 
     <path id="default.classpath">
         <fileset dir="lib">
@@ -95,21 +88,12 @@
     <!-- copy external dependancies -->
     <target name="copy-external">
         <mkdir dir="lib" />
-        <mkdir dir="lib-server" />
 
         <copy todir="lib">
             <fileset dir="external" includes="*.jar" />            
         	<fileset dir="${jogl}" includes="*.jar" excludes="**/*natives*" />
         	<fileset dir="${hdf}" includes="*.jar" />
-            <fileset dir="${javagat}" />
-            <fileset dir="${ipl}" />
         </copy>
-
-        <!--
-        <copy todir="lib-server">
-            <fileset dir="${ipl}" />
-        </copy>
--->
     </target>	
 	
 	<target name="copy-natives" depends="make-native-dir, copy-win32, copy-win64, copy-linux32, copy-linux64, copy-macosx32, copy-macosx64" />
@@ -193,46 +177,20 @@
         </javac>
 
         <!-- Create jar file -->
-        <jar destfile="lib/${lib-jar}" basedir="tmp" includes="ibis/deploy/*.class,ibis/deploy/util/*.class">
-        </jar>
-
-        <!-- Create jar file -->
-        <jar destfile="lib/${gui-jar}" basedir="tmp" includes="ibis/deploy/gui/**/*.class,images/*">
+        <jar destfile="lib/${lib-jar}" basedir="tmp" includes="amuseVisualization/**/*.class">
         </jar>
     	
-    	<!-- Create jar file -->
-    	<jar destfile="lib/${mon-jar}" basedir="tmp" includes="ibis/deploy/monitoring/**/*.class">
-    	</jar>
-
-        <!-- Create jar file -->
-        <jar destfile="lib/${cli-jar}" basedir="tmp" includes="ibis/deploy/cli/**/*.class">
-        </jar>
-
         <!-- Generate javadoc -->
-        <javadoc destdir="javadoc" access="public" classpathref="default.classpath" packagenames="ibis.deploy" sourcepath="src" windowtitle="Ibis ${ant.project.name} Documentation" doctitle="Ibis ${ant.project.name} Documentation" bottom="The Ibis project">
+        <javadoc destdir="javadoc" access="public" classpathref="default.classpath" packagenames="amuseVisualization" sourcepath="src" windowtitle="Ibis ${ant.project.name} Documentation" doctitle="Ibis ${ant.project.name} Documentation" bottom="The Ibis project">
         </javadoc>
 
         <delete dir="tmp" />
-
-        <mkdir dir="lib-server" />
-
-		<!-- Re-package all the ipl jars into one jar for the server.
-    	     Exclude some unneeded jars to keep the file size down -->
-
-        <jar destfile="lib-server/server-all.jar">
-            <zipgroupfileset dir="${ipl}" includes="*.jar" excludes="antenna*,bcel*,TGGraphLayout*" />
-        </jar>
-
     </target>
 
     <!-- Clean up everything -->
     <target name="clean" description="Clean up">
         <delete dir="tmp" />
         <delete dir="lib" />
-        <delete dir="lib-server" />
-	<!-- actually not created anymore, but to cleanup in old copies too -->
-        <delete dir="lib-zorilla" />
-        <delete dir="javadoc" />
     </target>
 
 </project>

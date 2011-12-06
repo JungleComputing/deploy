@@ -1,4 +1,5 @@
 package amuseVisualization.openglCommon.shaders;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.IntBuffer;
@@ -11,13 +12,12 @@ import amuseVisualization.openglCommon.exceptions.UninitializedException;
 
 import com.jogamp.common.nio.Buffers;
 
-import ibis.deploy.gui.outputViz.exceptions.*;
-
 public abstract class Shader {
     String filename;
 
     String[] source;
-    int shader = -1; //This value is set by creating either a vertex or fragment shader.
+    int shader = -1; // This value is set by creating either a vertex or
+                     // fragment shader.
 
     public Shader(String filename) throws FileNotFoundException {
         this.filename = filename;

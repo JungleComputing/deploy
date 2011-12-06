@@ -12,7 +12,7 @@ import javax.media.opengl.GLProfile;
 
 import amuseVisualization.amuseAdaptor.Hdf5TimedPlayer;
 
-public class OutputVizCLI {
+public class AmuseVisualizationCLI {
     private static String cmdlnfileName;
     private GLOffscreenWindow window;
     private GLContext offScreenContext;
@@ -21,7 +21,7 @@ public class OutputVizCLI {
 
     private String path, prefix;
 
-    public OutputVizCLI() {
+    public AmuseVisualizationCLI() {
         initialize();
     }
 
@@ -99,7 +99,7 @@ public class OutputVizCLI {
         }
 
         @SuppressWarnings("unused")
-        final OutputVizCLI bla = new OutputVizCLI();
+        final AmuseVisualizationCLI bla = new AmuseVisualizationCLI();
     }
 
     public String getPath() {

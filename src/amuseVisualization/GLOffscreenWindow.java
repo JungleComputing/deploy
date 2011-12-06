@@ -46,7 +46,7 @@ public class GLOffscreenWindow {
 
     public static octants current_view_octant = octants.PPP;
 
-    private final OutputVizCLI cli;
+    private final AmuseVisualizationCLI cli;
     private final ProgramLoader loader;
 
     private Program animatedTurbulenceShader, pplShader, axesShader, gasShader, postprocessShader, gaussianBlurShader;
@@ -83,7 +83,7 @@ public class GLOffscreenWindow {
     private OctreeNode octreeRoot;
     private final GLContext offScreenContext;
 
-    public GLOffscreenWindow(OutputVizCLI cli, GLContext offScreenContext) {
+    public GLOffscreenWindow(AmuseVisualizationCLI cli, GLContext offScreenContext) {
         this.cli = cli;
         this.offScreenContext = offScreenContext;
         loader = new ProgramLoader();

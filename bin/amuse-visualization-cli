@@ -5,6 +5,6 @@ if [ -z "$DEPLOY_HOME" ];  then
 	DEPLOY_HOME=.
 fi
 
-MAIN_CLASS=ibis.deploy.gui.outputViz.OutputVizCLI
+MAIN_CLASS=amuseVisualization.AmuseVisualizationCLI
 
-exec java -Xmx500m -Dapple.laf.useScreenMenuBar=true -classpath $DEPLOY_HOME:$DEPLOY_HOME/lib/*:$DEPLOY_HOME/lib/castor-1.1.1-xml.jar -Djava.library.path=$DEPLOY_HOME/lib/natives -Dgat.adaptor.path=$DEPLOY_HOME/lib/adaptors -Dibis.deploy.home=$DEPLOY_HOME $MAIN_CLASS $*
+exec java -Xmx500m -Dapple.laf.useScreenMenuBar=true -classpath $DEPLOY_HOME:$DEPLOY_HOME/lib/* -Djava.library.path=$DEPLOY_HOME/lib/natives -Dibis.deploy.home=$DEPLOY_HOME $MAIN_CLASS $*

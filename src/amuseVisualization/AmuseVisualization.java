@@ -42,7 +42,7 @@ import amuseVisualization.openglCommon.InputHandler;
 
 import com.jogamp.opengl.util.FPSAnimator;
 
-public class OutputVizPanel extends JPanel {
+public class AmuseVisualization extends JPanel {
     private static final long serialVersionUID = 4754345291079348455L;
 
     public static enum TweakState {
@@ -77,7 +77,7 @@ public class OutputVizPanel extends JPanel {
     // });
     // }
 
-    public OutputVizPanel() {
+    public AmuseVisualization() {
         initialize();
     }
 
@@ -535,7 +535,7 @@ public class OutputVizPanel extends JPanel {
             @Override
             public void run() {
                 try {
-                    final OutputVizPanel bla = new OutputVizPanel();
+                    final AmuseVisualization bla = new AmuseVisualization();
                     frame.getContentPane().add(bla);
 
                     frame.addWindowListener(new WindowAdapter() {
