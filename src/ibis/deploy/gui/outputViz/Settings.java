@@ -16,7 +16,7 @@ public class Settings {
     private static float initial_rotation_x = INITIAL_ROTATION_X;
     private static final float INITIAL_ROTATION_Y = 0f;
     private static float initial_rotation_y = INITIAL_ROTATION_Y;
-    private static final float INITIAL_ZOOM = -540.0f;
+    private static final float INITIAL_ZOOM = -390.0f;
 
     // Setting per movie frame
     private static final float PER_FRAME_ROTATION = 0.5f / 3.0f;
@@ -95,8 +95,8 @@ public class Settings {
     // Snaphots have different settings, since they are rendered at extremely
     // high resolutions pixels
     private static final int SNAPSHOT_GAS_BLUR_PASSES = 2; // 2
-    private static final float SNAPSHOT_GAS_BLUR_SIZE = 2; // 6
-    private static final int SNAPSHOT_GAS_BLUR_TYPE = 8; // 10
+    private static final float SNAPSHOT_GAS_BLUR_SIZE = 6; // 6
+    private static final int SNAPSHOT_GAS_BLUR_TYPE = 10; // 10
 
     private static final int SNAPSHOT_STAR_HALO_BLUR_PASSES = 2; // 2
     private static final float SNAPSHOT_STAR_HALO_BLUR_SIZE = 1; // 1

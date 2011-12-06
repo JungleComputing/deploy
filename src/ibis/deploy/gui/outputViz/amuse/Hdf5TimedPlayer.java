@@ -44,8 +44,7 @@ public class Hdf5TimedPlayer implements Runnable {
     private GLWindow glw;
     private GLOffscreenWindow glow;
 
-    public Hdf5TimedPlayer(GLWindow glw, JSlider timeBar,
-            JFormattedTextField frameCounter) {
+    public Hdf5TimedPlayer(GLWindow glw, JSlider timeBar, JFormattedTextField frameCounter) {
         this.glw = glw;
         this.timeBar = timeBar;
         this.frameCounter = frameCounter;
@@ -118,8 +117,7 @@ public class Hdf5TimedPlayer implements Runnable {
         currentFrame = Settings.getInitialSimulationFrame();
 
         if (!cli) {
-            glw.setRotation(new Vec3(Settings.getInitialRotationX(), Settings
-                    .getInitialRotationY(), 0f));
+            glw.setRotation(new Vec3(Settings.getInitialRotationX(), Settings.getInitialRotationY(), 0f));
             glw.setViewDist(Settings.getInitialZoom());
 
             try {
@@ -136,8 +134,7 @@ public class Hdf5TimedPlayer implements Runnable {
 
             currentState = states.STOPPED;
         } else {
-            glow.setRotation(new Vec3(Settings.getInitialRotationX(), Settings
-                    .getInitialRotationY(), 0f));
+            glow.setRotation(new Vec3(Settings.getInitialRotationX(), Settings.getInitialRotationY(), 0f));
             glow.setViewDist(Settings.getInitialZoom());
 
             try {
@@ -151,8 +148,7 @@ public class Hdf5TimedPlayer implements Runnable {
         }
 
         while (running) {
-            if (currentState == states.PLAYING
-                    || currentState == states.MOVIEMAKING) {
+            if (currentState == states.PLAYING || currentState == states.MOVIEMAKING) {
                 try {
                     startTime = System.currentTimeMillis();
 
@@ -164,9 +160,7 @@ public class Hdf5TimedPlayer implements Runnable {
                     } catch (FileOpeningException e) {
                         setFrame(currentFrame - 1);
                         currentState = states.WAITINGONFRAME;
-                        System.err
-                                .println("File not found, retrying from frame "
-                                        + currentFrame + ".");
+                        System.err.println("File not found, retrying from frame " + currentFrame + ".");
                         continue;
                     }
 
@@ -174,15 +168,11 @@ public class Hdf5TimedPlayer implements Runnable {
                         if (Settings.getPerFrameRotation() > 0f) {
                             if (!cli) {
                                 Vec3 rotation = glw.getRotation();
-                                System.out.println("Simulation frame: "
-                                        + currentFrame + ", Rotation x: "
-                                        + rotation.get(0) + " y: "
-                                        + rotation.get(1));
-                                glw.makeSnapshot(String.format("%05d",
-                                        (currentFrame)));
+                                System.out.println("Simulation frame: " + currentFrame + ", Rotation x: "
+                                        + rotation.get(0) + " y: " + rotation.get(1));
+                                glw.makeSnapshot(String.format("%05d", (currentFrame)));
 
-                                rotation.set(1, rotation.get(1)
-                                        + Settings.getPerFrameRotation());
+                                rotation.set(1, rotation.get(1) + Settings.getPerFrameRotation());
                                 glw.setRotation(rotation);
 
                                 // glw.makeSnapshot(String.format("%05d",
@@ -200,38 +190,28 @@ public class Hdf5TimedPlayer implements Runnable {
                                 // glw.setRotation(rotation);
                             } else {
                                 Vec3 rotation = glow.getRotation();
-                                System.out.println("Simulation frame: "
-                                        + currentFrame + ", Rotation x: "
-                                        + rotation.get(0) + " y: "
-                                        + rotation.get(1));
-                                glow.makeSnapshot(String.format("%05d",
-                                        (currentFrame * 3 + 0)));
+                                System.out.println("Simulation frame: " + currentFrame + ", Rotation x: "
+                                        + rotation.get(0) + " y: " + rotation.get(1));
+                                glow.makeSnapshot(String.format("%05d", (currentFrame * 3 + 0)));
 
-                                rotation.set(1, rotation.get(1)
-                                        + Settings.getPerFrameRotation());
+                                rotation.set(1, rotation.get(1) + Settings.getPerFrameRotation());
                                 glow.setRotation(rotation);
 
-                                // glow.makeSnapshot(String.format("%05d",
-                                // (currentFrame * 3 + 1)));
-                                //
-                                // rotation.set(1, rotation.get(1) +
-                                // Settings.getPerFrameRotation());
-                                // glow.setRotation(rotation);
-                                //
-                                // glow.makeSnapshot(String.format("%05d",
-                                // (currentFrame * 3 + 2)));
-                                //
-                                // rotation.set(1, rotation.get(1) +
-                                // Settings.getPerFrameRotation());
-                                // glow.setRotation(rotation);
+                                glow.makeSnapshot(String.format("%05d", (currentFrame * 3 + 1)));
+
+                                rotation.set(1, rotation.get(1) + Settings.getPerFrameRotation());
+                                glow.setRotation(rotation);
+
+                                glow.makeSnapshot(String.format("%05d", (currentFrame * 3 + 2)));
+
+                                rotation.set(1, rotation.get(1) + Settings.getPerFrameRotation());
+                                glow.setRotation(rotation);
                             }
                         } else {
                             if (!cli) {
-                                glw.makeSnapshot(String.format("%05d",
-                                        currentFrame));
+                                glw.makeSnapshot(String.format("%05d", currentFrame));
                             } else {
-                                glow.makeSnapshot(String.format("%05d",
-                                        currentFrame));
+                                glow.makeSnapshot(String.format("%05d", currentFrame));
                             }
                         }
 
@@ -246,17 +226,8 @@ public class Hdf5TimedPlayer implements Runnable {
                     }
 
                     stopTime = System.currentTimeMillis();
-                    if (startTime - stopTime < GLWindow.getWaittime() && !cli) {
-                        if (currentState != states.MOVIEMAKING) {
-                            Thread.sleep(GLWindow.getWaittime()
-                                    - (startTime - stopTime));
-                        } else {
-                            // Keep interactivity intact
-                            Thread.sleep(1);
-                        }
-                    } else if (cli) {
-                        // Keep interactivity intact
-                        Thread.sleep(1);
+                    if (startTime - stopTime < GLWindow.getWaittime() && !cli && currentState != states.MOVIEMAKING) {
+                        Thread.sleep(GLWindow.getWaittime() - (startTime - stopTime));
                     }
                 } catch (InterruptedException e) {
                     System.err.println("Interrupted while playing.");
@@ -275,18 +246,16 @@ public class Hdf5TimedPlayer implements Runnable {
                     System.err.println("Interrupted while waiting.");
                 }
             }
-            System.gc();
+            // System.gc();
         }
     }
 
     private void updateFrame() throws FileOpeningException {
         Hdf5Snapshotter snappy = new Hdf5Snapshotter();
         if (!cli) {
-            snappy.open(namePrefix, currentFrame, GLWindow.getLOD(),
-                    starModels, cloudModels);
+            snappy.open(namePrefix, currentFrame, GLWindow.getLOD(), starModels, cloudModels);
         } else {
-            snappy.open(namePrefix, currentFrame, GLOffscreenWindow.getLOD(),
-                    starModels, cloudModels);
+            snappy.open(namePrefix, currentFrame, GLOffscreenWindow.getLOD(), starModels, cloudModels);
         }
         StarSGNode newSgRoot = snappy.getSgRoot();
         OctreeNode newOctreeRoot = snappy.getOctreeRoot();
@@ -320,8 +289,7 @@ public class Hdf5TimedPlayer implements Runnable {
         try {
             updateFrame();
         } catch (FileOpeningException e) {
-            System.err.println("File not found, retrying from frame "
-                    + currentFrame + ".");
+            System.err.println("File not found, retrying from frame " + currentFrame + ".");
 
             setFrame(value - 1);
             currentState = states.WAITINGONFRAME;
