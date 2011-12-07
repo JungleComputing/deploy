@@ -17,6 +17,8 @@
 	<property name="javagat" location="external/javagat" />
 	<property name="jogl" location="external/jogl" />
 
+	<property name="build.sysclasspath" value="ignore"/>
+
 	<target name="build" description="Build with included JavaGAT and IPL" depends="clean,copy-external,copy-native-libraries,compile" />
 
 	<path id="default.classpath">
@@ -73,7 +75,7 @@
 		</copy>
 
 		<!-- Compile the java code from ${src} into ${tmp} -->
-		<javac srcdir="src" destdir="tmp" includeantruntime="false" debug="on" source="1.5" target="1.5" classpathref="default.classpath">
+		<javac srcdir="src" destdir="tmp" debug="on" source="1.5" target="1.5" classpathref="default.classpath">
 			<compilerarg value="-Xlint:unchecked" />
 		</javac>
 
