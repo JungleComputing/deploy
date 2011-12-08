@@ -30,7 +30,7 @@ Go.libs = lib-server, ipl-apps/go.jar
 # Application "Hello"
 Hello.main.class = ibis.ipl.examples.Hello
 #Hello.arguments =
-Hello.libs = lib-server, ipl-apps/ipl-examples-2.2.jar
+Hello.libs = lib-server, ipl-apps/ipl-examples-2.3-pre.jar
 #Hello.input.files =
 #Hello.output.files =
 #Hello.system.properties
@@ -41,7 +41,7 @@ Hello.libs = lib-server, ipl-apps/ipl-examples-2.2.jar
 # Application "OneToMany"
 OneToMany.main.class = ibis.ipl.examples.OneToMany
 #OneToMany.arguments =
-OneToMany.libs = lib-server, ipl-apps/ipl-examples-2.2.jar
+OneToMany.libs = lib-server, ipl-apps/ipl-examples-2.3-pre.jar
 #OneToMany.input.files =
 #OneToMany.output.files =
 #OneToMany.system.properties =
@@ -52,7 +52,7 @@ OneToMany.libs = lib-server, ipl-apps/ipl-examples-2.2.jar
 # Application "RegistryBenchmark"
 RegistryBenchmark.main.class = ibis.ipl.benchmarks.registry.Main
 RegistryBenchmark.arguments = --runtime 120
-RegistryBenchmark.libs = lib-server, ipl-apps/ipl-benchmarks-2.2.jar
+RegistryBenchmark.libs = lib-server, ipl-apps/ipl-benchmarks-2.3-pre.jar
 #RegistryBenchmark.input.files =
 #RegistryBenchmark.output.files =
 #RegistryBenchmark.system.properties =
@@ -63,7 +63,7 @@ RegistryBenchmark.libs = lib-server, ipl-apps/ipl-benchmarks-2.2.jar
 # Application "RegistryUpcalls"
 RegistryUpcalls.main.class = ibis.ipl.examples.RegistryUpcalls
 #RegistryUpcalls.arguments =
-RegistryUpcalls.libs = lib-server, ipl-apps/ipl-examples-2.2.jar
+RegistryUpcalls.libs = lib-server, ipl-apps/ipl-examples-2.3-pre.jar
 #RegistryUpcalls.input.files =
 #RegistryUpcalls.output.files =
 #RegistryUpcalls.system.properties =
