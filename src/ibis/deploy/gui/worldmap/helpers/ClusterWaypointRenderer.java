@@ -1,7 +1,6 @@
 package ibis.deploy.gui.worldmap.helpers;
 
 import ibis.deploy.gui.worldmap.MapUtilities;
-import ibis.deploy.gui.worldmap.helpers.ClusterWaypoint;
 import ibis.deploy.util.Colors;
 
 import java.awt.Color;
@@ -52,13 +51,13 @@ public class ClusterWaypointRenderer implements WaypointRenderer {
                 g.setPaint(cwp.getCluster().getColor());
                 g.fillArc(x - radius, y - radius, diameter, diameter, 90, -(cwp
                         .getResourceCount() * 360)
-                        / Math.max(1, cwp.getCluster().getNodes()));
+                        / Math.max(1, cwp.getClusterNodes()));
                 g
                         .setPaint(Colors.getLightColor(cwp.getCluster()
                                 .getColor()));
                 g.fillArc(x - radius, y - radius, diameter, diameter, 90, 360
                         - (cwp.getResourceCount() * 360)
-                        / Math.max(1, cwp.getCluster().getNodes()));
+                        / Math.max(1, cwp.getClusterNodes()));
                 g.setPaint(clusterBorderColor);
                 g.drawOval(x - radius, y - radius, diameter, diameter);
             } else {

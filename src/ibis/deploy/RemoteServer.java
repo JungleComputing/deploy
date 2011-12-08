@@ -2,7 +2,6 @@ package ibis.deploy;
 
 import ibis.deploy.util.Colors;
 import ibis.deploy.util.OutputPrefixForwarder;
-import ibis.deploy.util.Rsync;
 import ibis.deploy.util.StateForwarder;
 import ibis.ipl.IbisProperties;
 import ibis.ipl.server.ManagementServiceInterface;
@@ -99,8 +98,7 @@ public class RemoteServer implements Runnable, Server {
         }
 
         logger.info("Starting " + this + " using "
-                + this.cluster.getServerAdaptor() + "("
-                + this.cluster.getServerURI() + ")");
+                + this.cluster.getSupportURI());
 
         ThreadPool.createNew(this, this.toString());
     }
@@ -120,8 +118,10 @@ public class RemoteServer implements Runnable, Server {
         // fly during a copy
         context.addPreference("file.create", "true");
 
-        context.addPreference("resourcebroker.adaptor.name",
-                cluster.getServerAdaptor() + ",local");
+        if (cluster.getSupportAdaptor() != null) {
+            context.addPreference("resourcebroker.adaptor.name",
+                    cluster.getSupportAdaptor() + ",local");
+        }
 
         context.addPreference("file.adaptor.name",
                 DeployProperties.strings2CSS(cluster.getFileAdaptors()));
@@ -136,36 +136,9 @@ public class RemoteServer implements Runnable, Server {
 
     private void prestage(File src, Cluster cluster, JavaSoftwareDescription sd)
             throws Exception {
-        String host = cluster.getServerURI().getHost();
-        String user = cluster.getUserName();
-        String keyFile = cluster.getKeyFile();
-        File cacheDir = cluster.getCacheDir();
-
-        // org.gridlab.gat.io.File gatCwd = GAT.createFile(context, ".");
-
-        if (cacheDir == null) {
-            org.gridlab.gat.io.File gatFile = GAT.createFile(context, new URI(
-                    src.getAbsoluteFile().toURI()));
-            // sd.addPreStagedFile(gatFile, gatCwd);
-            sd.addPreStagedFile(gatFile);
-            return;
-        }
-
-        // create cache dir, and server dir within
-        org.gridlab.gat.io.File gatCacheDirFile = GAT.createFile(context,
-                "any://" + host + "/" + cacheDir + "/server/");
-        gatCacheDirFile.mkdirs();
-
-        // rsync to cluster cache server dir
-        File rsyncLocation = new File(cacheDir + "/server/");
-        Rsync.rsync(src, rsyncLocation, host, user, keyFile);
-
-        // tell job to pre-stage from cache dir
-        org.gridlab.gat.io.File gatFile = GAT.createFile(context, "any://"
-                + host + "/" + cacheDir + "/server/" + src.getName());
-        // sd.addPreStagedFile(gatFile, gatCwd);
+        org.gridlab.gat.io.File gatFile = GAT.createFile(context, new URI(src
+                .getAbsoluteFile().toURI()));
         sd.addPreStagedFile(gatFile);
-        return;
     }
 
     private JobDescription createJobDescription() throws Exception {
@@ -216,33 +189,23 @@ public class RemoteServer implements Runnable, Server {
         File log4j = new File(deployHome, "log4j.properties");
         prestage(log4j, cluster, sd);
 
-        // add server output files to post-stage
-        if (cluster.getServerOutputFiles() != null) {
-            for (File file : cluster.getServerOutputFiles()) {
-                org.gridlab.gat.io.File gatFile = GAT.createFile(context,
-                        file.getPath());
-
-                sd.addPostStagedFile(gatFile, GAT.createFile(context, "."));
-            }
-        }
-
         sd.addJavaSystemProperty(IbisProperties.LOCATION, cluster.getName());
 
         if (hubOnly) {
             sd.addJavaSystemProperty(
                     ServerProperties.VIZ_INFO,
-                    "H^" + cluster.getName() + "^Smartsockets Hub @ " + cluster.getName() + "^"
+                    "H^" + cluster.getName() + "^Smartsockets Hub @ "
+                            + cluster.getName() + "^"
                             + Colors.color2colorCode(cluster.getColor()));
         } else {
-            sd.addJavaSystemProperty(
-                    ServerProperties.VIZ_INFO,
+            sd.addJavaSystemProperty(ServerProperties.VIZ_INFO,
                     "S^Ibis Server^Ibis Server @ " + cluster.getName() + "^"
                             + Colors.color2colorCode(cluster.getColor()));
         }
 
-        if (cluster.getServerSystemProperties() != null) {
+        if (cluster.getSupportSystemProperties() != null) {
             sd.getJavaSystemProperties().putAll(
-                    cluster.getServerSystemProperties());
+                    cluster.getSupportSystemProperties());
         }
 
         if (keepSandbox) {
@@ -318,11 +281,6 @@ public class RemoteServer implements Runnable, Server {
      */
     public void run() {
         try {
-            if (cluster.getCacheDir() != null) {
-                logger.debug(this + " doing pre-stage using rsync");
-                forwarder.setState(State.UPLOADING);
-            }
-
             JobDescription jobDescription = createJobDescription();
 
             if (verbose) {
@@ -338,7 +296,7 @@ public class RemoteServer implements Runnable, Server {
             forwarder.setState(State.SUBMITTING);
 
             ResourceBroker jobBroker = GAT.createResourceBroker(context,
-                    cluster.getServerURI());
+                    cluster.getSupportURI());
 
             org.gridlab.gat.resources.Job job = jobBroker.submitJob(
                     jobDescription, forwarder, "job.status");
@@ -392,7 +350,7 @@ public class RemoteServer implements Runnable, Server {
     private synchronized void setRemoteClient(ServerConnection connection)
             throws IOException {
         this.serverConnection = connection;
-        this.address = serverConnection.getAddress();
+        this.address = serverConnection.getAddress().trim();
 
         // server already killed before it was submitted :(
         // kill server...

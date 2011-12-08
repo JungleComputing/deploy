@@ -2,7 +2,6 @@ package ibis.deploy;
 
 import ibis.deploy.Deploy.HubPolicy;
 import ibis.deploy.util.Colors;
-import ibis.deploy.util.Rsync;
 import ibis.deploy.util.StateForwarder;
 import ibis.ipl.IbisProperties;
 import ibis.ipl.registry.central.RegistryProperties;
@@ -72,7 +71,7 @@ public class Job implements Runnable {
     private final StateListener hubListener;
 
     private boolean killed = false;
-    
+
     private boolean collecting = false;
 
     /**
@@ -193,15 +192,15 @@ public class Job implements Runnable {
     }
 
     /**
-     * Waits until this Job is deployed. This is detected by checking that
-     * there is a pool with the poolname of the job, which contains a location
-     * whose name starts with the name of the job description. Awful hack,
-     * since this means that ibis.location cannot be redefined, or at least
-     * only be redefined such that it starts with the name of the job description.
-     * TODO: Fix! But how? --Ceriel
+     * Waits until this Job is deployed. This is detected by checking that there
+     * is a pool with the poolname of the job, which contains a location whose
+     * name starts with the name of the job description. Awful hack, since this
+     * means that ibis.location cannot be redefined, or at least only be
+     * redefined such that it starts with the name of the job description. TODO:
+     * Fix! But how? --Ceriel
      * 
      * @throws Exception
-     * 		in case an error occurs.
+     *             in case an error occurs.
      */
     public void waitUntilDeployed() throws Exception {
         String location = description.getName();
@@ -299,16 +298,13 @@ public class Job implements Runnable {
         context.addPreference("sshtrilead.caching.exists", "true");
         context.addPreference("sshtrilead.caching.isdirectory", "true");
 
-        if (cluster.getJobAdaptor() == null) {
-            throw new Exception("no job adaptor specified for cluster: "
-                    + cluster);
-        }
-
         context.addPreference(IbisProperties.HUB_ADDRESSES,
                 deploy.getRootHubAddress());
 
-        context.addPreference("resourcebroker.adaptor.name",
-                cluster.getJobAdaptor());
+        if (cluster.getJobAdaptor() != null) {
+            context.addPreference("resourcebroker.adaptor.name",
+                    cluster.getJobAdaptor());
+        }
 
         context.addPreference("file.adaptor.name",
                 DeployProperties.strings2CSS(cluster.getFileAdaptors()));
@@ -318,46 +314,16 @@ public class Job implements Runnable {
 
     private void prestage(File src, JavaSoftwareDescription sd)
             throws Exception {
-        String host = cluster.getServerURI().getHost();
-        String user = cluster.getUserName();
-        String keyFile = cluster.getKeyFile();
-        File clusterCacheDir = cluster.getCacheDir();
-        org.gridlab.gat.io.File gatCwd = GAT.createFile(context, ".");
+        org.gridlab.gat.io.File gatFile = GAT.createFile(context,
+                new URI(src.toURI()));
+        // Don't use netURI.toString()! The JavaGAT URI constructor is quite
+        // different from the java.net.URI one. Any %-escape in
+        // netURI.toString() is
+        // handled wrong! --Ceriel
 
-        if (clusterCacheDir == null
-                || cluster.getJobAdaptor().equalsIgnoreCase("zorilla")) {
-            org.gridlab.gat.io.File gatFile = GAT.createFile(context, new URI(
-                    src.toURI()));
-            // Don't use netURI.toString()! The JavaGAT URI constructor is quite
-            // different from the java.net.URI one. Any %-escape in
-            // netURI.toString() is
-            // handled wrong! --Ceriel
-
-            //de-optimize for better functionality :-)
-            sd.addPreStagedFile(gatFile, gatCwd);
-            //sd.addPreStagedFile(gatFile);
-            return;
-        }
-
-        String fileCacheDir = clusterCacheDir + "/" + description.getPoolName()
-                + "/" + description.getName();
-
-        // create cache dir on remote host
-        org.gridlab.gat.io.File gatCacheDirFile = GAT.createFile(context,
-                "any://" + host + "/" + fileCacheDir);
-        gatCacheDirFile.mkdirs();
-
-        // rsync to cache dir
-        File rsyncLocation = new File(fileCacheDir);
-        Rsync.rsync(src, rsyncLocation, host, user, keyFile);
-
-        // tell job to pre-stage from cache dir
-        org.gridlab.gat.io.File gatFile = GAT.createFile(context, "any://"
-                + host + "/" + fileCacheDir + "/" + src.getName());
-
-        // sd.addPreStagedFile(gatFile, gatCwd);
+        // de-optimize for better functionality :-)
         sd.addPreStagedFile(gatFile);
-        return;
+        // sd.addPreStagedFile(gatFile);
     }
 
     private JavaSoftwareDescription createJavaSoftwareDescription(String hubList)
@@ -422,10 +388,7 @@ public class Job implements Runnable {
         }
 
         // ibis stuff
-        String location = cluster.getLocation();
-        if (location == null) {
-            location = cluster.getName();
-        }
+        String location = cluster.getName();
 
         sd.addJavaSystemProperty(IbisProperties.LOCATION, description.getName()
                 + "@%HOSTNAME%@" + location);
@@ -460,11 +423,6 @@ public class Job implements Runnable {
         if (application.getLibs() == null) {
             throw new Exception("no library files specified for application "
                     + application);
-        }
-
-        if (cluster.getCacheDir() != null) {
-            forwarder.setState(State.UPLOADING);
-            logger.debug(this + " doing pre-stage using rsync");
         }
 
         // add library files
@@ -522,19 +480,18 @@ public class Job implements Runnable {
         // class path
         boolean foundClasspathOption = false;
         if (application.getJVMOptions() != null) {
-        	for(String option: application.getJVMOptions()) {
-        		if (option.equals("-classpath") || option.equals("-cp")) {
-        			foundClasspathOption = true;
-        		}
-        	}
+            for (String option : application.getJVMOptions()) {
+                if (option.equals("-classpath") || option.equals("-cp")) {
+                    foundClasspathOption = true;
+                }
+            }
         }
-        
+
         if (!foundClasspathOption) {
-        sd.setJavaClassPath(createClassPath(cluster.getJobAdaptor(),
-                application.getLibs()));
+            sd.setJavaClassPath(createClassPath(cluster.getJobAdaptor(),
+                    application.getLibs()));
         }
-        
-        
+
         if (sd instanceof JythonSoftwareDescription) {
             ((JythonSoftwareDescription) sd).setPythonPath(createClassPath(
                     cluster.getJobAdaptor(), application.getLibs()));
@@ -547,7 +504,7 @@ public class Job implements Runnable {
 
         logger.info("Submitting application \"" + application.getName()
                 + "\" to " + cluster.getName() + " using "
-                + cluster.getJobAdaptor() + "(" + cluster.getJobURI() + ")");
+                + cluster.getJobURI());
 
         return sd;
     }
@@ -666,8 +623,7 @@ public class Job implements Runnable {
                 if (hubList.length() > 0) {
                     hubList = hubList + ",";
                 }
-                hubList = hubList + address;
-
+                hubList = hubList + address.trim();
             }
 
             logger.debug("Hub list = " + hubList);

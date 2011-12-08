@@ -3,10 +3,8 @@ package ibis.deploy.gui.clusters;
 import ibis.deploy.Cluster;
 import ibis.deploy.gui.GUI;
 import ibis.deploy.gui.editor.ChangeableField;
-import ibis.deploy.gui.editor.FileArrayEditor;
 import ibis.deploy.gui.editor.FileEditor;
 import ibis.deploy.gui.editor.MapEditor;
-import ibis.deploy.gui.editor.NumberEditor;
 import ibis.deploy.gui.editor.Spacer;
 import ibis.deploy.gui.editor.TextArrayComboBoxEditor;
 import ibis.deploy.gui.editor.TextComboBoxEditor;
@@ -70,18 +68,6 @@ public class ClusterEditorTabPanel extends JPanel {
         fields.add(nameEditor);
         formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
 
-        final NumberEditor nodesEditor = new NumberEditor(this, formPanel,
-                "Nodes: ", source.getNodes(), false);
-        fields.add(nodesEditor);
-
-        formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
-
-        final NumberEditor coresEditor = new NumberEditor(this, formPanel,
-                "Cores: ", source.getCores(), false);
-        fields.add(coresEditor);
-
-        formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
-
         final TextEditor userNameEditor = new TextEditor(this, formPanel,
                 "User Name: ", source.getUserName());
         fields.add(userNameEditor);
@@ -89,28 +75,16 @@ public class ClusterEditorTabPanel extends JPanel {
         formPanel.add(new Spacer("Deployment"));
 
         formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
-                
+
         final TextEditor keyFileEditor = new TextEditor(this, formPanel,
                 "User Keyfile: ", source.getKeyFile());
         fields.add(keyFileEditor);
-
-        formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
-        
-        final NumberEditor memoryEditor = new NumberEditor(this, formPanel,
-                "Memory (MB): ", source.getMemory(), true);
-        fields.add(memoryEditor);
 
         formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
 
         final TextEditor javaPathEditor = new TextEditor(this, formPanel,
                 "Java Path: ", source.getJavaPath());
         fields.add(javaPathEditor);
-
-        formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
-
-        final FileEditor cacheDirEditor = new FileEditor(this, formPanel,
-                "Cache Directory: ", source.getCacheDir());
-        fields.add(cacheDirEditor);
 
         formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
 
@@ -167,34 +141,27 @@ public class ClusterEditorTabPanel extends JPanel {
 
         formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
 
-        formPanel.add(new Spacer("Server"));
+        formPanel.add(new Spacer("Support Processes"));
 
-        final TextComboBoxEditor serverAdaptorEditor = new TextComboBoxEditor(
-                this, formPanel, "Server Adaptor: ", source.getServerAdaptor(),
-                jobAdaptors);
-        fields.add(serverAdaptorEditor);
+        final TextComboBoxEditor supportAdaptorEditor = new TextComboBoxEditor(
+                this, formPanel, "Support Adaptor: ",
+                source.getSupportAdaptor(), jobAdaptors);
+        fields.add(supportAdaptorEditor);
 
         formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
 
-        final TextEditor serverURIEditor = new TextEditor(this, formPanel,
-                "Server URI: ", source.getServerURI());
-        fields.add(serverURIEditor);
+        final TextEditor supportURIEditor = new TextEditor(this, formPanel,
+                "Support URI: ", source.getSupportURI());
+        fields.add(supportURIEditor);
 
         formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
 
         final TextMapArrayEditor systemPropertiesEditor = new TextMapArrayEditor(
-                this, formPanel, "System Properties: ", source
-                        .getServerSystemProperties());
+                this, formPanel, "System Properties: ",
+                source.getSupportSystemProperties());
         fields.add(systemPropertiesEditor);
 
         formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
-        formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
-
-        final FileArrayEditor serverOutputFilesEditor = new FileArrayEditor(
-                this, formPanel, "Server Output Files: ", source
-                        .getServerOutputFiles());
-        fields.add(serverOutputFilesEditor);
-
         formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
 
         formPanel.add(new Spacer("Geo position"));
@@ -234,31 +201,20 @@ public class ClusterEditorTabPanel extends JPanel {
                     return;
                 }
 
-                if (nodesEditor.getValue() > 0) {
-                    source.setNodes(nodesEditor.getValue());
-                }
-
-                if (coresEditor.getValue() > 0) {
-                    source.setCores(coresEditor.getValue());
-                }
-
                 if (userNameEditor.getText().length() > 0)
                     source.setUserName(userNameEditor.getText());
                 else
-                	source.setUserName(null);
-                
+                    source.setUserName(null);
+
                 if (keyFileEditor.getText().length() > 0)
                     source.setKeyFile(keyFileEditor.getText());
                 else
                     source.setKeyFile(null);
-            
-                
+
                 if (javaPathEditor.getText().length() > 0)
-                	source.setJavaPath(javaPathEditor.getText());
+                    source.setJavaPath(javaPathEditor.getText());
                 else
                     source.setJavaPath(null);
-
-                source.setCacheDir(cacheDirEditor.getFile());
 
                 source.setFileAdaptors(fileAdaptorsEditor.getTextArray());
 
@@ -271,8 +227,8 @@ public class ClusterEditorTabPanel extends JPanel {
                         else
                             source.setJobURI(null);
                     } catch (URISyntaxException e) {
-                        JOptionPane.showMessageDialog(getRootPane(), e
-                                .getMessage(), "Failed to set new Job URI",
+                        JOptionPane.showMessageDialog(getRootPane(),
+                                e.getMessage(), "Failed to set new Job URI",
                                 JOptionPane.PLAIN_MESSAGE);
                         e.printStackTrace();
                     }
@@ -280,32 +236,28 @@ public class ClusterEditorTabPanel extends JPanel {
 
                 source.setJobWrapperScript(jobWrapperScriptEditor.getFile());
 
-                source.setServerAdaptor(serverAdaptorEditor.getText());
+                source.setSupportAdaptor(supportAdaptorEditor.getText());
 
-                if (serverURIEditor.getText() != null) {
+                if (supportURIEditor.getText() != null) {
                     try {
-                        if (serverURIEditor.getText().length() > 0)
-                            source.setServerURI(new URI(serverURIEditor
+                        if (supportURIEditor.getText().length() > 0)
+                            source.setSupportURI(new URI(supportURIEditor
                                     .getText()));
                         else
-                            source.setServerURI(null);
+                            source.setSupportURI(null);
                     } catch (URISyntaxException e) {
-                        JOptionPane.showMessageDialog(getRootPane(), e
-                                .getMessage(), "Failed to set new Server URI",
+                        JOptionPane.showMessageDialog(getRootPane(),
+                                e.getMessage(), "Failed to set new Server URI",
                                 JOptionPane.PLAIN_MESSAGE);
                         e.printStackTrace();
                     }
                 }
 
-                source.setOutputFiles(serverOutputFilesEditor.getFileArray());
-
                 source.setLatitude(geoPositionEditor.getLatitude());
 
                 source.setLongitude(geoPositionEditor.getLongitude());
 
-                source.setMemory(memoryEditor.getValue());
-
-                source.setServerSystemProperties(systemPropertiesEditor
+                source.setSupportSystemProperties(systemPropertiesEditor
                         .getTextMap());
 
                 // inform all the fields to refresh their initial values, as the
@@ -334,20 +286,11 @@ public class ClusterEditorTabPanel extends JPanel {
 
                 nameEditor.setText(source.getName());
 
-                nodesEditor.setValue(source.getNodes());
-
-                coresEditor.setValue(source.getCores());
-
                 userNameEditor.setText(source.getUserName());
 
-				keyFileEditor.setText(source.getKeyFile());
-				
-                javaPathEditor.setText(source.getJavaPath());
+                keyFileEditor.setText(source.getKeyFile());
 
-                if (source.getCacheDir() != null)
-                    cacheDirEditor.setFile(source.getCacheDir().toString());
-                else
-                    cacheDirEditor.setFile(null);
+                javaPathEditor.setText(source.getJavaPath());
 
                 fileAdaptorsEditor.setFileArray(source.getFileAdaptors());
 
@@ -364,24 +307,19 @@ public class ClusterEditorTabPanel extends JPanel {
                 else
                     jobWrapperScriptEditor.setFile(null);
 
-                serverAdaptorEditor.setText(source.getServerAdaptor());
+                supportAdaptorEditor.setText(source.getSupportAdaptor());
 
-                if (source.getServerURI() != null)
-                    serverURIEditor.setText(source.getServerURI().toString());
+                if (source.getSupportURI() != null)
+                    supportURIEditor.setText(source.getSupportURI().toString());
                 else
-                    serverURIEditor.setText(null);
-
-                serverOutputFilesEditor.setFileArray(source
-                        .getServerOutputFiles());
+                    supportURIEditor.setText(null);
 
                 geoPositionEditor.setLatitude(source.getLatitude());
 
                 geoPositionEditor.setLongitude(source.getLongitude());
 
-                memoryEditor.setValue(source.getMemory());
-
                 systemPropertiesEditor.setTextMap(source
-                        .getServerSystemProperties());
+                        .getSupportSystemProperties());
 
                 // disable buttons
                 applyButton.setEnabled(false);

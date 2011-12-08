@@ -14,53 +14,43 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
 public class RootPanel extends JPanel {
-	JTabbedPane tabs;
+    JTabbedPane tabs;
 
-	DetachableTab applicationTab;
-	DetachableTab clusterTab;
-	DetachableTab smartSocketsTab;
-	DetachableTab gridVisionTab;
-	DetachableTab deployVizTab;
+    private static final long serialVersionUID = 2685960743908025422L;
 
-	private static final long serialVersionUID = 2685960743908025422L;
+    public RootPanel(GUI gui, String[] logos) throws Exception {
+        setLayout(new BorderLayout());
+        tabs = new JTabbedPane();
 
-	public RootPanel(GUI gui, String[] logos) throws Exception {
-		setLayout(new BorderLayout());
-		tabs = new JTabbedPane();
+        tabs.addTab("Experiments", Utils.createImageIcon(
+                "images/utilities-system-monitor.png", "Experiments Tab"),
+                new ExperimentsPanel(gui, logos));
 
-		tabs.addTab("Experiments", Utils.createImageIcon(
-				"images/utilities-system-monitor.png", "Experiments Tab"),
-				new ExperimentsPanel(gui, logos));
+        if (gui.getMode() == Mode.NORMAL) {
+            tabs.addTab("Applications", Utils.createImageIcon(
+                    "images/applications-other.png", "Applications Tab"),
+                    new ApplicationEditorPanel(gui));
 
-		// experimentTab = new DetachableTab("Experiments",
-		// "images/utilities-system-monitor.png",
-		// new ExperimentsPanel(gui), tabs);
+            tabs.addTab("Clusters", Utils.createImageIcon(
+                    "images/network-transmit-receive.png", "Clusters Tab"),
+                    new ClusterEditorPanel(gui));
+        }
 
-		if (gui.getMode() == Mode.NORMAL) {
-			applicationTab = new DetachableTab("Applications",
-					"images/applications-other.png",
-					new ApplicationEditorPanel(gui), tabs);
+        tabs.addTab("Network Overlay", Utils.createImageIcon(
+                "images/gridvision.png", "Network Overlay"),
+                new SmartsocketsViz(Color.BLACK, Color.WHITE, false, true,
+                        false, gui.getDeploy().getRootHubAddress()));
 
-			clusterTab = new DetachableTab("Clusters",
-					"images/network-transmit-receive.png",
-					new ClusterEditorPanel(gui), tabs);
-		}
+        if (gui.isMonitoringEnabled()) {
+            tabs.addTab("Connection Overview", Utils.createImageIcon(
+                    "images/gridvision.png", "Connection Overview Tab"),
+                    new DeployVizPanel(gui));
 
-		smartSocketsTab = new DetachableTab("Network Overlay",
-                "images/gridvision.png", new SmartsocketsViz(Color.BLACK,
-                        Color.WHITE, false, true, false, gui.getDeploy()
-                                .getRootHubAddress()), tabs);
-	
-		if (gui.isMonitoringEnabled()) {
-			deployVizTab = new DetachableTab("Connection Overview",
-					"images/gridvision.png", new DeployVizPanel(gui), tabs);
+            tabs.addTab("3D Visualization", Utils.createImageIcon(
+                    "images/gridvision.png", "3D Visualization Tab"),
+                    new GogglePanel(gui, gui.getCollector()));
+        }
 
-			
-			
-			gridVisionTab = new DetachableTab("3D Visualization", 
-					"images/gridvision.png", new GogglePanel(gui, gui.getCollector()), tabs);
-		}
-
-		add(tabs, BorderLayout.CENTER);
-	}
+        add(tabs, BorderLayout.CENTER);
+    }
 }

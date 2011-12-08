@@ -26,6 +26,10 @@ public class ClusterWaypoint extends Waypoint {
         this.cluster = cluster;
         this.resourceCount = 1;
     }
+    
+    int getClusterNodes() {
+        return 100;
+    }
 
     /**
      * Radius of a cluster based on the number of nodes. Number of nodes
@@ -34,9 +38,9 @@ public class ClusterWaypoint extends Waypoint {
      * @return the radius
      */
     public int getRadius() {
-        int nodes = cluster.getNodes();
 
-        return (int) Math.sqrt(50 + (nodes * 13) / Math.PI);
+
+        return (int) Math.sqrt(50 + (getClusterNodes() * 13) / Math.PI);
     }
 
     public void resetOffset() {
@@ -58,7 +62,7 @@ public class ClusterWaypoint extends Waypoint {
     }
 
     public void increaseResourceCount() {
-        resourceCount = Math.min(resourceCount + 1, cluster.getNodes());
+        resourceCount = Math.min(resourceCount + 1, getClusterNodes());
     }
 
     public void setResourceCount(int resourceCount) {

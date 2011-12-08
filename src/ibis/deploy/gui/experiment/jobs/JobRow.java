@@ -85,7 +85,7 @@ public class JobRow {
         case CLUSTER_COLUMN:
             return jobDescription.getCluster().getName();
         case MIDDLEWARE_COLUMN:
-            return jobDescription.getCluster().getJobAdaptor();
+            return jobDescription.getCluster().getJobURI().getScheme();
         case APPLICATION_COLUMN:
             return jobDescription.getApplication().getName();
         case PROCESS_COUNT_COLUMN:

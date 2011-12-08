@@ -509,7 +509,7 @@ public class Deploy {
         }
         
         if (jobs.size() > 0 || hubs.size() > 0 || remoteServer != null || localServer != null) {
-            logger.info("Killing jobs and/or servers, this may take a couple of seconds ...");
+            logger.info("Killing jobs and/or servers, this may take some time ...");
         }
 
         for (Job job : jobs) {

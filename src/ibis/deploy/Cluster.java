@@ -16,8 +16,8 @@ import org.gridlab.gat.URI;
 
 /**
  * Cluster, accessible using some sort of middleware. Used to deploy both
- * servers (like hubs) and jobs (applications) on. Clusters are part of (and
- * created by) a parent "Grid".
+ * support processes (like hubs) and jobs (applications) on. Clusters are part
+ * of (and created by) a parent "Grid".
  * 
  * @author Niels Drost
  * 
@@ -33,44 +33,37 @@ public class Cluster {
     public static void printTableOfKeys(PrintWriter out) {
         out.println("# Mandatory parameters for clusters:");
         out.println("# KEY                 COMMENT");
-        out.println("# server.adaptor      JavaGAT adaptor used to deploy server");
-        out.println("# server.uri          Contact URI used when deploying server");
-        out.println("# job.adaptor         JavaGAT adaptor used to deploy jobs");
+        out.println("# support.uri         Contact URI used when deploying support processes (e.g. smartsockets hub)");
         out.println("# job.uri             Contact URI used when deploying job");
         out.println("# file.adaptors       Comma separated list of JavaGAT file adaptors used to");
         out.println("#                     copy files to and from this cluster(*)");
         out.println("#");
         out.println("# Optional parameters: ");
         out.println("# KEY                 COMMENT");
+        out.println("# support.adaptor     JavaGAT adaptor used to deploy support processes (e.g. smartsockets hub)");
+        out.println("# support.system.properties system properties for the support processes (e.g. smartsocekts settings)");
+
+        out.println("# job.adaptor         JavaGAT adaptor used to deploy jobs");
         out.println("# java.path           Path to java executable on this cluster.");
         out.println("#                     If unspecified, \"java\" is used");
         out.println("# job.wrapper.script  If specified, the given script is copied to the cluster");
         out.println("#                     and run instead of java");
         out.println("# user.name           User name used for authentication at cluster");
         out.println("# user.key            User keyfile used for authentication at cluster (only when user.name is set)");
-        out.println("# cache.dir           Directory on cluster used to cache pre-stage files");
-        out.println("#                     (updated using rsync)");
-        out.println("# server.output.files Output files copied when server exits (e.g. statistics)");
 
-        out.println("# server.system.properties system properties for the server (e.g. smartsocekts settings)");
-
-        out.println("# nodes               Number of nodes(machines) of this cluster (integer)");
-        out.println("# cores               Total number of cores of this cluster (integer)");
-        out.println("# memory               Amount of memory per node in Megabytes (integer)");
         out.println("# latitude            Latitude position of this cluster (double)");
         out.println("# longitude           Longitude position of this cluster (double)");
         out.println("# color               Color (as a HTML color string) used to represent this cluster");
-        out.println("# location            Location used for jobs in this cluster (will be prepended with job name)");
     }
 
     // name of this cluster
     private String name;
 
-    // resource broker adaptor used to start server
-    private String serverAdaptor;
+    // resource broker adaptor used to start support processes
+    private String supportAdaptor;
 
-    // uri of server resource broker
-    private URI serverURI;
+    // uri of support resource broker
+    private URI supportURI;
 
     // resource broker used to start jobs
     private String jobAdaptor;
@@ -93,23 +86,9 @@ public class Cluster {
     // Key file for user authentication
     private String keyFile;
 
-    // cache dir for pre-stage files (updating using rsync)
-    private File cacheDir;
-
-    // output files of server (statistics, logs and such)
-    private List<File> serverOutputFiles;
-
-    // custom system properties for a server (e.g. smartsockets settings)
-    private Map<String, String> serverSystemProperties;
-
-    // number of nodes of this cluster
-    private int nodes;
-
-    // number of cores of this cluster (in total, not per node)
-    private int cores;
-
-    // amount of memory per node, in Megabytes
-    private int memory;
+    // custom system properties for a support process (e.g. smartsockets
+    // settings)
+    private Map<String, String> supportSystemProperties;
 
     // Latitude position of this cluster
     private double latitude;
@@ -118,8 +97,6 @@ public class Cluster {
     private double longitude;
 
     private Color color;
-
-    private String location;
 
     private boolean visibleOnMap;
 
@@ -132,15 +109,13 @@ public class Cluster {
     public static Cluster getLocalCluster() throws Exception {
         Cluster result = new Cluster("local");
 
-        result.setServerAdaptor("local");
-        result.setServerURI(new URI("any://localhost"));
+        result.setSupportAdaptor("local");
+        result.setSupportURI(new URI("local://localhost"));
         result.setJobAdaptor("local");
-        result.setJobURI(new URI("any://localhost"));
+        result.setJobURI(new URI("local://localhost"));
         result.setFileAdaptors("local");
         result.setJavaPath(System.getProperty("java.home") + File.separator
                 + "bin" + File.separator + "java");
-        result.setNodes(1);
-        result.setCores(Runtime.getRuntime().availableProcessors());
         result.setLatitude(0);
         result.setLongitude(0);
 
@@ -160,8 +135,8 @@ public class Cluster {
 
         properties = new DeployProperties();
 
-        serverAdaptor = null;
-        serverURI = null;
+        supportAdaptor = null;
+        supportURI = null;
         jobAdaptor = null;
         jobURI = null;
         fileAdaptors = null;
@@ -169,12 +144,7 @@ public class Cluster {
         jobWrapperScript = null;
         userName = null;
         keyFile = null;
-        cacheDir = null;
-        serverOutputFiles = null;
-        serverSystemProperties = null;
-        nodes = 0;
-        cores = 0;
-        memory = 0;
+        supportSystemProperties = null;
         latitude = 0;
         longitude = 0;
         visibleOnMap = true;
@@ -197,8 +167,8 @@ public class Cluster {
 
         properties = new DeployProperties();
 
-        serverAdaptor = null;
-        serverURI = null;
+        supportAdaptor = null;
+        supportURI = null;
         jobAdaptor = null;
         jobURI = null;
         fileAdaptors = null;
@@ -206,12 +176,7 @@ public class Cluster {
         jobWrapperScript = null;
         userName = null;
         keyFile = null;
-        cacheDir = null;
-        serverOutputFiles = null;
-        serverSystemProperties = null;
-        nodes = 0;
-        cores = 0;
-        memory = 0;
+        supportSystemProperties = null;
         latitude = 0;
         longitude = 0;
         visibleOnMap = true;
@@ -231,8 +196,8 @@ public class Cluster {
 
         properties.addProperties(original.properties);
 
-        serverAdaptor = original.serverAdaptor;
-        serverURI = original.serverURI;
+        supportAdaptor = original.supportAdaptor;
+        supportURI = original.supportURI;
         jobAdaptor = original.jobAdaptor;
         jobURI = original.jobURI;
 
@@ -246,20 +211,11 @@ public class Cluster {
         userName = original.userName;
         keyFile = original.keyFile;
 
-        cacheDir = original.cacheDir;
-
-        if (original.serverOutputFiles != null) {
-            serverOutputFiles = new ArrayList<File>(original.serverOutputFiles);
+        if (original.supportSystemProperties != null) {
+            supportSystemProperties = new HashMap<String, String>(
+                    original.supportSystemProperties);
         }
 
-        if (original.serverSystemProperties != null) {
-            serverSystemProperties = new HashMap<String, String>(
-                    original.serverSystemProperties);
-        }
-
-        nodes = original.nodes;
-        cores = original.cores;
-        memory = original.memory;
         latitude = original.latitude;
         longitude = original.longitude;
         visibleOnMap = original.visibleOnMap;
@@ -279,16 +235,25 @@ public class Cluster {
     public void loadFromProperties(DeployProperties properties, String prefix)
             throws Exception {
         // add separator to prefix
+        String name = prefix;
         prefix = prefix + ".";
+
+        if (properties.getProperty(prefix + "server.uri") != null
+                || properties.getProperty(prefix + "server.adaptor") != null
+                || properties.getProperty(prefix + "server.system.properties") != null) {
+            throw new Exception("The cluster description for \"" + name
+                    + "\" contains \"server.*\" properties, which have "
+                    + "been renamed to \"support.*\"");
+        }
 
         // load all the properties corresponding to this cluster,
         // but only if they are set
 
-        if (properties.getProperty(prefix + "server.adaptor") != null) {
-            serverAdaptor = properties.getProperty(prefix + "server.adaptor");
+        if (properties.getProperty(prefix + "support.adaptor") != null) {
+            supportAdaptor = properties.getProperty(prefix + "support.adaptor");
         }
-        if (properties.getProperty(prefix + "server.uri") != null) {
-            serverURI = properties.getURIProperty(prefix + "server.uri");
+        if (properties.getProperty(prefix + "support.uri") != null) {
+            supportURI = properties.getURIProperty(prefix + "support.uri");
         }
         if (properties.getProperty(prefix + "job.adaptor") != null) {
             jobAdaptor = properties.getProperty(prefix + "job.adaptor");
@@ -314,37 +279,16 @@ public class Cluster {
         if (properties.getProperty(prefix + "user.key") != null) {
             keyFile = properties.getProperty(prefix + "user.key");
         }
-        if (properties.getProperty(prefix + "cache.dir") != null) {
-            cacheDir = properties.getFileProperty(prefix + "cache.dir");
-        }
-        if (properties.getProperty(prefix + "server.output.files") != null) {
-            serverOutputFiles = properties.getFileListProperty(prefix
-                    + "server.output.files");
-        }
-        if (properties.getProperty(prefix + "server.system.properties") != null) {
-            serverSystemProperties = properties.getStringMapProperty(prefix
-                    + "server.system.properties");
-        }
-        if (properties.getIntProperty(prefix + "nodes", 0) != 0) {
-            nodes = properties.getIntProperty(prefix + "nodes", 0);
-        }
-        if (properties.getIntProperty(prefix + "cores", 0) != 0) {
-            cores = properties.getIntProperty(prefix + "cores", 0);
-        }
-        if (properties.getIntProperty(prefix + "memory", 0) != 0) {
-            memory = properties.getIntProperty(prefix + "memory", 0);
-        }
         if (properties.getDoubleProperty(prefix + "latitude", 0) != 0) {
             latitude = properties.getDoubleProperty(prefix + "latitude", 0);
         }
         if (properties.getDoubleProperty(prefix + "longitude", 0) != 0) {
             longitude = properties.getDoubleProperty(prefix + "longitude", 0);
         }
-
-        if (properties.getProperty(prefix + "location") != null) {
-            location = properties.getProperty(prefix + "location");
+        if (properties.getProperty(prefix + "support.system.properties") != null) {
+            supportSystemProperties = properties.getStringMapProperty(prefix
+                    + "support.system.properties");
         }
-
         if (properties.getProperty(prefix + "color") != null) {
             color = properties.getColorProperty(prefix + "color");
         }
@@ -355,14 +299,11 @@ public class Cluster {
     }
 
     public boolean isEmpty() {
-        return serverAdaptor == null && serverURI == null
-                && serverOutputFiles == null && jobAdaptor == null
-                && jobURI == null && fileAdaptors == null && javaPath == null
-                && jobWrapperScript == null && userName == null
-                && keyFile == null && cacheDir == null
-                && serverOutputFiles == null && serverSystemProperties == null
-                && nodes == 0 && cores == 0 && memory == 0 && latitude == 0
-                && longitude == 0;
+        return supportAdaptor == null && supportURI == null
+                && jobAdaptor == null && jobURI == null && fileAdaptors == null
+                && javaPath == null && jobWrapperScript == null
+                && supportSystemProperties == null && userName == null
+                && keyFile == null && latitude == 0 && longitude == 0;
     }
 
     /**
@@ -374,12 +315,12 @@ public class Cluster {
     void resolve(Cluster other) {
         if (other != null) {
 
-            if (other.serverAdaptor != null && serverAdaptor == null) {
-                serverAdaptor = other.serverAdaptor;
+            if (other.supportAdaptor != null && supportAdaptor == null) {
+                supportAdaptor = other.supportAdaptor;
             }
 
-            if (other.serverURI != null && serverURI == null) {
-                serverURI = other.serverURI;
+            if (other.supportURI != null && supportURI == null) {
+                supportURI = other.supportURI;
             }
 
             if (other.jobAdaptor != null && jobAdaptor == null) {
@@ -411,33 +352,12 @@ public class Cluster {
                 keyFile = other.keyFile;
             }
 
-            if (other.cacheDir != null && cacheDir == null) {
-                cacheDir = other.cacheDir;
-            }
-
-            if (other.serverOutputFiles != null && serverOutputFiles == null) {
-                serverOutputFiles = new ArrayList<File>();
-                serverOutputFiles.addAll(other.serverOutputFiles);
-            }
-
-            if (other.serverSystemProperties != null
-                    && serverSystemProperties == null) {
-                for (Map.Entry<String, String> entry : other.serverSystemProperties
+            if (other.supportSystemProperties != null
+                    && supportSystemProperties == null) {
+                for (Map.Entry<String, String> entry : other.supportSystemProperties
                         .entrySet()) {
-                    setServerSystemProperty(entry.getKey(), entry.getValue());
+                    setSupportSystemProperty(entry.getKey(), entry.getValue());
                 }
-            }
-
-            if (other.nodes != 0 && nodes == 0) {
-                nodes = other.nodes;
-            }
-
-            if (other.cores != 0 && cores == 0) {
-                cores = other.cores;
-            }
-
-            if (other.memory != 0 && memory == 0) {
-                memory = other.memory;
             }
 
             if (other.latitude != 0 && latitude == 0) {
@@ -455,15 +375,11 @@ public class Cluster {
             // if any is set, show
             visibleOnMap = visibleOnMap || other.visibleOnMap;
         }
-        
-        if (location == null) {
-            location = getName();
-        }
-        
+
         if (color == null) {
-            color = Colors.fromLocation(location);
+            color = Colors.fromLocation(getName());
         }
-       
+
     }
 
     /**
@@ -509,45 +425,48 @@ public class Cluster {
     }
 
     /**
-     * Returns the JavaGAT adaptor used to start servers and hubs on this
-     * cluster.
+     * Returns the JavaGAT adaptor used to start support processes such as hubs
+     * on this cluster.
      * 
-     * @return the JavaGAT adaptor used to start servers and hubs.
+     * @return the JavaGAT adaptor used to start support processes such as hubs.
      */
-    public String getServerAdaptor() {
-        return serverAdaptor;
+    public String getSupportAdaptor() {
+        return supportAdaptor;
     }
 
     /**
-     * Sets the JavaGAT adaptor used to start servers and hubs on this cluster.
+     * Sets the JavaGAT adaptor used to start support processes such as hubs on
+     * this cluster.
      * 
-     * @param serverAdaptor
-     *            the new JavaGAT adaptor used to start servers and hubs.
+     * @param supportAdaptor
+     *            the new JavaGAT adaptor used to start support processes such
+     *            as hubs.
      */
-    public void setServerAdaptor(String serverAdaptor) {
-        this.serverAdaptor = serverAdaptor;
+    public void setSupportAdaptor(String supportAdaptor) {
+        this.supportAdaptor = supportAdaptor;
     }
 
     /**
-     * Returns the contact uri of this cluster for starting a server or hub
-     * (e.g. ssh://machine.domain.com)
+     * Returns the contact uri of this cluster for starting support processes
+     * such as a hub (e.g. ssh://machine.domain.com)
      * 
-     * @return the contact uri for starting servers and hubs of this cluster.
+     * @return the contact uri for starting support processes such as hubs of
+     *         this cluster.
      */
-    public URI getServerURI() {
-        return serverURI;
+    public URI getSupportURI() {
+        return supportURI;
     }
 
     /**
-     * Sets the contact uri of this cluster for starting a server or hub (e.g.
-     * ssh://machine.domain.com)
+     * Sets the contact uri of this cluster for starting support processes such
+     * as a hub (e.g. ssh://machine.domain.com)
      * 
-     * @param serverURI
-     *            the new contact uri for starting servers and hubs of this
-     *            cluster.
+     * @param supportURI
+     *            the new contact uri for starting support processes such as
+     *            hubs of this cluster.
      */
-    public void setServerURI(URI serverURI) {
-        this.serverURI = serverURI;
+    public void setSupportURI(URI supportURI) {
+        this.supportURI = supportURI;
     }
 
     /**
@@ -727,150 +646,46 @@ public class Cluster {
     }
 
     /**
-     * Cache directory used for pre-stage files (updated using rsync)
+     * Returns (copy of) map of all system properties for support processes.
      * 
-     * @return directory used as cache
+     * @return all system properties of support processes, or null if unset.
      */
-    public File getCacheDir() {
-        return cacheDir;
-    }
-
-    /**
-     * Sets sache directory used for pre-stage files (updated using rsync)
-     * 
-     * @param cacheDir
-     *            directory used as cache
-     */
-    public void setCacheDir(File cacheDir) {
-        this.cacheDir = cacheDir;
-    }
-
-    /**
-     * Returns list of server output files. Files are copied from the "root"
-     * directory of the server sandbox to the local file specified.
-     * 
-     * @return list of output files.
-     */
-    public File[] getServerOutputFiles() {
-        if (serverOutputFiles == null) {
+    public Map<String, String> getSupportSystemProperties() {
+        if (supportSystemProperties == null) {
             return null;
         }
-        return serverOutputFiles.toArray(new File[0]);
+        return new HashMap<String, String>(supportSystemProperties);
     }
 
     /**
-     * Sets list of server output files. Files are copied from the "root"
-     * directory of the server sandbox, to the local file specified.
-     * 
-     * @param serverOutputFiles
-     *            new list of output files.
-     */
-    public void setOutputFiles(File... serverOutputFiles) {
-        if (serverOutputFiles == null) {
-            this.serverOutputFiles = null;
-        } else {
-            this.serverOutputFiles = Arrays.asList(serverOutputFiles.clone());
-        }
-    }
-
-    /**
-     * Returns (copy of) map of all system properties for the server.
-     * 
-     * @return all system properties of the server, or null if unset.
-     */
-    public Map<String, String> getServerSystemProperties() {
-        if (serverSystemProperties == null) {
-            return null;
-        }
-        return new HashMap<String, String>(serverSystemProperties);
-    }
-
-    /**
-     * Sets map of all system properties for the server.
+     * Sets map of all system properties for support processes
      * 
      * @param systemProperties
-     *            new system properties for the server, or null to unset.
+     *            new system properties for support processes, or null to unset.
      */
-    public void setServerSystemProperties(Map<String, String> systemProperties) {
+    public void setSupportSystemProperties(Map<String, String> systemProperties) {
         if (systemProperties == null) {
-            this.serverSystemProperties = null;
+            this.supportSystemProperties = null;
         } else {
-            this.serverSystemProperties = new HashMap<String, String>(
+            this.supportSystemProperties = new HashMap<String, String>(
                     systemProperties);
         }
     }
 
     /**
-     * Sets a single system property for the server. Map will be created if
-     * needed.
+     * Sets a single system property for support processes. Map will be created
+     * if needed.
      * 
      * @param name
      *            name of new property
      * @param value
      *            value of new property.
      */
-    public void setServerSystemProperty(String name, String value) {
-        if (serverSystemProperties == null) {
-            serverSystemProperties = new HashMap<String, String>();
+    public void setSupportSystemProperty(String name, String value) {
+        if (supportSystemProperties == null) {
+            supportSystemProperties = new HashMap<String, String>();
         }
-        serverSystemProperties.put(name, value);
-    }
-
-    /**
-     * Total number of nodes in this cluster
-     * 
-     * @return Total number of nodes in this cluster. Returns 0 if unknown
-     */
-    public int getNodes() {
-        return nodes;
-    }
-
-    /**
-     * Sets total number of nodes in this cluster
-     * 
-     * @param nodes
-     *            total number of nodes in this cluster. 0 for unknown
-     */
-    public void setNodes(int nodes) {
-        this.nodes = nodes;
-    }
-
-    /**
-     * Total number of cores in this cluster
-     * 
-     * @return Total number of cores in this cluster. Returns 0 if unknown
-     */
-    public int getCores() {
-        return cores;
-    }
-
-    /**
-     * Sets total number of cores in this cluster
-     * 
-     * @param cores
-     *            total number of cores in this cluster. 0 for unknown
-     */
-    public void setCores(int cores) {
-        this.cores = cores;
-    }
-
-    /**
-     * Amount of memory per node in Megabytes
-     * 
-     * @return Amount of memory per node in Megabytes. Returns 0 if unknown
-     */
-    public int getMemory() {
-        return memory;
-    }
-
-    /**
-     * Sets Amount of memory per node in Megabytes
-     * 
-     * @param memory
-     *            Amount of memory per node in Megabytes. 0 for unknown
-     */
-    public void setMemory(int memory) {
-        this.memory = memory;
+        supportSystemProperties.put(name, value);
     }
 
     /**
@@ -919,14 +734,6 @@ public class Cluster {
         this.color = color;
     }
 
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
-    }
-
     /**
      * Get the raw properties this cluster was created from. Useful for
      * supporting custom properties in deploy based applications
@@ -943,14 +750,14 @@ public class Cluster {
      * 
      * @param jobName
      *            name of job
-     * @param serverOnly
-     *            if only the necessary settings for starting a server need to
-     *            be checked
+     * @param supportOnly
+     *            if only the necessary settings for starting a support process
+     *            need to be checked
      * 
      * @throws Exception
      *             if this cluster is incomplete or incorrect.
      */
-    public void checkSettings(String jobName, boolean serverOnly)
+    public void checkSettings(String jobName, boolean supportOnly)
             throws Exception {
         String prefix = "Cannot run job \"" + jobName + "\": Cluster ";
 
@@ -958,20 +765,11 @@ public class Cluster {
             throw new Exception(prefix + "name not specified");
         }
 
-        if (serverAdaptor == null) {
-            throw new Exception(prefix + "server adaptor not specified");
+        if (supportURI == null) {
+            throw new Exception(prefix + "support URI not specified");
         }
 
-        if (serverURI == null) {
-            throw new Exception(prefix + "server URI not specified");
-        }
-
-        if (!serverOnly) {
-
-            if (jobAdaptor == null) {
-                throw new Exception(prefix + "job adaptor not specified");
-            }
-
+        if (!supportOnly) {
             if (jobURI == null) {
                 throw new Exception(prefix + "job URI not specified");
             }
@@ -980,18 +778,6 @@ public class Cluster {
 
         if (fileAdaptors == null || fileAdaptors.size() == 0) {
             throw new Exception(prefix + "file adaptors not specified");
-        }
-
-        // if (cacheDir != null && !cacheDir.isAbsolute()) {
-        // throw new Exception("Cache dir must be absolute");
-        // }
-
-        if (cores < 0) {
-            throw new Exception(prefix + "number of cores negative");
-        }
-
-        if (nodes < 0) {
-            throw new Exception(prefix + "number of nodes negative");
         }
     }
 
@@ -1018,18 +804,19 @@ public class Cluster {
 
         String dotPrefix = prefix + ".";
 
-        if (serverAdaptor != null) {
-            out.println(dotPrefix + "server.adaptor = " + serverAdaptor);
+        if (supportAdaptor != null) {
+            out.println(dotPrefix + "support.adaptor = " + supportAdaptor);
             empty = false;
         } else if (printComments) {
-            out.println("#" + dotPrefix + "server.adaptor = ");
+            out.println("#" + dotPrefix + "support.adaptor = ");
         }
 
-        if (serverURI != null) {
-            out.println(dotPrefix + "server.uri = " + serverURI.toASCIIString());
+        if (supportURI != null) {
+            out.println(dotPrefix + "support.uri = "
+                    + supportURI.toASCIIString());
             empty = false;
         } else if (printComments) {
-            out.println("#" + dotPrefix + "server.uri = ");
+            out.println("#" + dotPrefix + "support.uri = ");
         }
 
         if (jobAdaptor != null) {
@@ -1082,48 +869,12 @@ public class Cluster {
             out.println("#" + dotPrefix + "user.key = ");
         }
 
-        if (cacheDir != null) {
-            out.println(dotPrefix + "cache.dir = " + cacheDir);
+        if (supportSystemProperties != null) {
+            out.println(dotPrefix + "support.system.properties = "
+                    + DeployProperties.toCSString(supportSystemProperties));
             empty = false;
         } else if (printComments) {
-            out.println("#" + dotPrefix + "cache.dir = ");
-        }
-
-        if (serverOutputFiles != null) {
-            out.println(dotPrefix + "server.output.files = "
-                    + DeployProperties.files2CSS(serverOutputFiles));
-            empty = false;
-        } else if (printComments) {
-            out.println("#" + dotPrefix + "server.output.files =");
-        }
-
-        if (serverSystemProperties != null) {
-            out.println(dotPrefix + "server.system.properties = "
-                    + DeployProperties.toCSString(serverSystemProperties));
-            empty = false;
-        } else if (printComments) {
-            out.println("#" + dotPrefix + "server.system.properties =");
-        }
-
-        if (nodes > 0) {
-            out.println(dotPrefix + "nodes = " + nodes);
-            empty = false;
-        } else if (printComments) {
-            out.println("#" + dotPrefix + "nodes = ");
-        }
-
-        if (cores > 0) {
-            out.println(dotPrefix + "cores = " + cores);
-            empty = false;
-        } else if (printComments) {
-            out.println("#" + dotPrefix + "cores = ");
-        }
-
-        if (memory > 0) {
-            out.println(dotPrefix + "memory = " + memory);
-            empty = false;
-        } else if (printComments) {
-            out.println("#" + dotPrefix + "memory = ");
+            out.println("#" + dotPrefix + "support.system.properties =");
         }
 
         if (latitude != 0) {
@@ -1145,13 +896,6 @@ public class Cluster {
             empty = false;
         } else if (printComments) {
             out.println("#" + dotPrefix + "color = ");
-        }
-
-        if (location != null) {
-            out.println(dotPrefix + "location = " + location);
-            empty = false;
-        } else if (printComments) {
-            out.println("#" + dotPrefix + "location = ");
         }
 
         if (empty && printComments) {
@@ -1180,8 +924,8 @@ public class Cluster {
             result = "Cluster Settings for \"" + getName() + "\":\n";
         }
 
-        result += " Server adaptor = " + getServerAdaptor() + "\n";
-        result += " Server URI = " + getServerURI() + "\n";
+        result += " Support adaptor = " + getSupportAdaptor() + "\n";
+        result += " Support URI = " + getSupportURI() + "\n";
         result += " Job adaptor = " + getJobAdaptor() + "\n";
         result += " Job URI = " + getJobURI() + "\n";
         result += " File adaptors = "
@@ -1190,15 +934,9 @@ public class Cluster {
         result += " Wrapper Script = " + getJobWrapperScript() + "\n";
         result += " User name = " + getUserName() + "\n";
         result += " User keyfile = " + getKeyFile() + "\n";
-        result += " Cache dir = " + getCacheDir() + "\n";
-        result += " Server output files = "
-                + DeployProperties.files2CSS(serverOutputFiles) + "\n";
-        result += " Server system properties = "
-                + DeployProperties.toCSString(getServerSystemProperties())
+        result += " Support system properties = "
+                + DeployProperties.toCSString(getSupportSystemProperties())
                 + "\n";
-        result += " Nodes = " + getNodes() + "\n";
-        result += " Cores = " + getCores() + "\n";
-        result += " Memory = " + getMemory() + "\n";
         result += " Latitude = " + getLatitude() + "\n";
         result += " Longitude = " + getLongitude() + "\n";
         result += " Color = " + Colors.color2colorCode(color) + "\n";
