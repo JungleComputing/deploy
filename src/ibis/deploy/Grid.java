@@ -3,6 +3,7 @@ package ibis.deploy;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Date;
@@ -46,12 +47,24 @@ public class Grid {
      *             invalid properties
      */
     public Grid(File file) throws FileNotFoundException, Exception {
-        clusters = new ArrayList<Cluster>();
+        this(file, false);
+    }
 
-        if (!file.exists()) {
-            throw new FileNotFoundException("file \"" + file
-                    + "\" does not exist");
-        }
+    /**
+     * Constructs a grid object from properties stored in the given file. Also
+     * constructs the clusters inside this grid.
+     * 
+     * @param file
+     *            the file containing the properties
+     * @throws FileNotFoundException
+     *             if the given file cannot be found
+     * @throws Exception
+     *             if reading from the given file fails, or the file contains
+     *             invalid properties
+     */
+    public Grid(File file, boolean tryClasspath) throws FileNotFoundException,
+            Exception {
+        clusters = new ArrayList<Cluster>();
 
         if (!file.getName().endsWith(".grid")) {
             throw new Exception("grid files must have a \".grid\" extension");
@@ -60,9 +73,34 @@ public class Grid {
         clusters.add(Cluster.getLocalCluster());
 
         DeployProperties properties = new DeployProperties();
-        properties.loadFromFile(file.getAbsolutePath());
 
+        if (file.exists()) {
+            properties.loadFromFile(file.getAbsolutePath());
+        } else if (tryClasspath) {
+            ClassLoader classLoader = getClass().getClassLoader();
+            InputStream inputStream = classLoader.getResourceAsStream(file
+                    .getName());
+
+            if (inputStream == null) {
+                throw new FileNotFoundException("file \"" + file
+                        + "\" does not exist, and cannot find on classpath");
+            } else {
+                try {
+                    properties.load(inputStream);
+                } finally {
+                    try {
+                        inputStream.close();
+                    } catch (Exception e2) {
+                        // IGNORE
+                    }
+                }
+            }
+        } else {
+            throw new FileNotFoundException("file \"" + file + "\" does not exist");
+        }
+        
         String[] clusterNames = properties.getElementList("");
+
         if (clusterNames != null) {
             for (String clusterName : clusterNames) {
                 Cluster cluster = getCluster(clusterName);
