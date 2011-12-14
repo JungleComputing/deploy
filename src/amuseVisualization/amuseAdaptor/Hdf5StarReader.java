@@ -1,25 +1,19 @@
 package amuseVisualization.amuseAdaptor;
 
-
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import amuseVisualization.Settings;
-import amuseVisualization.openglCommon.Material;
-import amuseVisualization.openglCommon.exceptions.FileOpeningException;
-import amuseVisualization.openglCommon.math.Vec3;
-import amuseVisualization.openglCommon.math.Vec4;
-import amuseVisualization.openglCommon.models.Model;
-import amuseVisualization.openglCommon.models.StarModel;
-import amuseVisualization.openglCommon.scenegraph.SGNode;
-
 import ncsa.hdf.object.Dataset;
 import ncsa.hdf.object.FileFormat;
 import ncsa.hdf.object.Group;
 import ncsa.hdf.object.HObject;
+import amuseVisualization.openglCommon.exceptions.FileOpeningException;
+import amuseVisualization.openglCommon.math.Vec3;
+import amuseVisualization.openglCommon.models.Model;
+import amuseVisualization.openglCommon.models.base.Sphere;
 
 public class Hdf5StarReader {
     static class ExtFilter implements FilenameFilter {
@@ -40,8 +34,9 @@ public class Hdf5StarReader {
     public Hdf5StarReader() {
     }
 
-    public static void read(SGNode sgRoot, HashMap<Integer, Model> models, int subdivision, String evo, String grav)
-            throws FileOpeningException {
+    public static ArrayList<Star> read(int subdivision, String evo, String grav) throws FileOpeningException {
+        Model starModelBase = new Sphere(null, subdivision, 1f, new Vec3(0, 0, 0));
+        ArrayList<Star> stars = new ArrayList<Star>();
 
         HashMap<String, Dataset> datasets = new HashMap<String, Dataset>();
 
@@ -65,34 +60,13 @@ public class Hdf5StarReader {
             z = (double[]) datasets.get("grav/particles/0000000001/attributes/z").read();
 
             for (int i = 0; i < numParticles; i++) {
-                Vec4 color = Astrophysics.starColor(luminosity[i], realRadius[i]);
-
-                Model starModel;
-                Material material = new Material(color, color, color);
-
-                int index = Astrophysics.indexOfStarRadius(realRadius[i]) + Settings.getMaxExpectedModels()
-                        * subdivision;
-                if (!models.containsKey(index)) {
-                    starModel = new StarModel(new Material(), subdivision,
-                            Astrophysics.starToScreenRadius(realRadius[i]), new Vec3());
-                    models.put(index, starModel);
-                } else {
-                    starModel = models.get(index);
-                }
-
                 Vec3 location = Astrophysics.locationToScreenCoord(x[i], y[i], z[i]);
+                Star newStar = new Star(starModelBase, location, realRadius[i], luminosity[i]);
+                stars.add(newStar);
 
-                StarSGNode newNode = new StarSGNode();
-                newNode.setModel(starModel, material);
-                newNode.setTranslation(location);
-
-                sgRoot.addChild(newNode);
             }
-        } catch (FileOpeningException e) {
-            throw e;
         } catch (Exception e) {
-            System.err
-            .println("General Exception cought in Hdf5StarReader.");
+            System.err.println("General Exception cought in Hdf5StarReader.");
             e.printStackTrace();
         }
 
@@ -102,6 +76,8 @@ public class Hdf5StarReader {
         }
 
         closeFiles();
+
+        return stars;
     }
 
     protected static int getNumFiles(String path, String namePostfix) {

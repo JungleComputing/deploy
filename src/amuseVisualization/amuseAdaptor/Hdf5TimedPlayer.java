@@ -1,6 +1,6 @@
 package amuseVisualization.amuseAdaptor;
 
-
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
@@ -24,7 +24,7 @@ public class Hdf5TimedPlayer implements Runnable {
     private states currentState = states.UNOPENED;
     private int currentFrame;
 
-    private StarSGNode sgRoot;
+    private ArrayList<Star> stars;
     private OctreeNode octreeRoot;
 
     private boolean running = true, cli = false;
@@ -193,20 +193,22 @@ public class Hdf5TimedPlayer implements Runnable {
                                 Vec3 rotation = glow.getRotation();
                                 System.out.println("Simulation frame: " + currentFrame + ", Rotation x: "
                                         + rotation.get(0) + " y: " + rotation.get(1));
-                                glow.makeSnapshot(String.format("%05d", (currentFrame * 3 + 0)));
+                                glow.makeSnapshot(String.format("%05d", (currentFrame) * 2 + 0));
 
                                 rotation.set(1, rotation.get(1) + Settings.getPerFrameRotation());
                                 glow.setRotation(rotation);
 
-                                glow.makeSnapshot(String.format("%05d", (currentFrame * 3 + 1)));
+                                glow.makeSnapshot(String.format("%05d", (currentFrame * 2 + 1)));
 
                                 rotation.set(1, rotation.get(1) + Settings.getPerFrameRotation());
                                 glow.setRotation(rotation);
 
-                                glow.makeSnapshot(String.format("%05d", (currentFrame * 3 + 2)));
-
-                                rotation.set(1, rotation.get(1) + Settings.getPerFrameRotation());
-                                glow.setRotation(rotation);
+                                // glow.makeSnapshot(String.format("%05d",
+                                // (currentFrame * 3 + 2)));
+                                //
+                                // rotation.set(1, rotation.get(1) +
+                                // Settings.getPerFrameRotation());
+                                // glow.setRotation(rotation);
                             }
                         } else {
                             if (!cli) {
@@ -254,16 +256,16 @@ public class Hdf5TimedPlayer implements Runnable {
     private void updateFrame() throws FileOpeningException {
         Hdf5Snapshotter snappy = new Hdf5Snapshotter();
         if (!cli) {
-            snappy.open(namePrefix, currentFrame, GLWindow.getLOD(), starModels, cloudModels);
+            snappy.open(namePrefix, currentFrame, GLWindow.getLOD(), cloudModels);
         } else {
-            snappy.open(namePrefix, currentFrame, GLOffscreenWindow.getLOD(), starModels, cloudModels);
+            snappy.open(namePrefix, currentFrame, GLOffscreenWindow.getLOD(), cloudModels);
         }
-        StarSGNode newSgRoot = snappy.getSgRoot();
+        ArrayList<Star> newStars = snappy.getStars();
         OctreeNode newOctreeRoot = snappy.getOctreeRoot();
 
         synchronized (this) {
-            sgRoot = newSgRoot;
-            octreeRoot = newOctreeRoot;
+            this.stars = newStars;
+            this.octreeRoot = newOctreeRoot;
         }
     }
 
@@ -312,8 +314,8 @@ public class Hdf5TimedPlayer implements Runnable {
         return currentFrame;
     }
 
-    public synchronized StarSGNode getSgRoot() {
-        return sgRoot;
+    public synchronized ArrayList<Star> getStars() {
+        return stars;
     }
 
     public synchronized OctreeNode getOctreeRoot() {

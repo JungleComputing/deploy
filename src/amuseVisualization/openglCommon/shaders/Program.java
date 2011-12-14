@@ -1,6 +1,5 @@
 package amuseVisualization.openglCommon.shaders;
 
-
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -101,6 +100,8 @@ public class Program {
         if (pointer == 0)
             throw new UninitializedException();
 
+        gl.glUseProgram(pointer);
+
         for (Entry<String, FloatBuffer> var : uniformFloatMatrices.entrySet()) {
             passUniformMat(gl, var.getKey(), var.getValue());
         }
@@ -113,16 +114,13 @@ public class Program {
         for (Entry<String, Float> var : uniformFloats.entrySet()) {
             passUniform(gl, var.getKey(), var.getValue());
         }
-
-        gl.glUseProgram(pointer);
     }
 
     public void linkAttribs(GL3 gl, GLSLAttrib... attribs) {
         int nextStart = 0;
         for (GLSLAttrib attrib : attribs) {
             int ptr = gl.glGetAttribLocation(pointer, attrib.name);
-            gl.glVertexAttribPointer(ptr, attrib.vectorSize, GL3.GL_FLOAT,
-                    false, 0, nextStart);
+            gl.glVertexAttribPointer(ptr, attrib.vectorSize, GL3.GL_FLOAT, false, 0, nextStart);
             gl.glEnableVertexAttribArray(ptr);
 
             nextStart += attrib.buffer.capacity() * Buffers.SIZEOF_FLOAT;
@@ -155,8 +153,7 @@ public class Program {
         uniformFloats.put(name, var);
     }
 
-    public void passUniformVec(GL3 gl, String pointerNameInShader,
-            FloatBuffer var) {
+    public void passUniformVec(GL3 gl, String pointerNameInShader, FloatBuffer var) {
         int ptr = gl.glGetUniformLocation(pointer, pointerNameInShader);
 
         int vecSize = var.capacity();
@@ -171,8 +168,7 @@ public class Program {
         }
     }
 
-    public void passUniformMat(GL3 gl, String pointerNameInShader,
-            FloatBuffer var) {
+    public void passUniformMat(GL3 gl, String pointerNameInShader, FloatBuffer var) {
         int ptr = gl.glGetUniformLocation(pointer, pointerNameInShader);
 
         int matSize = var.capacity();

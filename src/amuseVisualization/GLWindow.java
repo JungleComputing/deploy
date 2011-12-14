@@ -1,5 +1,7 @@
 package amuseVisualization;
 
+import java.util.ArrayList;
+
 import javax.media.opengl.GL3;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLContext;
@@ -8,7 +10,7 @@ import javax.media.opengl.GLException;
 
 import amuseVisualization.amuseAdaptor.Astrophysics;
 import amuseVisualization.amuseAdaptor.Hdf5TimedPlayer;
-import amuseVisualization.amuseAdaptor.StarSGNode;
+import amuseVisualization.amuseAdaptor.Star;
 import amuseVisualization.openglCommon.Material;
 import amuseVisualization.openglCommon.Picture;
 import amuseVisualization.openglCommon.exceptions.UninitializedException;
@@ -23,7 +25,6 @@ import amuseVisualization.openglCommon.models.Axis;
 import amuseVisualization.openglCommon.models.Model;
 import amuseVisualization.openglCommon.models.base.Quad;
 import amuseVisualization.openglCommon.scenegraph.OctreeNode;
-import amuseVisualization.openglCommon.scenegraph.SGNode;
 import amuseVisualization.openglCommon.shaders.Program;
 import amuseVisualization.openglCommon.shaders.ProgramLoader;
 import amuseVisualization.openglCommon.textures.Perlin3D;
@@ -86,7 +87,7 @@ public class GLWindow implements GLEventListener {
     private Model xAxis, yAxis, zAxis;
 
     private boolean snapshotting = false;
-    private StarSGNode sgRoot;
+    private ArrayList<Star> stars;
     private OctreeNode octreeRoot;
     private final GLContext offScreenContext;
 
@@ -273,10 +274,10 @@ public class GLWindow implements GLEventListener {
             GL3 gl = drawable.getContext().getGL().getGL3();
             gl.glViewport(0, 0, canvasWidth, canvasHeight);
 
-            sgRoot = timer.getSgRoot();
+            stars = timer.getStars();
             octreeRoot = timer.getOctreeRoot();
 
-            displayContext(sgRoot, octreeRoot, starTex, starHaloTex, gasTex, axesTex);
+            displayContext(stars, octreeRoot, starTex, starHaloTex, gasTex, axesTex);
 
             try {
                 drawable.getContext().release();
@@ -286,11 +287,11 @@ public class GLWindow implements GLEventListener {
         }
     }
 
-    private void displayContext(SGNode sgRoot, OctreeNode octreeRoot, Texture2D starTex, Texture2D starHaloTex,
+    private void displayContext(ArrayList<Star> stars, OctreeNode octreeRoot, Texture2D starTex, Texture2D starHaloTex,
             Texture2D gasTex, Texture2D axesTex) {
         GL3 gl = GLContext.getCurrentGL().getGL3();
 
-        sgRoot.init(gl);
+        stars.get(0).init(gl);
         octreeRoot.init(gl);
 
         int width = GLContext.getCurrent().getGLDrawable().getWidth();
@@ -317,7 +318,7 @@ public class GLWindow implements GLEventListener {
         loader.setUniformMatrix("PMatrix", p);
         loader.setUniformMatrix("SMatrix", MatrixMath.scale(1));
 
-        renderScene(gl, mv, sgRoot, octreeRoot, starHaloTex, starTex, gasTex, axesTex);
+        renderScene(gl, mv, stars, octreeRoot, starHaloTex, starTex, gasTex, axesTex);
 
         if (post_process) {
             renderTexturesToScreen(gl, width, height, starHaloTex, starTex, gasTex, axesTex);
@@ -325,7 +326,7 @@ public class GLWindow implements GLEventListener {
 
     }
 
-    private void renderScene(GL3 gl, Mat4 mv, SGNode sgRoot, OctreeNode octreeRoot, Texture2D starHaloTex,
+    private void renderScene(GL3 gl, Mat4 mv, ArrayList<Star> stars, OctreeNode octreeRoot, Texture2D starHaloTex,
             Texture2D starTex, Texture2D gasTex, Texture2D axesTex) {
         try {
             if (post_process) {
@@ -335,11 +336,14 @@ public class GLWindow implements GLEventListener {
                 pplShader.setUniformMatrix("SMatrix", MatrixMath.scale(2));
                 pplShader.setUniform("StarDrawMode", 1);
 
-                sgRoot.draw(gl, pplShader, mv);
+                for (Star s : stars) {
+                    s.draw(gl, pplShader, mv);
+                }
 
                 renderToTexture(gl, starHaloTex);
-//                starBlur(gl, starHaloTex, FSQ_blur, Settings.getStarHaloBlurType(levelOfDetail),
-//                        Settings.getStarHaloBlurSize(levelOfDetail));
+                // starBlur(gl, starHaloTex, FSQ_blur,
+                // Settings.getStarHaloBlurType(levelOfDetail),
+                // Settings.getStarHaloBlurSize(levelOfDetail));
 
                 blur(gl, starHaloTex, FSQ_blur, Settings.getStarHaloBlurPasses(levelOfDetail),
                         Settings.getStarHaloBlurType(levelOfDetail), Settings.getStarHaloBlurSize(levelOfDetail));
@@ -369,7 +373,19 @@ public class GLWindow implements GLEventListener {
                 animatedTurbulenceShader.setUniformMatrix("SMatrix", MatrixMath.scale(1));
                 animatedTurbulenceShader.setUniform("StarDrawMode", 0);
 
-                sgRoot.draw(gl, animatedTurbulenceShader, mv);
+                pplShader.setUniformVector("LightPos", lightPos);
+                pplShader.setUniform("Shininess", shininess);
+
+                pplShader.setUniformMatrix("SMatrix", MatrixMath.scale(1));
+                pplShader.setUniform("StarDrawMode", 0);
+
+                for (Star s : stars) {
+                    if (s.getRadius() > 1f) {
+                        s.draw(gl, animatedTurbulenceShader, mv);
+                    } else {
+                        s.draw(gl, pplShader, mv);
+                    }
+                }
             } else {
                 pplShader.setUniformVector("LightPos", lightPos);
                 pplShader.setUniform("Shininess", shininess);
@@ -377,7 +393,9 @@ public class GLWindow implements GLEventListener {
                 pplShader.setUniformMatrix("SMatrix", MatrixMath.scale(1));
                 pplShader.setUniform("StarDrawMode", 0);
 
-                sgRoot.draw(gl, pplShader, mv);
+                for (Star s : stars) {
+                    s.draw(gl, pplShader, mv);
+                }
             }
 
             if (post_process) {
@@ -685,7 +703,7 @@ public class GLWindow implements GLEventListener {
         gasTex4k.init(gl);
         axesTex4k.init(gl);
 
-        displayContext(sgRoot, octreeRoot, starTex4k, starHaloTex4k, gasTex4k, axesTex4k);
+        displayContext(stars, octreeRoot, starTex4k, starHaloTex4k, gasTex4k, axesTex4k);
 
         Picture p = new Picture(width, height);
 

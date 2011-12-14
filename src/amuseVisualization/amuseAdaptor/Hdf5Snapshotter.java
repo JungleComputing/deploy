@@ -1,6 +1,6 @@
 package amuseVisualization.amuseAdaptor;
 
-
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import amuseVisualization.Settings;
@@ -12,22 +12,22 @@ import amuseVisualization.openglCommon.scenegraph.OctreeNode;
 public class Hdf5Snapshotter {
     private static OctreeNode cubeRoot;
     private static StarSGNode sgRoot;
+    private ArrayList<Star> stars;
 
     private final static String evoNamePostfix = ".evo";
     private final static String gravNamePostfix = ".grav";
     private final static String gasNamePostfix = ".gas";
 
     public Hdf5Snapshotter() {
+        stars = new ArrayList<Star>();
     }
 
-    public void open(String namePrefix, int currentFrame, int levelOfDetail,
-            HashMap<Integer, Model> starModels,
-            HashMap<Integer, Model> cloudModels) throws FileOpeningException {
+    public void open(String namePrefix, int currentFrame, int levelOfDetail, HashMap<Integer, Model> cloudModels)
+            throws FileOpeningException {
 
         int gasSubdivision = Settings.getGasSubdivision(levelOfDetail);
         int starSubdivision = Settings.getStarSubdivision(levelOfDetail);
-        int gasParticlesPerOctreeNode = Settings
-                .getGasParticlesPerOctreeNode(levelOfDetail);
+        int gasParticlesPerOctreeNode = Settings.getGasParticlesPerOctreeNode(levelOfDetail);
 
         String evoName, gravName, gasName;
 
@@ -35,23 +35,20 @@ public class Hdf5Snapshotter {
         evoName = namePrefix + intToString(currentFrame) + evoNamePostfix;
         gravName = namePrefix + intToString(currentFrame) + gravNamePostfix;
 
-        cubeRoot = new OctreeNode(gasParticlesPerOctreeNode, 0, gasSubdivision,
-                cloudModels, new Vec3(-Settings.getGasEdges(),
-                        -Settings.getGasEdges(), -Settings.getGasEdges()),
-                Settings.getGasEdges());
+        cubeRoot = new OctreeNode(gasParticlesPerOctreeNode, 0, gasSubdivision, cloudModels, new Vec3(
+                -Settings.getGasEdges(), -Settings.getGasEdges(), -Settings.getGasEdges()), Settings.getGasEdges());
         Hdf5GasCloudReader.read(cubeRoot, gasName);
 
         sgRoot = new StarSGNode();
-        Hdf5StarReader.read(sgRoot, starModels, starSubdivision, evoName,
-                gravName);
+        stars = Hdf5StarReader.read(starSubdivision, evoName, gravName);
     }
 
     public OctreeNode getOctreeRoot() {
         return cubeRoot;
     }
 
-    public StarSGNode getSgRoot() {
-        return sgRoot;
+    public ArrayList<Star> getStars() {
+        return stars;
     }
 
     private static String intToString(int input) {
