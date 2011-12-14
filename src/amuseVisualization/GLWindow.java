@@ -338,8 +338,8 @@ public class GLWindow implements GLEventListener {
                 sgRoot.draw(gl, pplShader, mv);
 
                 renderToTexture(gl, starHaloTex);
-                starBlur(gl, starHaloTex, FSQ_blur, Settings.getStarHaloBlurType(levelOfDetail),
-                        Settings.getStarHaloBlurSize(levelOfDetail));
+//                starBlur(gl, starHaloTex, FSQ_blur, Settings.getStarHaloBlurType(levelOfDetail),
+//                        Settings.getStarHaloBlurSize(levelOfDetail));
 
                 blur(gl, starHaloTex, FSQ_blur, Settings.getStarHaloBlurPasses(levelOfDetail),
                         Settings.getStarHaloBlurType(levelOfDetail), Settings.getStarHaloBlurSize(levelOfDetail));

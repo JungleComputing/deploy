@@ -127,23 +127,23 @@ public class GLOffscreenWindow {
 
         // Load and compile shaders, then use program.
         try {
-            animatedTurbulenceShader = loader.createProgram(gl,
-                    "src/ibis/deploy/gui/outputViz/shaders/src/vs_sunsurface.vp",
-                    "src/ibis/deploy/gui/outputViz/shaders/src/fs_animatedTurbulence.fp");
-            pplShader = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_ppl.vp",
-                    "src/ibis/deploy/gui/outputViz/shaders/src/fs_ppl.fp");
-            axesShader = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_axes.vp",
-                    "src/ibis/deploy/gui/outputViz/shaders/src/fs_axes.fp");
-            gasShader = loader.createProgram(gl, "src/ibis/deploy/gui/outputViz/shaders/src/vs_gas.vp",
-                    "src/ibis/deploy/gui/outputViz/shaders/src/fs_gas.fp");
+        	animatedTurbulenceShader = loader.createProgram(gl,
+                    "src/amuseVisualization/openglCommon/shaders/src/vs_sunsurface.vp",
+                    "src/amuseVisualization/openglCommon/shaders/src/fs_animatedTurbulence.fp");
+            pplShader = loader.createProgram(gl, "src/amuseVisualization/openglCommon/shaders/src/vs_ppl.vp",
+                    "src/amuseVisualization/openglCommon/shaders/src/fs_ppl.fp");
+            axesShader = loader.createProgram(gl, "src/amuseVisualization/openglCommon/shaders/src/vs_axes.vp",
+                    "src/amuseVisualization/openglCommon/shaders/src/fs_axes.fp");
+            gasShader = loader.createProgram(gl, "src/amuseVisualization/openglCommon/shaders/src/vs_gas.vp",
+                    "src/amuseVisualization/openglCommon/shaders/src/fs_gas.fp");
             if (post_process)
                 postprocessShader = loader.createProgram(gl,
-                        "src/ibis/deploy/gui/outputViz/shaders/src/vs_postprocess.vp",
-                        "src/ibis/deploy/gui/outputViz/shaders/src/fs_postprocess.fp");
+                        "src/amuseVisualization/openglCommon/shaders/src/vs_postprocess.vp",
+                        "src/amuseVisualization/openglCommon/shaders/src/fs_postprocess.fp");
             if (post_process)
                 gaussianBlurShader = loader.createProgram(gl,
-                        "src/ibis/deploy/gui/outputViz/shaders/src/vs_postprocess.vp",
-                        "src/ibis/deploy/gui/outputViz/shaders/src/fs_gaussian_blur.fp");
+                        "src/amuseVisualization/openglCommon/shaders/src/vs_postprocess.vp",
+                        "src/amuseVisualization/openglCommon/shaders/src/fs_gaussian_blur.fp");
         } catch (Exception e) {
             System.err.println(e.getMessage());
             e.printStackTrace();
@@ -355,32 +355,6 @@ public class GLOffscreenWindow {
                 fullScreenQuad.draw(gl, new Mat4());
                 renderToTexture(gl, target);
             }
-        } catch (UninitializedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void starBlur(GL3 gl, Texture2D target, Model fullScreenQuad, int blurType, float blurSize) {
-        gaussianBlurShader.setUniform("Texture", target.getMultitexNumber());
-        gaussianBlurShader.setUniformMatrix("PMatrix", new Mat4());
-
-        gaussianBlurShader.setUniform("scrWidth", target.getWidth());
-        gaussianBlurShader.setUniform("scrHeight", target.getHeight());
-
-        try {
-            gaussianBlurShader.use(gl);
-
-            gaussianBlurShader.setUniform("blurType", Settings.getStarShapeBlurType());
-            gaussianBlurShader.setUniform("Alpha", Settings.getStarShapeAlpha());
-            gaussianBlurShader.setUniform("Sigma", Settings.getStarShapeSigma());
-            gaussianBlurShader.setUniform("NumPixelsPerSide", Settings.getStarShapeBlurfilterSize());
-            gaussianBlurShader.setUniform("blurSize", Settings.getStarShapeBlurSize());
-
-            gaussianBlurShader.setUniform("blurDirection", 0);
-            fullScreenQuad.draw(gl, new Mat4());
-            gaussianBlurShader.setUniform("blurDirection", 1);
-            fullScreenQuad.draw(gl, new Mat4());
-            renderToTexture(gl, target);
         } catch (UninitializedException e) {
             e.printStackTrace();
         }

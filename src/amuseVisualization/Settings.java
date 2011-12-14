@@ -12,9 +12,9 @@ public class Settings {
     // Settings for the initial view
     private static final int INITIAL_SIMULATION_FRAME = 0;
     private static int initial_simulation_frame = INITIAL_SIMULATION_FRAME;
-    private static final float INITIAL_ROTATION_X = 0f;
+    private static final float INITIAL_ROTATION_X = 17f;
     private static float initial_rotation_x = INITIAL_ROTATION_X;
-    private static final float INITIAL_ROTATION_Y = 0f;
+    private static final float INITIAL_ROTATION_Y = -25f;
     private static float initial_rotation_y = INITIAL_ROTATION_Y;
     private static final float INITIAL_ZOOM = -390.0f;
 
@@ -44,9 +44,9 @@ public class Settings {
     // Settings for the postprocessing shader
     private static float postprocessing_overall_brightness = 4f;
     private static float postprocessing_axes_brightness = 1f;
-    private static float postprocessing_gas_brightness = 1.75f;
-    private static float postprocessing_star_halo_brightness = 2f;
-    private static float postprocessing_star_brightness = 2f;
+    private static float postprocessing_gas_brightness = 3f;
+    private static float postprocessing_star_halo_brightness = 3f;
+    private static float postprocessing_star_brightness = 4f;
 
     // Settings for the star-shape blur method (the + shape of stars)
     private static final int STAR_SHAPE_BLUR_SIZE = 1;
@@ -95,8 +95,8 @@ public class Settings {
     // Snaphots have different settings, since they are rendered at extremely
     // high resolutions pixels
     private static final int SNAPSHOT_GAS_BLUR_PASSES = 2; // 2
-    private static final float SNAPSHOT_GAS_BLUR_SIZE = 6; // 6
-    private static final int SNAPSHOT_GAS_BLUR_TYPE = 10; // 10
+    private static final float SNAPSHOT_GAS_BLUR_SIZE = 2; // 6
+    private static final int SNAPSHOT_GAS_BLUR_TYPE = 8; // 10
 
     private static final int SNAPSHOT_STAR_HALO_BLUR_PASSES = 2; // 2
     private static final float SNAPSHOT_STAR_HALO_BLUR_SIZE = 1; // 1
