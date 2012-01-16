@@ -4,11 +4,9 @@ import ncsa.hdf.hdf5lib.H5;
 import ncsa.hdf.hdf5lib.HDF5Constants;
 import ncsa.hdf.hdf5lib.exceptions.HDF5LibraryException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class Hdf5DataSet {
-    private static final Logger logger = LoggerFactory.getLogger(Hdf5DataSet.class);
+    // private static final Logger logger =
+    // LoggerFactory.getLogger(Hdf5DataSet.class);
     private final String dataSetName;
     private final Hdf5File file;
     private int dataset_id;
@@ -18,17 +16,20 @@ public class Hdf5DataSet {
         this.dataSetName = dataSetName;
     }
 
-    public void open() throws Hdf5FileNotOpenedException, Hdf5FileDoesntExistException, Hdf5DataSetNotFoundException {
+    public void open() throws Hdf5FileNotOpenedException,
+            Hdf5FileDoesntExistException, Hdf5DataSetNotFoundException {
         if (file.getId() >= 0) {
             try {
-                dataset_id = H5.H5Dopen(file.getId(), "/" + dataSetName, HDF5Constants.H5P_DEFAULT);
+                dataset_id = H5.H5Dopen(file.getId(), "/" + dataSetName,
+                        HDF5Constants.H5P_DEFAULT);
             } catch (HDF5LibraryException e) {
                 throw new Hdf5DataSetNotFoundException(e.getMessage());
             }
         } else {
             try {
                 String fileName = file.getName();
-                throw new Hdf5FileNotOpenedException(fileName + " was not opened before reading.");
+                throw new Hdf5FileNotOpenedException(fileName
+                        + " was not opened before reading.");
             } catch (NullPointerException e) {
                 throw new Hdf5FileDoesntExistException("file doesn't exist.");
             }
@@ -63,7 +64,7 @@ public class Hdf5DataSet {
             if (dataset_id >= 0)
                 H5.H5Dclose(dataset_id);
         } catch (Exception e) {
-            logger.debug(e.getMessage());
+            // logger.debug(e.getMessage());
         }
     }
 }

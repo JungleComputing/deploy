@@ -53,7 +53,8 @@ public class GLWindow implements GLEventListener {
     private final AmuseVisualization panel;
     private final ProgramLoader loader;
 
-    private Program animatedTurbulenceShader, pplShader, axesShader, gasShader, postprocessShader, gaussianBlurShader;
+    private Program animatedTurbulenceShader, pplShader, axesShader, gasShader,
+            postprocessShader, gaussianBlurShader;
 
     private Perlin3D noiseTex;
 
@@ -79,7 +80,8 @@ public class GLWindow implements GLEventListener {
     private final Vec3 translation = new Vec3(0f, 1000f, 0f);
 
     private Texture2D axesTex, starHaloTex, gasTex, starTex, intermediateTex;
-    private Texture2D axesTex4k, starHaloTex4k, gasTex4k, starTex4k, intermediateTex4k;
+    private Texture2D axesTex4k, starHaloTex4k, gasTex4k, starTex4k,
+            intermediateTex4k;
 
     // private FBO starFBO, starHaloFBO, gasFBO, axesFBO;
 
@@ -134,19 +136,30 @@ public class GLWindow implements GLEventListener {
 
         // Load and compile shaders, then use program.
         try {
-            animatedTurbulenceShader = loader.createProgram(gl,
-                    "src/amuseVisualization/openglCommon/shaders/src/vs_sunsurface.vp",
-                    "src/amuseVisualization/openglCommon/shaders/src/fs_animatedTurbulence.fp");
+            animatedTurbulenceShader = loader
+                    .createProgram(
+                            gl,
+                            "src/amuseVisualization/openglCommon/shaders/src/vs_sunsurface.vp",
+                            "src/amuseVisualization/openglCommon/shaders/src/fs_animatedTurbulence.fp");
             // gas = loader.createProgram(gl,
             // "src/ibis/deploy/gui/outputViz/shaders/src/vs_sunsurface.vp",
             // "src/ibis/deploy/gui/outputViz/shaders/src/fs_animatedTurbulence.fp");
-            pplShader = loader.createProgram(gl, "src/amuseVisualization/openglCommon/shaders/src/vs_ppl.vp",
-            // "src/ibis/deploy/gui/outputViz/shaders/src/gs_passthrough.fp",
-                    "src/amuseVisualization/openglCommon/shaders/src/fs_ppl.fp");
-            axesShader = loader.createProgram(gl, "src/amuseVisualization/openglCommon/shaders/src/vs_axes.vp",
-                    "src/amuseVisualization/openglCommon/shaders/src/fs_axes.fp");
-            gasShader = loader.createProgram(gl, "src/amuseVisualization/openglCommon/shaders/src/vs_gas.vp",
-                    "src/amuseVisualization/openglCommon/shaders/src/fs_gas.fp");
+            pplShader = loader
+                    .createProgram(
+                            gl,
+                            "src/amuseVisualization/openglCommon/shaders/src/vs_ppl.vp",
+                            // "src/ibis/deploy/gui/outputViz/shaders/src/gs_passthrough.fp",
+                            "src/amuseVisualization/openglCommon/shaders/src/fs_ppl.fp");
+            axesShader = loader
+                    .createProgram(
+                            gl,
+                            "src/amuseVisualization/openglCommon/shaders/src/vs_axes.vp",
+                            "src/amuseVisualization/openglCommon/shaders/src/fs_axes.fp");
+            gasShader = loader
+                    .createProgram(
+                            gl,
+                            "src/amuseVisualization/openglCommon/shaders/src/vs_gas.vp",
+                            "src/amuseVisualization/openglCommon/shaders/src/fs_gas.fp");
             // gas = loader.createProgram(gl,
             // "src/ibis/deploy/gui/outputViz/shaders/src/vs_gas.vp",
             // "src/ibis/deploy/gui/outputViz/shaders/src/fs_volumerendering.fp");
@@ -161,13 +174,17 @@ public class GLWindow implements GLEventListener {
             // "src/ibis/deploy/gui/outputViz/shaders/src/vs_star.vp",
             // "src/ibis/deploy/gui/outputViz/shaders/src/fs_star.fp");
             if (post_process)
-                postprocessShader = loader.createProgram(gl,
-                        "src/amuseVisualization/openglCommon/shaders/src/vs_postprocess.vp",
-                        "src/amuseVisualization/openglCommon/shaders/src/fs_postprocess.fp");
+                postprocessShader = loader
+                        .createProgram(
+                                gl,
+                                "src/amuseVisualization/openglCommon/shaders/src/vs_postprocess.vp",
+                                "src/amuseVisualization/openglCommon/shaders/src/fs_postprocess.fp");
             if (post_process)
-                gaussianBlurShader = loader.createProgram(gl,
-                        "src/amuseVisualization/openglCommon/shaders/src/vs_postprocess.vp",
-                        "src/amuseVisualization/openglCommon/shaders/src/fs_gaussian_blur.fp");
+                gaussianBlurShader = loader
+                        .createProgram(
+                                gl,
+                                "src/amuseVisualization/openglCommon/shaders/src/vs_postprocess.vp",
+                                "src/amuseVisualization/openglCommon/shaders/src/fs_gaussian_blur.fp");
         } catch (Exception e) {
             System.err.println(e.getMessage());
             e.printStackTrace();
@@ -185,21 +202,26 @@ public class GLWindow implements GLEventListener {
         // AXES
         Color4 axisColor = new Color4(0f, 1f, 0f, 1f);
         Material axisMaterial = new Material(axisColor, axisColor, axisColor);
-        xAxis = new Axis(axesShader, axisMaterial, new Vec3(-800f, 0f, 0f), new Vec3(800f, 0f, 0f),
-                Astrophysics.toScreenCoord(1), Astrophysics.toScreenCoord(.2));
+        xAxis = new Axis(axesShader, axisMaterial, new Vec3(-800f, 0f, 0f),
+                new Vec3(800f, 0f, 0f), Astrophysics.toScreenCoord(1),
+                Astrophysics.toScreenCoord(.2));
         xAxis.init(gl);
-        yAxis = new Axis(axesShader, axisMaterial, new Vec3(0f, -800f, 0f), new Vec3(0f, 800f, 0f),
-                Astrophysics.toScreenCoord(1), Astrophysics.toScreenCoord(.2));
+        yAxis = new Axis(axesShader, axisMaterial, new Vec3(0f, -800f, 0f),
+                new Vec3(0f, 800f, 0f), Astrophysics.toScreenCoord(1),
+                Astrophysics.toScreenCoord(.2));
         yAxis.init(gl);
-        zAxis = new Axis(axesShader, axisMaterial, new Vec3(0f, 0f, -800f), new Vec3(0f, 0f, 800f),
-                Astrophysics.toScreenCoord(1), Astrophysics.toScreenCoord(.2));
+        zAxis = new Axis(axesShader, axisMaterial, new Vec3(0f, 0f, -800f),
+                new Vec3(0f, 0f, 800f), Astrophysics.toScreenCoord(1),
+                Astrophysics.toScreenCoord(.2));
         zAxis.init(gl);
 
         // FULL SCREEN QUADS
-        FSQ_postprocess = new Quad(postprocessShader, Material.random(), 2, 2, new Vec3(0, 0, 0.1f));
+        FSQ_postprocess = new Quad(postprocessShader, Material.random(), 2, 2,
+                new Vec3(0, 0, 0.1f));
         FSQ_postprocess.init(gl);
 
-        FSQ_blur = new Quad(gaussianBlurShader, Material.random(), 2, 2, new Vec3(0, 0, 0.1f));
+        FSQ_blur = new Quad(gaussianBlurShader, Material.random(), 2, 2,
+                new Vec3(0, 0, 0.1f));
         FSQ_blur.init(gl);
 
         // TEXTURES
@@ -207,40 +229,47 @@ public class GLWindow implements GLEventListener {
         noiseTex.init(gl);
 
         // Full screen textures (for post processing)
-        starTex = new PostProcessTexture(canvasWidth, canvasHeight, GL3.GL_TEXTURE1);
+        starTex = new PostProcessTexture(canvasWidth, canvasHeight,
+                GL3.GL_TEXTURE1);
         starTex.init(gl);
 
-        starHaloTex = new PostProcessTexture(canvasWidth, canvasHeight, GL3.GL_TEXTURE2);
+        starHaloTex = new PostProcessTexture(canvasWidth, canvasHeight,
+                GL3.GL_TEXTURE2);
         starHaloTex.init(gl);
 
-        gasTex = new PostProcessTexture(canvasWidth, canvasHeight, GL3.GL_TEXTURE3);
+        gasTex = new PostProcessTexture(canvasWidth, canvasHeight,
+                GL3.GL_TEXTURE3);
         gasTex.init(gl);
 
-        axesTex = new PostProcessTexture(canvasWidth, canvasHeight, GL3.GL_TEXTURE4);
+        axesTex = new PostProcessTexture(canvasWidth, canvasHeight,
+                GL3.GL_TEXTURE4);
         axesTex.init(gl);
 
-        starTex4k = new PostProcessTexture(Settings.getScreenshotScreenWidth(), Settings.getScreenshotScreenHeight(),
-                GL3.GL_TEXTURE5);
+        starTex4k = new PostProcessTexture(Settings.getScreenshotScreenWidth(),
+                Settings.getScreenshotScreenHeight(), GL3.GL_TEXTURE5);
         starTex4k.init(gl);
 
-        starHaloTex4k = new PostProcessTexture(Settings.getScreenshotScreenWidth(),
-                Settings.getScreenshotScreenHeight(), GL3.GL_TEXTURE6);
+        starHaloTex4k = new PostProcessTexture(Settings
+                .getScreenshotScreenWidth(), Settings
+                .getScreenshotScreenHeight(), GL3.GL_TEXTURE6);
         starHaloTex4k.init(gl);
 
-        gasTex4k = new PostProcessTexture(Settings.getScreenshotScreenWidth(), Settings.getScreenshotScreenHeight(),
-                GL3.GL_TEXTURE7);
+        gasTex4k = new PostProcessTexture(Settings.getScreenshotScreenWidth(),
+                Settings.getScreenshotScreenHeight(), GL3.GL_TEXTURE7);
         gasTex4k.init(gl);
 
-        axesTex4k = new PostProcessTexture(Settings.getScreenshotScreenWidth(), Settings.getScreenshotScreenHeight(),
-                GL3.GL_TEXTURE8);
+        axesTex4k = new PostProcessTexture(Settings.getScreenshotScreenWidth(),
+                Settings.getScreenshotScreenHeight(), GL3.GL_TEXTURE8);
         axesTex4k.init(gl);
 
-        intermediateTex = new PostProcessTexture(Settings.getScreenshotScreenWidth(),
-                Settings.getScreenshotScreenHeight(), GL3.GL_TEXTURE9);
+        intermediateTex = new PostProcessTexture(Settings
+                .getScreenshotScreenWidth(), Settings
+                .getScreenshotScreenHeight(), GL3.GL_TEXTURE9);
         intermediateTex.init(gl);
 
-        intermediateTex4k = new PostProcessTexture(Settings.getScreenshotScreenWidth(),
-                Settings.getScreenshotScreenHeight(), GL3.GL_TEXTURE10);
+        intermediateTex4k = new PostProcessTexture(Settings
+                .getScreenshotScreenWidth(), Settings
+                .getScreenshotScreenHeight(), GL3.GL_TEXTURE10);
         intermediateTex4k.init(gl);
 
         // if (offscreen_rendering) {
@@ -263,11 +292,13 @@ public class GLWindow implements GLEventListener {
         if (isTimerInitialized()) {
             try {
                 int status = drawable.getContext().makeCurrent();
-                if (status != GLContext.CONTEXT_CURRENT && status != GLContext.CONTEXT_CURRENT_NEW) {
+                if (status != GLContext.CONTEXT_CURRENT
+                        && status != GLContext.CONTEXT_CURRENT_NEW) {
                     System.err.println("Error swapping context to onscreen.");
                 }
             } catch (GLException e) {
-                System.err.println("Exception while swapping context to onscreen.");
+                System.err
+                        .println("Exception while swapping context to onscreen.");
                 e.printStackTrace();
             }
 
@@ -277,7 +308,8 @@ public class GLWindow implements GLEventListener {
             stars = timer.getStars();
             octreeRoot = timer.getOctreeRoot();
 
-            displayContext(stars, octreeRoot, starTex, starHaloTex, gasTex, axesTex);
+            displayContext(stars, octreeRoot, starTex, starHaloTex, gasTex,
+                    axesTex);
 
             try {
                 drawable.getContext().release();
@@ -287,8 +319,9 @@ public class GLWindow implements GLEventListener {
         }
     }
 
-    private void displayContext(ArrayList<Star> stars, OctreeNode octreeRoot, Texture2D starTex, Texture2D starHaloTex,
-            Texture2D gasTex, Texture2D axesTex) {
+    private void displayContext(ArrayList<Star> stars, OctreeNode octreeRoot,
+            Texture2D starTex, Texture2D starHaloTex, Texture2D gasTex,
+            Texture2D axesTex) {
         GL3 gl = GLContext.getCurrentGL().getGL3();
 
         stars.get(0).init(gl);
@@ -300,8 +333,10 @@ public class GLWindow implements GLEventListener {
 
         gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
 
-        Point4 eye = new Point4((float) (radius * Math.sin(ftheta) * Math.cos(phi)),
-                (float) (radius * Math.sin(ftheta) * Math.sin(phi)), (float) (radius * Math.cos(ftheta)), 1.0f);
+        Point4 eye = new Point4((float) (radius * Math.sin(ftheta) * Math
+                .cos(phi)),
+                (float) (radius * Math.sin(ftheta) * Math.sin(phi)),
+                (float) (radius * Math.cos(ftheta)), 1.0f);
         Point4 at = new Point4(0.0f, 0.0f, 0.0f, 1.0f);
         Vec4 up = new Vec4(0.0f, 1.0f, 0.0f, 0.0f);
 
@@ -318,16 +353,19 @@ public class GLWindow implements GLEventListener {
         loader.setUniformMatrix("PMatrix", p);
         loader.setUniformMatrix("SMatrix", MatrixMath.scale(1));
 
-        renderScene(gl, mv, stars, octreeRoot, starHaloTex, starTex, gasTex, axesTex);
+        renderScene(gl, mv, stars, octreeRoot, starHaloTex, starTex, gasTex,
+                axesTex);
 
         if (post_process) {
-            renderTexturesToScreen(gl, width, height, starHaloTex, starTex, gasTex, axesTex);
+            renderTexturesToScreen(gl, width, height, starHaloTex, starTex,
+                    gasTex, axesTex);
         }
 
     }
 
-    private void renderScene(GL3 gl, Mat4 mv, ArrayList<Star> stars, OctreeNode octreeRoot, Texture2D starHaloTex,
-            Texture2D starTex, Texture2D gasTex, Texture2D axesTex) {
+    private void renderScene(GL3 gl, Mat4 mv, ArrayList<Star> stars,
+            OctreeNode octreeRoot, Texture2D starHaloTex, Texture2D starTex,
+            Texture2D gasTex, Texture2D axesTex) {
         try {
             if (post_process) {
                 pplShader.setUniformVector("LightPos", lightPos);
@@ -345,8 +383,10 @@ public class GLWindow implements GLEventListener {
                 // Settings.getStarHaloBlurType(levelOfDetail),
                 // Settings.getStarHaloBlurSize(levelOfDetail));
 
-                blur(gl, starHaloTex, FSQ_blur, Settings.getStarHaloBlurPasses(levelOfDetail),
-                        Settings.getStarHaloBlurType(levelOfDetail), Settings.getStarHaloBlurSize(levelOfDetail));
+                blur(gl, starHaloTex, FSQ_blur, Settings
+                        .getStarHaloBlurPasses(levelOfDetail), Settings
+                        .getStarHaloBlurType(levelOfDetail), Settings
+                        .getStarHaloBlurSize(levelOfDetail));
             }
 
             gl.glDisable(GL3.GL_DEPTH_TEST);
@@ -356,11 +396,15 @@ public class GLWindow implements GLEventListener {
             if (post_process) {
                 renderToTexture(gl, gasTex);
                 if (snapshotting) {
-                    blur(gl, gasTex, FSQ_blur, Settings.getSnapshotGasBlurPasses(), Settings.getSnapshotGasBlurType(),
-                            Settings.getSnapshotGasBlurSize());
+                    blur(gl, gasTex, FSQ_blur, Settings
+                            .getSnapshotGasBlurPasses(), Settings
+                            .getSnapshotGasBlurType(), Settings
+                            .getSnapshotGasBlurSize());
                 } else {
-                    blur(gl, gasTex, FSQ_blur, Settings.getGasBlurPasses(levelOfDetail),
-                            Settings.getGasBlurType(levelOfDetail), Settings.getGasBlurSize(levelOfDetail));
+                    blur(gl, gasTex, FSQ_blur, Settings
+                            .getGasBlurPasses(levelOfDetail), Settings
+                            .getGasBlurType(levelOfDetail), Settings
+                            .getGasBlurSize(levelOfDetail));
                 }
             }
 
@@ -368,9 +412,11 @@ public class GLWindow implements GLEventListener {
 
             if (snapshotting) {
                 noiseTex.use(gl);
-                animatedTurbulenceShader.setUniform("Noise", noiseTex.getMultitexNumber());
+                animatedTurbulenceShader.setUniform("Noise", noiseTex
+                        .getMultitexNumber());
 
-                animatedTurbulenceShader.setUniformMatrix("SMatrix", MatrixMath.scale(1));
+                animatedTurbulenceShader.setUniformMatrix("SMatrix", MatrixMath
+                        .scale(1));
                 animatedTurbulenceShader.setUniform("StarDrawMode", 0);
 
                 pplShader.setUniformVector("LightPos", lightPos);
@@ -419,18 +465,27 @@ public class GLWindow implements GLEventListener {
         }
     }
 
-    private void renderTexturesToScreen(GL3 gl, int width, int height, Texture2D starHaloTex, Texture2D starTex,
-            Texture2D gasTex, Texture2D axesTex) {
-        postprocessShader.setUniform("axesTexture", axesTex.getMultitexNumber());
+    private void renderTexturesToScreen(GL3 gl, int width, int height,
+            Texture2D starHaloTex, Texture2D starTex, Texture2D gasTex,
+            Texture2D axesTex) {
+        postprocessShader
+                .setUniform("axesTexture", axesTex.getMultitexNumber());
         postprocessShader.setUniform("gasTexture", gasTex.getMultitexNumber());
-        postprocessShader.setUniform("starTexture", starTex.getMultitexNumber());
-        postprocessShader.setUniform("starHaloTexture", starHaloTex.getMultitexNumber());
+        postprocessShader
+                .setUniform("starTexture", starTex.getMultitexNumber());
+        postprocessShader.setUniform("starHaloTexture", starHaloTex
+                .getMultitexNumber());
 
-        postprocessShader.setUniform("starBrightness", Settings.getPostprocessingStarBrightness());
-        postprocessShader.setUniform("starHaloBrightness", Settings.getPostprocessingStarHaloBrightness());
-        postprocessShader.setUniform("gasBrightness", Settings.getPostprocessingGasBrightness());
-        postprocessShader.setUniform("axesBrightness", Settings.getPostprocessingAxesBrightness());
-        postprocessShader.setUniform("overallBrightness", Settings.getPostprocessingOverallBrightness());
+        postprocessShader.setUniform("starBrightness", Settings
+                .getPostprocessingStarBrightness());
+        postprocessShader.setUniform("starHaloBrightness", Settings
+                .getPostprocessingStarHaloBrightness());
+        postprocessShader.setUniform("gasBrightness", Settings
+                .getPostprocessingGasBrightness());
+        postprocessShader.setUniform("axesBrightness", Settings
+                .getPostprocessingAxesBrightness());
+        postprocessShader.setUniform("overallBrightness", Settings
+                .getPostprocessingOverallBrightness());
 
         postprocessShader.setUniformMatrix("PMatrix", new Mat4());
         postprocessShader.setUniform("scrWidth", width);
@@ -438,13 +493,14 @@ public class GLWindow implements GLEventListener {
 
         try {
             postprocessShader.use(gl);
-            FSQ_postprocess.draw(gl, postprocessShader, new Mat4());
+            FSQ_blur.draw(gl, postprocessShader, new Mat4());
         } catch (UninitializedException e) {
             e.printStackTrace();
         }
     }
 
-    private void blur(GL3 gl, Texture2D target, Model fullScreenQuad, int passes, int blurType, float blurSize) {
+    private void blur(GL3 gl, Texture2D target, Model fullScreenQuad,
+            int passes, int blurType, float blurSize) {
         gaussianBlurShader.setUniform("Texture", target.getMultitexNumber());
         gaussianBlurShader.setUniformMatrix("PMatrix", new Mat4());
         gaussianBlurShader.setUniform("blurType", blurType);
@@ -470,7 +526,8 @@ public class GLWindow implements GLEventListener {
         }
     }
 
-    private void starBlur(GL3 gl, Texture2D target, Model fullScreenQuad, int blurType, float blurSize) {
+    private void starBlur(GL3 gl, Texture2D target, Model fullScreenQuad,
+            int blurType, float blurSize) {
         gaussianBlurShader.setUniform("Texture", target.getMultitexNumber());
         gaussianBlurShader.setUniformMatrix("PMatrix", new Mat4());
 
@@ -480,11 +537,16 @@ public class GLWindow implements GLEventListener {
         try {
             gaussianBlurShader.use(gl);
 
-            gaussianBlurShader.setUniform("blurType", Settings.getStarShapeBlurType());
-            gaussianBlurShader.setUniform("Alpha", Settings.getStarShapeAlpha());
-            gaussianBlurShader.setUniform("Sigma", Settings.getStarShapeSigma());
-            gaussianBlurShader.setUniform("NumPixelsPerSide", Settings.getStarShapeBlurfilterSize());
-            gaussianBlurShader.setUniform("blurSize", Settings.getStarShapeBlurSize());
+            gaussianBlurShader.setUniform("blurType", Settings
+                    .getStarShapeBlurType());
+            gaussianBlurShader
+                    .setUniform("Alpha", Settings.getStarShapeAlpha());
+            gaussianBlurShader
+                    .setUniform("Sigma", Settings.getStarShapeSigma());
+            gaussianBlurShader.setUniform("NumPixelsPerSide", Settings
+                    .getStarShapeBlurfilterSize());
+            gaussianBlurShader.setUniform("blurSize", Settings
+                    .getStarShapeBlurSize());
 
             gaussianBlurShader.setUniform("blurDirection", 0);
             fullScreenQuad.draw(gl, new Mat4());
@@ -499,7 +561,8 @@ public class GLWindow implements GLEventListener {
     private void renderToTexture(GL3 gl, Texture2D target) {
         try {
             target.use(gl);
-            gl.glCopyTexImage2D(GL3.GL_TEXTURE_2D, 0, GL3.GL_RGBA, 0, 0, target.getWidth(), target.getHeight(), 0);
+            gl.glCopyTexImage2D(GL3.GL_TEXTURE_2D, 0, GL3.GL_RGBA, 0, 0, target
+                    .getWidth(), target.getHeight(), 0);
             gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
         } catch (UninitializedException e) {
             e.printStackTrace();
@@ -514,23 +577,29 @@ public class GLWindow implements GLEventListener {
         canvasWidth = w;
         canvasHeight = h;
 
-        starTex = new PostProcessTexture(canvasWidth, canvasHeight, GL3.GL_TEXTURE1);
+        starTex = new PostProcessTexture(canvasWidth, canvasHeight,
+                GL3.GL_TEXTURE1);
         starTex.init(gl);
 
-        starHaloTex = new PostProcessTexture(canvasWidth, canvasHeight, GL3.GL_TEXTURE2);
+        starHaloTex = new PostProcessTexture(canvasWidth, canvasHeight,
+                GL3.GL_TEXTURE2);
         starHaloTex.init(gl);
 
-        gasTex = new PostProcessTexture(canvasWidth, canvasHeight, GL3.GL_TEXTURE3);
+        gasTex = new PostProcessTexture(canvasWidth, canvasHeight,
+                GL3.GL_TEXTURE3);
         gasTex.init(gl);
 
-        axesTex = new PostProcessTexture(canvasWidth, canvasHeight, GL3.GL_TEXTURE4);
+        axesTex = new PostProcessTexture(canvasWidth, canvasHeight,
+                GL3.GL_TEXTURE4);
         axesTex.init(gl);
 
-        intermediateTex = new PostProcessTexture(canvasWidth, canvasHeight, GL3.GL_TEXTURE9);
+        intermediateTex = new PostProcessTexture(canvasWidth, canvasHeight,
+                GL3.GL_TEXTURE9);
         intermediateTex.init(gl);
     }
 
-    public void displayChanged(GLAutoDrawable drawable, boolean modeChanged, boolean deviceChanged) {
+    public void displayChanged(GLAutoDrawable drawable, boolean modeChanged,
+            boolean deviceChanged) {
     }
 
     @Override
@@ -662,11 +731,13 @@ public class GLWindow implements GLEventListener {
 
         try {
             int status = offScreenContext.makeCurrent();
-            if (status != GLContext.CONTEXT_CURRENT && status != GLContext.CONTEXT_CURRENT_NEW) {
+            if (status != GLContext.CONTEXT_CURRENT
+                    && status != GLContext.CONTEXT_CURRENT_NEW) {
                 System.err.println("Error swapping context to offscreen.");
             }
         } catch (GLException e) {
-            System.err.println("Exception while swapping context to offscreen.");
+            System.err
+                    .println("Exception while swapping context to offscreen.");
             e.printStackTrace();
         }
 
@@ -703,7 +774,8 @@ public class GLWindow implements GLEventListener {
         gasTex4k.init(gl);
         axesTex4k.init(gl);
 
-        displayContext(stars, octreeRoot, starTex4k, starHaloTex4k, gasTex4k, axesTex4k);
+        displayContext(stars, octreeRoot, starTex4k, starHaloTex4k, gasTex4k,
+                axesTex4k);
 
         Picture p = new Picture(width, height);
 

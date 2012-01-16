@@ -4,11 +4,9 @@ import ncsa.hdf.hdf5lib.H5;
 import ncsa.hdf.hdf5lib.HDF5Constants;
 import ncsa.hdf.hdf5lib.exceptions.HDF5LibraryException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class Hdf5File {
-    private static final Logger logger = LoggerFactory.getLogger(Hdf5File.class);
+    // private static final Logger logger =
+    // LoggerFactory.getLogger(Hdf5File.class);
     private final String fileName;
     private int file_id = -1;
 
@@ -19,9 +17,11 @@ public class Hdf5File {
     public void open(boolean readOnly) throws Hdf5FileOpenFailedException {
         try {
             if (readOnly) {
-                file_id = H5.H5Fopen(fileName, HDF5Constants.H5F_ACC_RDONLY, HDF5Constants.H5P_DEFAULT);
+                file_id = H5.H5Fopen(fileName, HDF5Constants.H5F_ACC_RDONLY,
+                        HDF5Constants.H5P_DEFAULT);
             } else {
-                file_id = H5.H5Fopen(fileName, HDF5Constants.H5F_ACC_RDWR, HDF5Constants.H5P_DEFAULT);
+                file_id = H5.H5Fopen(fileName, HDF5Constants.H5F_ACC_RDWR,
+                        HDF5Constants.H5P_DEFAULT);
             }
         } catch (HDF5LibraryException e) {
             throw new Hdf5FileOpenFailedException(e.getMessage());
@@ -32,8 +32,8 @@ public class Hdf5File {
 
     public void create() throws Hdf5FileCreationFailedException {
         try {
-            file_id = H5.H5Fcreate(fileName, HDF5Constants.H5F_ACC_TRUNC, HDF5Constants.H5P_DEFAULT,
-                    HDF5Constants.H5P_DEFAULT);
+            file_id = H5.H5Fcreate(fileName, HDF5Constants.H5F_ACC_TRUNC,
+                    HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
         } catch (HDF5LibraryException e) {
             throw new Hdf5FileCreationFailedException(e.getMessage());
         } catch (NullPointerException e) {
