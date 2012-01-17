@@ -1,0 +1,11 @@
+varying in vec4 MCvertex;
+
+varying out VPosition;
+
+uniform mat4 MVPMatrix;
+uniform mat4 MVMatrix;
+
+void main() {
+    gl_Position = MVPMatrix * MVMatrix * MCvertex;
+    vPosition = MCvertex;
+}

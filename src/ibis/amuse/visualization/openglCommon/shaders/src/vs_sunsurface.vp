@@ -1,0 +1,16 @@
+uniform mat4 MVMatrix;
+uniform mat4 PMatrix;
+uniform mat4 SMatrix;
+uniform mat3 NormalMatrix;
+
+varying in vec4 MCvertex;
+varying in vec3 MCnormal;
+varying in vec3 MCtexCoord;
+varying out vec3 MCposition;
+
+void main()
+{
+    MCposition      = MCtexCoord; 
+    
+    gl_Position     = PMatrix * MVMatrix * SMatrix * MCvertex;
+}

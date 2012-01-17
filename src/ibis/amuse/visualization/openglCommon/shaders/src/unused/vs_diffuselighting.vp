@@ -1,0 +1,26 @@
+varying in   vec4 MCvertex;
+varying in   vec4 MCcolor;
+varying in   vec3 MCnormal;
+
+varying out vec4 color;
+varying out float LightIntensity;
+varying out vec3  MCposition;
+
+uniform mat4 MVPMatrix;
+uniform mat4 MVMatrix;
+uniform mat3 NormalMatrix;
+
+uniform vec4  LightPos;
+uniform float Scale;
+
+void main()
+{
+    vec3 ECposition = vec3(MVMatrix * MCvertex);
+    MCposition      = vec3(MCvertex) * Scale;
+    vec3 tnorm      = normalize(vec3 (NormalMatrix * MCnormal));
+    LightIntensity  = dot(normalize(LightPos - ECposition), tnorm);
+    LightIntensity *= 1.5;
+    
+    gl_Position     = MVPMatrix * MVMatrix * MCvertex;
+    color = MCcolor;
+}

@@ -17,10 +17,10 @@ goto setupArgs
 :doneStart
 
 if "%PROCESSOR_ARCHITECTURE%"=="AMD64" goto 64BIT_ARCHITECTURE
-java -Xmx500m -splash:images\ibis-splash.png -classpath "%CLASSPATH%;%DEPLOY_HOME%;%DEPLOY_HOME%\lib\*" -Dibis.deploy.home="%DEPLOY_HOME%" -Djava.library.path="%DEPLOY_HOME%"\lib\natives amuseVisualization.AmuseVisualization %DEPLOY_ARGS%
+java -Xmx500m -splash:images\ibis-splash.png -classpath "%CLASSPATH%;%DEPLOY_HOME%;%DEPLOY_HOME%\lib\*" -Dibis.deploy.home="%DEPLOY_HOME%" -Djava.library.path="%DEPLOY_HOME%"\lib\natives ibis.amuse.visualization.AmuseVisualization %DEPLOY_ARGS%
 goto END_ARCHITECTURE
 :64BIT_ARCHITECTURE
-java -Xmx500m -splash:images\ibis-splash.png -classpath "%CLASSPATH%;%DEPLOY_HOME%;%DEPLOY_HOME%\lib\*" -Dibis.deploy.home="%DEPLOY_HOME%" -Djava.library.path="%DEPLOY_HOME%"\lib\natives amuseVisualization.AmuseVisualization %DEPLOY_ARGS%
+java -Xmx500m -splash:images\ibis-splash.png -classpath "%CLASSPATH%;%DEPLOY_HOME%;%DEPLOY_HOME%\lib\*" -Dibis.deploy.home="%DEPLOY_HOME%" -Djava.library.path="%DEPLOY_HOME%"\lib\natives ibis.amuse.visualization.AmuseVisualization %DEPLOY_ARGS%
 :END_ARCHITECTURE
 
 if "%OS%"=="Windows_NT" @endlocal

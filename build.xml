@@ -1,6 +1,6 @@
-<project name="amuseVisualization" default="build" basedir=".">
+<project name="ibis.amuse.visualization" default="build" basedir=".">
     <description>
-	Build file for the deploy project
+	Build file for the amuse visualization project
     </description>	
 	 
 	<condition property="build.on.linux32">
@@ -70,7 +70,7 @@
     <property name="version" value="" />
 	
     <property name="dist-name" value="${ant.project.name}${version}" />
-    <property name="lib-jar" value="deploy${version}.jar" />
+    <property name="lib-jar" value="amuseVisualization${version}.jar" />
 
     <!-- Import environment properties -->
 	<property name="jogl" location="external/jogl" />
@@ -177,11 +177,11 @@
         </javac>
 
         <!-- Create jar file -->
-        <jar destfile="lib/${lib-jar}" basedir="tmp" includes="amuseVisualization/**/*.class">
+        <jar destfile="lib/${lib-jar}" basedir="tmp" includes="ibis/amuse/visualization/**/*.class">
         </jar>
     	
         <!-- Generate javadoc -->
-        <javadoc destdir="javadoc" access="public" classpathref="default.classpath" packagenames="amuseVisualization" sourcepath="src" windowtitle="Ibis ${ant.project.name} Documentation" doctitle="Ibis ${ant.project.name} Documentation" bottom="The Ibis project">
+        <javadoc destdir="javadoc" access="public" classpathref="default.classpath" packagenames="ibis.amuse.visualization" sourcepath="src" windowtitle="Ibis ${ant.project.name} Documentation" doctitle="Ibis ${ant.project.name} Documentation" bottom="The Ibis project">
         </javadoc>
 
         <delete dir="tmp" />
