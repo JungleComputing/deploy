@@ -34,8 +34,7 @@ public class Deploy {
     /**
      * Files needed by ibis-deploy. Searched for in ibis deploy home dir
      */
-    public static final String[] REQUIRED_FILES = { "lib-server",
-            "log4j.properties" };
+    public static final String[] REQUIRED_FILES = { "lib-server", "log4j.properties" };
 
     private static final Logger logger = LoggerFactory.getLogger(Deploy.class);
 
@@ -52,8 +51,10 @@ public class Deploy {
     private boolean verbose;
 
     private boolean keepSandboxes;
-    
+
     private final boolean monitoringEnabled;
+    
+    private final boolean outputOnConsole;
 
     // submitted jobs
     private List<Job> jobs;
@@ -76,8 +77,8 @@ public class Deploy {
 
         for (String fileName : REQUIRED_FILES) {
             if (!new File(home, fileName).exists()) {
-                throw new Exception("required file/dir \"" + fileName
-                        + "\" not found in ibis deploy home (" + home + ")");
+                throw new Exception("required file/dir \"" + fileName + "\" not found in ibis deploy home (" + home
+                        + ")");
             }
         }
 
@@ -130,12 +131,11 @@ public class Deploy {
      *             cannot be started.
      * 
      */
-    public Deploy(File home, boolean verbose, boolean keepSandboxes, int port,
-            Cluster serverCluster, StateListener listener, boolean blocking)
-            throws Exception {
-	this(home, verbose, keepSandboxes, false, port, serverCluster, listener, blocking);
+    public Deploy(File home, boolean verbose, boolean keepSandboxes, int port, Cluster serverCluster,
+            StateListener listener, boolean blocking) throws Exception {
+        this(home, verbose, keepSandboxes, false, false, port, serverCluster, listener, blocking);
     }
-    
+
     /**
      * Create a new deployment interface. Also deploys the server, either
      * locally or remotely.
@@ -150,7 +150,8 @@ public class Deploy {
      * @param keepSandboxes
      *            If true, will keep sandboxes of servers and jobs
      * @param monitoringEnabled
-     * 		  If true, set collecting system properties when jobs are started.
+     *            If true, set collecting system properties when jobs are
+     *            started.
      * @param port
      *            port used to bind local hub/server to. Defaults to
      *            automatically allocated free port.
@@ -167,15 +168,54 @@ public class Deploy {
      * 
      */
     public Deploy(File home, boolean verbose, boolean keepSandboxes, boolean monitoringEnabled, int port,
-            Cluster serverCluster, StateListener listener, boolean blocking)
+            Cluster serverCluster, StateListener listener, boolean blocking) throws Exception {
+        this(home, verbose, keepSandboxes, false, false, port, serverCluster, listener, blocking);
+    }
+
+    /**
+     * Create a new deployment interface. Also deploys the server, either
+     * locally or remotely.
+     * 
+     * @param home
+     *            "home" directory of ibis-deploy. If null, the default location
+     *            is used from the "ibis.deploy.home" system property. If this
+     *            property is unspecified, final default value is the current
+     *            working directory.
+     * @param verbose
+     *            If true, start Ibis-Deploy in verbose mode
+     * @param keepSandboxes
+     *            If true, will keep sandboxes of servers and jobs
+     * @param monitoringEnabled
+     *            If true, set collecting system properties when jobs are
+     *            started.
+     * @param outputOnConsole
+     *            If true, output for jobs is printed to stdout and stderr
+     *            instead of files
+     * @param port
+     *            port used to bind local hub/server to. Defaults to
+     *            automatically allocated free port.
+     * @param serverCluster
+     *            cluster where the server should be started, or null for a
+     *            server embedded in this JVM.
+     * @param listener
+     *            callback object for status of server
+     * @param blocking
+     *            if true, will block until the server is running
+     * @throws Exception
+     *             if required files cannot be found in home, or the server
+     *             cannot be started.
+     * 
+     */
+    public Deploy(File home, boolean verbose, boolean keepSandboxes, boolean monitoringEnabled,
+            boolean outputOnConsole, int port, Cluster serverCluster, StateListener listener, boolean blocking)
             throws Exception {
-    
-    
+
         logger.debug("Initializing deploy");
 
         this.verbose = verbose;
         this.keepSandboxes = keepSandboxes;
         this.monitoringEnabled = monitoringEnabled;
+        this.outputOnConsole = outputOnConsole;
 
         jobs = new ArrayList<Job>();
         hubs = new HashMap<String, Server>();
@@ -189,10 +229,9 @@ public class Deploy {
             remoteServer = null;
         } else {
             localServer = new LocalServer(false, verbose, port);
-            remoteServer = new RemoteServer(serverCluster, false, localServer,
-                    this.home, verbose,
+            remoteServer = new RemoteServer(serverCluster, false, localServer, this.home, verbose,
 
-                    listener, keepSandboxes);
+            listener, keepSandboxes);
 
             hubs.put(serverCluster.getName(), remoteServer);
 
@@ -204,12 +243,12 @@ public class Deploy {
         // print pool size statistics
         poolSizePrinter = new PoolSizePrinter(this);
 
-        logger.info("Ibis Deploy initialized, root hub address is "
-                + localServer.getAddress());
+        logger.info("Ibis Deploy initialized, root hub address is " + localServer.getAddress());
     }
 
     /**
      * Returns whether the collecting flag is set.
+     * 
      * @return the collecting flag.
      */
     public boolean isMonitoringEnabled() {
@@ -299,18 +338,14 @@ public class Deploy {
             return remoteServer.getAddress();
         }
     }
-  
-    public synchronized Job submitJob(JobDescription description,
-            ApplicationSet applicationSet, Grid grid,
-            StateListener jobListener, StateListener hubListener)
-            throws Exception {
-  
-        Application application = applicationSet.getApplication(description
-                .getApplication().getName());
+
+    public synchronized Job submitJob(JobDescription description, ApplicationSet applicationSet, Grid grid,
+            StateListener jobListener, StateListener hubListener) throws Exception {
+
+        Application application = applicationSet.getApplication(description.getApplication().getName());
         Cluster cluster = grid.getCluster(description.getCluster().getName());
 
-        return submitJob(description, application, cluster, jobListener,
-                hubListener);
+        return submitJob(description, application, cluster, jobListener, hubListener);
     }
 
     /**
@@ -333,39 +368,31 @@ public class Deploy {
      * @return the resulting job
      * @throws Exception
      */
-    public synchronized Job submitJob(JobDescription description,
-            Application application, Cluster cluster,
-            StateListener jobListener, StateListener hubListener)
-            throws Exception {
+    public synchronized Job submitJob(JobDescription description, Application application, Cluster cluster,
+            StateListener jobListener, StateListener hubListener) throws Exception {
         if (remoteServer != null && !remoteServer.isRunning()) {
-            throw new Exception("Cannot submit job (yet), server \""
-                    + remoteServer + "\" not running");
+            throw new Exception("Cannot submit job (yet), server \"" + remoteServer + "\" not running");
         }
 
         // resolve given description into single "independent" description
-        JobDescription resolvedDescription = description.resolve(application,
-                cluster);
+        JobDescription resolvedDescription = description.resolve(application, cluster);
 
         if (verbose) {
-            logger.info("Submitting new job:\n"
-                    + resolvedDescription.toPrintString());
+            logger.info("Submitting new job:\n" + resolvedDescription.toPrintString());
         } else {
-            logger.debug("Submitting new job:\n"
-                    + resolvedDescription.toPrintString());
+            logger.debug("Submitting new job:\n" + resolvedDescription.toPrintString());
         }
 
         resolvedDescription.checkSettings();
 
         Server hub = null;
         if (hubPolicy == HubPolicy.PER_CLUSTER) {
-            hub = getClusterHub(resolvedDescription.getCluster(), false,
-                    hubListener);
+            hub = getClusterHub(resolvedDescription.getCluster(), false, hubListener);
         }
 
         // start job
-        Job job = new Job(resolvedDescription, hubPolicy, hub, keepSandboxes,
-                jobListener, hubListener, localServer, verbose, home,
-                getServerAddress(), this, monitoringEnabled);
+        Job job = new Job(resolvedDescription, hubPolicy, hub, keepSandboxes, outputOnConsole, jobListener, hubListener, localServer,
+                verbose, home, getServerAddress(), this, monitoringEnabled);
 
         jobs.add(job);
 
@@ -386,8 +413,8 @@ public class Deploy {
      * @throws Exception
      *             if the hub cannot be started
      */
-    public synchronized Server getClusterHub(Cluster cluster,
-            boolean waitUntilRunning, StateListener listener) throws Exception {
+    public synchronized Server getClusterHub(Cluster cluster, boolean waitUntilRunning, StateListener listener)
+            throws Exception {
         if (localServer == null) {
             throw new Exception("Ibis Deploy not initialized, cannot get hub");
         }
@@ -409,8 +436,7 @@ public class Deploy {
 
         if (result == null || result.isFinished()) {
             // new server needed
-            result = new RemoteServer(cluster, true, localServer, home,
-                    verbose, listener, keepSandboxes);
+            result = new RemoteServer(cluster, true, localServer, home, verbose, listener, keepSandboxes);
             hubs.put(clusterName, result);
         } else {
             result.addListener(listener);
@@ -425,14 +451,12 @@ public class Deploy {
 
     public synchronized RegistryServiceInterface getRegistry() throws Exception {
         if (localServer == null) {
-            throw new Exception(
-                    "Ibis Deploy not initialized, cannot monitor server");
+            throw new Exception("Ibis Deploy not initialized, cannot monitor server");
         }
 
         if (remoteServer != null) {
             if (!remoteServer.isRunning()) {
-                throw new Exception("Cannot monitor server \"" + remoteServer
-                        + "\" not running");
+                throw new Exception("Cannot monitor server \"" + remoteServer + "\" not running");
             }
             return remoteServer.getRegistryService();
         }
@@ -497,9 +521,8 @@ public class Deploy {
     }
 
     /**
-     * Ends all jobs and closes all open connections.
-     * Parameter indicates whether a message is to be printed (yes when
-     * using GUI, no when CLI).
+     * Ends all jobs and closes all open connections. Parameter indicates
+     * whether a message is to be printed (yes when using GUI, no when CLI).
      */
     public synchronized void end() {
         logger.info("ending ibis-deploy engine");
@@ -507,7 +530,7 @@ public class Deploy {
         if (poolSizePrinter != null) {
             poolSizePrinter.end();
         }
-        
+
         if (jobs.size() > 0 || hubs.size() > 0 || remoteServer != null || localServer != null) {
             logger.info("Killing jobs and/or servers, this may take some time ...");
         }
@@ -516,7 +539,7 @@ public class Deploy {
             logger.info("killing job " + job);
             (new Killer(job)).start();
         }
-        
+
         Killer.waitForKillers();
 
         for (Server hub : hubs.values()) {
@@ -532,8 +555,8 @@ public class Deploy {
         if (localServer != null) {
             logger.info("killing Server " + localServer);
             (new Killer(localServer)).start();
-        }        
-        
+        }
+
         Killer.waitForKillers();
 
         logger.info("ending GAT");
@@ -541,51 +564,51 @@ public class Deploy {
         GAT.end();
         logger.info("ending ibis-deploy engine DONE :)");
     }
-    
-    private static class Killer extends Thread {
-	
-	static int count = 0;
 
-	Job job = null;
-	Server server = null;
-	
-	public Killer(Job job) {
-	    synchronized(Killer.class) {
-		count++;
-	    }
-	    this.job = job;
-	}
-	
-	public Killer(Server server) {
-	    synchronized(Killer.class) {
-		count++;
-	    }
-	    this.server = server;
-	}
-	
-	public void run() {
-	    if (job != null) {
-		job.kill();
-	    } else if (server != null) {
-		server.kill();
-	    }
-	    synchronized(Killer.class) {
-		count--;
-		if (count == 0) {
-		    Killer.class.notifyAll();
-		}
-	    }
-	}
-	
-	public synchronized static void waitForKillers() {
-	    while (count != 0) {
-		try {
-		    Killer.class.wait();
-		} catch(InterruptedException e) {
-		    // ignored
-		}
-	    }
-	}
+    private static class Killer extends Thread {
+
+        static int count = 0;
+
+        Job job = null;
+        Server server = null;
+
+        public Killer(Job job) {
+            synchronized (Killer.class) {
+                count++;
+            }
+            this.job = job;
+        }
+
+        public Killer(Server server) {
+            synchronized (Killer.class) {
+                count++;
+            }
+            this.server = server;
+        }
+
+        public void run() {
+            if (job != null) {
+                job.kill();
+            } else if (server != null) {
+                server.kill();
+            }
+            synchronized (Killer.class) {
+                count--;
+                if (count == 0) {
+                    Killer.class.notifyAll();
+                }
+            }
+        }
+
+        public synchronized static void waitForKillers() {
+            while (count != 0) {
+                try {
+                    Killer.class.wait();
+                } catch (InterruptedException e) {
+                    // ignored
+                }
+            }
+        }
     }
 
 }
