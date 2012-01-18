@@ -113,20 +113,20 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
 				setText(state.toString());
 			}
 		} else if (columnName
-				.equalsIgnoreCase(JobTableModel.CLUSTER_COLUMN_NAME)) {
+				.equalsIgnoreCase(JobTableModel.RESOURCE_COLUMN_NAME)) {
 			setOpaque(true);
 
 			JobDescription jobDescription = model.getJobDescription(table
 					.convertRowIndexToModel(row));
 
 			if (isSelected) {
-				setBackground(jobDescription.getCluster().getColor());
+				setBackground(jobDescription.getResource().getColor());
 			} else {
-				setBackground(Colors.getLightColor(jobDescription.getCluster()
+				setBackground(Colors.getLightColor(jobDescription.getResource()
 						.getColor()));
 			}
 
-			setText(jobDescription.getCluster().getName());
+			setText(jobDescription.getResource().getName());
 		} else if (columnName
 				.equalsIgnoreCase(JobTableModel.MIDDLEWARE_COLUMN_NAME)) {
 			String adaptor = (String) value;

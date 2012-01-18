@@ -1,10 +1,10 @@
 package ibis.deploy.cli;
 
 import ibis.deploy.ApplicationSet;
-import ibis.deploy.Cluster;
+import ibis.deploy.Resource;
 import ibis.deploy.Deploy;
 import ibis.deploy.Experiment;
-import ibis.deploy.Grid;
+import ibis.deploy.Jungle;
 import ibis.deploy.Job;
 import ibis.deploy.JobDescription;
 import ibis.deploy.Workspace;
@@ -28,7 +28,7 @@ public class CommandLine {
 			.getLogger(CommandLine.class);
 
 	// run a single experiment
-	private static void runExperiment(Experiment experiment, Grid grid,
+	private static void runExperiment(Experiment experiment, Jungle jungle,
 			ApplicationSet applications, Deploy deploy, boolean verbose)
 			throws Exception {
 		logger.info("Running experiment \"" + experiment.getName() + "\"");
@@ -37,7 +37,7 @@ public class CommandLine {
 		// start jobs
 		List<Job> jobs = new ArrayList<Job>();
 		for (JobDescription jobDescription : experiment.getJobs()) {
-			Job job = deploy.submitJob(jobDescription, applications, grid,
+			Job job = deploy.submitJob(jobDescription, applications, jungle,
 					null, null);
 			jobs.add(job);
 		}
@@ -51,7 +51,7 @@ public class CommandLine {
 	private static void printUsage() {
 		System.err.println("Usage: ibis-deploy-cli [OPTIONS] WORKSPACE_DIR");
 		System.err.println("Options:");
-		System.err.println("-s CLUSTER\tRun server on specified cluster");
+		System.err.println("-s RESOURCE\tRun server on specified resource");
 		System.err.println("-v\t\tVerbose mode");
 		System.err.println("-k\t\tKeep sandboxes");
 		System.err
@@ -67,7 +67,7 @@ public class CommandLine {
 		File workspaceDir = Workspace.DEFAULT_LOCATION;
 		boolean verbose = false;
 		boolean keepSandboxes = false;
-		String serverCluster = null;
+		String serverResource = null;
 		int port = 0;
 		Workspace workspace = null;
 
@@ -81,7 +81,7 @@ public class CommandLine {
 			for (int i = 0; i < arguments.length; i++) {
 				if (arguments[i].equals("-s")) {
 					i++;
-					serverCluster = arguments[i];
+					serverResource = arguments[i];
 				} else if (arguments[i].equals("-v")) {
 					verbose = true;
 				} else if (arguments[i].equals("-k")) {
@@ -123,33 +123,33 @@ public class CommandLine {
 				System.exit(1);
 			}
 
-			Cluster cluster = null;
-			if (serverCluster == null) {
+			Resource resource = null;
+			if (serverResource == null) {
 				logger.info("Initializing Command Line Ibis Deploy"
 						+ ", using built-in server");
-				cluster = null;
+				resource = null;
 			} else {
 				logger
 						.info("Initializing Command Line Ibis Deploy"
-								+ ", using server on cluster \""
-								+ serverCluster + "\"");
+								+ ", using server on resource \""
+								+ serverResource + "\"");
 
-				cluster = workspace.getGrid().getCluster(serverCluster);
+				resource = workspace.getJungle().getResource(serverResource);
 
-				if (cluster == null) {
-					System.err.println("ERROR: Server cluster " + serverCluster
-							+ " not found in grid");
+				if (resource == null) {
+					System.err.println("ERROR: Server resource " + serverResource
+							+ " not found in jungle");
 					System.exit(1);
 				}
 			}
 
 			Deploy deploy = new Deploy(null, verbose, keepSandboxes, port,
-					cluster, null, true);
+					resource, null, true);
 
 			// run experiments
 			for (Experiment experiment : workspace.getExperiments()) {
 
-				runExperiment(experiment, workspace.getGrid(), workspace
+				runExperiment(experiment, workspace.getJungle(), workspace
 						.getApplications(), deploy, verbose);
 			}
 

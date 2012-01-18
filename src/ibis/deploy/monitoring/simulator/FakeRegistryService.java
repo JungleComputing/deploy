@@ -24,7 +24,7 @@ public class FakeRegistryService implements ibis.ipl.server.RegistryServiceInter
 	private HashMap<IbisIdentifier, State> ibises;
 	private HashMap<IbisIdentifier, Integer> failingIbises;
 
-	public FakeRegistryService(int numpools, int numcountries, int numuniversities, int numclusters, int numibises) {
+	public FakeRegistryService(int numpools, int numcountries, int numuniversities, int numresources, int numibises) {
 		pools = new HashMap<String, IbisIdentifier[]>();
 		ibises = new HashMap<IbisIdentifier, State>();
 		failingIbises = new HashMap<IbisIdentifier, Integer>();
@@ -39,11 +39,11 @@ public class FakeRegistryService implements ibis.ipl.server.RegistryServiceInter
 				for (int u=0; u<numuniversities; u++) {
 					String universityName = "university"+u;
 
-					for (int s=0; s<numclusters; s++) {
-						String clusterName = "cluster"+s;
+					for (int s=0; s<numresources; s++) {
+						String resourceName = "resource"+s;
 
 						for (int i=0; i<numibises; i++) {
-							IbisIdentifier fakeibis = new FakeIbisIdentifier(i+"_"+poolName+"@"+clusterName+"@"+universityName+"@"+countryName, poolName);
+							IbisIdentifier fakeibis = new FakeIbisIdentifier(i+"_"+poolName+"@"+resourceName+"@"+universityName+"@"+countryName, poolName);
 							poolIbises.add(fakeibis);
 							ibises.put(fakeibis, State.ALIVE);
 						}
@@ -59,7 +59,7 @@ public class FakeRegistryService implements ibis.ipl.server.RegistryServiceInter
 		if (logger.isInfoEnabled()) {
 			System.out.println("FakeRegistry has created "+ibises.size()+" ibises.");
 			logger.info("FakeRegistry has created "+ibises.size()+" ibises.");			
-			logger.info("in "+numcountries+" countries, "+numuniversities+" universities and "+numclusters+" clusters" );
+			logger.info("in "+numcountries+" countries, "+numuniversities+" universities and "+numresources+" resources" );
 			logger.info("and divided among "+pools.size()+" pools.");
 		}
 		

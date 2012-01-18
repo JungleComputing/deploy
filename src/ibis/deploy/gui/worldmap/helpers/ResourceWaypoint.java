@@ -1,6 +1,6 @@
 package ibis.deploy.gui.worldmap.helpers;
 
-import ibis.deploy.Cluster;
+import ibis.deploy.Resource;
 
 import java.awt.Dimension;
 import java.awt.geom.Point2D;
@@ -8,9 +8,9 @@ import java.awt.geom.Point2D;
 import org.jdesktop.swingx.JXMapViewer;
 import org.jdesktop.swingx.mapviewer.Waypoint;
 
-public class ClusterWaypoint extends Waypoint {
+public class ResourceWaypoint extends Waypoint {
 
-    private Cluster cluster;
+    private Resource resource;
 
     private int resourceCount;
 
@@ -20,27 +20,27 @@ public class ClusterWaypoint extends Waypoint {
 
     public boolean show = true;
 
-    public ClusterWaypoint(Cluster cluster, boolean selected) {
-        super(cluster.getLatitude(), cluster.getLongitude());
+    public ResourceWaypoint(Resource resource, boolean selected) {
+        super(resource.getLatitude(), resource.getLongitude());
         this.selected = selected;
-        this.cluster = cluster;
+        this.resource = resource;
         this.resourceCount = 1;
     }
     
-    int getClusterNodes() {
+    int getResourceNodes() {
         return 100;
     }
 
     /**
-     * Radius of a cluster based on the number of nodes. Number of nodes
-     * represents the AREA of the cluster, so we convert to the radius.
+     * Radius of a resource based on the number of nodes. Number of nodes
+     * represents the AREA of the resource, so we convert to the radius.
      * 
      * @return the radius
      */
     public int getRadius() {
 
 
-        return (int) Math.sqrt(50 + (getClusterNodes() * 13) / Math.PI);
+        return (int) Math.sqrt(50 + (getResourceNodes() * 13) / Math.PI);
     }
 
     public void resetOffset() {
@@ -62,7 +62,7 @@ public class ClusterWaypoint extends Waypoint {
     }
 
     public void increaseResourceCount() {
-        resourceCount = Math.min(resourceCount + 1, getClusterNodes());
+        resourceCount = Math.min(resourceCount + 1, getResourceNodes());
     }
 
     public void setResourceCount(int resourceCount) {
@@ -74,15 +74,15 @@ public class ClusterWaypoint extends Waypoint {
     }
 
     public String getName() {
-        return cluster.getName();
+        return resource.getName();
     }
 
     public boolean isSelected() {
         return selected;
     }
 
-    public Cluster getCluster() {
-        return cluster;
+    public Resource getResource() {
+        return resource;
     }
 
     public void setSelected(boolean selected) {
@@ -90,9 +90,9 @@ public class ClusterWaypoint extends Waypoint {
     }
 
     /**
-     * Computes the distance to a second cluster, in pixels
+     * Computes the distance to a second resource, in pixels
      */
-    public double computeDistance(JXMapViewer map, ClusterWaypoint cwp) {
+    public double computeDistance(JXMapViewer map, ResourceWaypoint cwp) {
         Point2D p1 = map.convertGeoPositionToPoint(getPosition());
         p1.setLocation(p1.getX() + getOffset().width, p1.getY()
                 + getOffset().height);

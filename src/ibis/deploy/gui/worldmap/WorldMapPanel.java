@@ -1,10 +1,10 @@
 package ibis.deploy.gui.worldmap;
 
-import ibis.deploy.Cluster;
+import ibis.deploy.Resource;
 import ibis.deploy.gui.GUI;
 import ibis.deploy.gui.WorkSpaceChangedListener;
-import ibis.deploy.gui.experiment.composer.ClusterSelectionPanel;
-import ibis.deploy.gui.worldmap.helpers.ClusterWaypoint;
+import ibis.deploy.gui.experiment.composer.ResourceSelectionPanel;
+import ibis.deploy.gui.worldmap.helpers.ResourceWaypoint;
 import ibis.deploy.gui.worldmap.helpers.WorldMap;
 
 import java.awt.event.MouseEvent;
@@ -28,22 +28,22 @@ public class WorldMapPanel extends JPanel {
 
     // private static final int INITIAL_MAP_ZOOM = 15;
 
-    private ClusterSelectionPanel clusterSelectionPanel;
+    private ResourceSelectionPanel resourceSelectionPanel;
 
-    private ClusterWaypoint selectedWaypoint = null;
+    private ResourceWaypoint selectedWaypoint = null;
 
     private Set<Waypoint> waypoints = new HashSet<Waypoint>();
 
-    // if true, only yes/no selection is supported for each cluster, instead of
+    // if true, only yes/no selection is supported for each resource, instead of
     // the "count" normally available
     private final boolean booleanSelect;
 
     public WorldMapPanel(final GUI gui, final int zoom, boolean booleanSelect) {
         this.booleanSelect = booleanSelect;
 
-        // create cluster waypoints
-        for (Cluster cluster : gui.getGrid().getClusters()) {
-            waypoints.add(new ClusterWaypoint(cluster, false));
+        // create resource waypoints
+        for (Resource resource : gui.getJungle().getResources()) {
+            waypoints.add(new ResourceWaypoint(resource, false));
 
         }
 
@@ -51,17 +51,17 @@ public class WorldMapPanel extends JPanel {
         final WorldMap worldMap = new WorldMap(this, zoom);
         add(worldMap);
 
-        gui.addGridWorkSpaceListener(new WorkSpaceChangedListener() {
+        gui.addJungleWorkSpaceListener(new WorkSpaceChangedListener() {
             public void workSpaceChanged(GUI gui) {
                 waypoints.clear();
-                for (Cluster cluster : gui.getGrid().getClusters()) {
-                    waypoints.add(new ClusterWaypoint(cluster, false));
+                for (Resource resource : gui.getJungle().getResources()) {
+                    waypoints.add(new ResourceWaypoint(resource, false));
                 }
 
                 worldMap.updateWaypoints();
 
                 // worldMap.setZoom(zoom);
-                worldMap.setZoomRelativeToClusters();
+                worldMap.setZoomRelativeToResources();
 
                 selectedWaypoint = null;
                 worldMap.getMainMap().repaint();
@@ -120,28 +120,28 @@ public class WorldMapPanel extends JPanel {
         repaint();
     }
 
-    public void setSelected(Cluster selectedCluster) {
+    public void setSelected(Resource selectedResource) {
         for (Waypoint waypoint : waypoints) {
-            if (((ClusterWaypoint) waypoint).getCluster() == selectedCluster) {
-                this.selectedWaypoint = (ClusterWaypoint) waypoint;
-                ((ClusterWaypoint) waypoint).setSelected(true);
+            if (((ResourceWaypoint) waypoint).getResource() == selectedResource) {
+                this.selectedWaypoint = (ResourceWaypoint) waypoint;
+                ((ResourceWaypoint) waypoint).setSelected(true);
             } else {
-                ((ClusterWaypoint) waypoint).setSelected(false);
+                ((ResourceWaypoint) waypoint).setSelected(false);
             }
         }
         repaint();
     }
 
-    public void registerClusterSelectionPanel(
-            ClusterSelectionPanel clusterSelectionPanel) {
-        this.clusterSelectionPanel = clusterSelectionPanel;
+    public void registerResourceSelectionPanel(
+            ResourceSelectionPanel resourceSelectionPanel) {
+        this.resourceSelectionPanel = resourceSelectionPanel;
     }
 
-    public Cluster getSelectedCluster() {
+    public Resource getSelectedResource() {
         if (selectedWaypoint == null) {
             return null;
         }
-        return selectedWaypoint.getCluster();
+        return selectedWaypoint.getResource();
     }
 
     public int getResourceCount() {
@@ -160,8 +160,8 @@ public class WorldMapPanel extends JPanel {
         return waypoints;
     }
 
-    public ClusterSelectionPanel getClusterSelectionPanel() {
-        return clusterSelectionPanel;
+    public ResourceSelectionPanel getResourceSelectionPanel() {
+        return resourceSelectionPanel;
     }
 
 }

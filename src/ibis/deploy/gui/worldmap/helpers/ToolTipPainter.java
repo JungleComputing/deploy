@@ -38,9 +38,9 @@ public class ToolTipPainter<T extends JXMapViewer> implements
         int width, height;
         double newX, newY;
 
-        String selectedClusterName = null;
-        if (worldMapPanel.getSelectedCluster() != null) {
-            selectedClusterName = worldMapPanel.getSelectedCluster().getName();
+        String selectedResourceName = null;
+        if (worldMapPanel.getSelectedResource() != null) {
+            selectedResourceName = worldMapPanel.getSelectedResource().getName();
         }
 
         Rectangle bounds = map.getBounds();
@@ -90,7 +90,7 @@ public class ToolTipPainter<T extends JXMapViewer> implements
                     (int) location.getY() + shadowPx);
 
             // draw the text
-            if (label.equals(selectedClusterName)) {
+            if (label.equals(selectedResourceName)) {
                 g.setColor(new Color(255, 100, 100));
             } else {
                 g.setColor(Color.white);

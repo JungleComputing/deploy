@@ -80,7 +80,7 @@ class JobMonitorTableRenderer extends JLabel implements TableCellRenderer {
                 setText(state.toString());
             }
         } else if (columnName
-                .equalsIgnoreCase(JobMonitorTableModel.CLUSTER_COLUMN_NAME)) {
+                .equalsIgnoreCase(JobMonitorTableModel.RESOURCE_COLUMN_NAME)) {
             setOpaque(true);
 
             JobDescription jobDescription = model.getJobDescription(table
@@ -88,13 +88,13 @@ class JobMonitorTableRenderer extends JLabel implements TableCellRenderer {
 
             if (isSelected) {
                 setBackground(jobDescription
-                        .getCluster().getColor());
+                        .getResource().getColor());
             } else {
                 setBackground(Colors.getLightColor(jobDescription
-                        .getCluster().getColor()));
+                        .getResource().getColor()));
             }
 
-            setText(jobDescription.getCluster().getName());
+            setText(jobDescription.getResource().getName());
         } else if (columnName
                 .equalsIgnoreCase(JobMonitorTableModel.MIDDLEWARE_COLUMN_NAME)) {
             String adaptor = (String) value;

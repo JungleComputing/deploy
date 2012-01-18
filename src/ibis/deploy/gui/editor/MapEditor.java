@@ -252,14 +252,14 @@ public class MapEditor extends ChangeableField implements
 				public void mouseClicked(MouseEvent e) {
 					GeoPosition oldPosition = mapKit.getMainMap()
 							.getCenterPosition();
-					GeoPosition clusterLocation = mapKit.getMainMap()
+					GeoPosition resourceLocation = mapKit.getMainMap()
 							.convertPointToGeoPosition(e.getPoint());
-					mapKit.getMainMap().setAddressLocation(clusterLocation);
+					mapKit.getMainMap().setAddressLocation(resourceLocation);
 
 					dialogLatitudeEditor.setValue(Utils
-							.truncate(clusterLocation.getLatitude()));
+							.truncate(resourceLocation.getLatitude()));
 					dialogLongitudeEditor.setValue(Utils
-							.truncate(clusterLocation.getLongitude()));
+							.truncate(resourceLocation.getLongitude()));
 
 					mapKit.getMainMap().setCenterPosition(oldPosition);
 					repaint();

@@ -184,7 +184,7 @@ public class DeployProperties extends TypedProperties {
     }
 
     /**
-     * Finds a list of clusters, jobs or application in a list of properties
+     * Finds a list of resources, jobs or application in a list of properties
      * 
      * Each unique string in the set of keys(cut on the first ".") is returned,
      * except for "default". The list is sorted by alphabet.
@@ -206,7 +206,7 @@ public class DeployProperties extends TypedProperties {
     }
 
     /**
-     * Finds a list of clusters, jobs or application in a list of properties
+     * Finds a list of resources, jobs or application in a list of properties
      * 
      * Each unique string in the set of keys(cut on the first ".") starting with
      * the given prefix is returned, except for "default". Result is also

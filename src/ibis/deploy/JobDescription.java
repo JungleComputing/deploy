@@ -23,10 +23,10 @@ public class JobDescription {
         out.println("# application.*       All valid entries for an application, overriding any");
         out.println("#                     specified in the application referenced");
         out.println("# process.count       Total number of processes started");
-        out.println("# cluster.name        Name of cluster to run application on");
-        out.println("# cluster.*           All valid entries for a cluster, overriding any");
-        out.println("#                     specified in the cluster referenced");
-        out.println("# resource.count      Number of machines used on the cluster");
+        out.println("# resource.name       Name of resource to run application on");
+        out.println("# resource.*          All valid entries for a resource, overriding any");
+        out.println("#                     specified in the resource referenced");
+        out.println("# resource.count      Number of machines used on the resource");
 
         out.println("# runtime             Maximum runtime of job (in minutes)");
 
@@ -41,7 +41,7 @@ public class JobDescription {
 
     private int processCount;
 
-    private final Cluster cluster;
+    private final Resource resource;
 
     private int resourceCount;
 
@@ -58,7 +58,7 @@ public class JobDescription {
         name = "anonymous";
         application = new Application();
         processCount = 0;
-        cluster = new Cluster();
+        resource = new Resource();
         resourceCount = 0;
         runtime = 0;
         poolName = null;
@@ -92,9 +92,9 @@ public class JobDescription {
 
         processCount = properties.getIntProperty(prefix + "process.count", processCount);
 
-        String clusterName = properties.getProperty(prefix + "cluster.name");
-        cluster.setName(clusterName);
-        cluster.loadFromProperties(properties, prefix + "cluster");
+        String resourceName = properties.getProperty(prefix + "resource.name");
+        resource.setName(resourceName);
+        resource.loadFromProperties(properties, prefix + "resource");
 
         resourceCount = properties.getIntProperty(prefix + "resource.count", resourceCount);
 
@@ -176,18 +176,18 @@ public class JobDescription {
     }
 
     /**
-     * Returns cluster object used for "overriding" cluster settings.
+     * Returns resource object used for "overriding" resource settings.
      * 
-     * @return cluster object used for "overriding" cluster settings.
+     * @return resource object used for "overriding" resource settings.
      */
-    public Cluster getCluster() {
-        return cluster;
+    public Resource getResource() {
+        return resource;
     }
 
     /**
      * Total number of resources used for this job.
      * 
-     * @return Total number of machines used on the specified cluster. Returns 0
+     * @return Total number of machines used on the specified resource. Returns 0
      *         if unknown
      */
     public int getResourceCount() {
@@ -198,7 +198,7 @@ public class JobDescription {
      * Sets total number of resources used for this job.
      * 
      * @param resourceCount
-     *            number of machines used on the specified cluster, or 0 for
+     *            number of machines used on the specified resource, or 0 for
      *            unknown.
      */
     public void setResourceCount(int resourceCount) {
@@ -291,11 +291,11 @@ public class JobDescription {
             throw new Exception(prefix + "Process count zero or negative");
         }
 
-        if (cluster == null) {
-            throw new Exception(prefix + "Cluster overrides not specified");
+        if (resource == null) {
+            throw new Exception(prefix + "Resource overrides not specified");
         }
 
-        cluster.checkSettings(name, false);
+        resource.checkSettings(name, false);
 
         if (resourceCount < 0) {
             throw new Exception(prefix + "Resource count negative");
@@ -329,44 +329,44 @@ public class JobDescription {
         this.poolSize = original.poolSize;
 
         this.application = new Application(original.application);
-        this.cluster = new Cluster(original.cluster);
+        this.resource = new Resource(original.resource);
     }
 
-    public JobDescription resolve(ApplicationSet applicationSet, Grid grid)
+    public JobDescription resolve(ApplicationSet applicationSet, Jungle jungle)
             throws Exception {
         Application application = applicationSet
                 .getApplication(getApplication().getName());
-        Cluster cluster = grid.getCluster(getCluster().getName());
+        Resource resource = jungle.getResource(getResource().getName());
 
-        return resolve(application, cluster);
+        return resolve(application, resource);
     }
 
     /**
-     * Resolves the stack of JobDescription/Application/Cluster objects into one
+     * Resolves the stack of JobDescription/Application/Resource objects into one
      * new JobDescription with no dependencies. Ordering (highest priority
      * first):
      * 
      * <ol>
      * <li>Overrides and settings in this description</li>
      * <li>Application settings in given Application</li>
-     * <li>Cluster settings in given Cluster</li>
+     * <li>Resource settings in given Resource</li>
      * </ol>
      * 
      * @param application
      *            application to use for resolving settings.
-     * @param cluster
-     *            cluster to use for resolving settings.
+     * @param resource
+     *            resource to use for resolving settings.
      * 
      * @return the resulting job description, as a new object.
      */
-    public JobDescription resolve(Application application, Cluster cluster) {
+    public JobDescription resolve(Application application, Resource resource) {
         JobDescription result = new JobDescription(this);
 
         // fetch any unset settings from the given application
         result.application.resolve(application);
 
-        // fetch any unset settings from the given cluster
-        result.cluster.resolve(cluster);
+        // fetch any unset settings from the given resource
+        result.resource.resolve(resource);
 
         return result;
     }
@@ -402,8 +402,8 @@ public class JobDescription {
             empty = false;
         }
 
-        out.println(dotPrefix + "cluster.name = " + cluster.getName());
-        cluster.save(out, dotPrefix + "cluster", false);
+        out.println(dotPrefix + "resource.name = " + resource.getName());
+        resource.save(out, dotPrefix + "resource", false);
 
         if (resourceCount == 0) {
             out.println("#" + dotPrefix + "resource.count =");
@@ -453,7 +453,7 @@ public class JobDescription {
         result += " Pool Name = " + getPoolName() + "\n";
         result += " Pool Size = " + getPoolSize() + "\n";
         result += application.toPrintString();
-        result += cluster.toPrintString();
+        result += resource.toPrintString();
 
         return result;
     }

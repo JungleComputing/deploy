@@ -10,33 +10,33 @@ import org.jdesktop.swingx.JXMapViewer;
 import org.jdesktop.swingx.mapviewer.Waypoint;
 import org.jdesktop.swingx.mapviewer.WaypointRenderer;
 
-public class ClusterWaypointRenderer implements WaypointRenderer {
+public class ResourceWaypointRenderer implements WaypointRenderer {
     private boolean booleanSelect;
 
-    public ClusterWaypointRenderer(boolean booleanSelect) {
+    public ResourceWaypointRenderer(boolean booleanSelect) {
         super();
         this.booleanSelect = booleanSelect;
     }
 
     public boolean paintWaypoint(Graphics2D g, JXMapViewer map, Waypoint wp) {
-        ClusterWaypoint cwp = (ClusterWaypoint) wp;
+        ResourceWaypoint cwp = (ResourceWaypoint) wp;
 
-        if (cwp.show && cwp.getCluster().isVisibleOnMap()) {
+        if (cwp.show && cwp.getResource().isVisibleOnMap()) {
             final int x = cwp.getOffset().width;
             final int y = cwp.getOffset().height;
 
-            Color clusterBorderColor = cwp.getCluster()
+            Color resourceBorderColor = cwp.getResource()
                     .getColor();
-            if (clusterBorderColor == null)
-                clusterBorderColor = MapUtilities.defaultClusterBorderColor;
+            if (resourceBorderColor == null)
+                resourceBorderColor = MapUtilities.defaultResourceBorderColor;
 
-            Color clusterFillColor = Colors.getLightColor(cwp.getCluster()
+            Color resourceFillColor = Colors.getLightColor(cwp.getResource()
                     .getColor());
-            if (clusterFillColor == null)
-                clusterFillColor = MapUtilities.defaultClusterFillColor;
+            if (resourceFillColor == null)
+                resourceFillColor = MapUtilities.defaultResourceFillColor;
 
-            Color selectedBorderColor = MapUtilities.selectedClusterBorderColor;
-            Color selectedFillColor = MapUtilities.selectedClusterFillColor;
+            Color selectedBorderColor = MapUtilities.selectedResourceBorderColor;
+            Color selectedFillColor = MapUtilities.selectedResourceFillColor;
 
             // draw circle
             final int radius = cwp.getRadius();
@@ -48,22 +48,22 @@ public class ClusterWaypointRenderer implements WaypointRenderer {
                 g.setPaint(selectedBorderColor);
                 g.drawOval(x - radius, y - radius, diameter, diameter);
             } else if (cwp.isSelected()) {
-                g.setPaint(cwp.getCluster().getColor());
+                g.setPaint(cwp.getResource().getColor());
                 g.fillArc(x - radius, y - radius, diameter, diameter, 90, -(cwp
                         .getResourceCount() * 360)
-                        / Math.max(1, cwp.getClusterNodes()));
+                        / Math.max(1, cwp.getResourceNodes()));
                 g
-                        .setPaint(Colors.getLightColor(cwp.getCluster()
+                        .setPaint(Colors.getLightColor(cwp.getResource()
                                 .getColor()));
                 g.fillArc(x - radius, y - radius, diameter, diameter, 90, 360
                         - (cwp.getResourceCount() * 360)
-                        / Math.max(1, cwp.getClusterNodes()));
-                g.setPaint(clusterBorderColor);
+                        / Math.max(1, cwp.getResourceNodes()));
+                g.setPaint(resourceBorderColor);
                 g.drawOval(x - radius, y - radius, diameter, diameter);
             } else {
-                g.setPaint(clusterFillColor);
+                g.setPaint(resourceFillColor);
                 g.fillOval(x - radius, y - radius, diameter, diameter);
-                g.setPaint(clusterBorderColor);
+                g.setPaint(resourceBorderColor);
                 g.drawOval(x - radius, y - radius, diameter, diameter);
             }
         }

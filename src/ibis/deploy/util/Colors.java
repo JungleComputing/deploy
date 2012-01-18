@@ -6,7 +6,7 @@ import java.util.Map;
 
 public class Colors {
 
-    // colors used for clusters
+    // colors used for resources
     private static final String[] colors = { "#FF0000", "#FF8000", "#FFFF00",
             "#80FF00", "#00FFFF", "#007FFF", "#0000FF", "#8000FF", "#FF00FF",
             "#FF0080", "#FF8080", "#FFBF80", "#FFFF80", "#BFFF80", "#80FF80",

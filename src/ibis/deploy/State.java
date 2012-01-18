@@ -22,7 +22,7 @@ public enum State {
     WAITING,
 
     /**
-     * The input files of the {@link Job} are copied to the cluster using Rsync.
+     * The input files of the {@link Job} are copied to the resource.
      */
     UPLOADING,
 

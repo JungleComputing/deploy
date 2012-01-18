@@ -1,6 +1,6 @@
 package ibis.deploy.gui.experiment.composer;
 
-import ibis.deploy.Cluster;
+import ibis.deploy.Resource;
 import ibis.deploy.JobDescription;
 import ibis.deploy.gui.GUI;
 import ibis.deploy.gui.WorkSpaceChangedListener;
@@ -15,33 +15,33 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-public class ClusterSelectionPanel extends JPanel {
+public class ResourceSelectionPanel extends JPanel {
 
     /**
      * 
      */
     private static final long serialVersionUID = 1552888252030474929L;
 
-    private final JComboBox clusterComboBox = new JComboBox();
+    private final JComboBox resourceComboBox = new JComboBox();
 
     private ResourceCountPanel resourceCountPanel;
 
-    public ClusterSelectionPanel(final GUI gui,
+    public ResourceSelectionPanel(final GUI gui,
             final WorldMapPanel worldMapPanel) {
-        gui.addGridWorkSpaceListener(new WorkSpaceChangedListener() {
+        gui.addJungleWorkSpaceListener(new WorkSpaceChangedListener() {
             public void workSpaceChanged(GUI gui) {
-                clusterComboBox.removeAllItems();
-                for (Cluster cluster : gui.getGrid().getClusters()) {
-                    clusterComboBox.addItem(cluster);
+                resourceComboBox.removeAllItems();
+                for (Resource resource : gui.getJungle().getResources()) {
+                    resourceComboBox.addItem(resource);
                 }
-                clusterComboBox.repaint();
+                resourceComboBox.repaint();
             }
         });
 
         gui.addSubmitJobListener(new SubmitJobListener() {
 
             public void modify(JobDescription jobDescription) throws Exception {
-                jobDescription.getCluster().setName(clusterComboBox.getSelectedItem()
+                jobDescription.getResource().setName(resourceComboBox.getSelectedItem()
                         .toString());
             }
 
@@ -49,18 +49,18 @@ public class ClusterSelectionPanel extends JPanel {
 
         // register by world map panel
         if (worldMapPanel != null) {
-            worldMapPanel.registerClusterSelectionPanel(this);
+            worldMapPanel.registerResourceSelectionPanel(this);
         }
 
         setLayout(new BorderLayout());
-        for (Cluster cluster : gui.getGrid().getClusters()) {
-            clusterComboBox.addItem(cluster);
+        for (Resource resource : gui.getJungle().getResources()) {
+            resourceComboBox.addItem(resource);
         }
-        clusterComboBox.addActionListener(new ActionListener() {
+        resourceComboBox.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent actionEvent) {
                 if (worldMapPanel != null) {
-                    worldMapPanel.setSelected((Cluster) clusterComboBox
+                    worldMapPanel.setSelected((Resource) resourceComboBox
                             .getSelectedItem());
 //                    resourceCountPanel.setResourceCount(worldMapPanel
 //                            .getResourceCount());
@@ -70,14 +70,14 @@ public class ClusterSelectionPanel extends JPanel {
 
         });
         JPanel titlePanel = new JPanel(new BorderLayout());
-        titlePanel.add(new JLabel("Select Cluster"), BorderLayout.WEST);
+        titlePanel.add(new JLabel("Select Resource"), BorderLayout.WEST);
         titlePanel.add(Utils.createImageLabel("images/network-server.png",
                 "resource count"), BorderLayout.EAST);
 
         add(titlePanel, BorderLayout.NORTH);
 
         JPanel selectPanel = new JPanel(new BorderLayout());
-        selectPanel.add(clusterComboBox, BorderLayout.CENTER);
+        selectPanel.add(resourceComboBox, BorderLayout.CENTER);
         resourceCountPanel = new ResourceCountPanel(gui, worldMapPanel);
         selectPanel.add(resourceCountPanel, BorderLayout.EAST);
 
@@ -85,8 +85,8 @@ public class ClusterSelectionPanel extends JPanel {
 
     }
 
-    public void setSelected(Cluster cluster) {
-        clusterComboBox.setSelectedItem(cluster);
+    public void setSelected(Resource resource) {
+        resourceComboBox.setSelectedItem(resource);
     }
 
     public void setResourceCount(int i) {

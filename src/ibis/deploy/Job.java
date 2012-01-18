@@ -37,13 +37,13 @@ public class Job implements Runnable {
 
     private final JobDescription description;
 
-    private final Cluster cluster;
+    private final Resource resource;
 
     private final Application application;
 
     private final HubPolicy hubPolicy;
 
-    // hub shared between all jobs on this cluster (if applicable)
+    // hub shared between all jobs on this resource (if applicable)
     private final Server sharedHub;
 
     private final boolean keepSandbox;
@@ -99,7 +99,7 @@ public class Job implements Runnable {
 
             Deploy deploy, boolean collecting) throws Exception {
         this.description = description;
-        this.cluster = description.getCluster();
+        this.resource = description.getResource();
         this.application = description.getApplication();
         this.hubPolicy = hubPolicy;
         this.sharedHub = hub;
@@ -145,7 +145,7 @@ public class Job implements Runnable {
     /**
      * Add a listener to the hub of this server which reports the state of the
      * Hub. Also causes a new event for this listener with the current state of
-     * the hub. Only works if a hub is started per cluster
+     * the hub. Only works if a hub is started per resource
      * 
      * @param listener
      *            the listener to attach
@@ -274,10 +274,10 @@ public class Job implements Runnable {
 
         GATContext context = new GATContext();
 
-        if (cluster.getUserName() != null) {
-            String keyFile = cluster.getKeyFile();
+        if (resource.getUserName() != null) {
+            String keyFile = resource.getKeyFile();
             SecurityContext securityContext = new CertificateSecurityContext(keyFile == null ? null : new URI(keyFile),
-                    null, cluster.getUserName(), null);
+                    null, resource.getUserName(), null);
             context.addSecurityContext(securityContext);
         }
 
@@ -296,11 +296,11 @@ public class Job implements Runnable {
 
         context.addPreference(IbisProperties.HUB_ADDRESSES, deploy.getRootHubAddress());
 
-        if (cluster.getJobAdaptor() != null) {
-            context.addPreference("resourcebroker.adaptor.name", cluster.getJobAdaptor());
+        if (resource.getJobAdaptor() != null) {
+            context.addPreference("resourcebroker.adaptor.name", resource.getJobAdaptor());
         }
 
-        context.addPreference("file.adaptor.name", DeployProperties.strings2CSS(cluster.getFileAdaptors()));
+        context.addPreference("file.adaptor.name", DeployProperties.strings2CSS(resource.getFileAdaptors()));
 
         return context;
     }
@@ -330,10 +330,10 @@ public class Job implements Runnable {
         }
         // ANDROID CHANGE END
 
-        if (cluster.getJavaPath() == null) {
+        if (resource.getJavaPath() == null) {
             sd.setExecutable("java");
         } else {
-            sd.setExecutable(cluster.getJavaPath());
+            sd.setExecutable(resource.getJavaPath());
         }
         logger.debug("executable: " + sd.getExecutable());
 
@@ -375,10 +375,10 @@ public class Job implements Runnable {
         }
 
         // ibis stuff
-        String location = cluster.getName();
+        String location = resource.getName();
 
         sd.addJavaSystemProperty(IbisProperties.LOCATION, description.getName() + "@%HOSTNAME%@" + location);
-        sd.addJavaSystemProperty(IbisProperties.LOCATION_COLOR, Colors.color2colorCode(cluster.getColor()));
+        sd.addJavaSystemProperty(IbisProperties.LOCATION_COLOR, Colors.color2colorCode(resource.getColor()));
         sd.addJavaSystemProperty(IbisProperties.POOL_NAME, description.getPoolName());
         sd.addJavaSystemProperty(IbisProperties.POOL_SIZE, "" + description.getPoolSize());
         sd.addJavaSystemProperty(IbisProperties.SERVER_ADDRESS, serverAddress);
@@ -464,11 +464,11 @@ public class Job implements Runnable {
         }
 
         if (!foundClasspathOption) {
-            sd.setJavaClassPath(createClassPath(cluster.getJobAdaptor(), application.getLibs()));
+            sd.setJavaClassPath(createClassPath(resource.getJobAdaptor(), application.getLibs()));
         }
 
         if (sd instanceof JythonSoftwareDescription) {
-            ((JythonSoftwareDescription) sd).setPythonPath(createClassPath(cluster.getJobAdaptor(),
+            ((JythonSoftwareDescription) sd).setPythonPath(createClassPath(resource.getJobAdaptor(),
                     application.getLibs()));
         }
 
@@ -480,8 +480,8 @@ public class Job implements Runnable {
             sd.setStderr(GAT.createFile(context, description.getPoolName() + "." + description.getName() + ".err.txt"));
         }
 
-        logger.info("Submitting application \"" + application.getName() + "\" to " + cluster.getName() + " using "
-                + cluster.getJobURI());
+        logger.info("Submitting application \"" + application.getName() + "\" to " + resource.getName() + " using "
+                + resource.getJobURI());
 
         return sd;
     }
@@ -489,7 +489,7 @@ public class Job implements Runnable {
     private org.gridlab.gat.resources.JobDescription createJobDescription(JavaSoftwareDescription sd) throws Exception {
         org.gridlab.gat.resources.JobDescription result;
 
-        File wrapperScript = description.getCluster().getJobWrapperScript();
+        File wrapperScript = description.getResource().getJobWrapperScript().getAbsoluteFile();
 
         if (wrapperScript == null) {
             result = new org.gridlab.gat.resources.JobDescription(sd);
@@ -497,7 +497,15 @@ public class Job implements Runnable {
             result.setResourceCount(description.getResourceCount());
         } else {
             if (!wrapperScript.exists()) {
-                throw new Exception("wrapper script \"" + wrapperScript + "\" does not exist");
+                //search for wrapperscript in deploy root dir as well.
+                wrapperScript = new File(deploy.getHome(), wrapperScript.getName()).getAbsoluteFile();
+
+                if (!wrapperScript.exists()) {
+                    throw new Exception("wrapper script \"" + wrapperScript.getName()
+                            + "\" does not exist. Searched in "
+                            + description.getResource().getJobWrapperScript().getAbsolutePath() + " and "
+                            + wrapperScript);
+                }
             }
 
             // copy all settings from the java description to a "normal"
@@ -574,7 +582,7 @@ public class Job implements Runnable {
                 forwarder.setState(State.WAITING);
 
                 // start a hub especially for this job
-                localHub = new RemoteServer(description.getCluster(), true, rootHub, deployHome, verbose, hubListener,
+                localHub = new RemoteServer(description.getResource(), true, rootHub, deployHome, verbose, hubListener,
                         keepSandbox);
 
                 // wait until hub really running
@@ -582,7 +590,7 @@ public class Job implements Runnable {
 
                 // create list of hubs, add to software description
                 hubAddress = localHub.getAddress();
-            } else if (hubPolicy == HubPolicy.PER_CLUSTER) {
+            } else if (hubPolicy == HubPolicy.PER_RESOURCE) {
                 forwarder.setState(State.WAITING);
 
                 sharedHub.waitUntilRunning();
@@ -609,8 +617,7 @@ public class Job implements Runnable {
 
             GATContext context = createGATContext();
 
-            // Creating software description also does rsync of files to
-            // cluster.
+            // Creating software description.
             JavaSoftwareDescription javaSoftwareDescription = createJavaSoftwareDescription(hubList);
 
             org.gridlab.gat.resources.JobDescription jobDescription = createJobDescription(javaSoftwareDescription);
@@ -627,7 +634,7 @@ public class Job implements Runnable {
             ResourceBroker jobBroker;
 
             // use address provided by user
-            jobBroker = GAT.createResourceBroker(context, description.getCluster().getJobURI());
+            jobBroker = GAT.createResourceBroker(context, description.getResource().getJobURI());
 
             org.gridlab.gat.resources.Job gatJob = jobBroker.submitJob(jobDescription, forwarder, "job.status");
             setGatJob(gatJob);
@@ -677,7 +684,7 @@ public class Job implements Runnable {
      * @see java.lang.Object#toString()
      */
     public String toString() {
-        return "Job " + description.getName() + "@" + description.getCluster().getName();
+        return "Job " + description.getName() + "@" + description.getResource().getName();
     }
 
     /**

@@ -20,7 +20,7 @@ public class JobRow {
     public static final int NAME_COLUMN = 2;
     public static final int JOB_STATUS_COLUMN = 3;
     public static final int HUB_STATUS_COLUMN = 4;
-    public static final int CLUSTER_COLUMN = 5;
+    public static final int RESOURCE_COLUMN = 5;
     public static final int MIDDLEWARE_COLUMN = 6;
     public static final int APPLICATION_COLUMN = 7;
     public static final int PROCESS_COUNT_COLUMN = 8;
@@ -43,7 +43,7 @@ public class JobRow {
 
     public JobRow(JobDescription jobDescription, JobTableModel model, GUI gui)
             throws Exception {
-        this.jobDescription = jobDescription.resolve(gui.getApplicationSet(), gui.getGrid());
+        this.jobDescription = jobDescription.resolve(gui.getApplicationSet(), gui.getJungle());
         this.model = model;
         this.gui = gui;
 
@@ -82,10 +82,10 @@ public class JobRow {
             return jobState;
         case HUB_STATUS_COLUMN:
             return hubState;
-        case CLUSTER_COLUMN:
-            return jobDescription.getCluster().getName();
+        case RESOURCE_COLUMN:
+            return jobDescription.getResource().getName();
         case MIDDLEWARE_COLUMN:
-            return jobDescription.getCluster().getJobURI().getScheme();
+            return jobDescription.getResource().getJobURI().getScheme();
         case APPLICATION_COLUMN:
             return jobDescription.getApplication().getName();
         case PROCESS_COUNT_COLUMN:
@@ -114,7 +114,7 @@ public class JobRow {
         case APPLICATION_COLUMN:
         case POOL_COLUMN:
         case NAME_COLUMN:
-        case CLUSTER_COLUMN:
+        case RESOURCE_COLUMN:
         case MIDDLEWARE_COLUMN:
             return String.class;
 
@@ -168,7 +168,7 @@ public class JobRow {
         try {
             logger.info("submitting job" + jobDescription.getName());
             job = gui.getDeploy().submitJob(jobDescription,
-                    gui.getApplicationSet(), gui.getGrid(),
+                    gui.getApplicationSet(), gui.getJungle(),
                     new StateListener() {
 
                         public void stateUpdated(final State state, Exception e) {

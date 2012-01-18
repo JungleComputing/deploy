@@ -1,7 +1,7 @@
 package ibis.deploy.gui.worldmap.helpers;
 
 import ibis.deploy.gui.worldmap.MapUtilities;
-import ibis.deploy.gui.worldmap.helpers.ClusterWaypoint;
+import ibis.deploy.gui.worldmap.helpers.ResourceWaypoint;
 import ibis.deploy.gui.worldmap.helpers.PieChartWaypoint;
 import ibis.deploy.util.Colors;
 
@@ -24,43 +24,43 @@ public class PieChartWaypointRenderer implements WaypointRenderer {
 
 		int i;
 		int angle = 0;
-		int stepAngle = 360 / pieChartCwp.clusters.size();
+		int stepAngle = 360 / pieChartCwp.resources.size();
 
-		Color clusterColor, clusterBorderColor;
-		ClusterWaypoint clusterwp;
+		Color resourceColor, resourceBorderColor;
+		ResourceWaypoint resourcewp;
 
-		for (i = 0; i < pieChartCwp.clusters.size(); i++) {
-			clusterwp = pieChartCwp.clusters.get(i);
-			clusterColor = null;
+		for (i = 0; i < pieChartCwp.resources.size(); i++) {
+			resourcewp = pieChartCwp.resources.get(i);
+			resourceColor = null;
 
 			// get the color of the slice and of its border
-			if (clusterwp.isSelected()) {
-				clusterColor = MapUtilities.selectedClusterFillColor;
-				clusterBorderColor = MapUtilities.selectedClusterBorderColor;
+			if (resourcewp.isSelected()) {
+				resourceColor = MapUtilities.selectedResourceFillColor;
+				resourceBorderColor = MapUtilities.selectedResourceBorderColor;
 			} else {
-				clusterColor = Colors.getLightColor(clusterwp.getCluster()
+				resourceColor = Colors.getLightColor(resourcewp.getResource()
 						.getColor());
-				clusterBorderColor = clusterwp.getCluster().getColor();
+				resourceBorderColor = resourcewp.getResource().getColor();
 			}
-			if (clusterColor == null) {
-				clusterColor = MapUtilities.defaultClusterFillColor;
+			if (resourceColor == null) {
+				resourceColor = MapUtilities.defaultResourceFillColor;
 			}
-			if (clusterBorderColor == null) {
-				clusterBorderColor = MapUtilities.defaultClusterBorderColor;
+			if (resourceBorderColor == null) {
+				resourceBorderColor = MapUtilities.defaultResourceBorderColor;
 			}
 
 			g.rotate(Math.toRadians(angle));
 			g.translate(pieChartCwp.getPieChartGap(), 0);
 
 			// draw the pie slice
-			g.setColor(clusterColor);
+			g.setColor(resourceColor);
 			g.fillArc(x - radius, y - radius, diameter, diameter,
 					-stepAngle / 2, stepAngle);
 
 			// draw the border of the pie slice
 			Arc2D arc = new Arc2D.Double(x - radius, y - radius, diameter,
 					diameter, -stepAngle / 2, stepAngle, Arc2D.PIE);
-			g.setColor(clusterBorderColor);
+			g.setColor(resourceBorderColor);
 			g.draw(arc);
 
 			g.translate(-pieChartCwp.getPieChartGap(), 0);

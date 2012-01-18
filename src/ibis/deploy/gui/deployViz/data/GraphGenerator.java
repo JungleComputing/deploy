@@ -1,6 +1,6 @@
 package ibis.deploy.gui.deployViz.data;
 
-import ibis.deploy.Grid;
+import ibis.deploy.Jungle;
 import ibis.deploy.gui.GUI;
 import ibis.deploy.gui.deployViz.helpers.VizUtils;
 import java.awt.Color;
@@ -33,7 +33,7 @@ public class GraphGenerator {
     private HashMap<String, HashMap<String, Edge>> edgeMap = new HashMap<String, HashMap<String, Edge>>();
     private Graph internalGraph;
     private Node root;
-    private Grid grid;
+    private Jungle jungle;
 
     public GraphGenerator(GUI gui) {
         // initialize the schemas
@@ -53,7 +53,7 @@ public class GraphGenerator {
         root.set(VizUtils.NODE_TYPE, VizUtils.NODE_TYPE_ROOT_NODE);
         nodeMap.put("Ibis Deploy", root);
 
-        grid = gui.getWorkSpace().getGrid();
+        jungle = gui.getWorkSpace().getJungle();
     }
 
     public Graph getGraph() {
@@ -356,8 +356,8 @@ public class GraphGenerator {
 
         if (visualItem.getString(VizUtils.NODE_TYPE).equals(
                 VizUtils.NODE_TYPE_SITE_NODE)) {
-            if (grid.getCluster(visualItem.getString(VizUtils.NODE_NAME)) != null) {
-                colorCode = grid.getCluster(
+            if (jungle.getResource(visualItem.getString(VizUtils.NODE_NAME)) != null) {
+                colorCode = jungle.getResource(
                         visualItem.getString(VizUtils.NODE_NAME))
                         .getColor();
                 color = colorCode.getRGB();
@@ -373,8 +373,8 @@ public class GraphGenerator {
             // we've already received the parent as a parameter, no need to
             // retrieve it again
             if (parent != null) {
-                if (grid.getCluster(parent.getString(VizUtils.NODE_NAME)) != null) {
-                    colorCode = grid.getCluster(
+                if (jungle.getResource(parent.getString(VizUtils.NODE_NAME)) != null) {
+                    colorCode = jungle.getResource(
                             parent.getString(VizUtils.NODE_NAME))
                             .getColor();
                     color = colorCode.getRGB();

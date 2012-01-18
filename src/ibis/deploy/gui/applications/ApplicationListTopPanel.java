@@ -87,7 +87,7 @@ public class ApplicationListTopPanel extends JPanel {
                                 .removeElementAt(applicationList
                                         .getSelectedIndex());
                         applicationEditorPanel.repaint();
-                        gui.fireGridUpdated();
+                        gui.fireJungleUpdated();
                     }
                 } catch (Exception e) {
                     // ignore name is never null

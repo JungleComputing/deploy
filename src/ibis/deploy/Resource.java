@@ -15,14 +15,13 @@ import java.util.Map;
 import org.gridlab.gat.URI;
 
 /**
- * Cluster, accessible using some sort of middleware. Used to deploy both
- * support processes (like hubs) and jobs (applications) on. Clusters are part
- * of (and created by) a parent "Grid".
+ * Resource, accessible using some sort of middleware. Used to deploy both
+ * support processes (like hubs) and jobs (applications) on.
  * 
  * @author Niels Drost
  * 
  */
-public class Cluster {
+public class Resource {
 
     /**
      * Print a table of valid keys and some explanations to the given stream
@@ -31,12 +30,12 @@ public class Cluster {
      *            stream used for printing
      */
     public static void printTableOfKeys(PrintWriter out) {
-        out.println("# Mandatory parameters for clusters:");
+        out.println("# Mandatory parameters for resources:");
         out.println("# KEY                 COMMENT");
         out.println("# support.uri         Contact URI used when deploying support processes (e.g. smartsockets hub)");
         out.println("# job.uri             Contact URI used when deploying job");
         out.println("# file.adaptors       Comma separated list of JavaGAT file adaptors used to");
-        out.println("#                     copy files to and from this cluster(*)");
+        out.println("#                     copy files to and from this resource(*)");
         out.println("#");
         out.println("# Optional parameters: ");
         out.println("# KEY                 COMMENT");
@@ -44,19 +43,19 @@ public class Cluster {
         out.println("# support.system.properties system properties for the support processes (e.g. smartsocekts settings)");
 
         out.println("# job.adaptor         JavaGAT adaptor used to deploy jobs");
-        out.println("# java.path           Path to java executable on this cluster.");
+        out.println("# java.path           Path to java executable on this resource.");
         out.println("#                     If unspecified, \"java\" is used");
-        out.println("# job.wrapper.script  If specified, the given script is copied to the cluster");
+        out.println("# job.wrapper.script  If specified, the given script is copied to the resource");
         out.println("#                     and run instead of java");
-        out.println("# user.name           User name used for authentication at cluster");
-        out.println("# user.key            User keyfile used for authentication at cluster (only when user.name is set)");
+        out.println("# user.name           User name used for authentication at resource");
+        out.println("# user.key            User keyfile used for authentication at resource (only when user.name is set)");
 
-        out.println("# latitude            Latitude position of this cluster (double)");
-        out.println("# longitude           Longitude position of this cluster (double)");
-        out.println("# color               Color (as a HTML color string) used to represent this cluster");
+        out.println("# latitude            Latitude position of this resource (double)");
+        out.println("# longitude           Longitude position of this resouce (double)");
+        out.println("# color               Color (as a HTML color string) used to represent this resource");
     }
 
-    // name of this cluster
+    // name of this resource
     private String name;
 
     // resource broker adaptor used to start support processes
@@ -71,10 +70,10 @@ public class Cluster {
     // uri of job broker
     private URI jobURI;
 
-    // adaptor(s) used to copy files to and from the cluster
+    // adaptor(s) used to copy files to and from the resource
     private List<String> fileAdaptors;
 
-    // path of java on cluster (simply "java" if not specified)
+    // path of java on resource (simply "java" if not specified)
     private String javaPath;
 
     // wrapper to use when starting a job
@@ -90,10 +89,10 @@ public class Cluster {
     // settings)
     private Map<String, String> supportSystemProperties;
 
-    // Latitude position of this cluster
+    // Latitude position of this resource
     private double latitude;
 
-    // Longitude position of this cluster
+    // Longitude position of this resource
     private double longitude;
 
     private Color color;
@@ -103,11 +102,10 @@ public class Cluster {
     private final DeployProperties properties;
 
     /**
-     * Applies to the current cluster a set of properties that are specific for
-     * the local cluster
+     * Returns a Resource object representing the local machine (a.k.a. localhost).
      */
-    public static Cluster getLocalCluster() throws Exception {
-        Cluster result = new Cluster("local");
+    public static Resource getLocalResource() throws Exception {
+        Resource result = new Resource("local");
 
         result.setSupportAdaptor("local");
         result.setSupportURI(new URI("local://localhost"));
@@ -127,10 +125,10 @@ public class Cluster {
     }
 
     /**
-     * Creates a new "anonymous" cluster with no name.
+     * Creates a new "anonymous" resource.
      * 
      */
-    public Cluster() {
+    public Resource() {
         this.name = "anonymous";
 
         properties = new DeployProperties();
@@ -152,14 +150,14 @@ public class Cluster {
     }
 
     /**
-     * Creates a new cluster with a given name.
+     * Creates a new resource with a given name.
      * 
      * @param name
-     *            the name of the cluster
+     *            the name of the resource
      * @throws Exception
      *             if name is null or contains periods and/or spaces
      */
-    public Cluster(String name) throws Exception {
+    public Resource(String name) throws Exception {
         setName(name);
 
         // set color from name
@@ -186,9 +184,9 @@ public class Cluster {
      * Copy constructor
      * 
      * @param original
-     *            the original cluster
+     *            the original
      */
-    public Cluster(Cluster original) {
+    public Resource(Resource original) {
         this();
 
         name = original.name;
@@ -222,15 +220,15 @@ public class Cluster {
     }
 
     /**
-     * Load cluster from the given properties (usually loaded from a grid file)
+     * Load resource from the given properties (usually loaded from a jungle file)
      * 
      * @param properties
-     *            properties to load cluster from
+     *            properties to load resource from
      * @param prefix
      *            prefix used for all keys
      * 
      * @throws Exception
-     *             if cluster cannot be read properly, or its name is invalid
+     *             if resource cannot be read properly, or its name is invalid
      */
     public void loadFromProperties(DeployProperties properties, String prefix)
             throws Exception {
@@ -241,12 +239,12 @@ public class Cluster {
         if (properties.getProperty(prefix + "server.uri") != null
                 || properties.getProperty(prefix + "server.adaptor") != null
                 || properties.getProperty(prefix + "server.system.properties") != null) {
-            throw new Exception("The cluster description for \"" + name
+            throw new Exception("The resource description for \"" + name
                     + "\" contains \"server.*\" properties, which have "
                     + "been renamed to \"support.*\"");
         }
 
-        // load all the properties corresponding to this cluster,
+        // load all the properties corresponding to this resource,
         // but only if they are set
 
         if (properties.getProperty(prefix + "support.adaptor") != null) {
@@ -310,9 +308,9 @@ public class Cluster {
      * Set any unset settings from the given other object
      * 
      * @param other
-     *            source cluster object
+     *            source object
      */
-    void resolve(Cluster other) {
+    void resolve(Resource other) {
         if (other != null) {
 
             if (other.supportAdaptor != null && supportAdaptor == null) {
@@ -383,27 +381,26 @@ public class Cluster {
     }
 
     /**
-     * Returns the name of this cluster
+     * Returns the name of this resource
      * 
-     * @return the name of this cluster
+     * @return the name of this resource
      */
     public String getName() {
         return name;
     }
 
     /**
-     * Sets the name of this cluster
+     * Sets the name of this resource
      * 
      * @param name
-     *            the new name of this cluster
+     *            the new name of this resource
      * 
      * @throws Exception
-     *             if the name is invalid, or a cluster with the given name
-     *             already exists in the parent grid of this cluster.
+     *             if the name is invalid.
      */
     public void setName(String name) throws Exception {
         if (name == null) {
-            // throw new Exception("no name specified for cluster");
+            // throw new Exception("no name specified for resource");
             return;
         }
 
@@ -413,11 +410,11 @@ public class Cluster {
         }
 
         if (name.contains(".")) {
-            throw new Exception("cluster name cannot contain periods : \""
+            throw new Exception("resource name cannot contain periods : \""
                     + name + "\"");
         }
         if (name.contains(" ")) {
-            throw new Exception("cluster name cannot contain spaces : \""
+            throw new Exception("resource name cannot contain spaces : \""
                     + name + "\"");
         }
 
@@ -426,7 +423,7 @@ public class Cluster {
 
     /**
      * Returns the JavaGAT adaptor used to start support processes such as hubs
-     * on this cluster.
+     * on this resource.
      * 
      * @return the JavaGAT adaptor used to start support processes such as hubs.
      */
@@ -436,7 +433,7 @@ public class Cluster {
 
     /**
      * Sets the JavaGAT adaptor used to start support processes such as hubs on
-     * this cluster.
+     * this resource.
      * 
      * @param supportAdaptor
      *            the new JavaGAT adaptor used to start support processes such
@@ -447,30 +444,30 @@ public class Cluster {
     }
 
     /**
-     * Returns the contact uri of this cluster for starting support processes
+     * Returns the contact uri of this resource for starting support processes
      * such as a hub (e.g. ssh://machine.domain.com)
      * 
      * @return the contact uri for starting support processes such as hubs of
-     *         this cluster.
+     *         this resource.
      */
     public URI getSupportURI() {
         return supportURI;
     }
 
     /**
-     * Sets the contact uri of this cluster for starting support processes such
+     * Sets the contact uri of this resource for starting support processes such
      * as a hub (e.g. ssh://machine.domain.com)
      * 
      * @param supportURI
      *            the new contact uri for starting support processes such as
-     *            hubs of this cluster.
+     *            hubs of this resource.
      */
     public void setSupportURI(URI supportURI) {
         this.supportURI = supportURI;
     }
 
     /**
-     * Returns the JavaGAT adaptor used to start jobs on this cluster.
+     * Returns the JavaGAT adaptor used to start jobs on this resource.
      * 
      * @return the JavaGAT adaptor used to start jobs.
      */
@@ -479,7 +476,7 @@ public class Cluster {
     }
 
     /**
-     * Sets the JavaGAT adaptor used to start jobs on this cluster.
+     * Sets the JavaGAT adaptor used to start jobs on this resource.
      * 
      * @param jobAdaptor
      *            the new JavaGAT adaptor used to start jobs.
@@ -489,7 +486,7 @@ public class Cluster {
     }
 
     /**
-     * Returns the contact uri of this cluster for starting jobs (e.g.
+     * Returns the contact uri of this resource for starting jobs (e.g.
      * globus://machine.domain.com/some-local-broker)
      * 
      * @return the contact uri for starting jobs.
@@ -499,7 +496,7 @@ public class Cluster {
     }
 
     /**
-     * Sets the contact uri of this cluster for starting jobs (e.g.
+     * Sets the contact uri of this resource for starting jobs (e.g.
      * globus://machine.domain.com/some-local-broker)
      * 
      * @param jobURI
@@ -510,9 +507,9 @@ public class Cluster {
     }
 
     /**
-     * Returns a list of adaptors used to copy files to and from this cluster.
+     * Returns a list of adaptors used to copy files to and from this resource.
      * 
-     * @return a list of adaptors used to copy files to and from this cluster.
+     * @return a list of adaptors used to copy files to and from this resource.
      */
     public String[] getFileAdaptors() {
         if (fileAdaptors == null) {
@@ -522,11 +519,11 @@ public class Cluster {
     }
 
     /**
-     * Sets the list of adaptors used to copy files to and from this cluster.
+     * Sets the list of adaptors used to copy files to and from this resource.
      * 
      * @param fileAdaptors
      *            the new list of adaptors used to copy files to and from this
-     *            cluster.
+     *            resource.
      */
     public void setFileAdaptors(String... fileAdaptors) {
         if (fileAdaptors == null) {
@@ -538,10 +535,10 @@ public class Cluster {
 
     /**
      * Adds a adaptor to the list of adaptors used to copy files to and from
-     * this cluster. The list is created if needed.
+     * this resource. The list is created if needed.
      * 
      * @param fileAdaptor
-     *            the new adaptors used to copy files to and from this cluster.
+     *            the new adaptors used to copy files to and from this resource.
      */
     public void addFileAdaptor(String fileAdaptor) {
         if (fileAdaptors == null) {
@@ -551,10 +548,10 @@ public class Cluster {
     }
 
     /**
-     * Returns the path of the java executable on this cluster. If "null",
+     * Returns the path of the java executable on this resource. If "null",
      * "java" is used by default.
      * 
-     * @return the path of the java executable on this cluster, or null if
+     * @return the path of the java executable on this resource, or null if
      *         unspecified.
      */
     public String getJavaPath() {
@@ -562,18 +559,18 @@ public class Cluster {
     }
 
     /**
-     * Sets the path of the java executable on this cluster. If set to "null",
+     * Sets the path of the java executable on this resource. If set to "null",
      * "java" is used by default.
      * 
      * @param javaPath
-     *            the new path of the java executable on this cluster.
+     *            the new path of the java executable on this resource.
      */
     public void setJavaPath(String javaPath) {
         this.javaPath = javaPath;
     }
 
     /**
-     * Returns the job wrapper script, if any. Useful to start jobs on a cluster
+     * Returns the job wrapper script, if any. Useful to start jobs on a resource
      * without any installed middleware. If specified, this script is pre-staged
      * and executed instead of the java command. This script is passed:
      * <ol>
@@ -590,7 +587,7 @@ public class Cluster {
     }
 
     /**
-     * Sets the job wrapper script, if any. Useful to start jobs on a cluster
+     * Sets the job wrapper script, if any. Useful to start jobs on a resource
      * without any installed middleware. If specified, this script is pre-staged
      * and executed instead of the java command. This script is passed:
      * <ol>
@@ -608,38 +605,38 @@ public class Cluster {
     }
 
     /**
-     * Returns username used to authenticate at this cluster
+     * Returns username used to authenticate at this resource
      * 
-     * @return username used to authenticate at this cluster
+     * @return username used to authenticate at this resource
      */
     public String getUserName() {
         return userName;
     }
 
     /**
-     * Sets username used to authenticate at this cluster
+     * Sets username used to authenticate at this resource
      * 
      * @param userName
-     *            username used to authenticate at this cluster
+     *            username used to authenticate at this resource
      */
     public void setUserName(String userName) {
         this.userName = userName;
     }
 
     /**
-     * Returns keyfile used to authenticate at this cluster
+     * Returns keyfile used to authenticate at this resource
      * 
-     * @return keyfile used to authenticate at this cluster
+     * @return keyfile used to authenticate at this resource
      */
     public String getKeyFile() {
         return keyFile;
     }
 
     /**
-     * Sets keyfile used to authenticate at this cluster
+     * Sets keyfile used to authenticate at this resource
      * 
      * @param keyFile
-     *            keyfile used to authenticate at this cluster
+     *            keyfile used to authenticate at this resource
      */
     public void setKeyFile(String keyFile) {
         this.keyFile = keyFile;
@@ -689,38 +686,38 @@ public class Cluster {
     }
 
     /**
-     * Latitude position of this cluster
+     * Latitude position of this resource
      * 
-     * @return Latitude position of this cluster. Returns 0 if unknown
+     * @return Latitude position of this resource. Returns 0 if unknown
      */
     public double getLatitude() {
         return latitude;
     }
 
     /**
-     * Sets latitude position of this cluster
+     * Sets latitude position of this resource
      * 
      * @param latitude
-     *            Latitude position of this cluster. Use 0 for unknown.
+     *            Latitude position of this resource. Use 0 for unknown.
      */
     public void setLatitude(double latitude) {
         this.latitude = latitude;
     }
 
     /**
-     * Longitude position of this cluster
+     * Longitude position of this resource
      * 
-     * @return Longitude position of this cluster. Returns 0 if unknown
+     * @return Longitude position of this resource. Returns 0 if unknown
      */
     public double getLongitude() {
         return longitude;
     }
 
     /**
-     * Sets longitude position of this cluster
+     * Sets longitude position of this resource
      * 
      * @param longitude
-     *            Longitude position of this cluster. Use 0 for unknown.
+     *            Longitude position of this resource. Use 0 for unknown.
      */
     public void setLongitude(double longitude) {
         this.longitude = longitude;
@@ -735,17 +732,17 @@ public class Cluster {
     }
 
     /**
-     * Get the raw properties this cluster was created from. Useful for
+     * Get the raw properties this resource was created from. Useful for
      * supporting custom properties in deploy based applications
      * 
-     * @return the raw properties this cluster was created from.
+     * @return the raw properties this resource was created from.
      */
     public TypedProperties getProperties() {
         return properties;
     }
 
     /**
-     * Checks if this cluster is suitable for deploying. If not, throws an
+     * Checks if this resource is suitable for deploying. If not, throws an
      * exception.
      * 
      * @param jobName
@@ -755,11 +752,11 @@ public class Cluster {
      *            need to be checked
      * 
      * @throws Exception
-     *             if this cluster is incomplete or incorrect.
+     *             if this resource is incomplete or incorrect.
      */
     public void checkSettings(String jobName, boolean supportOnly)
             throws Exception {
-        String prefix = "Cannot run job \"" + jobName + "\": Cluster ";
+        String prefix = "Cannot run job \"" + jobName + "\": Resource ";
 
         if (name == null) {
             throw new Exception(prefix + "name not specified");
@@ -782,23 +779,23 @@ public class Cluster {
     }
 
     /**
-     * Print the settings of this cluster to a (properties) file
+     * Print the settings of this resource to a (properties) file
      * 
      * @param out
      *            stream to write this file to
      * @param prefix
-     *            prefix for key names, or null to use name of cluster
+     *            prefix for key names, or null to use name of resource
      * @param printComments
      *            if true, comments are added for all null values
      * @throws Exception
-     *             if this cluster has no name
+     *             if this resource has no name
      */
     void save(PrintWriter out, String prefix, boolean printComments)
             throws Exception {
         boolean empty = true;
 
         if (prefix == null) {
-            throw new Exception("cannot print cluster to file,"
+            throw new Exception("cannot print resource to file,"
                     + " prefix is not specified");
         }
 
@@ -899,7 +896,7 @@ public class Cluster {
         }
 
         if (empty && printComments) {
-            out.println("#Dummy property to make sure cluster is actually defined");
+            out.println("#Dummy property to make sure resource is actually defined");
             out.println(prefix);
         }
     }
@@ -919,9 +916,9 @@ public class Cluster {
     public String toPrintString() {
         String result;
         if (name == null) {
-            result = "Cluster Settings:\n";
+            result = "Resource Settings:\n";
         } else {
-            result = "Cluster Settings for \"" + getName() + "\":\n";
+            result = "Resource Settings for \"" + getName() + "\":\n";
         }
 
         result += " Support adaptor = " + getSupportAdaptor() + "\n";

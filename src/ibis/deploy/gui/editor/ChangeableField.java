@@ -3,7 +3,7 @@ package ibis.deploy.gui.editor;
 import javax.swing.JPanel;
 
 import ibis.deploy.gui.applications.ApplicationEditorTabPanel;
-import ibis.deploy.gui.clusters.ClusterEditorTabPanel;
+import ibis.deploy.gui.resources.ResourceEditorTabPanel;
 
 public class ChangeableField {
 
@@ -31,8 +31,8 @@ public class ChangeableField {
     protected void informParent() {
         // the editor's configuration has changed, the parent panel must check
         // for changes and update itself accordingly
-        if (tabPanel instanceof ClusterEditorTabPanel)
-            ((ClusterEditorTabPanel) tabPanel).checkForChanges();
+        if (tabPanel instanceof ResourceEditorTabPanel)
+            ((ResourceEditorTabPanel) tabPanel).checkForChanges();
 
         if (tabPanel instanceof ApplicationEditorTabPanel)
             ((ApplicationEditorTabPanel) tabPanel).checkForChanges();

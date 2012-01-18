@@ -1,10 +1,10 @@
 package ibis.deploy.gui;
 
 import ibis.deploy.ApplicationSet;
-import ibis.deploy.Cluster;
+import ibis.deploy.Resource;
 import ibis.deploy.Deploy;
 import ibis.deploy.Experiment;
-import ibis.deploy.Grid;
+import ibis.deploy.Jungle;
 import ibis.deploy.JobDescription;
 import ibis.deploy.Workspace;
 import ibis.deploy.Deploy.HubPolicy;
@@ -70,7 +70,7 @@ public class GUI {
 
     private Deploy deploy;
 
-    private final List<WorkSpaceChangedListener> gridListeners = new ArrayList<WorkSpaceChangedListener>();
+    private final List<WorkSpaceChangedListener> jungleListeners = new ArrayList<WorkSpaceChangedListener>();
 
     private final List<WorkSpaceChangedListener> applicationSetListeners = new ArrayList<WorkSpaceChangedListener>();
 
@@ -231,7 +231,7 @@ public class GUI {
             hubPolicy.add(menuItem);
             subMenu.add(menuItem);
             menuItem = new JRadioButtonMenuItem(new HubPolicyAction(
-                    "One hub per cluster", HubPolicy.PER_CLUSTER, this));
+                    "One hub per resource", HubPolicy.PER_RESOURCE, this));
             menuItem.setSelected(true);
             hubPolicy.add(menuItem);
             subMenu.add(menuItem);
@@ -287,15 +287,15 @@ public class GUI {
 
     private static void printUsage() {
         System.err
-                .println("Usage: ibis-deploy-gui [OPTIONS] [GRID_FILE] [APP_FILE] [EXPERIMENT_FILE] [WORKSPACE_DIR]");
+                .println("Usage: ibis-deploy-gui [OPTIONS] [JUNGLE_FILE] [APP_FILE] [EXPERIMENT_FILE] [WORKSPACE_DIR]");
         System.err.println("Options:");
-        System.err.println("-s CLUSTER\tRun server on specified cluster");
+        System.err.println("-s RESOURCE\tRun server on specified resource");
         System.err.println("-k\t\tKeep sandboxes");
         System.err.println("-r\t\tRead only mode");
         System.err.println("-v\t\tVerbose mode");
         System.err
                 .println("--monitoring-enabled | -m \tCollect performance data from running applications.");
-        System.err.println("-f\t\tSimulate a grid (for monitor testing).");
+        System.err.println("-f\t\tSimulate a jungle (for monitor testing).");
         System.err
                 .println("-p PORT\t\tLocal port number (defaults to random free port)");
         System.err.println("-h | --help\tThis message");
@@ -336,7 +336,7 @@ public class GUI {
         boolean monitoringFakeData = false;
         boolean monitoringEnabled = false;
         Collector collector = null;
-        String serverCluster = null;
+        String serverResource = null;
         int port = 0;
         mode = Mode.NORMAL;
 
@@ -344,7 +344,7 @@ public class GUI {
             for (int i = 0; i < arguments.length; i++) {
                 if (arguments[i].equals("-s")) {
                     i++;
-                    serverCluster = arguments[i];
+                    serverResource = arguments[i];
                 } else if (arguments[i].equals("-v")) {
                     verbose = true;
                 } else if (arguments[i].equals("-k")) {
@@ -399,7 +399,7 @@ public class GUI {
         this.monitoringEnabled = monitoringEnabled;
 
         try {
-            if (serverCluster == null) {
+            if (serverResource == null) {
                 logger.info("Initializing Ibis Deploy, using built-in server");
 
                 // init with built-in server
@@ -409,20 +409,20 @@ public class GUI {
             } else {
                 logger
                         .info("Initializing Ibis Deploy"
-                                + ", using server on cluster \""
-                                + serverCluster + "\"");
+                                + ", using server on resource \""
+                                + serverResource + "\"");
 
-                Cluster cluster = workspace.getGrid().getCluster(serverCluster);
+                Resource resource = workspace.getJungle().getResource(serverResource);
 
-                if (cluster == null) {
-                    System.err.println("ERROR: Server cluster " + serverCluster
-                            + " not found in grid");
+                if (resource == null) {
+                    System.err.println("ERROR: Server resource " + serverResource
+                            + " not found in jungle");
                     System.exit(1);
                 }
 
                 InitializationFrame initWindow = new InitializationFrame();
                 deploy = new Deploy(null, verbose, keepSandboxes,
-                        isMonitoringEnabled(), port, cluster, initWindow, true);
+                        isMonitoringEnabled(), port, resource, initWindow, true);
                 // will call dispose in the Swing thread
                 initWindow.remove();
 
@@ -460,8 +460,8 @@ public class GUI {
         return deploy;
     }
 
-    public Grid getGrid() {
-        return workspace.getGrid();
+    public Jungle getJungle() {
+        return workspace.getJungle();
     }
 
     public ApplicationSet getApplicationSet() {
@@ -532,13 +532,13 @@ public class GUI {
     }
 
     public void fireWorkSpaceUpdated() {
-        fireGridUpdated();
+        fireJungleUpdated();
         fireApplicationSetUpdated();
         fireExperimentUpdated();
     }
 
-    public void fireGridUpdated() {
-        for (WorkSpaceChangedListener listener : gridListeners) {
+    public void fireJungleUpdated() {
+        for (WorkSpaceChangedListener listener : jungleListeners) {
             listener.workSpaceChanged(this);
         }
     }
@@ -559,8 +559,8 @@ public class GUI {
         submitJobListeners.add(listener);
     }
 
-    public void addGridWorkSpaceListener(WorkSpaceChangedListener listener) {
-        gridListeners.add(listener);
+    public void addJungleWorkSpaceListener(WorkSpaceChangedListener listener) {
+        jungleListeners.add(listener);
     }
 
     public void addApplicationSetWorkSpaceListener(

@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Main entry point for ibis-deploy framework. Allows users to deploy jobs and
- * start hubs on a grid.
+ * start hubs on a jungle.
  * 
  * @author Niels Drost
  * 
@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 public class Deploy {
 
     public enum HubPolicy {
-        OFF, PER_CLUSTER, PER_JOB,
+        OFF, PER_RESOURCE, PER_JOB,
     }
 
     /**
@@ -59,10 +59,10 @@ public class Deploy {
     // submitted jobs
     private List<Job> jobs;
 
-    // Map<gridName, Map<clusterName, Server>> with "shared" hubs
+    //hubs already running
     private Map<String, Server> hubs;
 
-    private HubPolicy hubPolicy = HubPolicy.PER_CLUSTER;
+    private HubPolicy hubPolicy = HubPolicy.PER_RESOURCE;
 
     private final PoolSizePrinter poolSizePrinter;
 
@@ -119,8 +119,8 @@ public class Deploy {
      * @param port
      *            port used to bind local hub/server to. Defaults to
      *            automatically allocated free port.
-     * @param serverCluster
-     *            cluster where the server should be started, or null for a
+     * @param serverResource
+     *            resource where the server should be started, or null for a
      *            server embedded in this JVM.
      * @param listener
      *            callback object for status of server
@@ -131,9 +131,9 @@ public class Deploy {
      *             cannot be started.
      * 
      */
-    public Deploy(File home, boolean verbose, boolean keepSandboxes, int port, Cluster serverCluster,
+    public Deploy(File home, boolean verbose, boolean keepSandboxes, int port, Resource serverResource,
             StateListener listener, boolean blocking) throws Exception {
-        this(home, verbose, keepSandboxes, false, false, port, serverCluster, listener, blocking);
+        this(home, verbose, keepSandboxes, false, false, port, serverResource, listener, blocking);
     }
 
     /**
@@ -155,8 +155,8 @@ public class Deploy {
      * @param port
      *            port used to bind local hub/server to. Defaults to
      *            automatically allocated free port.
-     * @param serverCluster
-     *            cluster where the server should be started, or null for a
+     * @param serverResource
+     *            resource where the server should be started, or null for a
      *            server embedded in this JVM.
      * @param listener
      *            callback object for status of server
@@ -168,8 +168,8 @@ public class Deploy {
      * 
      */
     public Deploy(File home, boolean verbose, boolean keepSandboxes, boolean monitoringEnabled, int port,
-            Cluster serverCluster, StateListener listener, boolean blocking) throws Exception {
-        this(home, verbose, keepSandboxes, false, false, port, serverCluster, listener, blocking);
+            Resource serverResource, StateListener listener, boolean blocking) throws Exception {
+        this(home, verbose, keepSandboxes, false, false, port, serverResource, listener, blocking);
     }
 
     /**
@@ -194,8 +194,8 @@ public class Deploy {
      * @param port
      *            port used to bind local hub/server to. Defaults to
      *            automatically allocated free port.
-     * @param serverCluster
-     *            cluster where the server should be started, or null for a
+     * @param serverResource
+     *            resource where the server should be started, or null for a
      *            server embedded in this JVM.
      * @param listener
      *            callback object for status of server
@@ -207,7 +207,7 @@ public class Deploy {
      * 
      */
     public Deploy(File home, boolean verbose, boolean keepSandboxes, boolean monitoringEnabled,
-            boolean outputOnConsole, int port, Cluster serverCluster, StateListener listener, boolean blocking)
+            boolean outputOnConsole, int port, Resource serverResource, StateListener listener, boolean blocking)
             throws Exception {
 
         logger.debug("Initializing deploy");
@@ -222,18 +222,18 @@ public class Deploy {
 
         this.home = checkHome(home);
 
-        if (serverCluster == null) {
+        if (serverResource == null) {
             // rootHub includes server
             localServer = new LocalServer(true, verbose, port);
             localServer.addListener(listener);
             remoteServer = null;
         } else {
             localServer = new LocalServer(false, verbose, port);
-            remoteServer = new RemoteServer(serverCluster, false, localServer, this.home, verbose,
+            remoteServer = new RemoteServer(serverResource, false, localServer, this.home, verbose,
 
             listener, keepSandboxes);
 
-            hubs.put(serverCluster.getName(), remoteServer);
+            hubs.put(serverResource.getName(), remoteServer);
 
             if (blocking) {
                 remoteServer.waitUntilRunning();
@@ -339,13 +339,13 @@ public class Deploy {
         }
     }
 
-    public synchronized Job submitJob(JobDescription description, ApplicationSet applicationSet, Grid grid,
+    public synchronized Job submitJob(JobDescription description, ApplicationSet applicationSet, Jungle jungle,
             StateListener jobListener, StateListener hubListener) throws Exception {
 
         Application application = applicationSet.getApplication(description.getApplication().getName());
-        Cluster cluster = grid.getCluster(description.getCluster().getName());
+        Resource resource = jungle.getResource(description.getResource().getName());
 
-        return submitJob(description, application, cluster, jobListener, hubListener);
+        return submitJob(description, application, resource, jobListener, hubListener);
     }
 
     /**
@@ -355,8 +355,8 @@ public class Deploy {
      *            description of the job.
      * @param application
      *            application for job
-     * @param cluster
-     *            cluster to use
+     * @param resource
+     *            resource to use
      * @param hubListener
      *            listener for state of hub
      * @param jobListener
@@ -368,14 +368,14 @@ public class Deploy {
      * @return the resulting job
      * @throws Exception
      */
-    public synchronized Job submitJob(JobDescription description, Application application, Cluster cluster,
+    public synchronized Job submitJob(JobDescription description, Application application, Resource resource,
             StateListener jobListener, StateListener hubListener) throws Exception {
         if (remoteServer != null && !remoteServer.isRunning()) {
             throw new Exception("Cannot submit job (yet), server \"" + remoteServer + "\" not running");
         }
 
         // resolve given description into single "independent" description
-        JobDescription resolvedDescription = description.resolve(application, cluster);
+        JobDescription resolvedDescription = description.resolve(application, resource);
 
         if (verbose) {
             logger.info("Submitting new job:\n" + resolvedDescription.toPrintString());
@@ -386,8 +386,8 @@ public class Deploy {
         resolvedDescription.checkSettings();
 
         Server hub = null;
-        if (hubPolicy == HubPolicy.PER_CLUSTER) {
-            hub = getClusterHub(resolvedDescription.getCluster(), false, hubListener);
+        if (hubPolicy == HubPolicy.PER_RESOURCE) {
+            hub = getHub(resolvedDescription.getResource(), false, hubListener);
         }
 
         // start job
@@ -400,44 +400,44 @@ public class Deploy {
     }
 
     /**
-     * Returns a hub on the specified cluster. If a hub does not exist on the
-     * cluster, one is submitted. May not be running (yet).
+     * Returns a hub on the specified resource. If a hub does not exist on the
+     * resource, one is submitted. May not be running (yet).
      * 
-     * @param cluster
-     *            cluster to deploy the hub on
+     * @param resource
+     *            resource to deploy the hub on
      * @param waitUntilRunning
      *            wait until hub is actually running
      * @param listener
      *            listener for state of hub
-     * @return reference to a hub on the given cluster
+     * @return reference to a hub on the given resource
      * @throws Exception
      *             if the hub cannot be started
      */
-    public synchronized Server getClusterHub(Cluster cluster, boolean waitUntilRunning, StateListener listener)
+    public synchronized Server getHub(Resource resource, boolean waitUntilRunning, StateListener listener)
             throws Exception {
         if (localServer == null) {
             throw new Exception("Ibis Deploy not initialized, cannot get hub");
         }
 
-        String clusterName = cluster.getName();
+        String resourceName = resource.getName();
 
-        logger.debug("starting hub on " + clusterName);
+        logger.debug("starting hub on " + resourceName);
 
-        if (clusterName == null) {
-            throw new Exception("cannot start hub on an unnamed cluster");
+        if (resourceName == null) {
+            throw new Exception("cannot start hub on an unnamed resource");
         }
 
-        if (clusterName.equals("local")) {
+        if (resourceName.equals("local")) {
             localServer.addListener(listener);
             return localServer;
         }
 
-        Server result = hubs.get(clusterName);
+        Server result = hubs.get(resourceName);
 
         if (result == null || result.isFinished()) {
             // new server needed
-            result = new RemoteServer(cluster, true, localServer, home, verbose, listener, keepSandboxes);
-            hubs.put(clusterName, result);
+            result = new RemoteServer(resource, true, localServer, home, verbose, listener, keepSandboxes);
+            hubs.put(resourceName, result);
         } else {
             result.addListener(listener);
         }

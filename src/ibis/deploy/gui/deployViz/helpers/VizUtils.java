@@ -13,7 +13,6 @@ import ibis.deploy.gui.deployViz.edgeBundles.BSplineEdgeItem;
 
 public class VizUtils {
 
-    public static final String CLUSTER = "cluster";
     public static final String NODE_TYPE_SITE_NODE = "site node";
     public static final String NODE_TYPE_IBIS_NODE = "ibis node";
     public static final String NODE_TYPE_ROOT_NODE = "ibis deploy";

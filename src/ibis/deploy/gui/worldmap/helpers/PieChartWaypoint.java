@@ -1,6 +1,6 @@
 package ibis.deploy.gui.worldmap.helpers;
 
-import ibis.deploy.gui.worldmap.helpers.ClusterWaypoint;
+import ibis.deploy.gui.worldmap.helpers.ResourceWaypoint;
 
 import java.awt.Point;
 import java.awt.geom.AffineTransform;
@@ -12,15 +12,15 @@ import org.jdesktop.swingx.mapviewer.GeoPosition;
 import org.jdesktop.swingx.mapviewer.Waypoint;
 
 public class PieChartWaypoint extends Waypoint {
-    private int clusterRadius;
+    private int resourceRadius;
 
-    public ArrayList<String> clusterNames = new ArrayList<String>();
-    public ArrayList<ClusterWaypoint> clusters = new ArrayList<ClusterWaypoint>();
+    public ArrayList<String> resourceNames = new ArrayList<String>();
+    public ArrayList<ResourceWaypoint> resources = new ArrayList<ResourceWaypoint>();
 
     public static final int fixedGap = 2;
     private int variableGap = 0;
 
-    public PieChartWaypoint(ArrayList<ClusterWaypoint> clusterList) {
+    public PieChartWaypoint(ArrayList<ResourceWaypoint> resourceList) {
         super();
 
         double radius = 0;
@@ -29,44 +29,44 @@ public class PieChartWaypoint extends Waypoint {
         // double totalNodes = 0;
 
         // compute the maximum radius in the group, position, number of nodes
-        for (ClusterWaypoint waypoint : clusterList) {
-            if (waypoint.getCluster().isVisibleOnMap()) {
+        for (ResourceWaypoint waypoint : resourceList) {
+            if (waypoint.getResource().isVisibleOnMap()) {
                 if (waypoint.getRadius() > radius) {
                     radius = waypoint.getRadius();
                 }
 
                 latitude += waypoint.getPosition().getLatitude();
                 longitude += waypoint.getPosition().getLongitude();
-                // totalNodes += waypoint.getCluster().getNodes();
+                // totalNodes += waypoint.getResource().getNodes();
 
-                clusterNames.add(waypoint.getName());
-                this.clusters.add(waypoint);
+                resourceNames.add(waypoint.getName());
+                this.resources.add(waypoint);
             }
         }
 
-        clusterRadius = (int) radius;
-        latitude /= this.clusters.size();
-        longitude /= this.clusters.size();
+        resourceRadius = (int) radius;
+        latitude /= this.resources.size();
+        longitude /= this.resources.size();
         setPosition(new GeoPosition(latitude, longitude));
 
-        variableGap = (int) (0.3 * this.clusters.size());
+        variableGap = (int) (0.3 * this.resources.size());
     }
 
     /**
-     * Checks if the current piechart consists of the same clusters that are
-     * part of the clusterList. It assumes the lists don't contain duplicates.
+     * Checks if the current piechart consists of the same resources that are
+     * part of the resourceList. It assumes the lists don't contain duplicates.
      */
-    public boolean containsSameClustersAs(ArrayList<ClusterWaypoint> clusterList) {
-        Iterator<ClusterWaypoint> it = clusterList.iterator();
-        ClusterWaypoint cwp;
+    public boolean containsSameResourcesAs(ArrayList<ResourceWaypoint> resourceList) {
+        Iterator<ResourceWaypoint> it = resourceList.iterator();
+        ResourceWaypoint cwp;
 
-        if (clusterList.size() != clusters.size()) {
+        if (resourceList.size() != resources.size()) {
             return false;
         }
 
         while (it.hasNext()) {
             cwp = it.next();
-            if (!clusters.contains(cwp)) {
+            if (!resources.contains(cwp)) {
                 return false;
             }
         }
@@ -75,7 +75,7 @@ public class PieChartWaypoint extends Waypoint {
     }
 
     public int getRadius() {
-        return clusterRadius;
+        return resourceRadius;
     }
 
     public int getPieChartGap() {
@@ -87,26 +87,26 @@ public class PieChartWaypoint extends Waypoint {
      *            - the mouse point
      * @param referencePoint
      *            -the center of the pie chart
-     * @return the cluster which is represented by the slice over which the
+     * @return the resource which is represented by the slice over which the
      *         mouse is at the moment
      */
-    public ClusterWaypoint getSelectedCluster(Point2D mousePoint,
+    public ResourceWaypoint getSelectedResource(Point2D mousePoint,
             Point2D referencePoint) {
         double angle = getPieAngle(mousePoint, referencePoint);
-        double stepAngle = 2 * Math.PI / clusters.size();
+        double stepAngle = 2 * Math.PI / resources.size();
 
         int index = (int) Math.floor(angle / stepAngle);
 
-        if (index >= clusters.size()) {
+        if (index >= resources.size()) {
             index = 0;
         }
 
         // slices are drawn in reverse order, fix index
         if (index != 0) {
-            index = clusters.size() - index;
+            index = resources.size() - index;
         }
 
-        return clusters.get(index);
+        return resources.get(index);
     }
 
     /**
@@ -118,14 +118,14 @@ public class PieChartWaypoint extends Waypoint {
      */
     public Point getLabelLocation(Point2D initialPoint, Point2D referencePoint) {
         double angle = getPieAngle(initialPoint, referencePoint);
-        double stepAngle = 2 * Math.PI / clusters.size();
+        double stepAngle = 2 * Math.PI / resources.size();
 
         int index = (int) Math.floor(angle / stepAngle);
         angle = index * stepAngle; // the middle of the slice
 
         Point2D point;
 
-        ClusterWaypoint cluster = getSelectedCluster(initialPoint,
+        ResourceWaypoint resource = getSelectedResource(initialPoint,
                 referencePoint);
 
         point = new Point2D.Double(getRadius() + getPieChartGap(), 0);
@@ -136,7 +136,7 @@ public class PieChartWaypoint extends Waypoint {
 
         if (angle >= Math.PI / 2 && angle <= 3 * Math.PI / 2) {
             return new Point(
-                    (int) (point.getX() + referencePoint.getX() - 7 * cluster
+                    (int) (point.getX() + referencePoint.getX() - 7 * resource
                             .getName().length()),
                     (int) (-point.getY() + referencePoint.getY()));
         } else {
@@ -155,8 +155,8 @@ public class PieChartWaypoint extends Waypoint {
             angle += 2 * Math.PI;
         }
 
-        double stepAngle = 2 * Math.PI / clusters.size();
-        angle += stepAngle / 2; // clusters are shifted with stepAngle/2
+        double stepAngle = 2 * Math.PI / resources.size();
+        angle += stepAngle / 2; // resources are shifted with stepAngle/2
         // clockwise
 
         return angle;

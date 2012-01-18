@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Server or Hub running on a remote cluster
+ * Server or Hub running on a remote resource (cluster, stand-alone machine, etc)
  */
 public class RemoteServer implements Runnable, Server {
 
@@ -46,7 +46,7 @@ public class RemoteServer implements Runnable, Server {
 
     private final boolean hubOnly;
 
-    private final Cluster cluster;
+    private final Resource resource;
 
     private final LocalServer rootHub;
 
@@ -68,7 +68,7 @@ public class RemoteServer implements Runnable, Server {
 
     private final StateForwarder forwarder;
 
-    RemoteServer(Cluster cluster, boolean hubOnly, LocalServer rootHub,
+    RemoteServer(Resource resource, boolean hubOnly, LocalServer rootHub,
             File deployHome, boolean verbose, StateListener listener,
             boolean keepSandbox) throws Exception {
         this.hubOnly = hubOnly;
@@ -80,9 +80,9 @@ public class RemoteServer implements Runnable, Server {
         gatJob = null;
         serverConnection = null;
 
-        this.cluster = new Cluster(cluster);
+        this.resource = new Resource(resource);
 
-        this.cluster.checkSettings("Server", true);
+        this.resource.checkSettings("Server", true);
 
         this.context = createGATContext();
 
@@ -98,18 +98,18 @@ public class RemoteServer implements Runnable, Server {
         }
 
         logger.info("Starting " + this + " using "
-                + this.cluster.getSupportURI());
+                + this.resource.getSupportURI());
 
         ThreadPool.createNew(this, this.toString());
     }
 
     private GATContext createGATContext() throws Exception {
         GATContext context = new GATContext();
-        if (cluster.getUserName() != null) {
-            String keyFile = cluster.getKeyFile();
+        if (resource.getUserName() != null) {
+            String keyFile = resource.getKeyFile();
             SecurityContext securityContext = new CertificateSecurityContext(
                     keyFile == null ? null : new URI(keyFile), null,
-                    cluster.getUserName(), null);
+                    resource.getUserName(), null);
             context.addSecurityContext(securityContext);
         }
         // ensure files are readable on the other side
@@ -118,13 +118,13 @@ public class RemoteServer implements Runnable, Server {
         // fly during a copy
         context.addPreference("file.create", "true");
 
-        if (cluster.getSupportAdaptor() != null) {
+        if (resource.getSupportAdaptor() != null) {
             context.addPreference("resourcebroker.adaptor.name",
-                    cluster.getSupportAdaptor() + ",local");
+                    resource.getSupportAdaptor() + ",local");
         }
 
         context.addPreference("file.adaptor.name",
-                DeployProperties.strings2CSS(cluster.getFileAdaptors()));
+                DeployProperties.strings2CSS(resource.getFileAdaptors()));
 
         // make sshtrilead file adaptor cache some info
         context.addPreference("sshtrilead.caching.exists", "true");
@@ -134,7 +134,7 @@ public class RemoteServer implements Runnable, Server {
 
     }
 
-    private void prestage(File src, Cluster cluster, JavaSoftwareDescription sd)
+    private void prestage(File src, Resource resource, JavaSoftwareDescription sd)
             throws Exception {
         org.gridlab.gat.io.File gatFile = GAT.createFile(context, new URI(src
                 .getAbsoluteFile().toURI()));
@@ -146,7 +146,7 @@ public class RemoteServer implements Runnable, Server {
 
         JavaSoftwareDescription sd = new JavaSoftwareDescription();
 
-        sd.setExecutable(cluster.getJavaPath());
+        sd.setExecutable(resource.getJavaPath());
         logger.debug("executable: " + sd.getExecutable());
 
         // main class and options
@@ -178,7 +178,7 @@ public class RemoteServer implements Runnable, Server {
 
         // add server libraries to pre-stage, use rsync if specified
         File serverLibs = new File(deployHome, "lib-server");
-        prestage(serverLibs, cluster, sd);
+        prestage(serverLibs, resource, sd);
 
         // classpath.
         // TODO: this assumes that the remote server does not run on windows!
@@ -187,25 +187,25 @@ public class RemoteServer implements Runnable, Server {
 
         // add server log4j file
         File log4j = new File(deployHome, "log4j.properties");
-        prestage(log4j, cluster, sd);
+        prestage(log4j, resource, sd);
 
-        sd.addJavaSystemProperty(IbisProperties.LOCATION, cluster.getName());
+        sd.addJavaSystemProperty(IbisProperties.LOCATION, resource.getName());
 
         if (hubOnly) {
             sd.addJavaSystemProperty(
                     ServerProperties.VIZ_INFO,
-                    "H^" + cluster.getName() + "^Smartsockets Hub @ "
-                            + cluster.getName() + "^"
-                            + Colors.color2colorCode(cluster.getColor()));
+                    "H^" + resource.getName() + "^Smartsockets Hub @ "
+                            + resource.getName() + "^"
+                            + Colors.color2colorCode(resource.getColor()));
         } else {
             sd.addJavaSystemProperty(ServerProperties.VIZ_INFO,
-                    "S^Ibis Server^Ibis Server @ " + cluster.getName() + "^"
-                            + Colors.color2colorCode(cluster.getColor()));
+                    "S^Ibis Server^Ibis Server @ " + resource.getName() + "^"
+                            + Colors.color2colorCode(resource.getColor()));
         }
 
-        if (cluster.getSupportSystemProperties() != null) {
+        if (resource.getSupportSystemProperties() != null) {
             sd.getJavaSystemProperties().putAll(
-                    cluster.getSupportSystemProperties());
+                    resource.getSupportSystemProperties());
         }
 
         if (keepSandbox) {
@@ -296,7 +296,7 @@ public class RemoteServer implements Runnable, Server {
             forwarder.setState(State.SUBMITTING);
 
             ResourceBroker jobBroker = GAT.createResourceBroker(context,
-                    cluster.getSupportURI());
+                    resource.getSupportURI());
 
             org.gridlab.gat.resources.Job job = jobBroker.submitJob(
                     jobDescription, forwarder, "job.status");
@@ -390,9 +390,9 @@ public class RemoteServer implements Runnable, Server {
      */
     public String toString() {
         if (hubOnly) {
-            return "Hub \"" + id + "\" on \"" + cluster.getName() + "\"";
+            return "Hub \"" + id + "\" on \"" + resource.getName() + "\"";
         } else {
-            return "Server on \"" + cluster.getName() + "\"";
+            return "Server on \"" + resource.getName() + "\"";
         }
     }
 

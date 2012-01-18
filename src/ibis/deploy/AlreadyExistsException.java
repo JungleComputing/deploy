@@ -1,8 +1,8 @@
 package ibis.deploy;
 
 /**
- * Thrown if a job/cluster/application of the given name already exists in the
- * experiment/grid/applicationSet.
+ * Thrown if a job/resource/application of the given name already exists in the
+ * experiment/jungle/applicationSet.
  * 
  */
 public class AlreadyExistsException extends Exception {

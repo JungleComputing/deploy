@@ -16,7 +16,7 @@ public class JobMonitorRow {
     public static final int NAME_COLUMN = 1;
     public static final int JOB_STATUS_COLUMN = 2;
     public static final int HUB_STATUS_COLUMN = 3;
-    public static final int CLUSTER_COLUMN = 4;
+    public static final int RESOURCE_COLUMN = 4;
     public static final int MIDDLEWARE_COLUMN = 5;
     public static final int APPLICATION_COLUMN = 6;
     public static final int PROCESS_COUNT_COLUMN = 7;
@@ -81,10 +81,10 @@ public class JobMonitorRow {
             return jobState;
         case HUB_STATUS_COLUMN:
             return hubState;
-        case CLUSTER_COLUMN:
-            return jobDescription.getCluster().getName();
+        case RESOURCE_COLUMN:
+            return jobDescription.getResource().getName();
         case MIDDLEWARE_COLUMN:
-            return jobDescription.getCluster().getJobAdaptor();
+            return jobDescription.getResource().getJobAdaptor();
         case APPLICATION_COLUMN:
             return jobDescription.getApplication().getName();
         case PROCESS_COUNT_COLUMN:
@@ -112,7 +112,7 @@ public class JobMonitorRow {
         case APPLICATION_COLUMN:
         case POOL_COLUMN:
         case NAME_COLUMN:
-        case CLUSTER_COLUMN:
+        case RESOURCE_COLUMN:
         case MIDDLEWARE_COLUMN:
             return String.class;
 

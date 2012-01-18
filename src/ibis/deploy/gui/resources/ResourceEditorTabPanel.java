@@ -1,6 +1,6 @@
-package ibis.deploy.gui.clusters;
+package ibis.deploy.gui.resources;
 
-import ibis.deploy.Cluster;
+import ibis.deploy.Resource;
 import ibis.deploy.gui.GUI;
 import ibis.deploy.gui.editor.ChangeableField;
 import ibis.deploy.gui.editor.FileEditor;
@@ -33,23 +33,23 @@ import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.URI;
 
-public class ClusterEditorTabPanel extends JPanel {
+public class ResourceEditorTabPanel extends JPanel {
 
     /**
      * 
      */
     private static final long serialVersionUID = 1085273687721913236L;
 
-    private final ClusterEditorPanel clusterEditorPanel;
+    private final ResourceEditorPanel resourceEditorPanel;
 
     private ArrayList<ChangeableField> fields = new ArrayList<ChangeableField>();
 
     private JButton discardButton = null;
     private JButton applyButton = null;
 
-    public ClusterEditorTabPanel(final Cluster source,
-            final ClusterEditorPanel clusterEditorPanelRef, final GUI gui) {
-        clusterEditorPanel = clusterEditorPanelRef;
+    public ResourceEditorTabPanel(final Resource source,
+            final ResourceEditorPanel resourceEditorPanelRef, final GUI gui) {
+        resourceEditorPanel = resourceEditorPanelRef;
 
         setLayout(new BorderLayout());
 
@@ -270,8 +270,8 @@ public class ClusterEditorTabPanel extends JPanel {
                 applyButton.setEnabled(false);
                 discardButton.setEnabled(false);
 
-                clusterEditorPanel.fireClusterEdited(source);
-                gui.fireGridUpdated();
+                resourceEditorPanel.fireResourceEdited(source);
+                gui.fireJungleUpdated();
             }
 
         });
@@ -330,7 +330,7 @@ public class ClusterEditorTabPanel extends JPanel {
 
     /**
      * Checks if in any of the fields the value is different from the one in the
-     * source cluster. According to that, the apply and discard buttons are
+     * source. According to that, the apply and discard buttons are
      * enabled / disabled
      */
     public void checkForChanges() {

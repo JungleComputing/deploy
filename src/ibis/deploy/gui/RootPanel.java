@@ -1,10 +1,10 @@
 package ibis.deploy.gui;
 
 import ibis.deploy.gui.applications.ApplicationEditorPanel;
-import ibis.deploy.gui.clusters.ClusterEditorPanel;
 import ibis.deploy.gui.deployViz.DeployVizPanel;
 import ibis.deploy.gui.experiment.ExperimentsPanel;
 import ibis.deploy.gui.misc.Utils;
+import ibis.deploy.gui.resources.ResourceEditorPanel;
 import ibis.deploy.monitoring.visualization.gridvision.swing.GogglePanel;
 import ibis.smartsockets.viz.SmartsocketsViz;
 
@@ -31,9 +31,9 @@ public class RootPanel extends JPanel {
                     "images/applications-other.png", "Applications Tab"),
                     new ApplicationEditorPanel(gui));
 
-            tabs.addTab("Clusters", Utils.createImageIcon(
-                    "images/network-transmit-receive.png", "Clusters Tab"),
-                    new ClusterEditorPanel(gui));
+            tabs.addTab("Jungle", Utils.createImageIcon(
+                    "images/network-transmit-receive.png", "Jungle Tab"),
+                    new ResourceEditorPanel(gui));
         }
 
         tabs.addTab("Network Overlay", Utils.createImageIcon(

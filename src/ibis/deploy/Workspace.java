@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Container object for a grid, application and experiment.
+ * Container object for a set of resources(jungle), applications, and experiment.
  * 
  * @author Niels Drost
  * 
@@ -20,14 +20,14 @@ public class Workspace {
 
     public static final File DEFAULT_LOCATION = new File("deploy-workspace");
 
-    public static final String GRID_FILENAME = "deploy.grid";
+    public static final String JUNGLE_FILENAME = "deploy.jungle";
 
     public static final String APPLICATION_FILENAME = "deploy.applications";
 
     private static final Logger logger = LoggerFactory
             .getLogger(Workspace.class);
 
-    private Grid grid;
+    private Jungle jungle;
 
     private ApplicationSet applications;
 
@@ -44,18 +44,18 @@ public class Workspace {
     }
 
     /**
-     * Constructs a workspace from the given grid, application, and experiments
+     * Constructs a workspace from the given jungle, application, and experiments
      * 
-     * @param grid
-     *            the grid of the new workspace
+     * @param jungle
+     *            the jungle of the new workspace
      * @param applications
      *            the Applications of the workspace
      * @param experiments
      *            the experiments of the new workspace
      */
-    public Workspace(Grid grid, ApplicationSet applications,
+    public Workspace(Jungle jungle, ApplicationSet applications,
             Experiment... experiments) {
-        this.grid = grid;
+        this.jungle = jungle;
         this.applications = applications;
         this.experiments = new ArrayList<Experiment>();
         this.experiments.addAll(Arrays.asList(experiments));
@@ -63,7 +63,7 @@ public class Workspace {
 
     /**
      * Constructs a workspace from all properties files stored in the given
-     * directory. Constructs the grid, applications and experiments within the
+     * directory. Constructs the jungle, applications and experiments within the
      * workspace.
      * 
      * @param location
@@ -80,7 +80,7 @@ public class Workspace {
 
         if (location == null || !location.exists()) {
             // do not try to load any further.
-            grid = new Grid();
+            jungle = new Jungle();
             applications = new ApplicationSet();
             return;
         }
@@ -90,12 +90,12 @@ public class Workspace {
                     + "\" is not a directory");
         }
 
-        File gridFile = new File(location, GRID_FILENAME);
-        if (gridFile.isFile()) {
-            grid = new Grid(gridFile);
+        File jungleFile = new File(location, JUNGLE_FILENAME);
+        if (jungleFile.isFile()) {
+            jungle = new Jungle(jungleFile);
         } else {
-            logger.warn("Workspace does not contain grid file: " + gridFile);
-            grid = new Grid();
+            logger.warn("Workspace does not contain jungle resource description file: " + jungleFile);
+            jungle = new Jungle();
         }
 
         File applicationFile = new File(location, APPLICATION_FILENAME);
@@ -122,7 +122,7 @@ public class Workspace {
      * Save this workspace to a directory.
      * 
      * @param location
-     *            directory to save grid to
+     *            directory to save workspace to
      * 
      * @throws Exception
      *             in case file cannot be written
@@ -140,11 +140,11 @@ public class Workspace {
                     + ", failed to create directory");
         }
 
-        File gridFile = new File(location, GRID_FILENAME);
-        if (gridFile.exists()) {
-            gridFile.renameTo(new File(location, GRID_FILENAME + ".old"));
+        File jungleFile = new File(location, JUNGLE_FILENAME);
+        if (jungleFile.exists()) {
+            jungleFile.renameTo(new File(location, JUNGLE_FILENAME + ".old"));
         }
-        grid.save(gridFile);
+        jungle.save(jungleFile);
 
         File applicationFile = new File(location, APPLICATION_FILENAME);
         if (applicationFile.exists()) {
@@ -209,24 +209,24 @@ public class Workspace {
     }
 
     /**
-     * @return the grid
+     * @return the jungle
      */
-    public Grid getGrid() {
-        return grid;
+    public Jungle getJungle() {
+        return jungle;
     }
 
     /**
-     * @param grid
-     *            the grid to set
+     * @param jungle
+     *            the jungle to set
      */
-    public void setGrid(Grid grid) {
-        this.grid = grid;
+    public void setJungle(Jungle jungle) {
+        this.jungle = jungle;
     }
 
     public String toPrintString() {
         String result = "Workspace: \n\n";
-        if (grid != null) {
-            result += grid.toPrintString();
+        if (jungle != null) {
+            result += jungle.toPrintString();
             result += "\n";
         }
         if (applications != null) {

@@ -32,7 +32,7 @@ public class ExperimentEditorTextPanel extends JPanel {
         topPanel.add(Box.createRigidArea(new Dimension(0, 5)));
         topPanel.add(new JSeparator(SwingConstants.HORIZONTAL));
         topPanel.add(Box.createRigidArea(new Dimension(0, 5)));
-        topPanel.add(new ClusterSelectionPanel(gui, worldMapPanel));
+        topPanel.add(new ResourceSelectionPanel(gui, worldMapPanel));
         topPanel.add(Box.createRigidArea(new Dimension(0, 5)));
         topPanel.add(new JSeparator(SwingConstants.HORIZONTAL));
         add(topPanel, BorderLayout.NORTH);

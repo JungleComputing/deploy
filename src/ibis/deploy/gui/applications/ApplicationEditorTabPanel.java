@@ -202,7 +202,7 @@ public class ApplicationEditorTabPanel extends JPanel {
 
     /**
      * Checks if in any of the fields the value is different from the one in the
-     * source cluster. According to that, the apply and discard buttons are
+     * source. According to that, the apply and discard buttons are
      * enabled / disabled
      */
     public void checkForChanges() {

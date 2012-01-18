@@ -25,7 +25,7 @@ public class JobMonitorTableModel extends AbstractTableModel implements Runnable
     public static final String JOB_STATUS_COLUMN_NAME = "job status";
     public static final String HUB_STATUS_COLUMN_NAME = "hub status";
 
-    public static final String CLUSTER_COLUMN_NAME = "cluster";
+    public static final String RESOURCE_COLUMN_NAME = "resource";
     public static final String MIDDLEWARE_COLUMN_NAME = "middleware";
     public static final String APPLICATION_COLUMN_NAME = "application";
     public static final String PROCESS_COUNT_COLUMN_NAME = "process count";
@@ -33,7 +33,7 @@ public class JobMonitorTableModel extends AbstractTableModel implements Runnable
     public static final String OUTPUT_COLUMN_NAME = "output";
 
     private String[] columnNames = new String[] { POOL_COLUMN_NAME,
-            NAME_COLUMN_NAME, JOB_STATUS_COLUMN_NAME, HUB_STATUS_COLUMN_NAME, CLUSTER_COLUMN_NAME,
+            NAME_COLUMN_NAME, JOB_STATUS_COLUMN_NAME, HUB_STATUS_COLUMN_NAME, RESOURCE_COLUMN_NAME,
             MIDDLEWARE_COLUMN_NAME, APPLICATION_COLUMN_NAME,
             PROCESS_COUNT_COLUMN_NAME, RESOURCE_COUNT_COLUMN_NAME,
             OUTPUT_COLUMN_NAME };
