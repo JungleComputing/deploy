@@ -489,7 +489,7 @@ public class Job implements Runnable {
     private org.gridlab.gat.resources.JobDescription createJobDescription(JavaSoftwareDescription sd) throws Exception {
         org.gridlab.gat.resources.JobDescription result;
 
-        File wrapperScript = description.getResource().getJobWrapperScript().getAbsoluteFile();
+        File wrapperScript = description.getResource().getJobWrapperScript();
 
         if (wrapperScript == null) {
             result = new org.gridlab.gat.resources.JobDescription(sd);
