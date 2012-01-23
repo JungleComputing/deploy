@@ -207,36 +207,36 @@ public class AmuseVisualization extends JPanel {
         // });
         // options.add(postprocess);
 
-        JMenu lod = new JMenu("Level of detail.");
-        JMenuItem zero = new JMenuItem("Low.");
-        zero.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                GLWindow.setLOD(0);
-                timer.redraw();
-            }
-        });
-        lod.add(zero);
-        JMenuItem one = new JMenuItem("Medium.");
-        one.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                GLWindow.setLOD(1);
-                timer.redraw();
-            }
-        });
-        lod.add(one);
-        JMenuItem two = new JMenuItem("High.");
-        two.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                GLWindow.setLOD(2);
-                timer.redraw();
-            }
-        });
-        lod.add(two);
-
-        options.add(lod);
+        // JMenu lod = new JMenu("Level of detail.");
+        // JMenuItem zero = new JMenuItem("Low.");
+        // zero.addActionListener(new ActionListener() {
+        // @Override
+        // public void actionPerformed(ActionEvent arg0) {
+        // GLWindow.setLOD(0);
+        // timer.redraw();
+        // }
+        // });
+        // lod.add(zero);
+        // JMenuItem one = new JMenuItem("Medium.");
+        // one.addActionListener(new ActionListener() {
+        // @Override
+        // public void actionPerformed(ActionEvent arg0) {
+        // GLWindow.setLOD(1);
+        // timer.redraw();
+        // }
+        // });
+        // lod.add(one);
+        // JMenuItem two = new JMenuItem("High.");
+        // two.addActionListener(new ActionListener() {
+        // @Override
+        // public void actionPerformed(ActionEvent arg0) {
+        // GLWindow.setLOD(2);
+        // timer.redraw();
+        // }
+        // });
+        // lod.add(two);
+        //
+        // options.add(lod);
 
         JMenuItem makeMovie = new JMenuItem("Make movie.");
         makeMovie.addActionListener(new ActionListener() {
@@ -353,7 +353,7 @@ public class AmuseVisualization extends JPanel {
                 timer.redraw();
             }
         };
-        visualConfig.add(GoggleSwing.checkboxBox("Toggles",
+        visualConfig.add(GoggleSwing.checkboxBox("",
                 new String[] { "Beamer mode" }, new boolean[] { Settings
                         .invertGasColor() },
                 new ItemListener[] { checkBoxListener }));
@@ -456,6 +456,28 @@ public class AmuseVisualization extends JPanel {
                         .getPostprocessingStarBrightnessMax()),
                 (int) (0.1f * 10), (int) (Settings
                         .getPostprocessingStarBrightness()), new JLabel("")));
+
+        visualConfig.add(GoggleSwing.radioBox("Level of Detail", new String[] {
+                "Low", "Medium", "High" }, new ActionListener[] {
+                new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent arg0) {
+                        GLWindow.setLOD(0);
+                        timer.redraw();
+                    }
+                }, new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent arg0) {
+                        GLWindow.setLOD(1);
+                        timer.redraw();
+                    }
+                }, new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent arg0) {
+                        GLWindow.setLOD(2);
+                        timer.redraw();
+                    }
+                } }));
     }
 
     private void createMovieTweakPanel() {
@@ -465,7 +487,7 @@ public class AmuseVisualization extends JPanel {
                 setTweakState(TweakState.NONE);
             }
         };
-        movieConfig.add(GoggleSwing.titleBox("Visual Configuration", listener));
+        movieConfig.add(GoggleSwing.titleBox("Movie Creator", listener));
 
         ItemListener checkBoxListener = new ItemListener() {
             @Override
@@ -474,9 +496,9 @@ public class AmuseVisualization extends JPanel {
                 timer.redraw();
             }
         };
-        movieConfig.add(GoggleSwing.checkboxBox("Toggles",
+        movieConfig.add(GoggleSwing.checkboxBox("",
                 new String[] { "Rotation" }, new boolean[] { Settings
-                        .invertGasColor() },
+                        .getMovieRotate() },
                 new ItemListener[] { checkBoxListener }));
 
         final JLabel rotationSetting = new JLabel(""
@@ -498,7 +520,7 @@ public class AmuseVisualization extends JPanel {
                         .getMovieRotationSpeedMax() * 4f), 1, (int) (Settings
                         .getMovieRotationSpeedDef() * 4f), rotationSetting));
 
-        movieConfig.add(GoggleSwing.buttonBox("Finalize",
+        movieConfig.add(GoggleSwing.buttonBox("",
                 new String[] { "Start Recording" },
                 new ActionListener[] { new ActionListener() {
                     @Override
