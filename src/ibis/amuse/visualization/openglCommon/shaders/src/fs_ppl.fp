@@ -12,7 +12,7 @@ uniform float Shininess;
 uniform int StarDrawMode;
 uniform vec4 HaloColor;
 
-out vec4 gl_FragColor;
+out vec4 fragColor;
 
 void main() {
 	if (StarDrawMode == 0) {
@@ -26,12 +26,12 @@ void main() {
 	    sf = pow(sf, Shininess);
 	
 	    vec4 color = AmbientMaterial + df * DiffuseMaterial + sf * SpecularMaterial;
-	    gl_FragColor = color;
+	    fragColor = color;
 	} else {		
-		gl_FragColor = HaloColor;
+		fragColor = HaloColor;
 		
 		if (HaloColor.a > 1.0) {
-			gl_FragColor.rgb = HaloColor.rgb * HaloColor.a;
+			fragColor.rgb = HaloColor.rgb * HaloColor.a;
 		}
 	}
 }

@@ -2,8 +2,8 @@
 
 uniform vec4 AmbientMaterial;
 
-out vec4 gl_FragColor;
+out vec4 fragColor;
 
 void main() {
-	gl_FragColor = AmbientMaterial;
+	fragColor = AmbientMaterial;
 }

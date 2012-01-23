@@ -14,20 +14,20 @@ uniform float overallBrightness;
 uniform int scrWidth;
 uniform int scrHeight;
 
-out vec4 gl_FragColor;
+out vec4 fragColor;
 
 void main() {
 	vec2 tCoord   = vec2(gl_FragCoord.x/float(scrWidth), gl_FragCoord.y/float(scrHeight));
 		
-	vec4 axesColor = vec4(texture2D(axesTexture, tCoord).rgb, 1.0);
-  	vec4 gasColor  = vec4(texture2D(gasTexture, tCoord).rgb, 1.0);
+	vec4 axesColor = vec4(texture(axesTexture, tCoord).rgb, 1.0);
+  	vec4 gasColor  = vec4(texture(gasTexture, tCoord).rgb, 1.0);
 	
-	vec4 starColor = vec4(texture2D(starTexture, tCoord).rgb, 1.0);
-	vec4 starHaloColor = vec4(texture2D(starHaloTexture, tCoord).rgb, 1.0);
+	vec4 starColor = vec4(texture(starTexture, tCoord).rgb, 1.0);
+	vec4 starHaloColor = vec4(texture(starHaloTexture, tCoord).rgb, 1.0);
     
     vec4 color = mix(starColor * starBrightness, starHaloColor * starHaloBrightness, 0.5); 
     	 color = mix(color, gasColor * gasBrightness, 0.1);
     	 color = mix(color, axesColor * axesBrightness, 0.1);
     
-    gl_FragColor = vec4(color.rgb * overallBrightness, 1.0);
+    fragColor = vec4(color.rgb * overallBrightness, 1.0);
 }

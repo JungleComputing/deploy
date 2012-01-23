@@ -10,7 +10,7 @@ uniform float Offset;
 uniform int StarDrawMode;
 uniform vec4 HaloColor;
 
-out vec4 gl_FragColor;
+out vec4 fragColor;
 
 const float brightnessMultiplyer = 6.0;
 
@@ -38,8 +38,8 @@ void main() {
 	
 		vec3 color   	= mix(Color1, Color2, intensity);
 	    
-		gl_FragColor = vec4(color * brightnessMultiplyer, 1.0);
+		fragColor = vec4(color * brightnessMultiplyer, 1.0);
 	} else {
-		gl_FragColor = HaloColor;
+		fragColor = HaloColor;
 	}
 }

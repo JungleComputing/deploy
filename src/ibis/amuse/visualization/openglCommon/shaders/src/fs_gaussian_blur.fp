@@ -18,7 +18,7 @@ const float pi = 3.14159265;
 const vec2 vertical = vec2(0.0, 1.0);
 const vec2 horizontal = vec2(1.0, 0.0);
 
-out vec4 gl_FragColor;
+out vec4 fragColor;
 
 // The sigma value for the gaussian function: higher value means more blur
 // A good value for 9x9 is around 3 to 5
@@ -41,7 +41,7 @@ vec4 gaussianBlur(sampler2D tex, vec2 tCoord, vec2 multiplyVec, int maxTexSize, 
   	float coefficientSum = 0.0;
 
   	// Take the central sample first...
-  	avgValue += texture2D(tex, tCoord) * incrementalGaussian.x;
+  	avgValue += texture(tex, tCoord) * incrementalGaussian.x;
   	coefficientSum += incrementalGaussian.x;
   	incrementalGaussian.xy *= incrementalGaussian.yz;
 
@@ -52,10 +52,10 @@ vec4 gaussianBlur(sampler2D tex, vec2 tCoord, vec2 multiplyVec, int maxTexSize, 
   		if (
   		tCoord.x - offset.x < 0.0 || tCoord.x + offset.x > 1.0 ||
   			tCoord.y - offset.y < 0.0 || tCoord.y + offset.y > 1.0) {
-  			avgValue += 2 * texture2D(tex, tCoord) * incrementalGaussian.x;
+  			avgValue += 2 * texture(tex, tCoord) * incrementalGaussian.x;
   		} else {
-  			avgValue += texture2D(tex, tCoord - offset) * incrementalGaussian.x;  		         
-	    	avgValue += texture2D(tex, tCoord + offset) * incrementalGaussian.x;
+  			avgValue += texture(tex, tCoord - offset) * incrementalGaussian.x;  		         
+	    	avgValue += texture(tex, tCoord + offset) * incrementalGaussian.x;
 	    }
 	             
 	    coefficientSum += 2.0 * incrementalGaussian.x;
@@ -97,10 +97,10 @@ void main() {
 	vec2 direction;
 	if (blurDirection == 0) {
 		direction = horizontal;
-		gl_FragColor = vec4(gaussianBlur(Texture, tCoord, direction, scrWidth, blurSize, numPixelsPerSide, sigma).rgb, Alpha);
+		fragColor = vec4(gaussianBlur(Texture, tCoord, direction, scrWidth, blurSize, numPixelsPerSide, sigma).rgb, Alpha);
 	} else {
 		direction = vertical;
-		gl_FragColor = vec4(gaussianBlur(Texture, tCoord, direction, scrHeight, blurSize, numPixelsPerSide, sigma).rgb, Alpha);
+		fragColor = vec4(gaussianBlur(Texture, tCoord, direction, scrHeight, blurSize, numPixelsPerSide, sigma).rgb, Alpha);
 	}
 	
   	
