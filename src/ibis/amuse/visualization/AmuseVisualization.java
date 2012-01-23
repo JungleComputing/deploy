@@ -124,6 +124,7 @@ public class AmuseVisualization extends JPanel {
 
         // glCapabilities.setDoubleBuffered(true);
         glCapabilities.setHardwareAccelerated(true);
+        glCapabilities.setDoubleBuffered(true);
 
         // Anti-Aliasing
         glCapabilities.setSampleBuffers(true);

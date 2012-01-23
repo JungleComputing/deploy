@@ -1,4 +1,4 @@
-#version 150
+#version 140
 #extension GL_EXT_geometry_shader4 : enable
 
 layout(triangles) in;
