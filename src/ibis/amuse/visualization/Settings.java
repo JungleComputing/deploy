@@ -22,7 +22,10 @@ public class Settings {
     private static float INITIAL_ZOOM = -390.0f;
 
     // Setting per movie frame
-    private static float PER_FRAME_ROTATION = 0.5f / 2f;
+    private static boolean MOVIE_ROTATE = true;
+    private static float MOVIE_ROTATION_SPEED_MIN = -1f;
+    private static float MOVIE_ROTATION_SPEED_MAX = 1f;
+    private static float MOVIE_ROTATION_SPEED_DEF = -0.25f;
 
     // Settings for the gas cloud octree
     private static int MAX_CLOUD_DEPTH = 25;
@@ -114,19 +117,29 @@ public class Settings {
         try {
             // Size settings for default startup and screenshots
             DEFAULT_SCREEN_WIDTH = props.getIntProperty("DEFAULT_SCREEN_WIDTH");
-            DEFAULT_SCREEN_HEIGHT = props.getIntProperty("DEFAULT_SCREEN_HEIGHT");
+            DEFAULT_SCREEN_HEIGHT = props
+                    .getIntProperty("DEFAULT_SCREEN_HEIGHT");
 
-            SCREENSHOT_SCREEN_WIDTH = props.getIntProperty("SCREENSHOT_SCREEN_WIDTH");
-            SCREENSHOT_SCREEN_HEIGHT = props.getIntProperty("SCREENSHOT_SCREEN_HEIGHT");
+            SCREENSHOT_SCREEN_WIDTH = props
+                    .getIntProperty("SCREENSHOT_SCREEN_WIDTH");
+            SCREENSHOT_SCREEN_HEIGHT = props
+                    .getIntProperty("SCREENSHOT_SCREEN_HEIGHT");
 
             // Settings for the initial view
-            INITIAL_SIMULATION_FRAME = props.getIntProperty("INITIAL_SIMULATION_FRAME");
+            INITIAL_SIMULATION_FRAME = props
+                    .getIntProperty("INITIAL_SIMULATION_FRAME");
             INITIAL_ROTATION_X = props.getFloatProperty("INITIAL_ROTATION_X");
             INITIAL_ROTATION_Y = props.getFloatProperty("INITIAL_ROTATION_Y");
             INITIAL_ZOOM = props.getFloatProperty("INITIAL_ZOOM");
 
             // Setting per movie frame
-            PER_FRAME_ROTATION = props.getFloatProperty("PER_FRAME_ROTATION");
+            MOVIE_ROTATE = props.getBooleanProperty("MOVIE_ROTATE");
+            MOVIE_ROTATION_SPEED_MIN = props
+                    .getFloatProperty("MOVIE_ROTATION_SPEED_MIN");
+            MOVIE_ROTATION_SPEED_MAX = props
+                    .getFloatProperty("MOVIE_ROTATION_SPEED_MAX");
+            MOVIE_ROTATION_SPEED_DEF = props
+                    .getFloatProperty("MOVIE_ROTATION_SPEED_DEF");
 
             // Settings for the gas cloud octree
             MAX_CLOUD_DEPTH = props.getIntProperty("MAX_CLOUD_DEPTH");
@@ -139,27 +152,43 @@ public class Settings {
             MAX_EXPECTED_MODELS = props.getIntProperty("MAX_EXPECTED_MODELS");
 
             // Minimum and maximum values for the brightness sliders
-            POSTPROCESSING_OVERALL_BRIGHTNESS_MIN = props.getFloatProperty("POSTPROCESSING_OVERALL_BRIGHTNESS_MIN");
-            POSTPROCESSING_OVERALL_BRIGHTNESS_MAX = props.getFloatProperty("POSTPROCESSING_OVERALL_BRIGHTNESS_MAX");
-            POSTPROCESSING_AXES_BRIGHTNESS_MIN = props.getFloatProperty("POSTPROCESSING_AXES_BRIGHTNESS_MIN");
-            POSTPROCESSING_AXES_BRIGHTNESS_MAX = props.getFloatProperty("POSTPROCESSING_AXES_BRIGHTNESS_MAX");
-            POSTPROCESSING_GAS_BRIGHTNESS_MIN = props.getFloatProperty("POSTPROCESSING_GAS_BRIGHTNESS_MIN");
-            POSTPROCESSING_GAS_BRIGHTNESS_MAX = props.getFloatProperty("POSTPROCESSING_GAS_BRIGHTNESS_MAX");
-            POSTPROCESSING_STAR_HALO_BRIGHTNESS_MIN = props.getFloatProperty("POSTPROCESSING_STAR_HALO_BRIGHTNESS_MIN");
-            POSTPROCESSING_STAR_HALO_BRIGHTNESS_MAX = props.getFloatProperty("POSTPROCESSING_STAR_HALO_BRIGHTNESS_MAX");
-            POSTPROCESSING_STAR_BRIGHTNESS_MIN = props.getFloatProperty("POSTPROCESSING_STAR_BRIGHTNESS_MIN");
-            POSTPROCESSING_STAR_BRIGHTNESS_MAX = props.getFloatProperty("POSTPROCESSING_STAR_BRIGHTNESS_MAX");
+            POSTPROCESSING_OVERALL_BRIGHTNESS_MIN = props
+                    .getFloatProperty("POSTPROCESSING_OVERALL_BRIGHTNESS_MIN");
+            POSTPROCESSING_OVERALL_BRIGHTNESS_MAX = props
+                    .getFloatProperty("POSTPROCESSING_OVERALL_BRIGHTNESS_MAX");
+            POSTPROCESSING_AXES_BRIGHTNESS_MIN = props
+                    .getFloatProperty("POSTPROCESSING_AXES_BRIGHTNESS_MIN");
+            POSTPROCESSING_AXES_BRIGHTNESS_MAX = props
+                    .getFloatProperty("POSTPROCESSING_AXES_BRIGHTNESS_MAX");
+            POSTPROCESSING_GAS_BRIGHTNESS_MIN = props
+                    .getFloatProperty("POSTPROCESSING_GAS_BRIGHTNESS_MIN");
+            POSTPROCESSING_GAS_BRIGHTNESS_MAX = props
+                    .getFloatProperty("POSTPROCESSING_GAS_BRIGHTNESS_MAX");
+            POSTPROCESSING_STAR_HALO_BRIGHTNESS_MIN = props
+                    .getFloatProperty("POSTPROCESSING_STAR_HALO_BRIGHTNESS_MIN");
+            POSTPROCESSING_STAR_HALO_BRIGHTNESS_MAX = props
+                    .getFloatProperty("POSTPROCESSING_STAR_HALO_BRIGHTNESS_MAX");
+            POSTPROCESSING_STAR_BRIGHTNESS_MIN = props
+                    .getFloatProperty("POSTPROCESSING_STAR_BRIGHTNESS_MIN");
+            POSTPROCESSING_STAR_BRIGHTNESS_MAX = props
+                    .getFloatProperty("POSTPROCESSING_STAR_BRIGHTNESS_MAX");
 
             // Settings for the postprocessing shader
-            POSTPROCESSING_OVERALL_BRIGHTNESS_DEF = props.getFloatProperty("POSTPROCESSING_OVERALL_BRIGHTNESS_DEF");
-            POSTPROCESSING_AXES_BRIGHTNESS_DEF = props.getFloatProperty("POSTPROCESSING_AXES_BRIGHTNESS_DEF");
-            POSTPROCESSING_GAS_BRIGHTNESS_DEF = props.getFloatProperty("POSTPROCESSING_GAS_BRIGHTNESS_DEF");
-            POSTPROCESSING_STAR_HALO_BRIGHTNESS_DEF = props.getFloatProperty("POSTPROCESSING_STAR_HALO_BRIGHTNESS_DEF");
-            POSTPROCESSING_STAR_BRIGHTNESS_DEF = props.getFloatProperty("POSTPROCESSING_STAR_BRIGHTNESS_DEF");
+            POSTPROCESSING_OVERALL_BRIGHTNESS_DEF = props
+                    .getFloatProperty("POSTPROCESSING_OVERALL_BRIGHTNESS_DEF");
+            POSTPROCESSING_AXES_BRIGHTNESS_DEF = props
+                    .getFloatProperty("POSTPROCESSING_AXES_BRIGHTNESS_DEF");
+            POSTPROCESSING_GAS_BRIGHTNESS_DEF = props
+                    .getFloatProperty("POSTPROCESSING_GAS_BRIGHTNESS_DEF");
+            POSTPROCESSING_STAR_HALO_BRIGHTNESS_DEF = props
+                    .getFloatProperty("POSTPROCESSING_STAR_HALO_BRIGHTNESS_DEF");
+            POSTPROCESSING_STAR_BRIGHTNESS_DEF = props
+                    .getFloatProperty("POSTPROCESSING_STAR_BRIGHTNESS_DEF");
 
             // Settings for the star-shape blur method (the + shape of stars)
             STAR_SHAPE_BLUR_SIZE = props.getIntProperty("STAR_SHAPE_BLUR_SIZE");
-            STAR_SHAPE_BLURFILTER_SIZE = props.getFloatProperty("STAR_SHAPE_BLURFILTER_SIZE");
+            STAR_SHAPE_BLURFILTER_SIZE = props
+                    .getFloatProperty("STAR_SHAPE_BLURFILTER_SIZE");
             STAR_SHAPE_SIGMA = props.getFloatProperty("STAR_SHAPE_SIGMA");
             STAR_SHAPE_ALPHA = props.getFloatProperty("STAR_SHAPE_ALPHA");
             STAR_SHAPE_BLUR_TYPE = props.getIntProperty("STAR_SHAPE_BLUR_TYPE");
@@ -169,53 +198,79 @@ public class Settings {
             LOW_GAS_BLUR_SIZE = props.getFloatProperty("LOW_GAS_BLUR_SIZE");
             LOW_GAS_BLUR_TYPE = props.getIntProperty("LOW_GAS_BLUR_TYPE");
 
-            LOW_STAR_HALO_BLUR_PASSES = props.getIntProperty("LOW_STAR_HALO_BLUR_PASSES");
-            LOW_STAR_HALO_BLUR_SIZE = props.getFloatProperty("LOW_STAR_HALO_BLUR_SIZE");
-            LOW_STAR_HALO_BLUR_TYPE = props.getIntProperty("LOW_STAR_HALO_BLUR_TYPE");
+            LOW_STAR_HALO_BLUR_PASSES = props
+                    .getIntProperty("LOW_STAR_HALO_BLUR_PASSES");
+            LOW_STAR_HALO_BLUR_SIZE = props
+                    .getFloatProperty("LOW_STAR_HALO_BLUR_SIZE");
+            LOW_STAR_HALO_BLUR_TYPE = props
+                    .getIntProperty("LOW_STAR_HALO_BLUR_TYPE");
 
             LOW_GAS_SUBDIVISION = props.getIntProperty("LOW_GAS_SUBDIVISION");
             LOW_STAR_SUBDIVISION = props.getIntProperty("LOW_STAR_SUBDIVISION");
-            LOW_GAS_PARTICLES_PER_OCTREE_NODE = props.getIntProperty("LOW_GAS_PARTICLES_PER_OCTREE_NODE");
+            LOW_GAS_PARTICLES_PER_OCTREE_NODE = props
+                    .getIntProperty("LOW_GAS_PARTICLES_PER_OCTREE_NODE");
 
-            MEDIUM_GAS_BLUR_PASSES = props.getIntProperty("MEDIUM_GAS_BLUR_PASSES");
-            MEDIUM_GAS_BLUR_SIZE = props.getFloatProperty("MEDIUM_GAS_BLUR_SIZE");
+            MEDIUM_GAS_BLUR_PASSES = props
+                    .getIntProperty("MEDIUM_GAS_BLUR_PASSES");
+            MEDIUM_GAS_BLUR_SIZE = props
+                    .getFloatProperty("MEDIUM_GAS_BLUR_SIZE");
             MEDIUM_GAS_BLUR_TYPE = props.getIntProperty("MEDIUM_GAS_BLUR_TYPE");
 
-            MEDIUM_STAR_HALO_BLUR_PASSES = props.getIntProperty("MEDIUM_STAR_HALO_BLUR_PASSES");
-            MEDIUM_STAR_HALO_BLUR_SIZE = props.getFloatProperty("MEDIUM_STAR_HALO_BLUR_SIZE");
-            MEDIUM_STAR_HALO_BLUR_TYPE = props.getIntProperty("MEDIUM_STAR_HALO_BLUR_TYPE");
+            MEDIUM_STAR_HALO_BLUR_PASSES = props
+                    .getIntProperty("MEDIUM_STAR_HALO_BLUR_PASSES");
+            MEDIUM_STAR_HALO_BLUR_SIZE = props
+                    .getFloatProperty("MEDIUM_STAR_HALO_BLUR_SIZE");
+            MEDIUM_STAR_HALO_BLUR_TYPE = props
+                    .getIntProperty("MEDIUM_STAR_HALO_BLUR_TYPE");
 
-            MEDIUM_GAS_SUBDIVISION = props.getIntProperty("MEDIUM_GAS_SUBDIVISION");
-            MEDIUM_STAR_SUBDIVISION = props.getIntProperty("MEDIUM_STAR_SUBDIVISION");
-            MEDIUM_GAS_PARTICLES_PER_OCTREE_NODE = props.getIntProperty("MEDIUM_GAS_PARTICLES_PER_OCTREE_NODE");
+            MEDIUM_GAS_SUBDIVISION = props
+                    .getIntProperty("MEDIUM_GAS_SUBDIVISION");
+            MEDIUM_STAR_SUBDIVISION = props
+                    .getIntProperty("MEDIUM_STAR_SUBDIVISION");
+            MEDIUM_GAS_PARTICLES_PER_OCTREE_NODE = props
+                    .getIntProperty("MEDIUM_GAS_PARTICLES_PER_OCTREE_NODE");
 
             HIGH_GAS_BLUR_PASSES = props.getIntProperty("HIGH_GAS_BLUR_PASSES");
             HIGH_GAS_BLUR_SIZE = props.getFloatProperty("HIGH_GAS_BLUR_SIZE");
             HIGH_GAS_BLUR_TYPE = props.getIntProperty("HIGH_GAS_BLUR_TYPE");
 
-            HIGH_STAR_HALO_BLUR_PASSES = props.getIntProperty("HIGH_STAR_HALO_BLUR_PASSES");
-            HIGH_STAR_HALO_BLUR_SIZE = props.getFloatProperty("HIGH_STAR_HALO_BLUR_SIZE");
-            HIGH_STAR_HALO_BLUR_TYPE = props.getIntProperty("HIGH_STAR_HALO_BLUR_TYPE");
+            HIGH_STAR_HALO_BLUR_PASSES = props
+                    .getIntProperty("HIGH_STAR_HALO_BLUR_PASSES");
+            HIGH_STAR_HALO_BLUR_SIZE = props
+                    .getFloatProperty("HIGH_STAR_HALO_BLUR_SIZE");
+            HIGH_STAR_HALO_BLUR_TYPE = props
+                    .getIntProperty("HIGH_STAR_HALO_BLUR_TYPE");
 
             HIGH_GAS_SUBDIVISION = props.getIntProperty("HIGH_GAS_SUBDIVISION");
-            HIGH_STAR_SUBDIVISION = props.getIntProperty("HIGH_STAR_SUBDIVISION");
-            HIGH_GAS_PARTICLES_PER_OCTREE_NODE = props.getIntProperty("HIGH_GAS_PARTICLES_PER_OCTREE_NODE");
+            HIGH_STAR_SUBDIVISION = props
+                    .getIntProperty("HIGH_STAR_SUBDIVISION");
+            HIGH_GAS_PARTICLES_PER_OCTREE_NODE = props
+                    .getIntProperty("HIGH_GAS_PARTICLES_PER_OCTREE_NODE");
 
             // Snaphots have different settings, since they are rendered at
             // extremely
             // high resolutions pixels
-            SNAPSHOT_GAS_BLUR_PASSES = props.getIntProperty("SNAPSHOT_GAS_BLUR_PASSES");
-            SNAPSHOT_GAS_BLUR_SIZE = props.getFloatProperty("SNAPSHOT_GAS_BLUR_SIZE");
-            SNAPSHOT_GAS_BLUR_TYPE = props.getIntProperty("SNAPSHOT_GAS_BLUR_TYPE");
+            SNAPSHOT_GAS_BLUR_PASSES = props
+                    .getIntProperty("SNAPSHOT_GAS_BLUR_PASSES");
+            SNAPSHOT_GAS_BLUR_SIZE = props
+                    .getFloatProperty("SNAPSHOT_GAS_BLUR_SIZE");
+            SNAPSHOT_GAS_BLUR_TYPE = props
+                    .getIntProperty("SNAPSHOT_GAS_BLUR_TYPE");
 
-            SNAPSHOT_STAR_HALO_BLUR_PASSES = props.getIntProperty("SNAPSHOT_STAR_HALO_BLUR_PASSES");
-            SNAPSHOT_STAR_HALO_BLUR_SIZE = props.getFloatProperty("SNAPSHOT_STAR_HALO_BLUR_SIZE");
-            SNAPSHOT_STAR_HALO_BLUR_TYPE = props.getIntProperty("SNAPSHOT_STAR_HALO_BLUR_TYPE");
+            SNAPSHOT_STAR_HALO_BLUR_PASSES = props
+                    .getIntProperty("SNAPSHOT_STAR_HALO_BLUR_PASSES");
+            SNAPSHOT_STAR_HALO_BLUR_SIZE = props
+                    .getFloatProperty("SNAPSHOT_STAR_HALO_BLUR_SIZE");
+            SNAPSHOT_STAR_HALO_BLUR_TYPE = props
+                    .getIntProperty("SNAPSHOT_STAR_HALO_BLUR_TYPE");
 
-            GAS_COLOR_INVERTED = props.getBooleanProperty("SNAPSHOT_STAR_HALO_BLUR_TYPE");
+            GAS_COLOR_INVERTED = props
+                    .getBooleanProperty("SNAPSHOT_STAR_HALO_BLUR_TYPE");
 
         } catch (NumberFormatException e) {
-            logger.info("A settings property was most likely entered incorrectly, " + e.getMessage());
+            logger
+                    .info("A settings property was most likely entered incorrectly, "
+                            + e.getMessage());
         }
     }
 
@@ -491,8 +546,31 @@ public class Settings {
         return INITIAL_ZOOM;
     }
 
-    public static float getPerFrameRotation() {
-        return PER_FRAME_ROTATION;
+    public static void setMovieRotate(int stateChange) {
+        if (stateChange == 1)
+            MOVIE_ROTATE = true;
+        if (stateChange == 2)
+            MOVIE_ROTATE = false;
+    }
+
+    public static boolean getMovieRotate() {
+        return MOVIE_ROTATE;
+    }
+
+    public static void setMovieRotationSpeed(float value) {
+        MOVIE_ROTATION_SPEED_DEF = value;
+    }
+
+    public static float getMovieRotationSpeedMin() {
+        return MOVIE_ROTATION_SPEED_MIN;
+    }
+
+    public static float getMovieRotationSpeedMax() {
+        return MOVIE_ROTATION_SPEED_MAX;
+    }
+
+    public static float getMovieRotationSpeedDef() {
+        return MOVIE_ROTATION_SPEED_DEF;
     }
 
     public static int getInitialSimulationFrame() {

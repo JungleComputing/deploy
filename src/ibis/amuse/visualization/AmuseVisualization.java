@@ -49,7 +49,7 @@ public class AmuseVisualization extends JPanel {
     private static final long serialVersionUID = 4754345291079348455L;
 
     public static enum TweakState {
-        NONE, GATHERING, METRICS, NETWORK, VISUAL
+        NONE, VISUAL, MOVIE
     };
 
     private TweakState currentConfigState = TweakState.VISUAL;
@@ -64,7 +64,7 @@ public class AmuseVisualization extends JPanel {
     public JFormattedTextField frameCounter;
 
     private JPanel configPanel;
-    private JPanel visualConfig;
+    private JPanel visualConfig, movieConfig;
 
     private String path, prefix;
 
@@ -240,7 +240,7 @@ public class AmuseVisualization extends JPanel {
         makeMovie.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent arg0) {
-                timer.movieMode();
+                setTweakState(TweakState.MOVIE);
             }
         });
         options.add(makeMovie);
@@ -271,6 +271,11 @@ public class AmuseVisualization extends JPanel {
         visualConfig.setLayout(new BoxLayout(visualConfig, BoxLayout.Y_AXIS));
         visualConfig.setMinimumSize(configPanel.getPreferredSize());
         createVisualTweakPanel();
+
+        movieConfig = new JPanel();
+        movieConfig.setLayout(new BoxLayout(movieConfig, BoxLayout.Y_AXIS));
+        movieConfig.setMinimumSize(configPanel.getPreferredSize());
+        createMovieTweakPanel();
 
         add(glcanvas, BorderLayout.CENTER);
         add(bottomPanel, BorderLayout.SOUTH);
@@ -315,6 +320,7 @@ public class AmuseVisualization extends JPanel {
     public void setTweakState(TweakState newState) {
         configPanel.setVisible(false);
         configPanel.remove(visualConfig);
+        configPanel.remove(movieConfig);
 
         currentConfigState = newState;
 
@@ -322,6 +328,9 @@ public class AmuseVisualization extends JPanel {
         } else if (currentConfigState == TweakState.VISUAL) {
             configPanel.setVisible(true);
             configPanel.add(visualConfig, BorderLayout.WEST);
+        } else if (currentConfigState == TweakState.MOVIE) {
+            configPanel.setVisible(true);
+            configPanel.add(movieConfig, BorderLayout.WEST);
         }
     }
 
@@ -445,6 +454,56 @@ public class AmuseVisualization extends JPanel {
                         .getPostprocessingStarBrightnessMax()),
                 (int) (0.1f * 10), (int) (Settings
                         .getPostprocessingStarBrightness()), new JLabel("")));
+    }
+
+    private void createMovieTweakPanel() {
+        ItemListener listener = new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent arg0) {
+                setTweakState(TweakState.NONE);
+            }
+        };
+        movieConfig.add(GoggleSwing.titleBox("Visual Configuration", listener));
+
+        ItemListener checkBoxListener = new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                Settings.setMovieRotate(e.getStateChange());
+                timer.redraw();
+            }
+        };
+        movieConfig.add(GoggleSwing.checkboxBox("Toggles",
+                new String[] { "Rotation" }, new boolean[] { Settings
+                        .invertGasColor() },
+                new ItemListener[] { checkBoxListener }));
+
+        final JLabel rotationSetting = new JLabel(""
+                + Settings.getMovieRotationSpeedDef());
+        ChangeListener movieRotationSpeedListener = new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                JSlider source = (JSlider) e.getSource();
+                if (source.hasFocus()) {
+                    Settings.setMovieRotationSpeed(source.getValue() * .25f);
+                    rotationSetting.setText(""
+                            + Settings.getMovieRotationSpeedDef());
+                }
+            }
+        };
+        movieConfig.add(GoggleSwing.sliderBox("Rotation Speed",
+                movieRotationSpeedListener, (int) (Settings
+                        .getMovieRotationSpeedMin() * 4f), (int) (Settings
+                        .getMovieRotationSpeedMax() * 4f), 1, (int) (Settings
+                        .getMovieRotationSpeedDef() * 4f), rotationSetting));
+
+        movieConfig.add(GoggleSwing.buttonBox("Finalize",
+                new String[] { "Start Recording" },
+                new ActionListener[] { new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        timer.movieMode();
+                    }
+                } }));
     }
 
     public static void main(String[] arguments) {
