@@ -1,4 +1,6 @@
-varying in vec3 EyespaceNormal;
+#version 150
+
+in vec3 EyespaceNormal;
 
 uniform vec4 AmbientMaterial;
 uniform vec4 SpecularMaterial;
@@ -9,6 +11,8 @@ uniform float Shininess;
 
 uniform int StarDrawMode;
 uniform vec4 HaloColor;
+
+out vec4 gl_FragColor;
 
 void main() {
 	if (StarDrawMode == 0) {
@@ -23,11 +27,11 @@ void main() {
 	
 	    vec4 color = AmbientMaterial + df * DiffuseMaterial + sf * SpecularMaterial;
 	    gl_FragColor = color;
-	} else {
-		if (HaloColor.a > 1.0) {
-			HaloColor.rgb = HaloColor.rgb * HaloColor.a;
-		}
-		
+	} else {		
 		gl_FragColor = HaloColor;
+		
+		if (HaloColor.a > 1.0) {
+			gl_FragColor.rgb = HaloColor.rgb * HaloColor.a;
+		}
 	}
 }

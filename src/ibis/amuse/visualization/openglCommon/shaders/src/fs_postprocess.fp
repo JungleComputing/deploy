@@ -1,3 +1,5 @@
+#version 150
+
 uniform sampler2D axesTexture;
 uniform sampler2D gasTexture;
 uniform sampler2D starTexture;
@@ -11,6 +13,8 @@ uniform float overallBrightness;
 
 uniform int scrWidth;
 uniform int scrHeight;
+
+out vec4 gl_FragColor;
 
 void main() {
 	vec2 tCoord   = vec2(gl_FragCoord.x/float(scrWidth), gl_FragCoord.y/float(scrHeight));

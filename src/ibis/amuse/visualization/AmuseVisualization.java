@@ -1,6 +1,7 @@
 package ibis.amuse.visualization;
 
 import ibis.amuse.visualization.amuseAdaptor.Hdf5TimedPlayer;
+import ibis.amuse.visualization.openglCommon.GLProfileSelector;
 import ibis.amuse.visualization.openglCommon.InputHandler;
 
 import java.awt.BorderLayout;
@@ -88,7 +89,8 @@ public class AmuseVisualization extends JPanel {
         JPopupMenu.setDefaultLightWeightPopupEnabled(false);
         setLayout(new BorderLayout(0, 0));
 
-        GLProfile glp = GLProfile.getDefault();
+        GLProfileSelector.printAvailable();
+        GLProfile glp = GLProfile.get(GLProfile.GL3);
         GLDrawableFactory factory = GLDrawableFactory.getFactory(glp);
 
         // Make the offscreen context for screenshotting

@@ -1,4 +1,6 @@
-varying in vec4 MCvertex;
+#version 150
+
+in vec4 MCvertex;
 
 uniform mat4 PMatrix;
 uniform mat4 MVMatrix;

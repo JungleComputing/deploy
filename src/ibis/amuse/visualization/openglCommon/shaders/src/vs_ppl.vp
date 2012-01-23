@@ -1,5 +1,7 @@
-varying in vec4 MCvertex;
-varying in vec3 MCnormal;
+#version 150
+
+in vec4 MCvertex;
+in vec3 MCnormal;
 
 uniform mat4 PMatrix;
 uniform mat4 MVMatrix;
@@ -8,7 +10,7 @@ uniform mat4 SMatrix;
 
 uniform int StarDrawMode;
 
-varying out vec3 EyespaceNormal;
+out vec3 EyespaceNormal;
 
 void main() {
 	if (StarDrawMode == 0) {

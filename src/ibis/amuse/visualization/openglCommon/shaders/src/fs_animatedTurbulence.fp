@@ -1,4 +1,6 @@
-varying in vec3  MCposition;
+#version 150
+
+in vec3  MCposition;
 
 uniform sampler3D Noise;  
 uniform vec4 AmbientMaterial;     
@@ -7,6 +9,8 @@ uniform float Offset;
 
 uniform int StarDrawMode;
 uniform vec4 HaloColor;
+
+out vec4 gl_FragColor;
 
 const float brightnessMultiplyer = 6.0;
 

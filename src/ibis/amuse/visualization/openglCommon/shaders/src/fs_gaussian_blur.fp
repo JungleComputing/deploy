@@ -1,3 +1,5 @@
+#version 150
+
 uniform sampler2D Texture;
 
 uniform int scrWidth;
@@ -15,6 +17,8 @@ const float pi = 3.14159265;
 
 const vec2 vertical = vec2(0.0, 1.0);
 const vec2 horizontal = vec2(1.0, 0.0);
+
+out vec4 gl_FragColor;
 
 // The sigma value for the gaussian function: higher value means more blur
 // A good value for 9x9 is around 3 to 5
