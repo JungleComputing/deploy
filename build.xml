@@ -91,7 +91,7 @@
 
         <copy todir="lib">
             <fileset dir="external" includes="*.jar" />            
-        	<fileset dir="${jogl}" includes="*.jar" excludes="**/*natives*" />
+        	<fileset dir="${jogl}" includes="*.jar" />
         	<fileset dir="${hdf}" includes="*.jar" />
         </copy>
     </target>	
@@ -105,60 +105,36 @@
 		<copy todir="lib/natives">
 			<fileset dir="external/hdf/win32" includes="*.*" />
 		</copy>
-		
-		<unzip dest="lib/natives">
-			<fileset dir="external/jogl" includes="*natives-windows-i586.jar" />
-		</unzip>
 	</target>
 	
 	<target name="copy-win64" if="build.on.windows64">
 		<copy todir="lib/natives">
 			<fileset dir="external/hdf/win64" includes="*.*" />
 		</copy>
-		
-		<unzip dest="lib/natives">
-			<fileset dir="external/jogl" includes="*natives-windows-amd64.jar" />
-		</unzip>
 	</target>
 	
 	<target name="copy-linux32" if="build.on.linux32">
 		<copy todir="lib/natives">
 			<fileset dir="external/hdf/linux32" includes="*.*" />
 		</copy>
-		
-		<unzip dest="lib/natives">
-			<fileset dir="external/jogl" includes="*natives-linux-i586.jar" />
-		</unzip>
 	</target>
 		
 	<target name="copy-linux64" if="build.on.linux64">
 		<copy todir="lib/natives">
 			<fileset dir="external/hdf/linux64" includes="*.*" />
 		</copy>
-		
-		<unzip dest="lib/natives">
-			<fileset dir="external/jogl" includes="*natives-linux-amd64.jar" />
-		</unzip>
 	</target>		
 	
 	<target name="copy-macosx32" if="build.on.macosx32">
 		<copy todir="lib/natives">
 			<fileset dir="external/hdf/macintel32" includes="*.*" />
 		</copy>
-		
-		<unzip dest="lib/natives">
-			<fileset dir="external/jogl" includes="*natives-macosx-universal.jar" />
-		</unzip>
 	</target>
 		
 	<target name="copy-macosx64" if="build.on.macosx32">
 		<copy todir="lib/natives">
 			<fileset dir="external/hdf/macintel64" includes="*.*" />
 		</copy>
-		
-		<unzip dest="lib/natives">
-			<fileset dir="external/jogl" includes="*natives-macosx-universal.jar" />
-		</unzip>
 	</target>
 
     <!-- Compile -->

@@ -8,7 +8,7 @@ import java.io.File;
 import javax.media.opengl.DefaultGLCapabilitiesChooser;
 import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLContext;
-import javax.media.opengl.GLDrawableFactory;
+import javax.media.opengl.GLDrawableFactory; 
 import javax.media.opengl.GLPbuffer;
 import javax.media.opengl.GLProfile;
 
