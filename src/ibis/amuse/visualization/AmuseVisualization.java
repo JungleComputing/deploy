@@ -90,7 +90,7 @@ public class AmuseVisualization extends JPanel {
         setLayout(new BorderLayout(0, 0));
 
         GLProfileSelector.printAvailable();
-        GLProfile glp = GLProfile.get(GLProfile.GL3);
+        GLProfile glp = GLProfile.get(GLProfile.GL2GL3);
         GLDrawableFactory factory = GLDrawableFactory.getFactory(glp);
 
         // Make the offscreen context for screenshotting

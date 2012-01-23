@@ -43,13 +43,15 @@ public class Picture {
                 attempt++;
             }
 
-            System.out.println("Writing screenshot: " + newFile.getAbsolutePath());
+            System.out.println("Writing screenshot: "
+                    + newFile.getAbsolutePath());
 
             // if (fromFBO) {
             // BufferedImage image =
             // transformPixelsRGBBuffer2ARGB_ByHand(frameBufferPixels);
             // ImageIO.write(image, "PNG", newFile);
             // } else {
+
             Screenshot.writeToFile(newFile, width, height);
             // }
         } catch (GLException e) {
@@ -59,7 +61,8 @@ public class Picture {
         }
     }
 
-    private BufferedImage transformPixelsRGBBuffer2ARGB_ByHand(ByteBuffer pixelsRGB) {
+    private BufferedImage transformPixelsRGBBuffer2ARGB_ByHand(
+            ByteBuffer pixelsRGB) {
         // Transform the ByteBuffer and get it as pixeldata.
 
         int[] pixelInts = new int[width * height];
@@ -81,12 +84,14 @@ public class Picture {
                 int iR = pixelsRGB.get(q++);
                 int iG = pixelsRGB.get(q++);
                 int iB = pixelsRGB.get(q++);
-                pixelInts[i++] = 0xFF000000 | ((iR & 0x000000FF) << 16) | ((iG & 0x000000FF) << 8) | (iB & 0x000000FF);
+                pixelInts[i++] = 0xFF000000 | ((iR & 0x000000FF) << 16)
+                        | ((iG & 0x000000FF) << 8) | (iB & 0x000000FF);
             }
         }
 
         // Create a new BufferedImage from the pixeldata.
-        BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage bufferedImage = new BufferedImage(width, height,
+                BufferedImage.TYPE_INT_ARGB);
         bufferedImage.setRGB(0, 0, width, height, pixelInts, 0, width);
 
         return bufferedImage;
