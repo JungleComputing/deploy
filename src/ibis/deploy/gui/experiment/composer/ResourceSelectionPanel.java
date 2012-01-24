@@ -70,13 +70,13 @@ public class ResourceSelectionPanel extends JPanel {
 
         });
         JPanel titlePanel = new JPanel(new BorderLayout());
-        titlePanel.add(new JLabel("Select Resource"), BorderLayout.WEST);
-        titlePanel.add(Utils.createImageLabel("images/network-server.png",
-                "resource count"), BorderLayout.EAST);
+        titlePanel.add(new JLabel("Resource"), BorderLayout.WEST);
 
         add(titlePanel, BorderLayout.NORTH);
 
         JPanel selectPanel = new JPanel(new BorderLayout());
+        selectPanel.add(Utils.createImageLabel("images/network-server.png",
+                "resource count"), BorderLayout.WEST);
         selectPanel.add(resourceComboBox, BorderLayout.CENTER);
         resourceCountPanel = new ResourceCountPanel(gui, worldMapPanel);
         selectPanel.add(resourceCountPanel, BorderLayout.EAST);

@@ -51,14 +51,16 @@ public class ApplicationSelectionPanel extends JPanel {
             applicationComboBox.addItem(application);
         }
         JPanel titlePanel = new JPanel(new BorderLayout());
-        titlePanel.add(new JLabel("Select Application"), BorderLayout.WEST);
-        titlePanel.add(Utils.createImageLabel(
-                "images/applications-system.png", "process count"),
-                BorderLayout.EAST);
+        titlePanel.add(new JLabel("Application"), BorderLayout.WEST);
 
         add(titlePanel, BorderLayout.NORTH);
 
         JPanel selectPanel = new JPanel(new BorderLayout());
+        selectPanel.add(Utils.createImageLabel(
+                "images/applications-system.png", "process count"),
+                 BorderLayout.WEST);
+
+        
         selectPanel.add(applicationComboBox, BorderLayout.CENTER);
         selectPanel.add(new ProcessCountPanel(gui), BorderLayout.EAST);
 
