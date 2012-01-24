@@ -143,6 +143,9 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
 		} else if (columnName
 				.equalsIgnoreCase(JobTableModel.RESOURCE_COUNT_COLUMN_NAME)) {
 			setText("" + value);
+	        } else if (columnName
+                             .equalsIgnoreCase(JobTableModel.RUNTIME_COLUMN_NAME)) {
+                     setText("" + value);
 		} else if (columnName
 				.equalsIgnoreCase(JobTableModel.OUTPUT_COLUMN_NAME)) {
 			boolean enabled = false;

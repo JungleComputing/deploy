@@ -25,10 +25,11 @@ public class JobRow {
     public static final int APPLICATION_COLUMN = 7;
     public static final int PROCESS_COUNT_COLUMN = 8;
     public static final int RESOURCE_COUNT_COLUMN = 9;
+    public static final int RUNTIME_COLUMN = 10;
 
-    public static final int OUTPUT_COLUMN = 10;
+    public static final int OUTPUT_COLUMN = 11;
 
-    public static final int NUMBER_OF_COLUMNS = 11;
+    public static final int NUMBER_OF_COLUMNS = 12;
 
     private JobDescription jobDescription;
 
@@ -92,6 +93,8 @@ public class JobRow {
             return jobDescription.getProcessCount();
         case RESOURCE_COUNT_COLUMN:
             return jobDescription.getResourceCount();
+        case RUNTIME_COLUMN:
+            return jobDescription.getRuntime();
         case OUTPUT_COLUMN:
             if (job == null) {
                 // no job, so no output
@@ -124,6 +127,7 @@ public class JobRow {
 
         case PROCESS_COUNT_COLUMN:
         case RESOURCE_COUNT_COLUMN:
+        case RUNTIME_COLUMN:
             return Integer.class;
 
         default:

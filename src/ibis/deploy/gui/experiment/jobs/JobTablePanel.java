@@ -37,12 +37,11 @@ public class JobTablePanel extends JPanel {
         table.setRowHeight(30);
         table.setDragEnabled(false);
         table.setGridColor(Color.LIGHT_GRAY);
-        //table.setIntercellSpacing(new Dimension(5, 5));
+        // table.setIntercellSpacing(new Dimension(5, 5));
 
         JobTableRenderer renderer = new JobTableRenderer(model);
 
-        TableRowSorter<JobTableModel> sorter = new TableRowSorter<JobTableModel>(
-                model);
+        TableRowSorter<JobTableModel> sorter = new TableRowSorter<JobTableModel>(model);
         sorter.setSortsOnUpdates(true);
         table.setRowSorter(sorter);
 
@@ -60,6 +59,9 @@ public class JobTablePanel extends JPanel {
                 column.setMaxWidth(70);// last column is fixed
                 column.setPreferredWidth(70);
                 column.setMinWidth(70);
+            } else if (i == JobRow.RESOURCE_COUNT_COLUMN || i == JobRow.PROCESS_COUNT_COLUMN
+                    || i == JobRow.RUNTIME_COLUMN) {
+                column.setPreferredWidth(60);
             } else {
                 column.setPreferredWidth(80);
             }
@@ -77,8 +79,7 @@ public class JobTablePanel extends JPanel {
         add(new JobTableControlPanel(gui, table), BorderLayout.SOUTH);
     }
 
-    private static class ButtonEditor implements TableCellEditor,
-            ActionListener {
+    private static class ButtonEditor implements TableCellEditor, ActionListener {
         /**
          * 
          */
@@ -88,12 +89,11 @@ public class JobTablePanel extends JPanel {
 
         private CellEditorListener listener;
 
-        public Component getTableCellEditorComponent(JTable table,
-                Object object, boolean isSelected, int row, int column) {
+        public Component getTableCellEditorComponent(JTable table, Object object, boolean isSelected, int row,
+                int column) {
             this.object = object;
-            Component component = table.getCellRenderer(row, column)
-                    .getTableCellRendererComponent(table, object, isSelected,
-                            true, row, column);
+            Component component = table.getCellRenderer(row, column).getTableCellRendererComponent(table, object,
+                    isSelected, true, row, column);
             ((JButton) component).addActionListener(this);
             return component;
         }
