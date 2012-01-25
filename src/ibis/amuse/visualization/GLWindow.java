@@ -31,6 +31,14 @@ import javax.media.opengl.GLContext;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.GLException;
 
+import com.jogamp.graph.curve.opengl.RenderState;
+import com.jogamp.graph.curve.opengl.Renderer;
+import com.jogamp.graph.curve.opengl.TextRenderer;
+import com.jogamp.graph.font.Font;
+import com.jogamp.graph.font.FontFactory;
+import com.jogamp.graph.geom.opengl.SVertex;
+import com.jogamp.opengl.util.glsl.ShaderState;
+
 public class GLWindow implements GLEventListener {
     private static boolean post_process = true;
     private static boolean axes = true;
@@ -78,8 +86,8 @@ public class GLWindow implements GLEventListener {
     private final Vec3 viewDistTranslation = new Vec3(0f, 0f, -150f);
     private final Vec3 translation = new Vec3(0f, 1000f, 0f);
 
-    private Texture2D axesTex, starHaloTex, gasTex, starTex, intermediateTex;
-    private Texture2D axesTex4k, starHaloTex4k, gasTex4k, starTex4k, intermediateTex4k;
+    private Texture2D axesTex, starHaloTex, gasTex, starTex, intermediateTex, hudTex;
+    private Texture2D axesTex4k, starHaloTex4k, gasTex4k, starTex4k, intermediateTex4k, hudTex4k;
 
     // private FBO starFBO, starHaloFBO, gasFBO, axesFBO;
 
@@ -91,10 +99,26 @@ public class GLWindow implements GLEventListener {
     private OctreeNode octreeRoot;
     private final GLContext offScreenContext;
 
+    int fontSet = FontFactory.UBUNTU;
+    Font font;
+    int fontSize = 10;
+    static final String text2 = "The quick brown fox jumps over the lazy dog";
+    private final Renderer renderer;
+    private final float[] position = new float[] { 0, 0, 0 };
+    private final float xTran = 0;
+    private final float yTran = 0;
+    private final float ang = 0f;
+    private final float zoom = 0f;
+    private final int texSize = 400;
+
     public GLWindow(AmuseVisualization panel, GLContext offScreenContext) {
         this.panel = panel;
         this.offScreenContext = offScreenContext;
         loader = new ProgramLoader();
+
+        RenderState rs = RenderState.createRenderState(new ShaderState(), SVertex.factory());
+        renderer = TextRenderer.create(rs, 0);
+        this.font = FontFactory.get(fontSet).getDefault();
     }
 
     @Override
@@ -131,6 +155,10 @@ public class GLWindow implements GLEventListener {
 
         // Enable Vertical Sync
         gl.setSwapInterval(1);
+
+        renderer.init(gl);
+        renderer.setAlpha(gl, 1.0f);
+        renderer.setColorStatic(gl, 0.0f, 0.0f, 0.0f);
 
         // Load and compile shaders, then use program.
         try {
@@ -243,6 +271,13 @@ public class GLWindow implements GLEventListener {
                 Settings.getScreenshotScreenHeight(), GL3.GL_TEXTURE10);
         intermediateTex4k.init(gl);
 
+        hudTex = new PostProcessTexture(canvasWidth, canvasHeight, GL3.GL_TEXTURE11);
+        hudTex.init(gl);
+
+        hudTex4k = new PostProcessTexture(Settings.getScreenshotScreenWidth(), Settings.getScreenshotScreenHeight(),
+                GL3.GL_TEXTURE12);
+        hudTex4k.init(gl);
+
         // if (offscreen_rendering) {
         // fbo = new FBO(gl, 4096, 3112, GL3.GL_TEXTURE9);
 
@@ -277,7 +312,7 @@ public class GLWindow implements GLEventListener {
             stars = timer.getStars();
             octreeRoot = timer.getOctreeRoot();
 
-            displayContext(stars, octreeRoot, starTex, starHaloTex, gasTex, axesTex);
+            displayContext(stars, octreeRoot, starTex, starHaloTex, gasTex, axesTex, hudTex);
 
             try {
                 drawable.getContext().release();
@@ -288,7 +323,7 @@ public class GLWindow implements GLEventListener {
     }
 
     private void displayContext(ArrayList<Star> stars, OctreeNode octreeRoot, Texture2D starTex, Texture2D starHaloTex,
-            Texture2D gasTex, Texture2D axesTex) {
+            Texture2D gasTex, Texture2D axesTex, Texture2D hudTex) {
         GL3 gl = GLContext.getCurrentGL().getGL3();
 
         stars.get(0).init(gl);
@@ -320,8 +355,10 @@ public class GLWindow implements GLEventListener {
 
         renderScene(gl, mv, stars, octreeRoot, starHaloTex, starTex, gasTex, axesTex);
 
+        renderHUDtext(gl, hudTex);
+
         if (post_process) {
-            renderTexturesToScreen(gl, width, height, starHaloTex, starTex, gasTex, axesTex);
+            renderTexturesToScreen(gl, width, height, starHaloTex, starTex, gasTex, axesTex, hudTex);
         }
 
     }
@@ -419,18 +456,34 @@ public class GLWindow implements GLEventListener {
         }
     }
 
+    private void renderHUDtext(GL3 gl, Texture2D hudTex) {
+        renderer.resetModelview(null);
+        renderer.translate(null, xTran, yTran, zoom);
+        renderer.rotate(gl, ang, 0, 1, 0);
+        renderer.setColorStatic(gl, 1.0f, 0.0f, 0.0f);
+        renderer.setAlpha(gl, 1.0f);
+
+        ((TextRenderer) renderer).drawString3D(gl, font, text2, position, fontSize, texSize);
+
+        if (post_process) {
+            renderToTexture(gl, hudTex);
+        }
+    }
+
     private void renderTexturesToScreen(GL3 gl, int width, int height, Texture2D starHaloTex, Texture2D starTex,
-            Texture2D gasTex, Texture2D axesTex) {
+            Texture2D gasTex, Texture2D axesTex, Texture2D hudTex) {
         postprocessShader.setUniform("axesTexture", axesTex.getMultitexNumber());
         postprocessShader.setUniform("gasTexture", gasTex.getMultitexNumber());
         postprocessShader.setUniform("starTexture", starTex.getMultitexNumber());
         postprocessShader.setUniform("starHaloTexture", starHaloTex.getMultitexNumber());
+        postprocessShader.setUniform("hudTexture", hudTex.getMultitexNumber());
 
         postprocessShader.setUniform("starBrightness", Settings.getPostprocessingStarBrightness());
         postprocessShader.setUniform("starHaloBrightness", Settings.getPostprocessingStarHaloBrightness());
         postprocessShader.setUniform("gasBrightness", Settings.getPostprocessingGasBrightness());
         postprocessShader.setUniform("axesBrightness", Settings.getPostprocessingAxesBrightness());
         postprocessShader.setUniform("overallBrightness", Settings.getPostprocessingOverallBrightness());
+        postprocessShader.setUniform("hudBrightness", 5f);
 
         postprocessShader.setUniformMatrix("PMatrix", new Mat4());
         postprocessShader.setUniform("scrWidth", width);
@@ -528,6 +581,11 @@ public class GLWindow implements GLEventListener {
 
         intermediateTex = new PostProcessTexture(canvasWidth, canvasHeight, GL3.GL_TEXTURE9);
         intermediateTex.init(gl);
+
+        hudTex = new PostProcessTexture(canvasWidth, canvasHeight, GL3.GL_TEXTURE11);
+        hudTex.init(gl);
+
+        renderer.reshapePerspective(null, fovy, w, h, zNear, zFar);
     }
 
     public void displayChanged(GLAutoDrawable drawable, boolean modeChanged, boolean deviceChanged) {
@@ -548,14 +606,18 @@ public class GLWindow implements GLEventListener {
         gasTex.delete(gl);
         axesTex.delete(gl);
         intermediateTex.delete(gl);
+        hudTex.delete(gl);
 
         starTex4k.delete(gl);
         starHaloTex4k.delete(gl);
         gasTex4k.delete(gl);
         axesTex4k.delete(gl);
         intermediateTex4k.delete(gl);
+        hudTex4k.delete(gl);
 
         loader.cleanup(gl);
+
+        renderer.destroy(gl);
     }
 
     public float getViewDist() {
@@ -702,8 +764,9 @@ public class GLWindow implements GLEventListener {
         starHaloTex4k.init(gl);
         gasTex4k.init(gl);
         axesTex4k.init(gl);
+        hudTex4k.init(gl);
 
-        displayContext(stars, octreeRoot, starTex4k, starHaloTex4k, gasTex4k, axesTex4k);
+        displayContext(stars, octreeRoot, starTex4k, starHaloTex4k, gasTex4k, axesTex4k, hudTex4k);
 
         Picture p = new Picture(width, height);
 
