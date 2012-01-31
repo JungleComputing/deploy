@@ -325,7 +325,8 @@ public class Application {
         if (arguments == null) {
             this.arguments = null;
         } else {
-            this.arguments = Arrays.asList(arguments.clone());
+            this.arguments = new ArrayList<String>();
+            this.arguments.addAll(Arrays.asList(arguments));
         }
     }
 
