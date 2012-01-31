@@ -368,7 +368,8 @@ public class Application {
         if (libs == null) {
             this.libs = null;
         } else {
-            this.libs = Arrays.asList(libs.clone());
+        	this.libs = new ArrayList<String>();
+            this.libs.addAll(Arrays.asList(libs));
         }
     }
 
@@ -410,7 +411,8 @@ public class Application {
         if (inputFiles == null) {
             this.inputFiles = null;
         } else {
-            this.inputFiles = Arrays.asList(inputFiles.clone());
+            this.inputFiles = new ArrayList<File>();
+            this.inputFiles.addAll(Arrays.asList(inputFiles));
         }
     }
 
@@ -452,7 +454,8 @@ public class Application {
         if (outputFiles == null) {
             this.outputFiles = null;
         } else {
-            this.outputFiles = Arrays.asList(outputFiles.clone());
+            this.outputFiles = new ArrayList<File>();
+            this.outputFiles.addAll(Arrays.asList(outputFiles));
         }
     }
 
