@@ -368,7 +368,7 @@ public class Application {
         if (libs == null) {
             this.libs = null;
         } else {
-        	this.libs = new ArrayList<String>();
+        this.libs = new ArrayList<File>();
             this.libs.addAll(Arrays.asList(libs));
         }
     }
