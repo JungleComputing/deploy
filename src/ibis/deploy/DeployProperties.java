@@ -29,8 +29,7 @@ public class DeployProperties extends TypedProperties {
 
     private static final long serialVersionUID = 1L;
 
-    private static final Logger logger = LoggerFactory
-            .getLogger(DeployProperties.class);
+    private static final Logger logger = LoggerFactory.getLogger(DeployProperties.class);
 
     /**
      * Convert a list of Strings to a single space separated String
@@ -182,6 +181,25 @@ public class DeployProperties extends TypedProperties {
         }
         return result;
     }
+    
+    /**
+     * convert a string map to a single string separated by the specified delimiter
+     * 
+     * @param map
+     *            the input map
+     * @return a comma separated version of the map
+     */
+    public static String toDSString(Map<String, String> map, String delim) {
+        if (map == null) {
+            return null;
+        }
+
+        String result = "";
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            result += entry.getKey() + "=" + entry.getValue() + delim + " ";
+        }
+        return result;
+    }
 
     /**
      * Finds a list of resources, jobs or application in a list of properties
@@ -285,6 +303,37 @@ public class DeployProperties extends TypedProperties {
     }
 
     /**
+     * Get a string map from a property object. It is specified by a number of
+     * key=value pairs, separated by the specified delimiter (normally ",")
+     * 
+     * @param key
+     *            the key of the map.
+     * @param delim the delimited used to split the map
+     * @return a string map.
+     */
+    public Map<String, String> getStringMapProperty(String key, String delim) {
+        if (getProperty(key) == null) {
+            return null;
+        }
+
+        Map<String, String> result = new HashMap<String, String>();
+        for (String string : getStringList(key, delim)) {
+            String[] keyValue = string.split("=", 2);
+            if (keyValue.length == 2 && keyValue[1].equals("")) {
+                result.put(keyValue[0].trim(), null);
+            } else if (keyValue.length == 2) {
+                result.put(keyValue[0].trim(), keyValue[1].trim());
+            } else if (keyValue.length == 1) {
+                result.put(keyValue[0].trim(), null);
+            } else {
+                logger.warn("error on parsing key " + key + " with value " + getProperty(key));
+            }
+        }
+
+        return result;
+    }
+
+    /**
      * Get a string map from a property object.
      * 
      * @param key
@@ -292,26 +341,7 @@ public class DeployProperties extends TypedProperties {
      * @return a string map.
      */
     public Map<String, String> getStringMapProperty(String key) {
-        if (getProperty(key) == null) {
-            return null;
-        }
-
-        Map<String, String> result = new HashMap<String, String>();
-        for (String string : getStringList(key)) {
-            String[] keyValue = string.split("=", 2);
-            if (keyValue.length == 2 && keyValue[1].equals("")) {
-                result.put(keyValue[0], null);
-            } else if (keyValue.length == 2) {
-                result.put(keyValue[0], keyValue[1]);
-            } else if (keyValue.length == 1) {
-                result.put(keyValue[0], null);
-            } else {
-                logger.warn("error on parsing key " + key + " with value "
-                        + getProperty(key));
-            }
-        }
-
-        return result;
+        return getStringMapProperty(key, "\\s*,\\s*");
     }
 
     public Color getColorProperty(String key) {

@@ -43,6 +43,7 @@ public class Resource {
         out.println("# support.system.properties system properties for the support processes (e.g. smartsocekts settings)");
 
         out.println("# job.adaptor         JavaGAT adaptor used to deploy jobs");
+        out.println("# job.options         options used to start job.");
         out.println("# java.path           Path to java executable on this resource.");
         out.println("#                     If unspecified, \"java\" is used");
         out.println("# job.wrapper.script  If specified, the given script is copied to the resource");
@@ -69,6 +70,8 @@ public class Resource {
 
     // uri of job broker
     private URI jobURI;
+
+    private Map<String, String> jobOptions;
 
     // adaptor(s) used to copy files to and from the resource
     private List<String> fileAdaptors;
@@ -102,7 +105,8 @@ public class Resource {
     private final DeployProperties properties;
 
     /**
-     * Returns a Resource object representing the local machine (a.k.a. localhost).
+     * Returns a Resource object representing the local machine (a.k.a.
+     * localhost).
      */
     public static Resource getLocalResource() throws Exception {
         Resource result = new Resource("local");
@@ -112,8 +116,7 @@ public class Resource {
         result.setJobAdaptor("local");
         result.setJobURI(new URI("local://localhost"));
         result.setFileAdaptors("local");
-        result.setJavaPath(System.getProperty("java.home") + File.separator
-                + "bin" + File.separator + "java");
+        result.setJavaPath(System.getProperty("java.home") + File.separator + "bin" + File.separator + "java");
         result.setLatitude(0);
         result.setLongitude(0);
 
@@ -137,6 +140,7 @@ public class Resource {
         supportURI = null;
         jobAdaptor = null;
         jobURI = null;
+        jobOptions = null;
         fileAdaptors = null;
         javaPath = null;
         jobWrapperScript = null;
@@ -169,6 +173,7 @@ public class Resource {
         supportURI = null;
         jobAdaptor = null;
         jobURI = null;
+        jobOptions = null;
         fileAdaptors = null;
         javaPath = null;
         jobWrapperScript = null;
@@ -198,7 +203,11 @@ public class Resource {
         supportURI = original.supportURI;
         jobAdaptor = original.jobAdaptor;
         jobURI = original.jobURI;
-
+        
+        if (original.jobOptions != null) {
+            jobOptions = new HashMap<String, String>(original.jobOptions);
+        }
+        
         if (original.fileAdaptors != null) {
             fileAdaptors = new ArrayList<String>(original.fileAdaptors);
         }
@@ -210,8 +219,7 @@ public class Resource {
         keyFile = original.keyFile;
 
         if (original.supportSystemProperties != null) {
-            supportSystemProperties = new HashMap<String, String>(
-                    original.supportSystemProperties);
+            supportSystemProperties = new HashMap<String, String>(original.supportSystemProperties);
         }
 
         latitude = original.latitude;
@@ -220,7 +228,8 @@ public class Resource {
     }
 
     /**
-     * Load resource from the given properties (usually loaded from a jungle file)
+     * Load resource from the given properties (usually loaded from a jungle
+     * file)
      * 
      * @param properties
      *            properties to load resource from
@@ -230,8 +239,7 @@ public class Resource {
      * @throws Exception
      *             if resource cannot be read properly, or its name is invalid
      */
-    public void loadFromProperties(DeployProperties properties, String prefix)
-            throws Exception {
+    public void loadFromProperties(DeployProperties properties, String prefix) throws Exception {
         // add separator to prefix
         String name = prefix;
         prefix = prefix + ".";
@@ -240,8 +248,7 @@ public class Resource {
                 || properties.getProperty(prefix + "server.adaptor") != null
                 || properties.getProperty(prefix + "server.system.properties") != null) {
             throw new Exception("The resource description for \"" + name
-                    + "\" contains \"server.*\" properties, which have "
-                    + "been renamed to \"support.*\"");
+                    + "\" contains \"server.*\" properties, which have " + "been renamed to \"support.*\"");
         }
 
         // load all the properties corresponding to this resource,
@@ -259,17 +266,18 @@ public class Resource {
         if (properties.getProperty(prefix + "job.uri") != null) {
             jobURI = properties.getURIProperty(prefix + "job.uri");
         }
+        if (properties.getProperty(prefix + "job.options") != null) {
+            jobOptions = properties.getStringMapProperty(prefix + "job.options", ";");
+        }
         // get adaptors as list of string, defaults to "null"
         if (properties.getProperty(prefix + "file.adaptors") != null) {
-            fileAdaptors = properties.getStringListProperty(prefix
-                    + "file.adaptors");
+            fileAdaptors = properties.getStringListProperty(prefix + "file.adaptors");
         }
         if (properties.getProperty(prefix + "java.path") != null) {
             javaPath = properties.getProperty(prefix + "java.path");
         }
         if (properties.getProperty(prefix + "job.wrapper.script") != null) {
-            jobWrapperScript = properties.getFileProperty(prefix
-                    + "job.wrapper.script");
+            jobWrapperScript = properties.getFileProperty(prefix + "job.wrapper.script");
         }
         if (properties.getProperty(prefix + "user.name") != null) {
             userName = properties.getProperty(prefix + "user.name");
@@ -284,8 +292,7 @@ public class Resource {
             longitude = properties.getDoubleProperty(prefix + "longitude", 0);
         }
         if (properties.getProperty(prefix + "support.system.properties") != null) {
-            supportSystemProperties = properties.getStringMapProperty(prefix
-                    + "support.system.properties");
+            supportSystemProperties = properties.getStringMapProperty(prefix + "support.system.properties");
         }
         if (properties.getProperty(prefix + "color") != null) {
             color = properties.getColorProperty(prefix + "color");
@@ -297,11 +304,10 @@ public class Resource {
     }
 
     public boolean isEmpty() {
-        return supportAdaptor == null && supportURI == null
-                && jobAdaptor == null && jobURI == null && fileAdaptors == null
-                && javaPath == null && jobWrapperScript == null
-                && supportSystemProperties == null && userName == null
-                && keyFile == null && latitude == 0 && longitude == 0;
+        return supportAdaptor == null && supportURI == null && jobAdaptor == null && jobURI == null
+                && jobOptions == null && fileAdaptors == null && javaPath == null && jobWrapperScript == null
+                && supportSystemProperties == null && userName == null && keyFile == null && latitude == 0
+                && longitude == 0;
     }
 
     /**
@@ -328,6 +334,12 @@ public class Resource {
             if (other.jobURI != null && jobURI == null) {
                 jobURI = other.jobURI;
             }
+            
+            if (other.jobOptions != null && jobOptions == null) {
+                for (Map.Entry<String, String> entry : other.jobOptions.entrySet()) {
+                    setJobOption(entry.getKey(), entry.getValue());
+                }
+            }
 
             if (other.fileAdaptors != null && fileAdaptors == null) {
                 fileAdaptors = new ArrayList<String>();
@@ -350,10 +362,8 @@ public class Resource {
                 keyFile = other.keyFile;
             }
 
-            if (other.supportSystemProperties != null
-                    && supportSystemProperties == null) {
-                for (Map.Entry<String, String> entry : other.supportSystemProperties
-                        .entrySet()) {
+            if (other.supportSystemProperties != null && supportSystemProperties == null) {
+                for (Map.Entry<String, String> entry : other.supportSystemProperties.entrySet()) {
                     setSupportSystemProperty(entry.getKey(), entry.getValue());
                 }
             }
@@ -410,12 +420,10 @@ public class Resource {
         }
 
         if (name.contains(".")) {
-            throw new Exception("resource name cannot contain periods : \""
-                    + name + "\"");
+            throw new Exception("resource name cannot contain periods : \"" + name + "\"");
         }
         if (name.contains(" ")) {
-            throw new Exception("resource name cannot contain spaces : \""
-                    + name + "\"");
+            throw new Exception("resource name cannot contain spaces : \"" + name + "\"");
         }
 
         this.name = name;
@@ -505,6 +513,48 @@ public class Resource {
     public void setJobURI(URI jobURI) {
         this.jobURI = jobURI;
     }
+    
+    /**
+     * Returns (copy of) map of all job options
+     * 
+     * @return all job options, or null if unset.
+     */
+    public Map<String, String> getJobOptions() {
+        if (jobOptions == null) {
+            return null;
+        }
+        return new HashMap<String, String>(jobOptions);
+    }
+
+    /**
+     * Sets map of all job options.
+     * 
+     * @param jobOptions
+     *            new job options, or null to unset.
+     */
+    public void setJobOptions(Map<String, String> jobOptions) {
+        if (jobOptions == null) {
+            this.jobOptions = null;
+        } else {
+            this.jobOptions = new HashMap<String, String>(jobOptions);
+        }
+    }
+
+    /**
+     * Sets a single job option. Map will be created
+     * if needed.
+     * 
+     * @param name
+     *            name of new property
+     * @param value
+     *            value of new property.
+     */
+    public void setJobOption(String name, String value) {
+        if (jobOptions == null) {
+            jobOptions = new HashMap<String, String>();
+        }
+        jobOptions.put(name, value);
+    }
 
     /**
      * Returns a list of adaptors used to copy files to and from this resource.
@@ -570,9 +620,10 @@ public class Resource {
     }
 
     /**
-     * Returns the job wrapper script, if any. Useful to start jobs on a resource
-     * without any installed middleware. If specified, this script is pre-staged
-     * and executed instead of the java command. This script is passed:
+     * Returns the job wrapper script, if any. Useful to start jobs on a
+     * resource without any installed middleware. If specified, this script is
+     * pre-staged and executed instead of the java command. This script is
+     * passed:
      * <ol>
      * <li>The number of nodes to use</li>
      * <li>The total number of cores to use</li>
@@ -664,8 +715,7 @@ public class Resource {
         if (systemProperties == null) {
             this.supportSystemProperties = null;
         } else {
-            this.supportSystemProperties = new HashMap<String, String>(
-                    systemProperties);
+            this.supportSystemProperties = new HashMap<String, String>(systemProperties);
         }
     }
 
@@ -754,8 +804,7 @@ public class Resource {
      * @throws Exception
      *             if this resource is incomplete or incorrect.
      */
-    public void checkSettings(String jobName, boolean supportOnly)
-            throws Exception {
+    public void checkSettings(String jobName, boolean supportOnly) throws Exception {
         String prefix = "Cannot run job \"" + jobName + "\": Resource ";
 
         if (name == null) {
@@ -790,13 +839,11 @@ public class Resource {
      * @throws Exception
      *             if this resource has no name
      */
-    void save(PrintWriter out, String prefix, boolean printComments)
-            throws Exception {
+    void save(PrintWriter out, String prefix, boolean printComments) throws Exception {
         boolean empty = true;
 
         if (prefix == null) {
-            throw new Exception("cannot print resource to file,"
-                    + " prefix is not specified");
+            throw new Exception("cannot print resource to file," + " prefix is not specified");
         }
 
         String dotPrefix = prefix + ".";
@@ -809,8 +856,7 @@ public class Resource {
         }
 
         if (supportURI != null) {
-            out.println(dotPrefix + "support.uri = "
-                    + supportURI.toASCIIString());
+            out.println(dotPrefix + "support.uri = " + supportURI.toASCIIString());
             empty = false;
         } else if (printComments) {
             out.println("#" + dotPrefix + "support.uri = ");
@@ -829,10 +875,17 @@ public class Resource {
         } else if (printComments) {
             out.println("#" + dotPrefix + "job.uri = ");
         }
+        
+        if (jobOptions != null) {
+            out.println(dotPrefix + "job.options = "
+                    + DeployProperties.toDSString(jobOptions, ";"));
+            empty = false;
+        } else if (printComments) {
+            out.println("#" + dotPrefix + "job.options =");
+        }
 
         if (fileAdaptors != null) {
-            out.println(dotPrefix + "file.adaptors = "
-                    + DeployProperties.strings2CSS(fileAdaptors));
+            out.println(dotPrefix + "file.adaptors = " + DeployProperties.strings2CSS(fileAdaptors));
             empty = false;
         } else if (printComments) {
             out.println("#" + dotPrefix + "file.adaptors = ");
@@ -925,15 +978,13 @@ public class Resource {
         result += " Support URI = " + getSupportURI() + "\n";
         result += " Job adaptor = " + getJobAdaptor() + "\n";
         result += " Job URI = " + getJobURI() + "\n";
-        result += " File adaptors = "
-                + DeployProperties.strings2CSS(fileAdaptors) + "\n";
+        result += " Job options = " + DeployProperties.toDSString(getJobOptions(), ";") + "\n";
+        result += " File adaptors = " + DeployProperties.strings2CSS(fileAdaptors) + "\n";
         result += " Java path = " + getJavaPath() + "\n";
         result += " Wrapper Script = " + getJobWrapperScript() + "\n";
         result += " User name = " + getUserName() + "\n";
         result += " User keyfile = " + getKeyFile() + "\n";
-        result += " Support system properties = "
-                + DeployProperties.toCSString(getSupportSystemProperties())
-                + "\n";
+        result += " Support system properties = " + DeployProperties.toCSString(getSupportSystemProperties()) + "\n";
         result += " Latitude = " + getLatitude() + "\n";
         result += " Longitude = " + getLongitude() + "\n";
         result += " Color = " + Colors.color2colorCode(color) + "\n";

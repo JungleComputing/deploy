@@ -12,6 +12,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -299,6 +300,14 @@ public class Job implements Runnable {
         if (resource.getJobAdaptor() != null) {
             context.addPreference("resourcebroker.adaptor.name", resource.getJobAdaptor());
         }
+        
+        if (resource.getJobOptions() != null) {
+            for(Map.Entry<String, String> option: resource.getJobOptions().entrySet()) {
+                context.addPreference(option.getKey(), option.getValue());
+                //System.err.println("option! \"" + option.getKey() + "\" equals now \"" + option.getValue() + "\"");
+            }
+        }
+        //context.addPreference("sshsge.native.flags", "-l num_gpu=1");S
 
         context.addPreference("file.adaptor.name", DeployProperties.strings2CSS(resource.getFileAdaptors()));
 
@@ -479,6 +488,8 @@ public class Job implements Runnable {
             sd.setStdout(GAT.createFile(context, description.getPoolName() + "." + description.getName() + ".out.txt"));
             sd.setStderr(GAT.createFile(context, description.getPoolName() + "." + description.getName() + ".err.txt"));
         }
+        
+
 
         logger.info("Submitting application \"" + application.getName() + "\" to " + resource.getName() + " using "
                 + resource.getJobURI());
