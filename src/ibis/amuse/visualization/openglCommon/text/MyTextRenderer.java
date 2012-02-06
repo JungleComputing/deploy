@@ -33,8 +33,6 @@ import javax.media.opengl.GLException;
 
 import jogamp.graph.curve.opengl.shader.AttributeNames;
 
-import com.jogamp.graph.curve.opengl.RenderState;
-import com.jogamp.graph.curve.opengl.TextRenderer;
 import com.jogamp.graph.font.Font;
 import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
@@ -73,10 +71,6 @@ public class MyTextRenderer extends TextRenderer {
         }
         st.useProgram(gl, true);
 
-        if (DEBUG) {
-            System.err.println("TextRendererImpl01 initialized: "
-                    + Thread.currentThread() + " " + st);
-        }
         return true;
     }
 
@@ -100,6 +94,11 @@ public class MyTextRenderer extends TextRenderer {
         }
 
         glyphString.renderString3D(gl, rs, vp_width, vp_height, texSize);
+    }
+
+    protected void drawImpl(GL2ES2 gl, Region region, float[] position,
+            int texSize) {
+        ((GLRegion) region).draw(gl, rs, vp_width, vp_height, texSize);
     }
 
 }

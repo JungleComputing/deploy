@@ -20,6 +20,10 @@ import ibis.amuse.visualization.openglCommon.scenegraph.OctreeNode;
 import ibis.amuse.visualization.openglCommon.shaders.Program;
 import ibis.amuse.visualization.openglCommon.shaders.ProgramLoader;
 import ibis.amuse.visualization.openglCommon.text.MyTextRenderer;
+import ibis.amuse.visualization.openglCommon.text.RenderState;
+import ibis.amuse.visualization.openglCommon.text.RenderStateImpl;
+import ibis.amuse.visualization.openglCommon.text.Renderer;
+import ibis.amuse.visualization.openglCommon.text.TextRenderer;
 import ibis.amuse.visualization.openglCommon.textures.Perlin3D;
 import ibis.amuse.visualization.openglCommon.textures.PostProcessTexture;
 import ibis.amuse.visualization.openglCommon.textures.Texture2D;
@@ -33,10 +37,6 @@ import javax.media.opengl.GLContext;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.GLException;
 
-import com.jogamp.graph.curve.Region;
-import com.jogamp.graph.curve.opengl.RenderState;
-import com.jogamp.graph.curve.opengl.Renderer;
-import com.jogamp.graph.curve.opengl.TextRenderer;
 import com.jogamp.graph.font.Font;
 import com.jogamp.graph.font.FontFactory;
 import com.jogamp.graph.geom.opengl.SVertex;
@@ -121,9 +121,9 @@ public class GLWindow implements GLEventListener {
         this.offScreenContext = offScreenContext;
         loader = new ProgramLoader();
 
-        RenderState rs = RenderState.createRenderState(new ShaderState(),
-                SVertex.factory());
-        renderer = new MyTextRenderer(rs, Region.VBAA_RENDERING_BIT);
+        RenderState rs = new RenderStateImpl(new ShaderState(), SVertex
+                .factory());
+        renderer = new MyTextRenderer(rs, 0);// Region.VBAA_RENDERING_BIT);
         // ((TextRenderer) renderer).setCacheLimit(32);
         this.font = FontFactory.get(fontSet).getDefault();
     }

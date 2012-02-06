@@ -32,14 +32,10 @@ import java.util.ArrayList;
 
 import javax.media.opengl.GL2ES2;
 
-import jogamp.graph.curve.opengl.RegionFactory;
 import jogamp.graph.curve.text.GlyphShape;
 import jogamp.graph.font.FontInt;
 
 import com.jogamp.graph.curve.OutlineShape;
-import com.jogamp.graph.curve.Region;
-import com.jogamp.graph.curve.opengl.GLRegion;
-import com.jogamp.graph.curve.opengl.RenderState;
 import com.jogamp.graph.font.Font;
 import com.jogamp.graph.geom.AABBox;
 import com.jogamp.graph.geom.Outline;
