@@ -398,7 +398,7 @@ public class GLWindow implements GLEventListener {
         renderScene(gl, mv, stars, octreeRoot, starHaloTex, starTex, gasTex,
                 axesTex);
 
-        renderHUDtext(gl, hudTex);
+        // renderHUDtext(gl, hudTex);
 
         if (post_process) {
             renderTexturesToScreen(gl, width, height, starHaloTex, starTex,

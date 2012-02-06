@@ -40,8 +40,7 @@ import jogamp.graph.font.typecast.ot.OTFontCollection;
 
 import com.jogamp.common.util.IOUtil;
 
-public class TypecastFontConstructor implements FontConstructor {
-
+public class TypecastFontConstructor {
     public Font create(final File ffile) throws IOException {
         return AccessController.doPrivileged(new PrivilegedAction<Font>() {
             public Font run() {

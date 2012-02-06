@@ -28,12 +28,9 @@ package ibis.amuse.visualization.openglCommon.text;
  * or implied, of JogAmp Community.
  */
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
 
 public interface FontConstructor {
-    Font create(File file) throws IOException;
-
-    Font create(URL url) throws IOException;
+    // Font create(File file) throws IOException;
+    //
+    // Font create(URL url) throws IOException;
 }

@@ -31,31 +31,28 @@ package ibis.amuse.visualization.openglCommon.text;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.security.AccessController;
-
-import jogamp.opengl.Debug;
-
-import com.jogamp.common.util.ReflectionUtil;
 
 public class FontFactory {
     /** Ubuntu is the default font family */
     public static final int UBUNTU = 0;
 
-    private static final FontConstructor fontConstr;
+    private static final TypecastFontConstructor fontConstr = new TypecastFontConstructor();
 
-    static {
-        /**
-         * For example: "jogamp.graph.font.typecast.TypecastFontFactory"
-         * (default) "jogamp.graph.font.ttf.TTFFontImpl"
-         */
-        String fontImplName = Debug.getProperty("FontImpl", true,
-                AccessController.getContext());
-        if (null == fontImplName) {
-            fontImplName = "ibis.amuse.visualization.openglCommon.text.TypecastFontConstructor";
-        }
-        fontConstr = (FontConstructor) ReflectionUtil.createInstance(
-                fontImplName, FontFactory.class.getClassLoader());
-    }
+    // static {
+    // /**
+    // * For example: "jogamp.graph.font.typecast.TypecastFontFactory"
+    // * (default) "jogamp.graph.font.ttf.TTFFontImpl"
+    // */
+    // String fontImplName = Debug.getProperty("FontImpl", true,
+    // AccessController.getContext());
+    // if (null == fontImplName) {
+    // fontImplName =
+    // "ibis.amuse.visualization.openglCommon.text.TypecastFontConstructor";
+    // }
+    // fontConstr = (TypecastFontConstructor)
+    // ReflectionUtil.createInstance(
+    // fontImplName, FontFactory.class.getClassLoader());
+    // }
 
     public static final FontSet getDefault() {
         return get(UBUNTU);
