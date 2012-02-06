@@ -33,7 +33,6 @@ import javax.media.opengl.GLException;
 
 import jogamp.graph.curve.opengl.shader.AttributeNames;
 
-import com.jogamp.graph.font.Font;
 import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
 import com.jogamp.opengl.util.glsl.ShaderState;

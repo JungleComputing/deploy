@@ -32,7 +32,6 @@ import java.util.ArrayList;
 
 import javax.media.opengl.GL2ES2;
 
-import com.jogamp.graph.curve.OutlineShape;
 import com.jogamp.graph.geom.Triangle;
 import com.jogamp.graph.geom.Vertex;
 import com.jogamp.opengl.util.PMVMatrix;
@@ -56,7 +55,8 @@ public abstract class GLRegion extends Region {
      * @return the resulting Region inclusive the generated region
      */
     public static GLRegion create(OutlineShape[] outlineShapes, int renderModes) {
-        final GLRegion region = RegionFactory.create(renderModes);
+        final GLRegion region = new VBORegion2PES2(renderModes,
+                Region.TWO_PASS_DEFAULT_TEXTURE_UNIT); // RegionFactory.create(renderModes);
 
         int numVertices = region.getNumVertices();
 
@@ -85,7 +85,8 @@ public abstract class GLRegion extends Region {
      * @return the resulting Region.
      */
     public static GLRegion create(OutlineShape outlineShape, int renderModes) {
-        final GLRegion region = RegionFactory.create(renderModes);
+        final GLRegion region = new VBORegion2PES2(renderModes,
+                Region.TWO_PASS_DEFAULT_TEXTURE_UNIT); // RegionFactory.create(renderModes);
 
         outlineShape
                 .transformOutlines(OutlineShape.VerticesState.QUADRATIC_NURBS);

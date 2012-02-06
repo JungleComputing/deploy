@@ -34,8 +34,6 @@ import java.util.Iterator;
 
 import javax.media.opengl.GL2ES2;
 
-import com.jogamp.graph.font.Font;
-
 public abstract class TextRenderer extends Renderer {
     protected TextRenderer(RenderState rs, int type) {
         super(rs, type);

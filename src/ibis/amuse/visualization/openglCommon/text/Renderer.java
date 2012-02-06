@@ -34,7 +34,6 @@ import javax.media.opengl.GL2ES2;
 import javax.media.opengl.GLException;
 import javax.media.opengl.fixedfunc.GLMatrixFunc;
 
-import com.jogamp.graph.curve.opengl.RegionRenderer;
 import com.jogamp.opengl.util.PMVMatrix;
 import com.jogamp.opengl.util.glsl.ShaderState;
 
@@ -126,10 +125,6 @@ public abstract class Renderer {
      * GL object's GLContext if not initialized yet.
      * <p>
      * Leaves the renderer enabled, ie ShaderState.
-     * </p>
-     * <p>
-     * Shall be called by a {@code draw()} method, e.g.
-     * {@link RegionRenderer#draw(GL2ES2, Region, float[], int)}
      * </p>
      * 
      * @param gl
@@ -229,7 +224,6 @@ public abstract class Renderer {
         if (null != gl && rs.getShaderState().inUse()) {
             rs.getShaderState().uniform(gl, rs.getAlpha());
         }
-
     }
 
     public void getColorStatic(GL2ES2 gl, float[] rgb) {
@@ -299,24 +293,6 @@ public abstract class Renderer {
         p.glOrthof(0, width, 0, height, near, far);
         updateMatrix(gl);
         return true;
-    }
-
-    protected String getVertexShaderName(GL2ES2 gl) {
-        return "curverenderer01" + getShaderGLVersionSuffix(gl);
-    }
-
-    protected String getFragmentShaderName(GL2ES2 gl) {
-        final String type = "01"; // Region.isNonUniformWeight(renderModes) ?
-        // "02" : "01" ;
-        final String pass = Region.isVBAA(renderModes) ? "b" : "a";
-        return "curverenderer" + type + pass + getShaderGLVersionSuffix(gl);
-    }
-
-    protected String getShaderGLVersionSuffix(GL2ES2 gl) {
-        if (gl.isGLES2()) {
-            return "-es2";
-        }
-        return "-gl2";
     }
 
 }

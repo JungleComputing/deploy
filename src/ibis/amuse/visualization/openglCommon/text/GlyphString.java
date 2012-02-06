@@ -32,11 +32,6 @@ import java.util.ArrayList;
 
 import javax.media.opengl.GL2ES2;
 
-import jogamp.graph.curve.text.GlyphShape;
-import jogamp.graph.font.FontInt;
-
-import com.jogamp.graph.curve.OutlineShape;
-import com.jogamp.graph.font.Font;
 import com.jogamp.graph.geom.AABBox;
 import com.jogamp.graph.geom.Outline;
 import com.jogamp.graph.geom.Triangle;
@@ -180,7 +175,8 @@ public class GlyphString {
      *            {@link Region#VBAA_RENDERING_BIT}
      */
     public GLRegion createRegion(GL2ES2 gl, int renderModes) {
-        region = RegionFactory.create(renderModes);
+        region = new VBORegion2PES2(renderModes,
+                Region.TWO_PASS_DEFAULT_TEXTURE_UNIT); // RegionFactory.create(renderModes);
         // region.setFlipped(true);
 
         int numVertices = region.getNumVertices();
