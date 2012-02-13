@@ -129,11 +129,7 @@ class JobTableRenderer extends JLabel implements TableCellRenderer {
 			setText(jobDescription.getResource().getName());
 		} else if (columnName
 				.equalsIgnoreCase(JobTableModel.MIDDLEWARE_COLUMN_NAME)) {
-			String adaptor = (String) value;
-			if (adaptor != null && adaptor.equalsIgnoreCase("sshTrilead")) {
-				adaptor = "ssh";
-			}
-			setText(adaptor);
+                    setText("" + value);
 		} else if (columnName
 				.equalsIgnoreCase(JobTableModel.APPLICATION_COLUMN_NAME)) {
 			setText("" + value);

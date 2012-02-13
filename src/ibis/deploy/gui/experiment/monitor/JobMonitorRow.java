@@ -85,7 +85,7 @@ public class JobMonitorRow {
         case RESOURCE_COLUMN:
             return jobDescription.getResource().getName();
         case MIDDLEWARE_COLUMN:
-            return jobDescription.getResource().getJobAdaptor();
+            return jobDescription.getResource().getJobURI().getScheme();
         case APPLICATION_COLUMN:
             return jobDescription.getApplication().getName();
         case PROCESS_COUNT_COLUMN:
