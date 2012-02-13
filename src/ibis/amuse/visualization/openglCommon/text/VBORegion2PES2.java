@@ -36,9 +36,6 @@ import javax.media.opengl.GLException;
 import javax.media.opengl.GLUniformData;
 import javax.media.opengl.fixedfunc.GLMatrixFunc;
 
-import jogamp.graph.curve.opengl.shader.AttributeNames;
-import jogamp.graph.curve.opengl.shader.UniformNames;
-
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.graph.geom.Triangle;
 import com.jogamp.graph.geom.Vertex;
@@ -47,15 +44,15 @@ import com.jogamp.opengl.util.PMVMatrix;
 import com.jogamp.opengl.util.glsl.ShaderState;
 
 public class VBORegion2PES2 extends GLRegion {
-    private GLArrayDataServer verticeTxtAttr;
-    private GLArrayDataServer texCoordTxtAttr;
-    private GLArrayDataServer indicesTxt;
-    private GLArrayDataServer verticeFboAttr;
-    private GLArrayDataServer texCoordFboAttr;
-    private GLArrayDataServer indicesFbo;
+    public GLArrayDataServer verticeTxtAttr;
+    public GLArrayDataServer texCoordTxtAttr;
+    public GLArrayDataServer indicesTxt;
+    public GLArrayDataServer verticeFboAttr;
+    public GLArrayDataServer texCoordFboAttr;
+    public GLArrayDataServer indicesFbo;
 
-    private FBObject fbo;
-    private final PMVMatrix fboPMVMatrix;
+    public FBObject fbo;
+    public final PMVMatrix fboPMVMatrix;
     GLUniformData mgl_fboPMVMatrix;
 
     private int tex_width_c = 0;

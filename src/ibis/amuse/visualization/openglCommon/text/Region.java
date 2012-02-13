@@ -62,7 +62,7 @@ public abstract class Region {
     private boolean dirty = true;
     protected int numVertices = 0;
     protected final AABBox box = new AABBox();
-    protected ArrayList<Triangle> triangles = new ArrayList<Triangle>();
+    public ArrayList<Triangle> triangles = new ArrayList<Triangle>();
     protected ArrayList<Vertex> vertices = new ArrayList<Vertex>();
 
     public static boolean isVBAA(int renderModes) {

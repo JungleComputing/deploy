@@ -45,7 +45,7 @@ import com.jogamp.graph.geom.AABBox;
 import com.jogamp.graph.geom.Vertex;
 import com.jogamp.graph.geom.Vertex.Factory;
 
-class TypecastFont implements FontInt {
+public class TypecastFont implements FontInt {
     static final boolean DEBUG = false;
 
     final OTFontCollection fontset;

@@ -26,7 +26,6 @@ import ibis.amuse.visualization.openglCommon.text.Region;
 import ibis.amuse.visualization.openglCommon.text.RenderState;
 import ibis.amuse.visualization.openglCommon.text.RenderStateImpl;
 import ibis.amuse.visualization.openglCommon.text.Renderer;
-import ibis.amuse.visualization.openglCommon.text.TextRenderer;
 import ibis.amuse.visualization.openglCommon.textures.Perlin3D;
 import ibis.amuse.visualization.openglCommon.textures.PostProcessTexture;
 import ibis.amuse.visualization.openglCommon.textures.Texture2D;
@@ -46,6 +45,7 @@ import com.jogamp.opengl.util.glsl.ShaderState;
 public class GLWindow implements GLEventListener {
     private static boolean post_process = true;
     private static boolean axes = true;
+    private static boolean text = false;
     private static boolean exaggerate_colors = true;
     private static long waittime = 50;
 
@@ -66,7 +66,7 @@ public class GLWindow implements GLEventListener {
     private final ProgramLoader loader;
 
     private Program animatedTurbulenceShader, pplShader, axesShader, gasShader,
-            postprocessShader, gaussianBlurShader;
+            textShader, postprocessShader, gaussianBlurShader;
 
     private Perlin3D noiseTex;
 
@@ -190,6 +190,14 @@ public class GLWindow implements GLEventListener {
                             gl,
                             "src/ibis/amuse/visualization/openglCommon/shaders/src/vs_gas.vp",
                             "src/ibis/amuse/visualization/openglCommon/shaders/src/fs_gas.fp");
+
+            if (text) {
+                textShader = loader
+                        .createProgram(
+                                gl,
+                                "src/ibis/amuse/visualization/openglCommon/shaders/src/curverenderer01-gl2.vp",
+                                "src/ibis/amuse/visualization/openglCommon/shaders/src/curverenderer01b-gl2.fp");
+            }
             // gas = loader.createProgram(gl,
             // "src/ibis/deploy/gui/outputViz/shaders/src/vs_gas.vp",
             // "src/ibis/deploy/gui/outputViz/shaders/src/fs_volumerendering.fp");
@@ -398,7 +406,9 @@ public class GLWindow implements GLEventListener {
         renderScene(gl, mv, stars, octreeRoot, starHaloTex, starTex, gasTex,
                 axesTex);
 
-        // renderHUDtext(gl, hudTex);
+        if (text) {
+            renderHUDtext(gl, hudTex);
+        }
 
         if (post_process) {
             renderTexturesToScreen(gl, width, height, starHaloTex, starTex,
@@ -521,7 +531,7 @@ public class GLWindow implements GLEventListener {
         renderer.rotate(gl, ang, 0, 1, 0);
         renderer.setColorStatic(gl, 1.0f, 0.0f, 0.0f);
 
-        ((TextRenderer) renderer).drawString3D(gl, font, text2, position,
+        ((MyTextRenderer) renderer).drawString3D(gl, font, text2, position,
                 fontSize, canvasWidth * 3);
 
         if (post_process) {

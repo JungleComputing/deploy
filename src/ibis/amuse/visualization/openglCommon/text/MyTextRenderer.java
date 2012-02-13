@@ -31,8 +31,6 @@ package ibis.amuse.visualization.openglCommon.text;
 import javax.media.opengl.GL2ES2;
 import javax.media.opengl.GLException;
 
-import jogamp.graph.curve.opengl.shader.AttributeNames;
-
 import com.jogamp.opengl.util.glsl.ShaderCode;
 import com.jogamp.opengl.util.glsl.ShaderProgram;
 import com.jogamp.opengl.util.glsl.ShaderState;

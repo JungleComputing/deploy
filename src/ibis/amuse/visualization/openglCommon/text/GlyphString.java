@@ -49,7 +49,7 @@ public class GlyphString {
      */
     public static final int STATIC_FONT_SIZE = 10;
 
-    private final ArrayList<GlyphShape> glyphs = new ArrayList<GlyphShape>();
+    public final ArrayList<GlyphShape> glyphs = new ArrayList<GlyphShape>();
     private final CharSequence str;
     private final String fontname;
     private GLRegion region;
@@ -101,8 +101,8 @@ public class GlyphString {
     public static GlyphString createString(OutlineShape shape,
             Factory<? extends Vertex> vertexFactory, Font font, int fontSize,
             String str) {
-        ArrayList<OutlineShape> shapes = ((FontInt) font).getOutlineShapes(str,
-                fontSize, vertexFactory);
+        ArrayList<OutlineShape> shapes = ((TypecastFont) font)
+                .getOutlineShapes(str, fontSize, vertexFactory);
 
         GlyphString glyphString = new GlyphString(font
                 .getName(Font.NAME_UNIQUNAME), str);

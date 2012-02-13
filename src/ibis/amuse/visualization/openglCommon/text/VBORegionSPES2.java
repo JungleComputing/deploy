@@ -31,8 +31,6 @@ package ibis.amuse.visualization.openglCommon.text;
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2ES2;
 
-import jogamp.graph.curve.opengl.shader.AttributeNames;
-
 import com.jogamp.graph.geom.Triangle;
 import com.jogamp.graph.geom.Vertex;
 import com.jogamp.opengl.util.GLArrayDataServer;
