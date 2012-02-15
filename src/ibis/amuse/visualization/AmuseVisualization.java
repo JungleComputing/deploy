@@ -403,6 +403,24 @@ public class AmuseVisualization extends JPanel {
 
         visualConfig.add(GoggleSwing.verticalStrut(5));
 
+        ChangeListener hudBrightnessSliderListener = new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                JSlider source = (JSlider) e.getSource();
+                if (source.hasFocus()) {
+                    Settings.setPostprocessingHudBrightness(source.getValue());
+                }
+            }
+        };
+        visualConfig.add(GoggleSwing.sliderBox("HUD Brightness",
+                hudBrightnessSliderListener, (int) (Settings
+                        .getPostprocessingHudBrightnessMin()), (int) (Settings
+                        .getPostprocessingHudBrightnessMax()),
+                (int) (0.1f * 10), (int) (Settings
+                        .getPostprocessingHudBrightness()), new JLabel("")));
+
+        visualConfig.add(GoggleSwing.verticalStrut(5));
+
         ChangeListener gasBrightnessSliderListener = new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {

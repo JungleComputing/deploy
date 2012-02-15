@@ -41,7 +41,6 @@ import com.jogamp.graph.geom.Vertex;
  * @see GLRegion
  */
 public abstract class Region {
-
     /**
      * View based Anti-Aliasing, A Two pass region rendering, slower and more
      * resource hungry (FBO), but AA is perfect. Otherwise the default fast one

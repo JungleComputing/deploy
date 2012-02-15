@@ -15,17 +15,18 @@ import ibis.amuse.visualization.openglCommon.math.Vec3;
 import ibis.amuse.visualization.openglCommon.math.Vec4;
 import ibis.amuse.visualization.openglCommon.models.Axis;
 import ibis.amuse.visualization.openglCommon.models.Model;
+import ibis.amuse.visualization.openglCommon.models.Text;
 import ibis.amuse.visualization.openglCommon.models.base.Quad;
 import ibis.amuse.visualization.openglCommon.scenegraph.OctreeNode;
 import ibis.amuse.visualization.openglCommon.shaders.Program;
 import ibis.amuse.visualization.openglCommon.shaders.ProgramLoader;
-import ibis.amuse.visualization.openglCommon.text.Font;
 import ibis.amuse.visualization.openglCommon.text.FontFactory;
 import ibis.amuse.visualization.openglCommon.text.MyTextRenderer;
 import ibis.amuse.visualization.openglCommon.text.Region;
 import ibis.amuse.visualization.openglCommon.text.RenderState;
 import ibis.amuse.visualization.openglCommon.text.RenderStateImpl;
 import ibis.amuse.visualization.openglCommon.text.Renderer;
+import ibis.amuse.visualization.openglCommon.text.TypecastFont;
 import ibis.amuse.visualization.openglCommon.textures.Perlin3D;
 import ibis.amuse.visualization.openglCommon.textures.PostProcessTexture;
 import ibis.amuse.visualization.openglCommon.textures.Texture2D;
@@ -45,7 +46,7 @@ import com.jogamp.opengl.util.glsl.ShaderState;
 public class GLWindow implements GLEventListener {
     private static boolean post_process = true;
     private static boolean axes = true;
-    private static boolean text = false;
+    private static boolean text = true;
     private static boolean exaggerate_colors = true;
     private static long waittime = 50;
 
@@ -107,9 +108,10 @@ public class GLWindow implements GLEventListener {
     private final GLContext offScreenContext;
 
     int fontSet = FontFactory.UBUNTU;
-    Font font;
-    int fontSize = 40;
-    static final String text2 = "The quick brown fox jumps over the lazy dog";
+    TypecastFont font;
+    int fontSize = 4;
+    Text myText;
+
     private final Renderer renderer;
     private final float[] position = new float[] { 0, 0, 0 };
     private final float xTran = -10;
@@ -126,7 +128,7 @@ public class GLWindow implements GLEventListener {
                 .factory());
         renderer = new MyTextRenderer(rs, Region.VBAA_RENDERING_BIT);
         // ((TextRenderer) renderer).setCacheLimit(32);
-        this.font = FontFactory.get(fontSet).getDefault();
+        this.font = (TypecastFont) FontFactory.get(fontSet).getDefault();
     }
 
     @Override
@@ -240,18 +242,24 @@ public class GLWindow implements GLEventListener {
         // AXES
         Color4 axisColor = new Color4(0f, 1f, 0f, 1f);
         Material axisMaterial = new Material(axisColor, axisColor, axisColor);
-        xAxis = new Axis(axesShader, axisMaterial, new Vec3(-800f, 0f, 0f),
-                new Vec3(800f, 0f, 0f), Astrophysics.toScreenCoord(1),
-                Astrophysics.toScreenCoord(.2));
+        xAxis = new Axis(axisMaterial, new Vec3(-800f, 0f, 0f), new Vec3(800f,
+                0f, 0f), Astrophysics.toScreenCoord(1), Astrophysics
+                .toScreenCoord(.2));
         xAxis.init(gl);
-        yAxis = new Axis(axesShader, axisMaterial, new Vec3(0f, -800f, 0f),
-                new Vec3(0f, 800f, 0f), Astrophysics.toScreenCoord(1),
-                Astrophysics.toScreenCoord(.2));
+        yAxis = new Axis(axisMaterial, new Vec3(0f, -800f, 0f), new Vec3(0f,
+                800f, 0f), Astrophysics.toScreenCoord(1), Astrophysics
+                .toScreenCoord(.2));
         yAxis.init(gl);
-        zAxis = new Axis(axesShader, axisMaterial, new Vec3(0f, 0f, -800f),
-                new Vec3(0f, 0f, 800f), Astrophysics.toScreenCoord(1),
-                Astrophysics.toScreenCoord(.2));
+        zAxis = new Axis(axisMaterial, new Vec3(0f, 0f, -800f), new Vec3(0f,
+                0f, 800f), Astrophysics.toScreenCoord(1), Astrophysics
+                .toScreenCoord(.2));
         zAxis.init(gl);
+
+        // TEXT
+
+        myText = new Text(axisMaterial);
+        myText.init(gl);
+        myText.setString(gl, font, "", fontSize);
 
         // FULL SCREEN QUADS
         FSQ_postprocess = new Quad(postprocessShader, Material.random(), 2, 2,
@@ -406,9 +414,7 @@ public class GLWindow implements GLEventListener {
         renderScene(gl, mv, stars, octreeRoot, starHaloTex, starTex, gasTex,
                 axesTex);
 
-        if (text) {
-            renderHUDtext(gl, hudTex);
-        }
+        renderHUDText(gl, mv, hudTex);
 
         if (post_process) {
             renderTexturesToScreen(gl, width, height, starHaloTex, starTex,
@@ -420,6 +426,9 @@ public class GLWindow implements GLEventListener {
     private void renderScene(GL3 gl, Mat4 mv, ArrayList<Star> stars,
             OctreeNode octreeRoot, Texture2D starHaloTex, Texture2D starTex,
             Texture2D gasTex, Texture2D axesTex) {
+        gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
+
         try {
             if (post_process) {
                 pplShader.setUniformVector("LightPos", lightPos);
@@ -503,7 +512,7 @@ public class GLWindow implements GLEventListener {
             }
 
             if (axes) {
-                axesShader.use(gl);
+                // axesShader.use(gl);
                 xAxis.draw(gl, axesShader, mv);
                 yAxis.draw(gl, axesShader, mv);
                 zAxis.draw(gl, axesShader, mv);
@@ -519,20 +528,17 @@ public class GLWindow implements GLEventListener {
         }
     }
 
-    private void renderHUDtext(GL3 gl, Texture2D hudTex) {
+    private void renderHUDText(GL3 gl, Mat4 mv, Texture2D hudTex) {
         gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 
-        renderer.reshapePerspective(null, 45.0f, canvasWidth, canvasHeight,
-                0.1f, 7000.0f);
+        if (text) {
+            String text = "Frame: " + timer.getFrame();
+            myText.setString(gl, font, text, fontSize);
 
-        renderer.resetModelview(null);
-        renderer.translate(null, xTran, yTran, zoom);
-        renderer.rotate(gl, ang, 0, 1, 0);
-        renderer.setColorStatic(gl, 1.0f, 0.0f, 0.0f);
-
-        ((MyTextRenderer) renderer).drawString3D(gl, font, text2, position,
-                fontSize, canvasWidth * 3);
+            axesShader.setUniformMatrix("SMatrix", MatrixMath.scale(0.01f));
+            myText.draw(gl, axesShader, Text.getModelViewForHUD(0, 0));
+        }
 
         if (post_process) {
             renderToTexture(gl, hudTex);
@@ -559,9 +565,10 @@ public class GLWindow implements GLEventListener {
                 .getPostprocessingGasBrightness());
         postprocessShader.setUniform("axesBrightness", Settings
                 .getPostprocessingAxesBrightness());
+        postprocessShader.setUniform("hudBrightness", Settings
+                .getPostprocessingHudBrightness());
         postprocessShader.setUniform("overallBrightness", Settings
                 .getPostprocessingOverallBrightness());
-        postprocessShader.setUniform("hudBrightness", 5f);
 
         postprocessShader.setUniformMatrix("PMatrix", new Mat4());
         postprocessShader.setUniform("scrWidth", width);
@@ -814,7 +821,7 @@ public class GLWindow implements GLEventListener {
         snapshotting = true;
         // Hdf5TimedPlayer.setState(states.SNAPSHOTTING);
 
-        axes = false;
+        // axes = false;
 
         try {
             int status = offScreenContext.makeCurrent();
@@ -877,7 +884,7 @@ public class GLWindow implements GLEventListener {
             e.printStackTrace();
         }
 
-        axes = true;
+        // axes = true;
         snapshotting = false;
     }
 

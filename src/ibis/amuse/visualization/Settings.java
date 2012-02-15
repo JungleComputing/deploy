@@ -46,6 +46,8 @@ public class Settings {
     private static float POSTPROCESSING_STAR_HALO_BRIGHTNESS_MAX = 4f;
     private static float POSTPROCESSING_STAR_BRIGHTNESS_MIN = 0f;
     private static float POSTPROCESSING_STAR_BRIGHTNESS_MAX = 4f;
+    private static float POSTPROCESSING_HUD_BRIGHTNESS_MIN = 0f;
+    private static float POSTPROCESSING_HUD_BRIGHTNESS_MAX = 4f;
 
     // Settings for the postprocessing shader
     private static float POSTPROCESSING_OVERALL_BRIGHTNESS_DEF = 4f;
@@ -53,6 +55,7 @@ public class Settings {
     private static float POSTPROCESSING_GAS_BRIGHTNESS_DEF = 3f;
     private static float POSTPROCESSING_STAR_HALO_BRIGHTNESS_DEF = 3f;
     private static float POSTPROCESSING_STAR_BRIGHTNESS_DEF = 4f;
+    private static float POSTPROCESSING_HUD_BRIGHTNESS_DEF = 1f;
 
     // Settings for the star-shape blur method (the + shape of stars)
     private static int STAR_SHAPE_BLUR_SIZE = 1;
@@ -402,6 +405,10 @@ public class Settings {
         return POSTPROCESSING_STAR_BRIGHTNESS_DEF;
     }
 
+    public static float getPostprocessingHudBrightness() {
+        return POSTPROCESSING_HUD_BRIGHTNESS_DEF;
+    }
+
     public static int getStarShapeBlurSize() {
         return STAR_SHAPE_BLUR_SIZE;
     }
@@ -514,6 +521,14 @@ public class Settings {
         return POSTPROCESSING_STAR_BRIGHTNESS_MAX;
     }
 
+    public static float getPostprocessingHudBrightnessMin() {
+        return POSTPROCESSING_HUD_BRIGHTNESS_MIN;
+    }
+
+    public static float getPostprocessingHudBrightnessMax() {
+        return POSTPROCESSING_HUD_BRIGHTNESS_MAX;
+    }
+
     public static void setPostprocessingOverallBrightness(float value) {
         POSTPROCESSING_OVERALL_BRIGHTNESS_DEF = value;
     }
@@ -532,6 +547,10 @@ public class Settings {
 
     public static void setPostprocessingStarBrightness(float value) {
         POSTPROCESSING_STAR_BRIGHTNESS_DEF = value;
+    }
+
+    public static void setPostprocessingHudBrightness(int value) {
+        POSTPROCESSING_HUD_BRIGHTNESS_DEF = value;
     }
 
     public static float getInitialRotationX() {
