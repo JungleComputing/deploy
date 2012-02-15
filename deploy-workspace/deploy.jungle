@@ -101,7 +101,7 @@ DAS3-VU.color = #007FFF
 # Details of resource "DAS4-Astron"
 DAS4-Astron.support.adaptor = SshTrilead
 DAS4-Astron.support.uri = ssh://fs5.das4.astron.nl
-DAS4-Astron.support.system.properties = smartsockets.external.manual=192.87.1.34
+#DAS4-Astron.support.system.properties = smartsockets.external.manual=192.87.1.34
 #DAS4-Astron.job.adaptor = 
 DAS4-Astron.job.uri = sshsge://fs5.das4.astron.nl
 DAS4-Astron.file.adaptors = SftpTrilead, SshTrilead, Local
