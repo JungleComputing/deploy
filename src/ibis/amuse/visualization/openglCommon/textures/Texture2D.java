@@ -1,13 +1,11 @@
 package ibis.amuse.visualization.openglCommon.textures;
 
-
 import ibis.amuse.visualization.openglCommon.exceptions.UninitializedException;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 import javax.media.opengl.GL3;
-
 
 import com.jogamp.common.nio.Buffers;
 
@@ -39,11 +37,16 @@ public class Texture2D extends Texture {
             gl.glBindTexture(GL3.GL_TEXTURE_2D, pointer.get(0));
 
             // Wrap.
-            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_S, GL3.GL_CLAMP_TO_EDGE);
-            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_T, GL3.GL_CLAMP_TO_EDGE);
-            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_R, GL3.GL_CLAMP_TO_EDGE);
-            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MIN_FILTER, GL3.GL_LINEAR);
-            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAG_FILTER, GL3.GL_LINEAR);
+            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_S,
+                    GL3.GL_CLAMP_TO_EDGE);
+            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_T,
+                    GL3.GL_CLAMP_TO_EDGE);
+            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_R,
+                    GL3.GL_CLAMP_TO_EDGE);
+            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MIN_FILTER,
+                    GL3.GL_LINEAR);
+            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAG_FILTER,
+                    GL3.GL_LINEAR);
 
             // gl.glPixelStorei(GL3.GL_UNPACK_ALIGNMENT, 1);
 
@@ -52,7 +55,7 @@ public class Texture2D extends Texture {
                     width, height, 0, // Border
                     GL3.GL_RGBA, // External format from image,
                     GL3.GL_UNSIGNED_BYTE, pixelBuffer // Imagedata as ByteBuffer
-            );
+                    );
         }
         initialized = true;
     }

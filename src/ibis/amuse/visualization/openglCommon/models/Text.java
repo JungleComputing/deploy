@@ -11,6 +11,7 @@ import ibis.amuse.visualization.openglCommon.math.VectorMath;
 import ibis.amuse.visualization.openglCommon.text.GlyphShape;
 import ibis.amuse.visualization.openglCommon.text.OutlineShape;
 import ibis.amuse.visualization.openglCommon.text.TypecastFont;
+import ibis.amuse.visualization.openglCommon.textures.Texture2D;
 
 import java.util.ArrayList;
 
@@ -23,6 +24,7 @@ import com.jogamp.graph.geom.opengl.SVertex;
 public class Text extends Model {
     private boolean initialized = false;
     private String cachedString = "";
+    private Texture2D intermediateTex;
 
     public Text(Material material) {
         super(material, vertex_format.TRIANGLES);
@@ -71,12 +73,29 @@ public class Text extends Model {
                 }
             }
 
-            // Transform the vertices from Vertex objects to Vec4 objects.
+            // Transform the vertices from Vertex objects to Vec4 objects and
+            // update BoundingBox.
             Vec4[] myVertices = new Vec4[vertices.size()];
+            BoundingBox bbox = new BoundingBox();
             int i = 0;
             for (Vertex v : vertices) {
-                myVertices[i++] = new Vec4(v.getX(), v.getY(), v.getZ(), 1f);
+                Vec3 vec = new Vec3(v.getX(), v.getY(), v.getZ());
+                bbox.resize(vec);
+
+                myVertices[i++] = new Vec4(vec, 1f);
             }
+
+            // intermediateTex = new PostProcessTexture(bbox.getWidth(), bbox
+            // .getHeight(), i);
+
+            // TODO: DEBUG
+            // System.out.println("Bounding Box:");
+            // try {
+            // System.out.println(bbox.getMin());
+            // System.out.println(bbox.getMax());
+            // } catch (UninitializedException e) {
+            // e.printStackTrace();
+            // }
 
             this.vertices = VectorMath.toBuffer(myVertices);
             this.numVertices = vertices.size();

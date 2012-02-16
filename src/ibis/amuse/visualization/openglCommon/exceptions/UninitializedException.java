@@ -1,6 +1,14 @@
 package ibis.amuse.visualization.openglCommon.exceptions;
 
 public class UninitializedException extends Exception {
-	private static final long serialVersionUID = 7346571330247360360L;
+    public UninitializedException() {
+        super("");
+    }
+
+    public UninitializedException(String string) {
+        super(string);
+    }
+
+    private static final long serialVersionUID = 7346571330247360360L;
 
 }
