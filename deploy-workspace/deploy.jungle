@@ -181,8 +181,6 @@ DAS4-VU.support.uri = ssh://fs0.das4.cs.vu.nl
 DAS4-VU.job.uri = sshsge://fs0.das4.cs.vu.nl
 DAS4-VU.file.adaptors = SftpTrilead, SshTrilead, Local
 DAS4-VU.java.path = /usr/lib/jvm/java-openjdk/bin/java
-DAS4-VU.job.options = ssh.gateway.uri=ssh://ceres.cs.vu.nl
-DAS4-VU.support.options = ssh.gateway.uri=ssh://ceres.cs.vu.nl
 
 #DAS4-VU.job.wrapper.script = 
 #DAS4-VU.user.name = 
@@ -192,7 +190,9 @@ DAS4-VU.latitude = 52.3328
 DAS4-VU.longitude = 4.8669
 DAS4-VU.color = #FFBF80
 
-ceres.support.uri = ssh://ceres.cs.vu.nl
-ceres.job.uri = ssh://ceres.cs.vu.nl
-ceres.file.adaptors = SftpTrilead, SshTrilead, Local
-ceres.java.path = java
+#DAS4-VU.job.options = ssh.gateway.uri=ssh://ceres.cs.vu.nl
+#DAS4-VU.support.options = ssh.gateway.uri=ssh://ceres.cs.vu.nl
+#ceres.support.uri = ssh://ceres.cs.vu.nl
+#ceres.job.uri = ssh://ceres.cs.vu.nl
+#ceres.file.adaptors = SftpTrilead, SshTrilead, Local
+#ceres.java.path = java
