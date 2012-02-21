@@ -339,6 +339,7 @@ public class GUI {
         String serverResource = null;
         int port = 0;
         mode = Mode.NORMAL;
+        ArrayList<String> hubs = new ArrayList<String>();
 
         try {
             for (int i = 0; i < arguments.length; i++) {
@@ -352,8 +353,10 @@ public class GUI {
                 } else if (arguments[i].equals("-p")) {
                     i++;
                     port = Integer.parseInt(arguments[i]);
-                } else if (arguments[i].equals("-h")
-                        || arguments[i].equals("--help")) {
+                } else if (arguments[i].equals("-h")) {
+                    i++;
+                    hubs.add(arguments[i]);
+                } else if(arguments[i].equals("--help")) {
                     printUsage();
                     System.exit(0);
                 } else if (arguments[i].equals("-r")) {
@@ -397,6 +400,16 @@ public class GUI {
         }
 
         this.monitoringEnabled = monitoringEnabled;
+        
+        Resource[] hubResources = new Resource[hubs.size()];
+        for (int i = 0; i < hubResources.length; i++) {
+            hubResources[i] = workspace.getJungle().getResource(hubs.get(i));
+            
+            if (hubResources[i] == null) {
+                System.err.println("ERROR: Hub resource " + hubs.get(i) + " not found in jungle");
+                System.exit(1);
+            }
+        }
 
         try {
             if (serverResource == null) {
@@ -405,7 +418,7 @@ public class GUI {
                 // init with built-in server
 
                 deploy = new Deploy(null, verbose, keepSandboxes,
-                        isMonitoringEnabled(), port, null, null, true);
+                        isMonitoringEnabled(), false, port, null, null, true, hubResources);
             } else {
                 logger
                         .info("Initializing Ibis Deploy"
@@ -422,7 +435,7 @@ public class GUI {
 
                 InitializationFrame initWindow = new InitializationFrame();
                 deploy = new Deploy(null, verbose, keepSandboxes,
-                        isMonitoringEnabled(), port, resource, initWindow, true);
+                        isMonitoringEnabled(), false, port, resource, initWindow, true, hubResources);
                 // will call dispose in the Swing thread
                 initWindow.remove();
 

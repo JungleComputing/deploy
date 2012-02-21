@@ -53,13 +53,13 @@ public class Deploy {
     private boolean keepSandboxes;
 
     private final boolean monitoringEnabled;
-    
+
     private final boolean outputOnConsole;
 
     // submitted jobs
     private List<Job> jobs;
 
-    //hubs already running
+    // hubs already running
     private Map<String, Server> hubs;
 
     private HubPolicy hubPolicy = HubPolicy.PER_RESOURCE;
@@ -83,93 +83,6 @@ public class Deploy {
         }
 
         return home;
-    }
-
-    /**
-     * Create a new deployment interface. Also deploys the server, embedded in
-     * this JVM. Convenience constructor provides all possible defaults.
-     * 
-     * @param home
-     *            "home" directory of ibis-deploy. If null, the default location
-     *            is used from the "ibis.deploy.home" system property. If this
-     *            property is unspecified, final default value is the current
-     *            working directory.
-     * @throws Exception
-     *             if required files cannot be found in home, or the server
-     *             cannot be started.
-     * 
-     */
-    public Deploy(File home) throws Exception {
-        this(home, false, false, 0, null, null, true);
-    }
-
-    /**
-     * Create a new deployment interface. Also deploys the server, either
-     * locally or remotely.
-     * 
-     * @param home
-     *            "home" directory of ibis-deploy. If null, the default location
-     *            is used from the "ibis.deploy.home" system property. If this
-     *            property is unspecified, final default value is the current
-     *            working directory.
-     * @param verbose
-     *            If true, start Ibis-Deploy in verbose mode
-     * @param keepSandboxes
-     *            If true, will keep sandboxes of servers and jobs
-     * @param port
-     *            port used to bind local hub/server to. Defaults to
-     *            automatically allocated free port.
-     * @param serverResource
-     *            resource where the server should be started, or null for a
-     *            server embedded in this JVM.
-     * @param listener
-     *            callback object for status of server
-     * @param blocking
-     *            if true, will block until the server is running
-     * @throws Exception
-     *             if required files cannot be found in home, or the server
-     *             cannot be started.
-     * 
-     */
-    public Deploy(File home, boolean verbose, boolean keepSandboxes, int port, Resource serverResource,
-            StateListener listener, boolean blocking) throws Exception {
-        this(home, verbose, keepSandboxes, false, false, port, serverResource, listener, blocking);
-    }
-
-    /**
-     * Create a new deployment interface. Also deploys the server, either
-     * locally or remotely.
-     * 
-     * @param home
-     *            "home" directory of ibis-deploy. If null, the default location
-     *            is used from the "ibis.deploy.home" system property. If this
-     *            property is unspecified, final default value is the current
-     *            working directory.
-     * @param verbose
-     *            If true, start Ibis-Deploy in verbose mode
-     * @param keepSandboxes
-     *            If true, will keep sandboxes of servers and jobs
-     * @param monitoringEnabled
-     *            If true, set collecting system properties when jobs are
-     *            started.
-     * @param port
-     *            port used to bind local hub/server to. Defaults to
-     *            automatically allocated free port.
-     * @param serverResource
-     *            resource where the server should be started, or null for a
-     *            server embedded in this JVM.
-     * @param listener
-     *            callback object for status of server
-     * @param blocking
-     *            if true, will block until the server is running
-     * @throws Exception
-     *             if required files cannot be found in home, or the server
-     *             cannot be started.
-     * 
-     */
-    public Deploy(File home, boolean verbose, boolean keepSandboxes, boolean monitoringEnabled, int port,
-            Resource serverResource, StateListener listener, boolean blocking) throws Exception {
-        this(home, verbose, keepSandboxes, false, false, port, serverResource, listener, blocking);
     }
 
     /**
@@ -201,14 +114,16 @@ public class Deploy {
      *            callback object for status of server
      * @param blocking
      *            if true, will block until the server is running
+     * @param hubResources
+     *            pre-start hubs on the given resources
      * @throws Exception
      *             if required files cannot be found in home, or the server
      *             cannot be started.
      * 
      */
     public Deploy(File home, boolean verbose, boolean keepSandboxes, boolean monitoringEnabled,
-            boolean outputOnConsole, int port, Resource serverResource, StateListener listener, boolean blocking)
-            throws Exception {
+            boolean outputOnConsole, int port, Resource serverResource, StateListener listener, boolean blocking,
+            Resource... hubResources) throws Exception {
 
         logger.debug("Initializing deploy");
 
@@ -229,15 +144,18 @@ public class Deploy {
             remoteServer = null;
         } else {
             localServer = new LocalServer(false, verbose, port);
-            remoteServer = new RemoteServer(serverResource, false, localServer, this.home, verbose,
-
-            listener, keepSandboxes);
+            remoteServer = new RemoteServer(serverResource, false, localServer, this.home, verbose, listener,
+                    keepSandboxes);
 
             hubs.put(serverResource.getName(), remoteServer);
 
             if (blocking) {
                 remoteServer.waitUntilRunning();
             }
+        }
+
+        for (Resource resource : hubResources) {
+            getHub(resource, true, null);
         }
 
         // print pool size statistics
@@ -391,8 +309,8 @@ public class Deploy {
         }
 
         // start job
-        Job job = new Job(resolvedDescription, hubPolicy, hub, keepSandboxes, outputOnConsole, jobListener, hubListener, localServer,
-                verbose, home, getServerAddress(), this, monitoringEnabled);
+        Job job = new Job(resolvedDescription, hubPolicy, hub, keepSandboxes, outputOnConsole, jobListener,
+                hubListener, localServer, verbose, home, getServerAddress(), this, monitoringEnabled);
 
         jobs.add(job);
 

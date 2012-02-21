@@ -15,6 +15,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.URI;
@@ -121,6 +123,13 @@ public class RemoteServer implements Runnable, Server {
         if (resource.getSupportAdaptor() != null) {
             context.addPreference("resourcebroker.adaptor.name",
                     resource.getSupportAdaptor() + ",local");
+        }
+        
+        if (resource.getSupportOptions() != null) {
+            for(Map.Entry<String, String> option: resource.getSupportOptions().entrySet()) {
+                context.addPreference(option.getKey(), option.getValue());
+                //System.err.println("option! \"" + option.getKey() + "\" equals now \"" + option.getValue() + "\"");
+            }
         }
 
         context.addPreference("file.adaptor.name",

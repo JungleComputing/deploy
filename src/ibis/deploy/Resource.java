@@ -40,6 +40,7 @@ public class Resource {
         out.println("# Optional parameters: ");
         out.println("# KEY                 COMMENT");
         out.println("# support.adaptor     JavaGAT adaptor used to deploy support processes (e.g. smartsockets hub)");
+        out.println("# support.options         options used to start support processes.");
         out.println("# support.system.properties system properties for the support processes (e.g. smartsocekts settings)");
 
         out.println("# job.adaptor         JavaGAT adaptor used to deploy jobs");
@@ -64,6 +65,8 @@ public class Resource {
 
     // uri of support resource broker
     private URI supportURI;
+    
+    private Map<String, String> supportOptions;
 
     // resource broker used to start jobs
     private String jobAdaptor;
@@ -138,6 +141,7 @@ public class Resource {
 
         supportAdaptor = null;
         supportURI = null;
+        supportOptions = null;
         jobAdaptor = null;
         jobURI = null;
         jobOptions = null;
@@ -201,6 +205,11 @@ public class Resource {
 
         supportAdaptor = original.supportAdaptor;
         supportURI = original.supportURI;
+        
+        if (original.supportOptions != null) {
+            supportOptions = new HashMap<String, String>(original.supportOptions);
+        }
+        
         jobAdaptor = original.jobAdaptor;
         jobURI = original.jobURI;
         
@@ -260,6 +269,9 @@ public class Resource {
         if (properties.getProperty(prefix + "support.uri") != null) {
             supportURI = properties.getURIProperty(prefix + "support.uri");
         }
+        if (properties.getProperty(prefix + "support.options") != null) {
+            supportOptions = properties.getStringMapProperty(prefix + "support.options", ";");
+        }
         if (properties.getProperty(prefix + "job.adaptor") != null) {
             jobAdaptor = properties.getProperty(prefix + "job.adaptor");
         }
@@ -303,13 +315,6 @@ public class Resource {
 
     }
 
-    public boolean isEmpty() {
-        return supportAdaptor == null && supportURI == null && jobAdaptor == null && jobURI == null
-                && jobOptions == null && fileAdaptors == null && javaPath == null && jobWrapperScript == null
-                && supportSystemProperties == null && userName == null && keyFile == null && latitude == 0
-                && longitude == 0;
-    }
-
     /**
      * Set any unset settings from the given other object
      * 
@@ -325,6 +330,12 @@ public class Resource {
 
             if (other.supportURI != null && supportURI == null) {
                 supportURI = other.supportURI;
+            }
+            
+            if (other.supportOptions != null && supportOptions == null) {
+                for (Map.Entry<String, String> entry : other.supportOptions.entrySet()) {
+                    setSupportOption(entry.getKey(), entry.getValue());
+                }
             }
 
             if (other.jobAdaptor != null && jobAdaptor == null) {
@@ -472,6 +483,48 @@ public class Resource {
      */
     public void setSupportURI(URI supportURI) {
         this.supportURI = supportURI;
+    }
+    
+    /**
+     * Returns (copy of) map of all support options
+     * 
+     * @return all support options, or null if unset.
+     */
+    public Map<String, String> getSupportOptions() {
+        if (supportOptions == null) {
+            return null;
+        }
+        return new HashMap<String, String>(supportOptions);
+    }
+
+    /**
+     * Sets map of all support options.
+     * 
+     * @param supportOptions
+     *            new support options, or null to unset.
+     */
+    public void setSupportOptions(Map<String, String> supportOptions) {
+        if (supportOptions == null) {
+            this.supportOptions = null;
+        } else {
+            this.supportOptions = new HashMap<String, String>(supportOptions);
+        }
+    }
+
+    /**
+     * Sets a single support option. Map will be created
+     * if needed.
+     * 
+     * @param name
+     *            name of new property
+     * @param value
+     *            value of new property.
+     */
+    public void setSupportOption(String name, String value) {
+        if (supportOptions == null) {
+            supportOptions = new HashMap<String, String>();
+        }
+        supportOptions.put(name, value);
     }
 
     /**
@@ -861,6 +914,14 @@ public class Resource {
         } else if (printComments) {
             out.println("#" + dotPrefix + "support.uri = ");
         }
+        
+        if (supportOptions != null) {
+            out.println(dotPrefix + "support.options = "
+                    + DeployProperties.toDSString(supportOptions, ";"));
+            empty = false;
+        } else if (printComments) {
+            out.println("#" + dotPrefix + "support.options =");
+        }
 
         if (jobAdaptor != null) {
             out.println(dotPrefix + "job.adaptor = " + jobAdaptor);
@@ -976,6 +1037,7 @@ public class Resource {
 
         result += " Support adaptor = " + getSupportAdaptor() + "\n";
         result += " Support URI = " + getSupportURI() + "\n";
+        result += " Support options = " + DeployProperties.toDSString(getSupportOptions(), ";") + "\n";
         result += " Job adaptor = " + getJobAdaptor() + "\n";
         result += " Job URI = " + getJobURI() + "\n";
         result += " Job options = " + DeployProperties.toDSString(getJobOptions(), ";") + "\n";
