@@ -8,9 +8,11 @@ import ibis.deploy.gui.misc.Utils;
 import ibis.deploy.gui.worldmap.WorldMapPanel;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.Box;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -52,7 +54,7 @@ public class ResourceSelectionPanel extends JPanel {
             worldMapPanel.registerResourceSelectionPanel(this);
         }
 
-        setLayout(new BorderLayout());
+        setLayout(new BorderLayout(5,5));
         for (Resource resource : gui.getJungle().getResources()) {
             resourceComboBox.addItem(resource);
         }
@@ -74,7 +76,7 @@ public class ResourceSelectionPanel extends JPanel {
 
         add(titlePanel, BorderLayout.NORTH);
 
-        JPanel selectPanel = new JPanel(new BorderLayout());
+        JPanel selectPanel = new JPanel(new BorderLayout(5, 5));
         selectPanel.add(Utils.createImageLabel("images/network-server.png",
                 "resource count"), BorderLayout.WEST);
         selectPanel.add(resourceComboBox, BorderLayout.CENTER);

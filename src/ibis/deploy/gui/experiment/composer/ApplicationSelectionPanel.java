@@ -7,7 +7,9 @@ import ibis.deploy.gui.WorkSpaceChangedListener;
 import ibis.deploy.gui.misc.Utils;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 
+import javax.swing.Box;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -26,8 +28,7 @@ public class ApplicationSelectionPanel extends JPanel {
 
             public void workSpaceChanged(GUI gui) {
                 applicationComboBox.removeAllItems();
-                for (Application application : gui.getApplicationSet()
-                        .getApplications()) {
+                for (Application application : gui.getApplicationSet().getApplications()) {
                     applicationComboBox.addItem(application);
                 }
                 ApplicationSelectionPanel.this.repaint();
@@ -38,16 +39,14 @@ public class ApplicationSelectionPanel extends JPanel {
         gui.addSubmitJobListener(new SubmitJobListener() {
 
             public void modify(JobDescription jobDescription) throws Exception {
-                jobDescription.getApplication().setName(applicationComboBox
-                        .getSelectedItem().toString());
+                jobDescription.getApplication().setName(applicationComboBox.getSelectedItem().toString());
             }
 
         });
 
-        setLayout(new BorderLayout());
+        setLayout(new BorderLayout(5, 5));
 
-        for (Application application : gui.getApplicationSet()
-                .getApplications()) {
+        for (Application application : gui.getApplicationSet().getApplications()) {
             applicationComboBox.addItem(application);
         }
         JPanel titlePanel = new JPanel(new BorderLayout());
@@ -55,12 +54,9 @@ public class ApplicationSelectionPanel extends JPanel {
 
         add(titlePanel, BorderLayout.NORTH);
 
-        JPanel selectPanel = new JPanel(new BorderLayout());
-        selectPanel.add(Utils.createImageLabel(
-                "images/applications-system.png", "process count"),
-                 BorderLayout.WEST);
+        JPanel selectPanel = new JPanel(new BorderLayout(5, 5));
+        selectPanel.add(Utils.createImageLabel("images/applications-system.png", "process count"), BorderLayout.WEST);
 
-        
         selectPanel.add(applicationComboBox, BorderLayout.CENTER);
         selectPanel.add(new ProcessCountPanel(gui), BorderLayout.EAST);
 

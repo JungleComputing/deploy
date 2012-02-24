@@ -21,20 +21,17 @@ public class ProcessCountPanel extends JPanel {
     public ProcessCountPanel(final GUI gui) {
         setLayout(new FlowLayout(FlowLayout.LEFT));
         add(new JLabel("x"));
-        final JSpinner processCountSpinner = new JSpinner(
-                new SpinnerNumberModel(1, 1, Integer.MAX_VALUE, 1));
+        final JSpinner processCountSpinner = new JSpinner(new SpinnerNumberModel(1, 1, Integer.MAX_VALUE, 1));
 
         gui.addSubmitJobListener(new SubmitJobListener() {
 
             public void modify(JobDescription jobDescription) {
-                jobDescription
-                        .setProcessCount(((SpinnerNumberModel) processCountSpinner
-                                .getModel()).getNumber().intValue());
+                jobDescription.setProcessCount(((SpinnerNumberModel) processCountSpinner.getModel()).getNumber()
+                        .intValue());
             }
 
         });
-        processCountSpinner.setPreferredSize(new Dimension(50,
-                processCountSpinner.getPreferredSize().height));
+        processCountSpinner.setPreferredSize(new Dimension(50, 25));
         add(processCountSpinner);
 
     }

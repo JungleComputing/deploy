@@ -20,30 +20,41 @@ public class ExperimentEditorTextPanel extends JPanel {
      */
     private static final long serialVersionUID = -5262692042637073227L;
 
-    public ExperimentEditorTextPanel(GUI gui, JobTableModel model,
-            WorldMapPanel worldMapPanel) {
+    public ExperimentEditorTextPanel(GUI gui, JobTableModel model, WorldMapPanel worldMapPanel) {
         setLayout(new BorderLayout());
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.PAGE_AXIS));
         topPanel.add(new PoolNamePanel(gui));
-//        topPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+
+        //separator
+        topPanel.add(Box.createRigidArea(new Dimension(0, 5)));
         topPanel.add(new JSeparator(SwingConstants.HORIZONTAL));
+        topPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+
         topPanel.add(new ApplicationSelectionPanel(gui));
-//        topPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+
+        //separator
+        topPanel.add(Box.createRigidArea(new Dimension(0, 5)));
         topPanel.add(new JSeparator(SwingConstants.HORIZONTAL));
-//        topPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        topPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+
         topPanel.add(new ResourceSelectionPanel(gui, worldMapPanel));
-//        topPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+
+        //separator
+        topPanel.add(Box.createRigidArea(new Dimension(0, 5)));
         topPanel.add(new JSeparator(SwingConstants.HORIZONTAL));
+        topPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        
         topPanel.add(new RuntimePanel(gui), worldMapPanel);
- //       topPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+
+        //separator
+        topPanel.add(Box.createRigidArea(new Dimension(0, 5)));
         topPanel.add(new JSeparator(SwingConstants.HORIZONTAL));
-
-//        topPanel.add(new RunButtonPanel(gui, model));
-
+        topPanel.add(Box.createRigidArea(new Dimension(0, 5)));
 
         add(topPanel, BorderLayout.NORTH);
-  //      add(new JPanel(), BorderLayout.CENTER);
+        
+        //buttons on the bottom
         add(new RunButtonPanel(gui, model), BorderLayout.SOUTH);
 
     }

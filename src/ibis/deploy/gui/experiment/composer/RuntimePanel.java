@@ -19,20 +19,28 @@ public class RuntimePanel extends JPanel {
 
     public RuntimePanel(final GUI gui) {
         setLayout(new BorderLayout(5, 0));
-        add(Utils.createImageLabel("images/clock.png",
-                "runtime"), BorderLayout.WEST);
+        add(Utils.createImageLabel("images/clock.png", "runtime"), BorderLayout.WEST);
 
         add(new JLabel("Runtime (minutes)"), BorderLayout.CENTER);
-        final JSpinner processCountSpinner = new JSpinner(new SpinnerNumberModel(60, 1, Integer.MAX_VALUE, 1));
+
+        //panel with spinner
+        
+        JPanel runTimeCountPanel = new JPanel();
+        runTimeCountPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        //runTimeCountPanel.add(new JLabel("x"));
+        final JSpinner runtimeSpinner = new JSpinner(new SpinnerNumberModel(60, 1, Integer.MAX_VALUE, 1));
 
         gui.addSubmitJobListener(new SubmitJobListener() {
+
             public void modify(JobDescription jobDescription) {
-                jobDescription.setRuntime(((SpinnerNumberModel) processCountSpinner.getModel()).getNumber().intValue());
+                jobDescription.setRuntime(((SpinnerNumberModel) runtimeSpinner.getModel()).getNumber().intValue());
             }
 
         });
-        processCountSpinner.setPreferredSize(new Dimension(50, processCountSpinner.getPreferredSize().height));
-        add(processCountSpinner, BorderLayout.EAST);
+        runtimeSpinner.setPreferredSize(new Dimension(50, 25));
+        runTimeCountPanel.add(runtimeSpinner);
+
+        add(runTimeCountPanel, BorderLayout.EAST);
 
     }
 }
