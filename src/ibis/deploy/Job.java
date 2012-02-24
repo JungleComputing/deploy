@@ -49,8 +49,6 @@ public class Job implements Runnable {
 
     private final boolean keepSandbox;
 
-    private final boolean outputOnConsole;
-
     private final GATContext context;
 
     private final LocalServer rootHub;
@@ -94,10 +92,8 @@ public class Job implements Runnable {
      * @throws Exception
      *             if the listener could not be attached to this job
      */
-    Job(JobDescription description, HubPolicy hubPolicy, Server hub, boolean keepSandbox, boolean outputOnConsole,
-            StateListener jobListener, StateListener hubListener, LocalServer rootHub, boolean verbose,
-            File deployHome, String serverAddress,
-
+    Job(JobDescription description, HubPolicy hubPolicy, Server hub, boolean keepSandbox, StateListener jobListener,
+            StateListener hubListener, LocalServer rootHub, boolean verbose, File deployHome, String serverAddress,
             Deploy deploy, boolean collecting) throws Exception {
         this.description = description;
         this.resource = description.getResource();
@@ -105,7 +101,6 @@ public class Job implements Runnable {
         this.hubPolicy = hubPolicy;
         this.sharedHub = hub;
         this.keepSandbox = keepSandbox;
-        this.outputOnConsole = outputOnConsole;
         this.hubListener = hubListener;
         this.rootHub = rootHub;
         this.verbose = verbose;
@@ -300,14 +295,15 @@ public class Job implements Runnable {
         if (resource.getJobAdaptor() != null) {
             context.addPreference("resourcebroker.adaptor.name", resource.getJobAdaptor());
         }
-        
+
         if (resource.getJobOptions() != null) {
-            for(Map.Entry<String, String> option: resource.getJobOptions().entrySet()) {
+            for (Map.Entry<String, String> option : resource.getJobOptions().entrySet()) {
                 context.addPreference(option.getKey(), option.getValue());
-                //System.err.println("option! \"" + option.getKey() + "\" equals now \"" + option.getValue() + "\"");
+                // System.err.println("option! \"" + option.getKey() +
+                // "\" equals now \"" + option.getValue() + "\"");
             }
         }
-        //context.addPreference("sshsge.native.flags", "-l num_gpu=1");S
+        // context.addPreference("sshsge.native.flags", "-l num_gpu=1");S
 
         context.addPreference("file.adaptor.name", DeployProperties.strings2CSS(resource.getFileAdaptors()));
 
@@ -481,15 +477,8 @@ public class Job implements Runnable {
                     application.getLibs()));
         }
 
-        if (outputOnConsole) {
-            sd.enableStreamingStderr(true);
-            sd.enableStreamingStdout(true);
-        } else {
-            sd.setStdout(GAT.createFile(context, description.getPoolName() + "." + description.getName() + ".out.txt"));
-            sd.setStderr(GAT.createFile(context, description.getPoolName() + "." + description.getName() + ".err.txt"));
-        }
-        
-
+        sd.setStdout(GAT.createFile(context, description.getPoolName() + "." + description.getName() + ".out.txt"));
+        sd.setStderr(GAT.createFile(context, description.getPoolName() + "." + description.getName() + ".err.txt"));
 
         logger.info("Submitting application \"" + application.getName() + "\" to " + resource.getName() + " using "
                 + resource.getJobURI());
@@ -508,7 +497,7 @@ public class Job implements Runnable {
             result.setResourceCount(description.getResourceCount());
         } else {
             if (!wrapperScript.exists()) {
-                //search for wrapperscript in deploy root dir as well.
+                // search for wrapperscript in deploy root dir as well.
                 wrapperScript = new File(deploy.getHome(), wrapperScript.getName()).getAbsoluteFile();
 
                 if (!wrapperScript.exists()) {
@@ -539,13 +528,8 @@ public class Job implements Runnable {
                 }
             }
 
-            if (outputOnConsole) {
-                wrapperSd.enableStreamingStderr(true);
-                wrapperSd.enableStreamingStdout(true);
-            } else {
-                wrapperSd.setStderr(sd.getStderr());
-                wrapperSd.setStdout(sd.getStdout());
-            }
+            wrapperSd.setStderr(sd.getStderr());
+            wrapperSd.setStdout(sd.getStdout());
 
             // add wrapper to pre-stage files
             wrapperSd.addPreStagedFile(
@@ -649,11 +633,6 @@ public class Job implements Runnable {
 
             org.gridlab.gat.resources.Job gatJob = jobBroker.submitJob(jobDescription, forwarder, "job.status");
             setGatJob(gatJob);
-
-            if (outputOnConsole) {
-                new OutputPrefixForwarder(gatJob.getStdout(), System.out, this + " OUT: ");
-                new OutputPrefixForwarder(gatJob.getStderr(), System.err, this + " ERR: ");
-            }
 
             waitUntilDeployed();
 

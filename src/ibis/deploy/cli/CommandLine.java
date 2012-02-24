@@ -138,23 +138,24 @@ public class CommandLine {
                     System.exit(1);
                 }
             }
+            
+            Deploy deploy = new Deploy(null, verbose, port, resource, null, true);
+            deploy.setKeepSandboxes(keepSandboxes);
+            
+            for (String hub: hubs) {
+                Resource hubResource = workspace.getJungle().getResource(hub);
 
-            Resource[] hubResources = new Resource[hubs.size()];
-            for (int i = 0; i < hubResources.length; i++) {
-                hubResources[i] = workspace.getJungle().getResource(hubs.get(i));
-                
-                if (hubResources[i] == null) {
-                    System.err.println("ERROR: Hub resource " + hubs.get(i) + " not found in jungle");
+                if (hubResource == null) {
+                    System.err.println("ERROR: Hub resource " + hub + " not found in jungle");
+                    deploy.end();
                     System.exit(1);
                 }
-            }
 
-            Deploy deploy = new Deploy(null, verbose, keepSandboxes, false, false, port, resource, null, true,
-                    hubResources);
+                deploy.getHub(hubResource, true, null);
+            }
 
             // run experiments
             for (Experiment experiment : workspace.getExperiments()) {
-
                 runExperiment(experiment, workspace.getJungle(), workspace.getApplications(), deploy, verbose);
             }
 

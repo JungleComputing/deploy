@@ -52,9 +52,7 @@ public class Deploy {
 
     private boolean keepSandboxes;
 
-    private final boolean monitoringEnabled;
-
-    private final boolean outputOnConsole;
+    private boolean monitoringEnabled;
 
     // submitted jobs
     private List<Job> jobs;
@@ -110,9 +108,9 @@ public class Deploy {
      * @param serverResource
      *            resource where the server should be started, or null for a
      *            server embedded in this JVM.
-     * @param listener
+     * @param serverListener
      *            callback object for status of server
-     * @param blocking
+     * @param blockOnServer
      *            if true, will block until the server is running
      * @param hubResources
      *            pre-start hubs on the given resources
@@ -121,16 +119,14 @@ public class Deploy {
      *             cannot be started.
      * 
      */
-    public Deploy(File home, boolean verbose, boolean keepSandboxes, boolean monitoringEnabled,
-            boolean outputOnConsole, int port, Resource serverResource, StateListener listener, boolean blocking,
-            Resource... hubResources) throws Exception {
+    public Deploy(File home, boolean verbose, int port, Resource serverResource, StateListener serverListener,
+            boolean blockOnServer) throws Exception {
 
         logger.debug("Initializing deploy");
 
         this.verbose = verbose;
-        this.keepSandboxes = keepSandboxes;
-        this.monitoringEnabled = monitoringEnabled;
-        this.outputOnConsole = outputOnConsole;
+        this.keepSandboxes = false;
+        this.monitoringEnabled = false;
 
         jobs = new ArrayList<Job>();
         hubs = new HashMap<String, Server>();
@@ -140,24 +136,20 @@ public class Deploy {
         if (serverResource == null) {
             // rootHub includes server
             localServer = new LocalServer(true, verbose, port);
-            localServer.addListener(listener);
+            localServer.addListener(serverListener);
             remoteServer = null;
         } else {
             localServer = new LocalServer(false, verbose, port);
-            remoteServer = new RemoteServer(serverResource, false, localServer, this.home, verbose, listener,
+            remoteServer = new RemoteServer(serverResource, false, localServer, this.home, verbose, serverListener,
                     keepSandboxes);
 
             hubs.put(serverResource.getName(), remoteServer);
 
-            if (blocking) {
+            if (blockOnServer) {
                 remoteServer.waitUntilRunning();
             }
         }
-
-        for (Resource resource : hubResources) {
-            getHub(resource, true, null);
-        }
-
+        
         // print pool size statistics
         poolSizePrinter = new PoolSizePrinter(this);
 
@@ -165,12 +157,19 @@ public class Deploy {
     }
 
     /**
-     * Returns whether the collecting flag is set.
+     * Returns whether monitoring is enabled
      * 
-     * @return the collecting flag.
+     * @return true if monitoring is enabled
      */
-    public boolean isMonitoringEnabled() {
+    public synchronized boolean isMonitoringEnabled() {
         return monitoringEnabled;
+    }
+    
+    /**
+     * Enable or disable monitoring
+     */
+    public synchronized void setMonitoringEnabled(boolean enabled) {
+        this.monitoringEnabled = enabled;
     }
 
     /**
@@ -309,7 +308,7 @@ public class Deploy {
         }
 
         // start job
-        Job job = new Job(resolvedDescription, hubPolicy, hub, keepSandboxes, outputOnConsole, jobListener,
+        Job job = new Job(resolvedDescription, hubPolicy, hub, keepSandboxes, jobListener,
                 hubListener, localServer, verbose, home, getServerAddress(), this, monitoringEnabled);
 
         jobs.add(job);

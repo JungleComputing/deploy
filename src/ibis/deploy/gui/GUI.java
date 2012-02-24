@@ -135,8 +135,8 @@ public class GUI {
     }
 
     private void close() {
-        int choice = JOptionPane.showConfirmDialog(frame, "Really exit?",
-                "Exiting Ibis-Deploy", JOptionPane.YES_NO_OPTION);
+        int choice = JOptionPane.showConfirmDialog(frame, "Really exit?", "Exiting Ibis-Deploy",
+                JOptionPane.YES_NO_OPTION);
 
         if (choice == JOptionPane.YES_OPTION) {
             frame.dispose();
@@ -149,10 +149,9 @@ public class GUI {
     private void saveAndClose() {
         File location = getWorkspaceLocation();
 
-        JOptionPane options = new JOptionPane(
-                "Exiting ibis-deploy. Save workspace to \"" + location + "\"?",
-                JOptionPane.QUESTION_MESSAGE, JOptionPane.YES_NO_CANCEL_OPTION,
-                null, new Object[] { "Yes", "No", "Cancel" }, "No");
+        JOptionPane options = new JOptionPane("Exiting ibis-deploy. Save workspace to \"" + location + "\"?",
+                JOptionPane.QUESTION_MESSAGE, JOptionPane.YES_NO_CANCEL_OPTION, null, new Object[] { "Yes", "No",
+                        "Cancel" }, "No");
 
         JDialog dialog = options.createDialog(frame, "Save Workspace?");
 
@@ -204,8 +203,7 @@ public class GUI {
             menu.add(new OpenWorkSpaceAction("Open Workspace", frame, this));
             menu.addSeparator();
             menu.add(new SaveWorkSpaceAction("Save Workspace", frame, this));
-            menu.add(new SaveAsWorkSpaceAction("Save Workspace As...", frame,
-                    this));
+            menu.add(new SaveAsWorkSpaceAction("Save Workspace As...", frame, this));
             menu.addSeparator();
             menuItem = new JMenuItem("Exit");
             menu.add(menuItem);
@@ -226,17 +224,15 @@ public class GUI {
         if (mode == Mode.NORMAL) {
             JMenu subMenu = new JMenu("Hub Policy");
             ButtonGroup hubPolicy = new ButtonGroup();
-            menuItem = new JRadioButtonMenuItem(new HubPolicyAction("No hubs",
-                    HubPolicy.OFF, this));
+            menuItem = new JRadioButtonMenuItem(new HubPolicyAction("No hubs", HubPolicy.OFF, this));
             hubPolicy.add(menuItem);
             subMenu.add(menuItem);
-            menuItem = new JRadioButtonMenuItem(new HubPolicyAction(
-                    "One hub per resource", HubPolicy.PER_RESOURCE, this));
+            menuItem = new JRadioButtonMenuItem(new HubPolicyAction("One hub per resource", HubPolicy.PER_RESOURCE,
+                    this));
             menuItem.setSelected(true);
             hubPolicy.add(menuItem);
             subMenu.add(menuItem);
-            menuItem = new JRadioButtonMenuItem(new HubPolicyAction(
-                    "One hub per job", HubPolicy.PER_JOB, this));
+            menuItem = new JRadioButtonMenuItem(new HubPolicyAction("One hub per job", HubPolicy.PER_JOB, this));
             hubPolicy.add(menuItem);
             subMenu.add(menuItem);
             menu.add(subMenu);
@@ -255,8 +251,7 @@ public class GUI {
         myRoot = new RootPanel(this, logos);
         frame.getContentPane().add(myRoot, BorderLayout.CENTER);
 
-        frame.setPreferredSize(new Dimension(DEFAULT_SCREEN_WIDTH,
-                DEFAULT_SCREEN_HEIGHT));
+        frame.setPreferredSize(new Dimension(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT));
 
         if (mode == Mode.READONLY_WORKSPACE || mode == Mode.MONITORING_ONLY) {
             frame.addWindowListener(new WindowAdapter() {
@@ -293,21 +288,18 @@ public class GUI {
         System.err.println("-k\t\tKeep sandboxes");
         System.err.println("-r\t\tRead only mode");
         System.err.println("-v\t\tVerbose mode");
-        System.err
-                .println("--monitoring-enabled | -m \tCollect performance data from running applications.");
+        System.err.println("--monitoring-enabled | -m \tCollect performance data from running applications.");
         System.err.println("-f\t\tSimulate a jungle (for monitor testing).");
-        System.err
-                .println("-p PORT\t\tLocal port number (defaults to random free port)");
+        System.err.println("-p PORT\t\tLocal port number (defaults to random free port)");
         System.err.println("-h | --help\tThis message");
     }
 
-    public GUI(Deploy deploy, Workspace workspace, Mode mode,
-            final String... logos) throws Exception {
+    public GUI(Deploy deploy, Workspace workspace, Mode mode, final String... logos) throws Exception {
         this(deploy, workspace, mode, deploy.isMonitoringEnabled(), logos);
     }
 
-    public GUI(Deploy deploy, Workspace workspace, Mode mode,
-            boolean monitoringEnabled, final String... logos) throws Exception {
+    public GUI(Deploy deploy, Workspace workspace, Mode mode, boolean monitoringEnabled, final String... logos)
+            throws Exception {
         this.deploy = deploy;
         this.mode = mode;
         this.workspace = workspace;
@@ -321,8 +313,7 @@ public class GUI {
             manInterface = deploy.getServer().getManagementService();
 
             // Data interface
-            collector = ibis.deploy.monitoring.collection.impl.CollectorImpl
-                    .getCollector(manInterface, regInterface);
+            collector = ibis.deploy.monitoring.collection.impl.CollectorImpl.getCollector(manInterface, regInterface);
             new Thread(collector).start();
         } else {
             collector = null;
@@ -356,15 +347,14 @@ public class GUI {
                 } else if (arguments[i].equals("-h")) {
                     i++;
                     hubs.add(arguments[i]);
-                } else if(arguments[i].equals("--help")) {
+                } else if (arguments[i].equals("--help")) {
                     printUsage();
                     System.exit(0);
                 } else if (arguments[i].equals("-r")) {
                     mode = Mode.READONLY_WORKSPACE;
                 } else if (arguments[i].equals("-f")) {
                     monitoringFakeData = true;
-                } else if (arguments[i].equals("-m")
-                        || arguments.equals("--monitoring-enabled")) {
+                } else if (arguments[i].equals("-m") || arguments.equals("--monitoring-enabled")) {
                     monitoringEnabled = true;
                 } else {
                     File file = new File(arguments[i]);
@@ -383,10 +373,8 @@ public class GUI {
             if (workspace.getExperiments().size() == 0) {
                 workspace.addExperiment(new Experiment("default"));
             } else if (workspace.getExperiments().size() > 1) {
-                logger.warn("Multiple experiments in workspace"
-                        + ", GUI only supports one, using: "
-                        + workspace.getExperiments().get(0).getName()
-                        + " as experiment");
+                logger.warn("Multiple experiments in workspace" + ", GUI only supports one, using: "
+                        + workspace.getExperiments().get(0).getName() + " as experiment");
             }
 
         } catch (Exception e) {
@@ -400,16 +388,6 @@ public class GUI {
         }
 
         this.monitoringEnabled = monitoringEnabled;
-        
-        Resource[] hubResources = new Resource[hubs.size()];
-        for (int i = 0; i < hubResources.length; i++) {
-            hubResources[i] = workspace.getJungle().getResource(hubs.get(i));
-            
-            if (hubResources[i] == null) {
-                System.err.println("ERROR: Hub resource " + hubs.get(i) + " not found in jungle");
-                System.exit(1);
-            }
-        }
 
         try {
             if (serverResource == null) {
@@ -417,31 +395,39 @@ public class GUI {
 
                 // init with built-in server
 
-                deploy = new Deploy(null, verbose, keepSandboxes,
-                        isMonitoringEnabled(), false, port, null, null, true, hubResources);
+                deploy = new Deploy(null, verbose, port, null, null, true);
             } else {
-                logger
-                        .info("Initializing Ibis Deploy"
-                                + ", using server on resource \""
-                                + serverResource + "\"");
+                logger.info("Initializing Ibis Deploy" + ", using server on resource \"" + serverResource + "\"");
 
                 Resource resource = workspace.getJungle().getResource(serverResource);
 
                 if (resource == null) {
-                    System.err.println("ERROR: Server resource " + serverResource
-                            + " not found in jungle");
+                    System.err.println("ERROR: Server resource " + serverResource + " not found in jungle");
                     System.exit(1);
                 }
 
                 InitializationFrame initWindow = new InitializationFrame();
-                deploy = new Deploy(null, verbose, keepSandboxes,
-                        isMonitoringEnabled(), false, port, resource, initWindow, true, hubResources);
+                deploy = new Deploy(null, verbose, port, resource, initWindow, true);
                 // will call dispose in the Swing thread
                 initWindow.remove();
 
             }
 
+            deploy.setKeepSandboxes(keepSandboxes);
+
+            for (String hub : hubs) {
+                Resource hubResource = workspace.getJungle().getResource(hub);
+
+                if (hubResource == null) {
+                    System.err.println("ERROR: Hub resource " + hub + " not found in jungle");
+                    deploy.end();
+                    System.exit(1);
+                }
+                deploy.getHub(hubResource, true, null);
+            }
+
             if (isMonitoringEnabled()) {
+                deploy.setMonitoringEnabled(true);
                 RegistryServiceInterface regInterface;
                 ManagementServiceInterface manInterface;
                 if (monitoringFakeData) {
@@ -457,10 +443,11 @@ public class GUI {
                 }
 
                 // Data interface
-                collector = ibis.deploy.monitoring.collection.impl.CollectorImpl
-                        .getCollector(manInterface, regInterface);
+                collector = ibis.deploy.monitoring.collection.impl.CollectorImpl.getCollector(manInterface,
+                        regInterface);
                 new Thread(collector).start();
             }
+
         } catch (Exception e) {
             System.err.println("Could not initialize ibis-deploy: " + e);
             e.printStackTrace(System.err);
@@ -576,8 +563,7 @@ public class GUI {
         jungleListeners.add(listener);
     }
 
-    public void addApplicationSetWorkSpaceListener(
-            WorkSpaceChangedListener listener) {
+    public void addApplicationSetWorkSpaceListener(WorkSpaceChangedListener listener) {
         applicationSetListeners.add(listener);
     }
 
@@ -646,13 +632,11 @@ public class GUI {
     }
 
     private File makeNativeDir() throws IOException {
-        File tmpdir = new File(deploy.getHome().getAbsolutePath()
-                + System.getProperty("file.separator") + "lib"
+        File tmpdir = new File(deploy.getHome().getAbsolutePath() + System.getProperty("file.separator") + "lib"
                 + System.getProperty("file.separator") + "natives");
 
         if (!tmpdir.mkdir() && !tmpdir.exists()) {
-            throw new IOException("Could not create temp directory: "
-                    + tmpdir.getAbsolutePath());
+            throw new IOException("Could not create temp directory: " + tmpdir.getAbsolutePath());
         }
 
         return tmpdir;
@@ -699,19 +683,16 @@ public class GUI {
         nativeLoaded = true;
     }
 
-    private void extractNativeLib(File file, File target) throws IOException,
-            URISyntaxException {
+    private void extractNativeLib(File file, File target) throws IOException, URISyntaxException {
         JarFile jar = new JarFile(file);
         ZipEntry z = jar.getEntry(target.getName());
         if (z == null) {
-            throw new UnsatisfiedLinkError("Could not find library: "
-                    + target.getName());
+            throw new UnsatisfiedLinkError("Could not find library: " + target.getName());
         }
 
         InputStream in = jar.getInputStream(z);
         try {
-            OutputStream out = new BufferedOutputStream(new FileOutputStream(
-                    target));
+            OutputStream out = new BufferedOutputStream(new FileOutputStream(target));
             try {
                 byte[] buf = new byte[2048];
                 for (;;) {
