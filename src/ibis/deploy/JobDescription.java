@@ -1,5 +1,6 @@
 package ibis.deploy;
 
+import java.io.File;
 import java.io.PrintWriter;
 
 /**
@@ -32,6 +33,9 @@ public class JobDescription {
 
         out.println("# pool.name           Pool name. Defaults to name of experiment if unspecified");
         out.println("# pool.size           Size of pool. Only used in a closed-world application");
+        out.println("# stdout.file         File used to write stdout to");
+        out.println("# stderr.file         File used to write stderr to");
+
     }
 
     // name of job
@@ -51,6 +55,10 @@ public class JobDescription {
 
     private int poolSize;
 
+    private File stdoutFile;
+
+    private File stderrFile;
+
     /**
      * Create an empty job description
      */
@@ -63,6 +71,8 @@ public class JobDescription {
         runtime = 0;
         poolName = null;
         poolSize = 0;
+        stdoutFile = null;
+        stderrFile = null;
     }
 
     /**
@@ -78,14 +88,12 @@ public class JobDescription {
         setName(name);
     }
 
-    public void loadFromProperties(DeployProperties properties, String prefix)
-            throws Exception {
+    public void loadFromProperties(DeployProperties properties, String prefix) throws Exception {
 
         // add separator to prefix
         prefix = prefix + ".";
 
-        String applicationName = properties.getProperty(prefix
-                + "application.name");
+        String applicationName = properties.getProperty(prefix + "application.name");
 
         application.setName(applicationName);
         application.setFromProperties(properties, prefix + "application");
@@ -104,6 +112,9 @@ public class JobDescription {
 
         poolSize = properties.getIntProperty(prefix + "pool.size", poolSize);
 
+        stdoutFile = properties.getFileProperty(prefix + "stdout.file");
+
+        stderrFile = properties.getFileProperty(prefix + "stderr.file");
     }
 
     /**
@@ -136,12 +147,10 @@ public class JobDescription {
         }
 
         if (name.contains(".")) {
-            throw new Exception("job name cannot contain periods : \"" + name
-                    + "\"");
+            throw new Exception("job name cannot contain periods : \"" + name + "\"");
         }
         if (name.contains(" ")) {
-            throw new Exception("job name cannot contain spaces : \"" + name
-                    + "\"");
+            throw new Exception("job name cannot contain spaces : \"" + name + "\"");
         }
 
         this.name = name;
@@ -187,8 +196,8 @@ public class JobDescription {
     /**
      * Total number of resources used for this job.
      * 
-     * @return Total number of machines used on the specified resource. Returns 0
-     *         if unknown
+     * @return Total number of machines used on the specified resource. Returns
+     *         0 if unknown
      */
     public int getResourceCount() {
         return resourceCount;
@@ -268,6 +277,44 @@ public class JobDescription {
     }
 
     /**
+     * Returns the file stdout is written to.
+     * 
+     * @return the file stdout is written to.
+     */
+    public File getStdoutFile() {
+        return stdoutFile;
+    }
+
+    /**
+     * Sets the file stdout is written to.
+     * 
+     * @param stdoutFile
+     *            the new file used to write stdout to.
+     */
+    public void setStdoutFile(File stdoutFile) {
+        this.stdoutFile = stdoutFile;
+    }
+
+    /**
+     * Returns the file stderr is written to.
+     * 
+     * @return the file stderr is written to.
+     */
+    public File getStderrFile() {
+        return stderrFile;
+    }
+
+    /**
+     * Sets the file stderr is written to.
+     * 
+     * @param stderrFile
+     *            the new file used to write stderr to.
+     */
+    public void setStderrFile(File stderrFile) {
+        this.stderrFile = stderrFile;
+    }
+
+    /**
      * Checks if this description is suitable for deploying. If not, throws an
      * exception.
      * 
@@ -327,23 +374,23 @@ public class JobDescription {
         this.runtime = original.runtime;
         this.poolName = original.poolName;
         this.poolSize = original.poolSize;
+        this.stdoutFile = original.stdoutFile;
+        this.stderrFile = original.stderrFile;
 
         this.application = new Application(original.application);
         this.resource = new Resource(original.resource);
     }
 
-    public JobDescription resolve(ApplicationSet applicationSet, Jungle jungle)
-            throws Exception {
-        Application application = applicationSet
-                .getApplication(getApplication().getName());
+    public JobDescription resolve(ApplicationSet applicationSet, Jungle jungle) throws Exception {
+        Application application = applicationSet.getApplication(getApplication().getName());
         Resource resource = jungle.getResource(getResource().getName());
 
         return resolve(application, resource);
     }
 
     /**
-     * Resolves the stack of JobDescription/Application/Resource objects into one
-     * new JobDescription with no dependencies. Ordering (highest priority
+     * Resolves the stack of JobDescription/Application/Resource objects into
+     * one new JobDescription with no dependencies. Ordering (highest priority
      * first):
      * 
      * <ol>
@@ -381,13 +428,11 @@ public class JobDescription {
      * @throws Exception
      *             if this job has no name
      */
-    public void save(PrintWriter out, String prefix, boolean ensureExists)
-            throws Exception {
+    public void save(PrintWriter out, String prefix, boolean ensureExists) throws Exception {
         boolean empty = true;
 
         if (prefix == null) {
-            throw new Exception("cannot print job description to file,"
-                    + " name is not specified");
+            throw new Exception("cannot print job description to file," + " name is not specified");
         }
 
         String dotPrefix = prefix + ".";
@@ -433,6 +478,20 @@ public class JobDescription {
             empty = false;
         }
 
+        if (stdoutFile == null) {
+            out.println("#" + dotPrefix + "stdout.file =");
+        } else {
+            out.println(dotPrefix + "stdout.file = " + stdoutFile);
+            empty = false;
+        }
+
+        if (stderrFile == null) {
+            out.println("#" + dotPrefix + "stderr.file =");
+        } else {
+            out.println(dotPrefix + "stderr.file = " + stderrFile);
+            empty = false;
+        }
+
         if (empty && ensureExists) {
             out.println("#Dummy property to make sure job is actually defined");
             out.println(prefix);
@@ -452,6 +511,9 @@ public class JobDescription {
         result += " Runtime = " + getRuntime() + "\n";
         result += " Pool Name = " + getPoolName() + "\n";
         result += " Pool Size = " + getPoolSize() + "\n";
+        result += " Stdout file = " + getStdoutFile() + "\n";
+        result += " Stderr file = " + getStderrFile() + "\n";
+
         result += application.toPrintString();
         result += resource.toPrintString();
 

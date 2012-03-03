@@ -36,7 +36,6 @@ public class LocalServer implements Server {
 
         Properties properties = new Properties();
         properties.put(ServerProperties.HUB_ONLY, !isServer + "");
-        properties.put(ServerProperties.PRINT_ERRORS, "true");
         properties.put(ServerProperties.VIZ_INFO, "D^local^Ibis Deploy @ local^"
                 + Colors.color2colorCode(Colors.LOCAL_COLOR) + "^0");
         properties.put(ServerProperties.PORT, "" + port);
@@ -44,6 +43,7 @@ public class LocalServer implements Server {
         if (verbose) {
             properties.put(ServerProperties.PRINT_EVENTS, "true");
             properties.put(ServerProperties.PRINT_STATS, "true");
+            properties.put(ServerProperties.PRINT_ERRORS, "true");
         }
 
         server = new ibis.ipl.server.Server(properties);

@@ -166,7 +166,6 @@ public class RemoteServer implements Runnable, Server {
         arguments.add("--remote");
         arguments.add("--port");
         arguments.add("0");
-        arguments.add("--errors");
 
         if (hubOnly) {
             // Hub-only mode causes the JVM not to "end" properly sometimes
@@ -177,6 +176,7 @@ public class RemoteServer implements Runnable, Server {
         if (verbose) {
             arguments.add("--events");
             arguments.add("--stats");
+            arguments.add("--errors");
         }
 
         // list of other hubs

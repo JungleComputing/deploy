@@ -94,14 +94,6 @@ public class Deploy {
      *            working directory.
      * @param verbose
      *            If true, start Ibis-Deploy in verbose mode
-     * @param keepSandboxes
-     *            If true, will keep sandboxes of servers and jobs
-     * @param monitoringEnabled
-     *            If true, set collecting system properties when jobs are
-     *            started.
-     * @param outputOnConsole
-     *            If true, output for jobs is printed to stdout and stderr
-     *            instead of files
      * @param port
      *            port used to bind local hub/server to. Defaults to
      *            automatically allocated free port.
@@ -112,8 +104,6 @@ public class Deploy {
      *            callback object for status of server
      * @param blockOnServer
      *            if true, will block until the server is running
-     * @param hubResources
-     *            pre-start hubs on the given resources
      * @throws Exception
      *             if required files cannot be found in home, or the server
      *             cannot be started.

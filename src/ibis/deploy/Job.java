@@ -202,6 +202,25 @@ public class Job implements Runnable {
      *             in case an error occurs.
      */
     public void waitUntilDeployed() throws Exception {
+        waitUntilDeployed(null);
+    }
+
+    
+    /**
+     * Waits until this Job is deployed. This is detected by checking that there
+     * is a pool with the poolname of the job, which contains a location whose
+     * name starts with the name of the job description. Awful hack, since this
+     * means that ibis.location cannot be redefined, or at least only be
+     * redefined such that it starts with the name of the job description. TODO:
+     * Fix! But how? --Ceriel
+     * 
+     * @param Logger if not null, an info message is if the state of the job changed
+     * 
+     * @throws Exception
+     *             in case an error occurs.
+     */
+    public void waitUntilDeployed(Logger logger) throws Exception {
+        State currentState = null;
         String location = description.getName();
 
         while (!isFinished()) {
@@ -211,6 +230,15 @@ public class Job implements Runnable {
                         forwarder.setState(State.DEPLOYED);
                         return;
                     }
+                }
+            }
+            
+            if (logger != null) {
+                State newState = getState();
+                
+                if (newState != currentState) {
+                    logger.info(toString() + " now " + getState());
+                    currentState = newState;
                 }
             }
 
@@ -477,8 +505,17 @@ public class Job implements Runnable {
                     application.getLibs()));
         }
 
-        sd.setStdout(GAT.createFile(context, description.getPoolName() + "." + description.getName() + ".out.txt"));
-        sd.setStderr(GAT.createFile(context, description.getPoolName() + "." + description.getName() + ".err.txt"));
+        if (description.getStdoutFile() == null) {
+            sd.setStdout(GAT.createFile(context, description.getPoolName() + "." + description.getName() + ".out.txt"));
+        } else {
+            sd.setStdout(GAT.createFile(context, "file:///" + description.getStdoutFile().getPath()));
+        }
+
+        if (description.getStderrFile() == null) {
+            sd.setStderr(GAT.createFile(context, description.getPoolName() + "." + description.getName() + ".err.txt"));
+        } else {
+            sd.setStderr(GAT.createFile(context, "file:///" + description.getStderrFile().getPath()));
+        }
 
         logger.info("Submitting application \"" + application.getName() + "\" to " + resource.getName() + " using "
                 + resource.getJobURI());

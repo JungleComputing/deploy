@@ -3,6 +3,9 @@ package ibis.deploy.util;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ibis.deploy.Deploy;
 import ibis.util.ThreadPool;
 
@@ -10,6 +13,8 @@ import ibis.util.ThreadPool;
  * Prints pool statistics when they change.
  */
 public class PoolSizePrinter implements Runnable {
+
+    private static final Logger logger = LoggerFactory.getLogger(PoolSizePrinter.class);
 
     private final Deploy deploy;
 
@@ -35,11 +40,8 @@ public class PoolSizePrinter implements Runnable {
                     String poolName = entry.getKey();
                     int poolSize = entry.getValue();
 
-                    if (!poolSizes.containsKey(poolName)
-                            || poolSize != poolSizes.get(poolName)) {
-                        System.err.printf(
-                                "%tT DEPLOY: Size of pool \"%s\" now %d\n",
-                                System.currentTimeMillis(), poolName, poolSize);
+                    if (!poolSizes.containsKey(poolName) || poolSize != poolSizes.get(poolName)) {
+                        logger.info("Size of pool \"" + poolName + "\" now " + poolSize);
                     }
                 }
 
