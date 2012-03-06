@@ -41,7 +41,7 @@ import javax.media.opengl.GLException;
 
 public class FBObject {
     static final int MAX_FBO_TEXTURES = 32; // just for our impl .. not the real
-                                            // 'max' FBO color attachments
+    // 'max' FBO color attachments
     private int[] fbo_tex_names;
     private int[] fbo_tex_units;
     private int fbo_tex_num;
@@ -161,8 +161,8 @@ public class FBObject {
             throw new GLException("FBO " + s0 + " bound " + toString());
         }
         checkNoError(null, gl.glGetError(), "FBObject pre"); // throws
-                                                             // GLException if
-                                                             // error
+        // GLException if
+        // error
     }
 
     /**
@@ -182,8 +182,8 @@ public class FBObject {
             throw new GLException("FBO already initialized");
         }
         checkNoError(null, gl.glGetError(), "FBObject Init.pre"); // throws
-                                                                  // GLException
-                                                                  // if error
+        // GLException
+        // if error
 
         // generate fbo ..
         int name[] = new int[1];
@@ -197,11 +197,11 @@ public class FBObject {
         // bind fbo ..
         gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, fb);
         checkNoError(gl, gl.glGetError(), "FBObject Init.bindFB"); // throws
-                                                                   // GLException
-                                                                   // if error
+        // GLException
+        // if error
         if (!gl.glIsFramebuffer(fb)) {
             checkNoError(gl, GL.GL_INVALID_VALUE, "FBObject Init.isFB"); // throws
-                                                                         // GLException
+            // GLException
         }
         bound = true;
         initialized = true;
@@ -322,14 +322,14 @@ public class FBObject {
         }
         gl.glBindTexture(GL.GL_TEXTURE_2D, fbo_tex_names[fbo_tex_idx]);
         checkNoError(gl, gl.glGetError(), "FBObject Init.bindTex"); // throws
-                                                                    // GLException
-                                                                    // if error
+        // GLException
+        // if error
         gl.glTexImage2D(GL.GL_TEXTURE_2D, 0, textureInternalFormat, width,
                 height, 0, textureDataFormat, textureDataType, null);
         checkNoError(gl, gl.glGetError(), "FBObject Init.texImage2D"); // throws
-                                                                       // GLException
-                                                                       // if
-                                                                       // error
+        // GLException
+        // if
+        // error
         if (0 < magFilter) {
             gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER,
                     magFilter);

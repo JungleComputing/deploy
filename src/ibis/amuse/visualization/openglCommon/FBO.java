@@ -1,6 +1,5 @@
 package ibis.amuse.visualization.openglCommon;
 
-
 import ibis.amuse.visualization.openglCommon.exceptions.UninitializedException;
 import ibis.amuse.visualization.openglCommon.textures.RBOTexture;
 import ibis.amuse.visualization.openglCommon.textures.Texture2D;
@@ -8,102 +7,108 @@ import ibis.amuse.visualization.openglCommon.textures.Texture2D;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
+import javax.media.opengl.GL;
 import javax.media.opengl.GL3;
 
-
 public class FBO {
-    private final IntBuffer fboPointer = IntBuffer.allocate(1);
-    private final IntBuffer rboPointer = IntBuffer.allocate(1);
-    private RBOTexture newTex;
-
-    private boolean asRenderBuffer = false;
+    private final IntBuffer fboPointer;
+    private final IntBuffer rboPointer;
+    private final RBOTexture rboTexture;
 
     private int width, height;
+    private boolean initialized = false;
 
-    public FBO(GL3 gl) {
-        gl.glGenFramebuffers(1, fboPointer);
+    public FBO(int width, int height, int glMultitexUnit) {
+        fboPointer = IntBuffer.allocate(1);
+        rboPointer = IntBuffer.allocate(1);
+
+        rboTexture = new RBOTexture(width, height, glMultitexUnit);
     }
 
-    public FBO(GL3 gl, int width, int height, int glMultitexUnit) {
-        asRenderBuffer = true;
-
-        this.width = width;
-        this.height = height;
-
-        // Generate pointers
-        gl.glGenFramebuffers(1, fboPointer);
-        // gl.glGenRenderbuffers(1, rboPointer);
-
-        // Bind the buffers, assign storage
-        gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, fboPointer.get(0));
-
-        // Attach a new texture as color buffer
+    public void init(GL3 gl) {
         try {
-            newTex = new RBOTexture(width, height, glMultitexUnit);
-            newTex.init(gl);
-            gl.glFramebufferTexture2D(GL3.GL_FRAMEBUFFER, GL3.GL_COLOR_ATTACHMENT0, GL3.GL_TEXTURE_2D,
-                    newTex.getPointer(), 0);
+            // Setup texture and color buffer
+            rboTexture.init(gl);
+            rboTexture.use(gl);
+            gl.glFramebufferTexture2D(GL3.GL_FRAMEBUFFER,
+                    GL3.GL_COLOR_ATTACHMENT0, GL3.GL_TEXTURE_2D, rboTexture
+                            .getPointer(), 0);
+            rboTexture.unBind(gl);
 
+            // Setup the depth buffer
+            gl.glGenRenderbuffers(1, rboPointer);
+            gl.glBindRenderbuffer(GL3.GL_RENDERBUFFER, rboPointer.get(0));
+            gl.glRenderbufferStorage(GL.GL_RENDERBUFFER,
+                    GL3.GL_DEPTH_COMPONENT16, width, height);
+            gl.glBindRenderbuffer(GL.GL_RENDERBUFFER, 0);
+
+            // Create and bind frame buffer
+            gl.glGenFramebuffers(1, fboPointer);
+            gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, fboPointer.get(0));
+
+            // Attach both buffers to the frame buffer
+            gl.glFramebufferTexture2D(GL.GL_FRAMEBUFFER,
+                    GL.GL_COLOR_ATTACHMENT0, GL.GL_TEXTURE_2D, rboTexture
+                            .getPointer(), 0);
+            gl.glFramebufferRenderbuffer(GL.GL_FRAMEBUFFER,
+                    GL.GL_DEPTH_ATTACHMENT, GL.GL_RENDERBUFFER, rboPointer
+                            .get(0));
+
+            // checkStatus(gl, "Framebuffer error:");
         } catch (UninitializedException e) {
             e.printStackTrace();
         }
 
-        // gl.glBindRenderbuffer(GL3.GL_RENDERBUFFER, rboPointer.get(0));
-        // gl.glRenderbufferStorage(GL3.GL_RENDERBUFFER, GL3.GL_DEPTH_COMPONENT,
-        // width, height);
+        // Unbind. The FBO is now ready for use.
+        gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
 
-        // Attach depth buffer
-        // gl.glFramebufferRenderbuffer(GL3.GL_FRAMEBUFFER,
-        // GL3.GL_DEPTH_ATTACHMENT, GL3.GL_RENDERBUFFER,
-        // rboPointer.get(0));
+        initialized = true;
+    }
 
-        // gl.glGenerateMipmap(GL3.GL_TEXTURE_2D);
-
+    private void checkStatus(GL3 gl, String prefix) {
+        boolean errDetected = false;
+        String errString = prefix + " ";
         // Check for errors
         int status = gl.glCheckFramebufferStatus(GL3.GL_FRAMEBUFFER);
         if (status != GL3.GL_FRAMEBUFFER_COMPLETE) {
-            System.err.println("Framebuffer not ready!");
+            errDetected = true;
             if (status == GL3.GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT) {
-                System.err.println("GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT.");
+                errString += "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT.";
             }
             if (status == GL3.GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS) {
-                System.err.println("GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS.");
+                errString += "GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS.";
             }
             if (status == GL3.GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT) {
-                System.err.println("GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT.");
+                errString += "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT.";
             }
             if (status == GL3.GL_FRAMEBUFFER_UNSUPPORTED) {
-                System.err.println("GL_FRAMEBUFFER_UNSUPPORTED.");
+                errString += "GL_FRAMEBUFFER_UNSUPPORTED.";
             }
         }
 
-        // Unbind. The FBO is now ready for use.
-        gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
+        if (errDetected) {
+            System.err.println(errString);
+        }
     }
 
-    public void bind(GL3 gl) {
-        // gl.glEnable(GL3.GL_TEXTURE_2D);
-        gl.glBindTexture(GL3.GL_TEXTURE_2D, 0);
-        gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, fboPointer.get(0));
-
-        // gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
-        // gl.glDrawBuffer(GL3.GL_COLOR_ATTACHMENT0);
-
-        // if (asRenderBuffer) {
-        // gl.glBindRenderbuffer(GL3.GL_RENDERBUFFER, rboPointer.get(0));
-        // }
+    public void bind(GL3 gl) throws UninitializedException {
+        if (initialized) {
+            rboTexture.use(gl);
+            gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, fboPointer.get(0));
+        } else {
+            throw new UninitializedException("FBO not initialized.");
+        }
     }
 
     public Texture2D getTexture() {
-        return newTex;
+        return rboTexture;
     }
 
     public void useTexture(GL3 gl) {
         gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
         try {
             gl.glEnable(GL3.GL_TEXTURE_2D);
-            gl.glBindTexture(GL3.GL_TEXTURE_2D, newTex.getPointer());
+            gl.glBindTexture(GL3.GL_TEXTURE_2D, rboTexture.getPointer());
         } catch (UninitializedException e) {
             e.printStackTrace();
         }
@@ -112,8 +117,9 @@ public class FBO {
     public ByteBuffer getPixels(GL3 gl) {
         ByteBuffer buf = ByteBuffer.allocate(width * height * 3);
         try {
-            newTex.use(gl);
-            gl.glGetTexImage(GL3.GL_TEXTURE_2D, 0, GL3.GL_RGB, GL3.GL_UNSIGNED_BYTE, buf);
+            rboTexture.use(gl);
+            gl.glGetTexImage(GL3.GL_TEXTURE_2D, 0, GL3.GL_RGB,
+                    GL3.GL_UNSIGNED_BYTE, buf);
         } catch (UninitializedException e) {
             e.printStackTrace();
         }
@@ -132,10 +138,7 @@ public class FBO {
     }
 
     public void delete(GL3 gl) {
-        if (asRenderBuffer) {
-            gl.glDeleteRenderbuffers(1, rboPointer);
-        }
-
+        gl.glDeleteRenderbuffers(1, rboPointer);
         gl.glDeleteFramebuffers(1, fboPointer);
     }
 

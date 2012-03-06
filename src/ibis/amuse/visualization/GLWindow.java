@@ -21,11 +21,6 @@ import ibis.amuse.visualization.openglCommon.scenegraph.OctreeNode;
 import ibis.amuse.visualization.openglCommon.shaders.Program;
 import ibis.amuse.visualization.openglCommon.shaders.ProgramLoader;
 import ibis.amuse.visualization.openglCommon.text.FontFactory;
-import ibis.amuse.visualization.openglCommon.text.MyTextRenderer;
-import ibis.amuse.visualization.openglCommon.text.Region;
-import ibis.amuse.visualization.openglCommon.text.RenderState;
-import ibis.amuse.visualization.openglCommon.text.RenderStateImpl;
-import ibis.amuse.visualization.openglCommon.text.Renderer;
 import ibis.amuse.visualization.openglCommon.text.TypecastFont;
 import ibis.amuse.visualization.openglCommon.textures.Perlin3D;
 import ibis.amuse.visualization.openglCommon.textures.PostProcessTexture;
@@ -39,9 +34,6 @@ import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLContext;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.GLException;
-
-import com.jogamp.graph.geom.opengl.SVertex;
-import com.jogamp.opengl.util.glsl.ShaderState;
 
 public class GLWindow implements GLEventListener {
     private static boolean post_process = true;
@@ -112,7 +104,7 @@ public class GLWindow implements GLEventListener {
     int fontSize = 4;
     Text myText;
 
-    private final Renderer renderer;
+    // private final Renderer renderer;
     private final float[] position = new float[] { 0, 0, 0 };
     private final float xTran = -10;
     private final float yTran = 10;
@@ -124,9 +116,9 @@ public class GLWindow implements GLEventListener {
         this.offScreenContext = offScreenContext;
         loader = new ProgramLoader();
 
-        RenderState rs = new RenderStateImpl(new ShaderState(), SVertex
-                .factory());
-        renderer = new MyTextRenderer(rs, Region.VBAA_RENDERING_BIT);
+        // RenderState rs = new RenderStateImpl(new ShaderState(), SVertex
+        // .factory());
+        // renderer = new MyTextRenderer(rs, Region.VBAA_RENDERING_BIT);
         // ((TextRenderer) renderer).setCacheLimit(32);
         this.font = (TypecastFont) FontFactory.get(fontSet).getDefault();
     }
@@ -257,9 +249,10 @@ public class GLWindow implements GLEventListener {
 
         // TEXT
 
-        myText = new Text(axisMaterial);
+        myText = new Text(axisMaterial, GL3.GL_TEXTURE13, false);
         myText.init(gl);
-        myText.setString(gl, font, "", fontSize);
+        // TODO Define new shader for text
+        myText.setString(gl, axesShader, font, "", fontSize);
 
         // FULL SCREEN QUADS
         FSQ_postprocess = new Quad(postprocessShader, Material.random(), 2, 2,
@@ -338,9 +331,9 @@ public class GLWindow implements GLEventListener {
 
         gl.glClearColor(0f, 0f, 0f, 0f);
 
-        renderer.init(gl);
-        renderer.setAlpha(gl, 1.0f);
-        renderer.setColorStatic(gl, 1.0f, 1.0f, 1.0f);
+        // renderer.init(gl);
+        // renderer.setAlpha(gl, 1.0f);
+        // renderer.setColorStatic(gl, 1.0f, 1.0f, 1.0f);
 
         panel.callback();
     }
@@ -534,7 +527,7 @@ public class GLWindow implements GLEventListener {
 
         if (text) {
             String text = "Frame: " + timer.getFrame();
-            myText.setString(gl, font, text, fontSize);
+            myText.setString(gl, axesShader, font, text, fontSize);
 
             axesShader.setUniformMatrix("SMatrix", MatrixMath.scale(0.01f));
             myText.draw(gl, axesShader, Text.getModelViewForHUD(0, 0));
@@ -684,8 +677,9 @@ public class GLWindow implements GLEventListener {
                 GL3.GL_TEXTURE11);
         hudTex.init(gl);
 
-        renderer.reshapePerspective(gl, 45.0f, canvasWidth, canvasHeight, 0.1f,
-                7000.0f);
+        // renderer.reshapePerspective(gl, 45.0f, canvasWidth, canvasHeight,
+        // 0.1f,
+        // 7000.0f);
     }
 
     public void displayChanged(GLAutoDrawable drawable, boolean modeChanged,
@@ -718,7 +712,7 @@ public class GLWindow implements GLEventListener {
 
         loader.cleanup(gl);
 
-        renderer.destroy(gl);
+        // renderer.destroy(gl);
     }
 
     public float getViewDist() {

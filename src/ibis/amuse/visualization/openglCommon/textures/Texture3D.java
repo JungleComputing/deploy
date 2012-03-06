@@ -41,7 +41,7 @@ public class Texture3D extends Texture {
         if (image == null)
             System.out.println("make first!");
 
-        gl.glActiveTexture(gLMultiTexUnit);
+        gl.glActiveTexture(glMultiTexUnit);
         gl.glEnable(GL3.GL_TEXTURE_3D);
 
         // Create new texture pointer and bind it so we can manipulate it.
@@ -73,7 +73,7 @@ public class Texture3D extends Texture {
     }
 
     public void use(GL3 gl) throws UninitializedException {
-        gl.glActiveTexture(gLMultiTexUnit);
+        gl.glActiveTexture(glMultiTexUnit);
         gl.glEnable(GL3.GL_TEXTURE_3D);
         gl.glBindTexture(GL3.GL_TEXTURE_3D, getPointer());
     }

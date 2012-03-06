@@ -1,5 +1,7 @@
 package ibis.amuse.visualization.openglCommon;
 
+import ibis.amuse.visualization.openglCommon.exceptions.UninitializedException;
+
 import java.nio.IntBuffer;
 
 import javax.media.opengl.GL3;
@@ -16,10 +18,16 @@ public class RenderBuffer {
     }
 
     public void attach(GL3 gl, FBO fbo) {
-        fbo.bind(gl);
+        try {
+            fbo.bind(gl);
+        } catch (UninitializedException e) {
+            e.printStackTrace();
+        }
         bind(gl);
-        gl.glRenderbufferStorage(GL3.GL_RENDERBUFFER, GL3.GL_RGBA, width, height);
-        gl.glFramebufferRenderbuffer(GL3.GL_FRAMEBUFFER, GL3.GL_RGBA, GL3.GL_RENDERBUFFER, pointer.get(0));
+        gl.glRenderbufferStorage(GL3.GL_RENDERBUFFER, GL3.GL_RGBA, width,
+                height);
+        gl.glFramebufferRenderbuffer(GL3.GL_FRAMEBUFFER, GL3.GL_RGBA,
+                GL3.GL_RENDERBUFFER, pointer.get(0));
         unBind(gl);
         fbo.unBind(gl);
     }

@@ -26,7 +26,7 @@ public class Texture2D extends Texture {
             if (pixelBuffer == null)
                 System.out.println("init first!");
 
-            gl.glActiveTexture(gLMultiTexUnit);
+            gl.glActiveTexture(glMultiTexUnit);
             gl.glEnable(GL3.GL_TEXTURE_2D);
 
             // Create new texture pointer and bind it so we can manipulate it.
@@ -67,9 +67,13 @@ public class Texture2D extends Texture {
     public void use(GL3 gl) throws UninitializedException {
         if (pixelBuffer == null)
             System.out.println("init first!");
-        gl.glActiveTexture(gLMultiTexUnit);
+        gl.glActiveTexture(glMultiTexUnit);
         gl.glEnable(GL3.GL_TEXTURE_2D);
         gl.glBindTexture(GL3.GL_TEXTURE_2D, getPointer());
+    }
+
+    public void unBind(GL3 gl) {
+        gl.glBindTexture(GL3.GL_TEXTURE_2D, 0);
     }
 
     public ByteBuffer getPixelBuffer() {

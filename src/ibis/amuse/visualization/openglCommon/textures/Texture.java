@@ -3,20 +3,20 @@ package ibis.amuse.visualization.openglCommon.textures;
 import javax.media.opengl.GL;
 
 public class Texture {
-    int gLMultiTexUnit;
+    int glMultiTexUnit;
 
     public Texture(int gLMultiTexUnit) {
-        this.gLMultiTexUnit = gLMultiTexUnit;
+        this.glMultiTexUnit = gLMultiTexUnit;
     }
 
     public int getGLMultiTexUnit() {
-        return gLMultiTexUnit;
+        return glMultiTexUnit;
     }
 
     public int getMultitexNumber() {
         int result = -1;
 
-        switch (gLMultiTexUnit) {
+        switch (glMultiTexUnit) {
         case GL.GL_TEXTURE0:
             result = 0;
             break;

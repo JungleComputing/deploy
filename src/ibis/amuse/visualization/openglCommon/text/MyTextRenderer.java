@@ -63,7 +63,7 @@ public class MyTextRenderer extends TextRenderer {
                 AttributeNames.TEXCOORD_ATTR_NAME);
 
         if (!sp.link(gl, System.err)) {
-            throw new GLException("TextRendererImpl01: Couldn't link program: "
+            throw new GLException("MyTextRenderer: Couldn't link program: "
                     + sp);
         }
         st.useProgram(gl, true);
