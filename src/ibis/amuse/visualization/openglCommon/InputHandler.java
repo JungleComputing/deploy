@@ -2,7 +2,7 @@ package ibis.amuse.visualization.openglCommon;
 
 
 import ibis.amuse.visualization.GLWindow;
-import ibis.amuse.visualization.openglCommon.math.Vec3;
+import ibis.amuse.visualization.openglCommon.math.VecF3;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -18,7 +18,7 @@ import javax.swing.SwingUtilities;
 public class InputHandler implements MouseListener, MouseMotionListener, MouseWheelListener, KeyListener {
 	private GLWindow window;
 	
-	private Vec3 rotation;
+	private VecF3 rotation;
 	
 	private float rotationXorigin = 0; 
 	private float rotationX;
@@ -32,7 +32,7 @@ public class InputHandler implements MouseListener, MouseMotionListener, MouseWh
 	public InputHandler(GLWindow window) {
 		this.window = window;
 		
-		rotation = new Vec3();
+		rotation = new VecF3();
 	}
 	
 	public void mouseClicked(MouseEvent e) {	

@@ -1,14 +1,13 @@
 package ibis.amuse.visualization.openglCommon.math;
 
-public class Vec3 extends Vector {	
+public class VecF2 extends VectorF {
 	/**
      * Creates a new vector, initialized to 0.
      */
-    public Vec3() {
-    	super(3);
+    public VecF2() {
+    	super(2);
         this.v[0] = 0f;
         this.v[1] = 0f;
-        this.v[2] = 0f;
     }
     
     /**
@@ -16,11 +15,10 @@ public class Vec3 extends Vector {
      * @param v
      * 		The vector to be copied.
      */
-    public Vec3(Vec3 v) {
-    	super(3);
+    public VecF2(VecF2 v) {
+    	super(2);
         this.v[0] = v.v[0];
         this.v[1] = v.v[1];
-        this.v[2] = v.v[2];
     }
     
     /**
@@ -32,31 +30,22 @@ public class Vec3 extends Vector {
      * @param z
      * 		The value to be put in the third position.
      */
-    public Vec3(float x, float y, float z) {
-    	super(3);
+    public VecF2(float x, float y) {
+    	super(2);
         this.v[0] = x;
         this.v[1] = y;
-        this.v[2] = z;
     }
 
     
-    public Vec3(Vec4 v) {
-    	super(3);
-    	this.v[0] = v.v[0];
-        this.v[1] = v.v[1];
-        this.v[2] = v.v[2];    	
-	}
-
-	/**
+    /**
      * Gives the negated vector of this vector. 
      * @return
      * 		The new negated vector.
      */
-    public Vec3 neg() {
-    	Vec3 result = new Vec3();
+    public VecF2 neg() {
+    	VecF2 result = new VecF2();
     	result.v[0] = -v[0];
     	result.v[1] = -v[1];
-    	result.v[2] = -v[2];
     	return result;
     }
 
@@ -68,11 +57,10 @@ public class Vec3 extends Vector {
      * @return
      * 		The new vector.
      */
-    public Vec3 add(Vec3 u) {
-    	Vec3 result = new Vec3();
+    public VecF2 add(VecF2 u) {
+    	VecF2 result = new VecF2();
     	result.v[0] = v[0] + u.v[0];
     	result.v[1] = v[1] + u.v[1];
-    	result.v[2] = v[2] + u.v[2];
     	return result;
     }
 
@@ -83,11 +71,10 @@ public class Vec3 extends Vector {
 	 * @return
 	 * 		The new Vector, which is a result of the substraction.
 	 */
-	public Vec3 sub(Vec3 u) {
-		Vec3 result = new Vec3();
+	public VecF2 sub(VecF2 u) {
+		VecF2 result = new VecF2();
     	result.v[0] = v[0] - u.v[0];
     	result.v[1] = v[1] - u.v[1];
-    	result.v[2] = v[2] - u.v[2];
     	return result;
 	}
 
@@ -98,12 +85,11 @@ public class Vec3 extends Vector {
 	 * @return
 	 * 		The new Vector, which is a result of the multiplication.
 	 */
-	public Vec3 mul(Number n) {
+	public VecF2 mul(Number n) {
 		float fn = n.floatValue();
-		Vec3 result = new Vec3();
+		VecF2 result = new VecF2();
     	result.v[0] = v[0] *fn;
     	result.v[1] = v[1] *fn;
-    	result.v[2] = v[2] *fn;
     	return result;
 	}
 
@@ -114,11 +100,10 @@ public class Vec3 extends Vector {
 	 * @return
 	 * 		The new Vector, which is a result of the multiplication.
 	 */
-	public Vec3 mul(Vec3 u) {
-		Vec3 result = new Vec3();
+	public VecF2 mul(VecF2 u) {
+		VecF2 result = new VecF2();
     	result.v[0] = v[0] * u.v[0];
     	result.v[1] = v[1] * u.v[1];
-    	result.v[2] = v[2] * u.v[2];
     	return result;
 	}
 
@@ -129,25 +114,24 @@ public class Vec3 extends Vector {
 	 * @return
 	 * 		The new Vector, which is a result of the division.
 	 */
-	public Vec3 div(Number n) {  
+	public VecF2 div(Number n) {  
 		float f = n.floatValue();
-    	if (f == 0f) return new Vec3();
+    	if (f == 0f) return new VecF2();
 		float fn = 1f / f;
 
-		Vec3 result = new Vec3();
+		VecF2 result = new VecF2();
     	result.v[0] = v[0] *fn;
     	result.v[1] = v[1] *fn;
-    	result.v[2] = v[2] *fn;
     	return result;
 	}
     
-    public Vec3 clone() {
-    	return new Vec3(this);
+    public VecF2 clone() {
+    	return new VecF2(this);
     }
     
     @Override
 	public int hashCode() {
-		int hashCode = (int) (v[0]+23 * 6833 + v[1]+7 *7207 + v[2]+11 * 7919);
+		int hashCode = (int) (v[0]+23 * 6833 + v[1]+7 *7207);
 		return hashCode;
 	}
     
@@ -155,13 +139,13 @@ public class Vec3 extends Vector {
 	public boolean equals(Object thatObject) {
 		if (this == thatObject)
 			return true;
-		if (!(thatObject instanceof Vec3))
+		if (!(thatObject instanceof VecF2))
 			return false;
 
 		// cast to native object is now safe
-		Vec3 that = (Vec3) thatObject;
+		VecF2 that = (VecF2) thatObject;
 
 		// now a proper field-by-field evaluation can be made
-		return (v[0] == that.v[0] && v[1] == that.v[1] && v[2] == that.v[2]);
+		return (v[0] == that.v[0] && v[1] == that.v[1]);
 	}
 }

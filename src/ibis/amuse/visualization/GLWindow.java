@@ -7,12 +7,12 @@ import ibis.amuse.visualization.openglCommon.Material;
 import ibis.amuse.visualization.openglCommon.Picture;
 import ibis.amuse.visualization.openglCommon.exceptions.UninitializedException;
 import ibis.amuse.visualization.openglCommon.math.Color4;
-import ibis.amuse.visualization.openglCommon.math.Mat3;
-import ibis.amuse.visualization.openglCommon.math.Mat4;
-import ibis.amuse.visualization.openglCommon.math.MatrixMath;
+import ibis.amuse.visualization.openglCommon.math.MatF3;
+import ibis.amuse.visualization.openglCommon.math.MatF4;
+import ibis.amuse.visualization.openglCommon.math.MatrixFMath;
 import ibis.amuse.visualization.openglCommon.math.Point4;
-import ibis.amuse.visualization.openglCommon.math.Vec3;
-import ibis.amuse.visualization.openglCommon.math.Vec4;
+import ibis.amuse.visualization.openglCommon.math.VecF3;
+import ibis.amuse.visualization.openglCommon.math.VecF4;
 import ibis.amuse.visualization.openglCommon.models.Axis;
 import ibis.amuse.visualization.openglCommon.models.Model;
 import ibis.amuse.visualization.openglCommon.models.Text;
@@ -63,7 +63,7 @@ public class GLWindow implements GLEventListener {
 
     private Perlin3D noiseTex;
 
-    private final Vec3 lightPos = new Vec3(2f, 2f, 2f);
+    private final VecF3 lightPos = new VecF3(2f, 2f, 2f);
 
     private Hdf5TimedPlayer timer = null;
 
@@ -80,9 +80,9 @@ public class GLWindow implements GLEventListener {
 
     private int canvasWidth, canvasHeight;
 
-    private Vec3 rotation = new Vec3();
-    private final Vec3 viewDistTranslation = new Vec3(0f, 0f, -150f);
-    private final Vec3 translation = new Vec3(0f, 1000f, 0f);
+    private VecF3 rotation = new VecF3();
+    private final VecF3 viewDistTranslation = new VecF3(0f, 0f, -150f);
+    private final VecF3 translation = new VecF3(0f, 1000f, 0f);
 
     private Texture2D axesTex, starHaloTex, gasTex, starTex, intermediateTex,
             hudTex;
@@ -234,33 +234,31 @@ public class GLWindow implements GLEventListener {
         // AXES
         Color4 axisColor = new Color4(0f, 1f, 0f, 1f);
         Material axisMaterial = new Material(axisColor, axisColor, axisColor);
-        xAxis = new Axis(axisMaterial, new Vec3(-800f, 0f, 0f), new Vec3(800f,
-                0f, 0f), Astrophysics.toScreenCoord(1), Astrophysics
+        xAxis = new Axis(axisMaterial, new VecF3(-800f, 0f, 0f), new VecF3(
+                800f, 0f, 0f), Astrophysics.toScreenCoord(1), Astrophysics
                 .toScreenCoord(.2));
         xAxis.init(gl);
-        yAxis = new Axis(axisMaterial, new Vec3(0f, -800f, 0f), new Vec3(0f,
+        yAxis = new Axis(axisMaterial, new VecF3(0f, -800f, 0f), new VecF3(0f,
                 800f, 0f), Astrophysics.toScreenCoord(1), Astrophysics
                 .toScreenCoord(.2));
         yAxis.init(gl);
-        zAxis = new Axis(axisMaterial, new Vec3(0f, 0f, -800f), new Vec3(0f,
+        zAxis = new Axis(axisMaterial, new VecF3(0f, 0f, -800f), new VecF3(0f,
                 0f, 800f), Astrophysics.toScreenCoord(1), Astrophysics
                 .toScreenCoord(.2));
         zAxis.init(gl);
 
         // TEXT
-
-        myText = new Text(axisMaterial, GL3.GL_TEXTURE13, false);
+        // TODO: DEBUG
+        myText = new Text(axisMaterial, GL3.GL_TEXTURE13, true);
         myText.init(gl);
-        // TODO Define new shader for text
-        myText.setString(gl, axesShader, font, "", fontSize);
 
         // FULL SCREEN QUADS
         FSQ_postprocess = new Quad(postprocessShader, Material.random(), 2, 2,
-                new Vec3(0, 0, 0.1f));
+                new VecF3(0, 0, 0.1f));
         FSQ_postprocess.init(gl);
 
         FSQ_blur = new Quad(gaussianBlurShader, Material.random(), 2, 2,
-                new Vec3(0, 0, 0.1f));
+                new VecF3(0, 0, 0.1f));
         FSQ_blur.init(gl);
 
         // TEXTURES
@@ -389,20 +387,20 @@ public class GLWindow implements GLEventListener {
                 (float) (radius * Math.sin(ftheta) * Math.sin(phi)),
                 (float) (radius * Math.cos(ftheta)), 1.0f);
         Point4 at = new Point4(0.0f, 0.0f, 0.0f, 1.0f);
-        Vec4 up = new Vec4(0.0f, 1.0f, 0.0f, 0.0f);
+        VecF4 up = new VecF4(0.0f, 1.0f, 0.0f, 0.0f);
 
-        Mat4 mv = MatrixMath.lookAt(eye, at, up);
-        mv = mv.mul(MatrixMath.translate(viewDistTranslation));
-        mv = mv.mul(MatrixMath.rotationX(rotation.get(0)));
-        mv = mv.mul(MatrixMath.rotationY(rotation.get(1)));
+        MatF4 mv = MatrixFMath.lookAt(eye, at, up);
+        mv = mv.mul(MatrixFMath.translate(viewDistTranslation));
+        mv = mv.mul(MatrixFMath.rotationX(rotation.get(0)));
+        mv = mv.mul(MatrixFMath.rotationY(rotation.get(1)));
 
-        Mat3 n = new Mat3();
-        Mat4 p = MatrixMath.perspective(fovy, aspect, zNear, zFar);
+        MatF3 n = new MatF3();
+        MatF4 p = MatrixFMath.perspective(fovy, aspect, zNear, zFar);
 
         // Vertex shader variables
         loader.setUniformMatrix("NormalMatrix", n);
         loader.setUniformMatrix("PMatrix", p);
-        loader.setUniformMatrix("SMatrix", MatrixMath.scale(1));
+        loader.setUniformMatrix("SMatrix", MatrixFMath.scale(1));
 
         renderScene(gl, mv, stars, octreeRoot, starHaloTex, starTex, gasTex,
                 axesTex);
@@ -416,7 +414,7 @@ public class GLWindow implements GLEventListener {
 
     }
 
-    private void renderScene(GL3 gl, Mat4 mv, ArrayList<Star> stars,
+    private void renderScene(GL3 gl, MatF4 mv, ArrayList<Star> stars,
             OctreeNode octreeRoot, Texture2D starHaloTex, Texture2D starTex,
             Texture2D gasTex, Texture2D axesTex) {
         gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -427,7 +425,7 @@ public class GLWindow implements GLEventListener {
                 pplShader.setUniformVector("LightPos", lightPos);
                 pplShader.setUniform("Shininess", shininess);
 
-                pplShader.setUniformMatrix("SMatrix", MatrixMath.scale(2));
+                pplShader.setUniformMatrix("SMatrix", MatrixFMath.scale(2));
                 pplShader.setUniform("StarDrawMode", 1);
 
                 for (Star s : stars) {
@@ -471,14 +469,14 @@ public class GLWindow implements GLEventListener {
                 animatedTurbulenceShader.setUniform("Noise", noiseTex
                         .getMultitexNumber());
 
-                animatedTurbulenceShader.setUniformMatrix("SMatrix", MatrixMath
-                        .scale(1));
+                animatedTurbulenceShader.setUniformMatrix("SMatrix",
+                        MatrixFMath.scale(1));
                 animatedTurbulenceShader.setUniform("StarDrawMode", 0);
 
                 pplShader.setUniformVector("LightPos", lightPos);
                 pplShader.setUniform("Shininess", shininess);
 
-                pplShader.setUniformMatrix("SMatrix", MatrixMath.scale(1));
+                pplShader.setUniformMatrix("SMatrix", MatrixFMath.scale(1));
                 pplShader.setUniform("StarDrawMode", 0);
 
                 for (Star s : stars) {
@@ -492,7 +490,7 @@ public class GLWindow implements GLEventListener {
                 pplShader.setUniformVector("LightPos", lightPos);
                 pplShader.setUniform("Shininess", shininess);
 
-                pplShader.setUniformMatrix("SMatrix", MatrixMath.scale(1));
+                pplShader.setUniformMatrix("SMatrix", MatrixFMath.scale(1));
                 pplShader.setUniform("StarDrawMode", 0);
 
                 for (Star s : stars) {
@@ -521,15 +519,15 @@ public class GLWindow implements GLEventListener {
         }
     }
 
-    private void renderHUDText(GL3 gl, Mat4 mv, Texture2D hudTex) {
+    private void renderHUDText(GL3 gl, MatF4 mv, Texture2D hudTex) {
         gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 
         if (text) {
             String text = "Frame: " + timer.getFrame();
-            myText.setString(gl, axesShader, font, text, fontSize);
+            myText.setString(gl, axesShader, font, text, fontSize, 1f);
 
-            axesShader.setUniformMatrix("SMatrix", MatrixMath.scale(0.01f));
+            // axesShader.setUniformMatrix("SMatrix", MatrixFMath.scale(0.01f));
             myText.draw(gl, axesShader, Text.getModelViewForHUD(0, 0));
         }
 
@@ -563,13 +561,13 @@ public class GLWindow implements GLEventListener {
         postprocessShader.setUniform("overallBrightness", Settings
                 .getPostprocessingOverallBrightness());
 
-        postprocessShader.setUniformMatrix("PMatrix", new Mat4());
+        postprocessShader.setUniformMatrix("PMatrix", new MatF4());
         postprocessShader.setUniform("scrWidth", width);
         postprocessShader.setUniform("scrHeight", height);
 
         try {
             postprocessShader.use(gl);
-            FSQ_blur.draw(gl, postprocessShader, new Mat4());
+            FSQ_blur.draw(gl, postprocessShader, new MatF4());
         } catch (UninitializedException e) {
             e.printStackTrace();
         }
@@ -578,7 +576,7 @@ public class GLWindow implements GLEventListener {
     private void blur(GL3 gl, Texture2D target, Model fullScreenQuad,
             int passes, int blurType, float blurSize) {
         gaussianBlurShader.setUniform("Texture", target.getMultitexNumber());
-        gaussianBlurShader.setUniformMatrix("PMatrix", new Mat4());
+        gaussianBlurShader.setUniformMatrix("PMatrix", new MatF4());
         gaussianBlurShader.setUniform("blurType", blurType);
         gaussianBlurShader.setUniform("blurSize", blurSize);
         gaussianBlurShader.setUniform("scrWidth", target.getWidth());
@@ -590,11 +588,11 @@ public class GLWindow implements GLEventListener {
 
             for (int i = 0; i < passes; i++) {
                 gaussianBlurShader.setUniform("blurDirection", 0);
-                fullScreenQuad.draw(gl, new Mat4());
+                fullScreenQuad.draw(gl, new MatF4());
                 renderToTexture(gl, target);
 
                 gaussianBlurShader.setUniform("blurDirection", 1);
-                fullScreenQuad.draw(gl, new Mat4());
+                fullScreenQuad.draw(gl, new MatF4());
                 renderToTexture(gl, target);
             }
         } catch (UninitializedException e) {
@@ -605,7 +603,7 @@ public class GLWindow implements GLEventListener {
     private void starBlur(GL3 gl, Texture2D target, Model fullScreenQuad,
             int blurType, float blurSize) {
         gaussianBlurShader.setUniform("Texture", target.getMultitexNumber());
-        gaussianBlurShader.setUniformMatrix("PMatrix", new Mat4());
+        gaussianBlurShader.setUniformMatrix("PMatrix", new MatF4());
 
         gaussianBlurShader.setUniform("scrWidth", target.getWidth());
         gaussianBlurShader.setUniform("scrHeight", target.getHeight());
@@ -625,9 +623,9 @@ public class GLWindow implements GLEventListener {
                     .getStarShapeBlurSize());
 
             gaussianBlurShader.setUniform("blurDirection", 0);
-            fullScreenQuad.draw(gl, new Mat4());
+            fullScreenQuad.draw(gl, new MatF4());
             gaussianBlurShader.setUniform("blurDirection", 1);
-            fullScreenQuad.draw(gl, new Mat4());
+            fullScreenQuad.draw(gl, new MatF4());
             renderToTexture(gl, target);
         } catch (UninitializedException e) {
             e.printStackTrace();
@@ -723,7 +721,7 @@ public class GLWindow implements GLEventListener {
         viewDistTranslation.set(2, viewDist);
     }
 
-    public void setRotation(Vec3 rotation) {
+    public void setRotation(VecF3 rotation) {
         float x = rotation.get(0);
         int qx = (int) Math.floor(x / 90f);
         float y = rotation.get(1);
@@ -769,7 +767,7 @@ public class GLWindow implements GLEventListener {
         this.rotation = rotation;
     }
 
-    public Vec3 getRotation() {
+    public VecF3 getRotation() {
         return rotation;
     }
 

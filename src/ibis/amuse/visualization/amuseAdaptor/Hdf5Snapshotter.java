@@ -2,7 +2,7 @@ package ibis.amuse.visualization.amuseAdaptor;
 
 import ibis.amuse.visualization.Settings;
 import ibis.amuse.visualization.openglCommon.exceptions.FileOpeningException;
-import ibis.amuse.visualization.openglCommon.math.Vec3;
+import ibis.amuse.visualization.openglCommon.math.VecF3;
 import ibis.amuse.visualization.openglCommon.models.Model;
 import ibis.amuse.visualization.openglCommon.scenegraph.OctreeNode;
 
@@ -36,7 +36,7 @@ public class Hdf5Snapshotter {
         evoName = namePrefix + intToString(currentFrame) + evoNamePostfix;
         gravName = namePrefix + intToString(currentFrame) + gravNamePostfix;
 
-        cubeRoot = new OctreeNode(gasParticlesPerOctreeNode, 0, gasSubdivision, cloudModels, new Vec3(
+        cubeRoot = new OctreeNode(gasParticlesPerOctreeNode, 0, gasSubdivision, cloudModels, new VecF3(
                 -Settings.getGasEdges(), -Settings.getGasEdges(), -Settings.getGasEdges()), Settings.getGasEdges());
         Hdf5GasCloudReader.read(cubeRoot, gasName);
 

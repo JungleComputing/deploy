@@ -177,12 +177,15 @@ public class VBORegion2PES2 extends GLRegion {
         verticeFboAttr.putf(box.getLow()[0]);
         verticeFboAttr.putf(box.getLow()[1]);
         verticeFboAttr.putf(box.getLow()[2]);
+
         verticeFboAttr.putf(box.getLow()[0]);
         verticeFboAttr.putf(box.getHigh()[1]);
         verticeFboAttr.putf(box.getLow()[2]);
+
         verticeFboAttr.putf(box.getHigh()[0]);
         verticeFboAttr.putf(box.getHigh()[1]);
         verticeFboAttr.putf(box.getLow()[2]);
+
         verticeFboAttr.putf(box.getHigh()[0]);
         verticeFboAttr.putf(box.getLow()[1]);
         verticeFboAttr.putf(box.getLow()[2]);

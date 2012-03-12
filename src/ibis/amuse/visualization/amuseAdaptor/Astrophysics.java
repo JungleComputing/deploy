@@ -3,9 +3,9 @@ package ibis.amuse.visualization.amuseAdaptor;
 import ibis.amuse.visualization.GLWindow;
 import ibis.amuse.visualization.Settings;
 import ibis.amuse.visualization.openglCommon.Material;
-import ibis.amuse.visualization.openglCommon.math.Vec3;
-import ibis.amuse.visualization.openglCommon.math.Vec4;
-import ibis.amuse.visualization.openglCommon.math.VectorMath;
+import ibis.amuse.visualization.openglCommon.math.VecF3;
+import ibis.amuse.visualization.openglCommon.math.VecF4;
+import ibis.amuse.visualization.openglCommon.math.VectorFMath;
 
 import java.util.HashMap;
 
@@ -24,20 +24,20 @@ public class Astrophysics {
 
     public final static double STAR_FORMULAE_INTERSECTION = find_intersection();
 
-    private final static Vec4 INITIAL_GAS_COLOR = new Vec4(.6f, .3f, .3f, 0f);
-    private final static Vec4 transparent = new Vec4(0, 0, 0, 0);
+    private final static VecF4 INITIAL_GAS_COLOR = new VecF4(.6f, .3f, .3f, 0f);
+    private final static VecF4 transparent = new VecF4(0, 0, 0, 0);
     private final static Material gasMaterial = new Material(INITIAL_GAS_COLOR, transparent, transparent);
 
     public static Material getGasMaterial() {
         return gasMaterial;
     }
 
-    public static Vec3 locationToScreenCoord(double x, double y, double z) {
+    public static VecF3 locationToScreenCoord(double x, double y, double z) {
         float fx = (float) (DISTANCE_FACTOR * (x / PARSEC));
         float fy = (float) (DISTANCE_FACTOR * (y / PARSEC));
         float fz = (float) (DISTANCE_FACTOR * (z / PARSEC));
 
-        return new Vec3(fx, fy, fz);
+        return new VecF3(fx, fy, fz);
     }
 
     public static float starToScreenRadius(double size) {
@@ -86,7 +86,7 @@ public class Astrophysics {
         return (current - min) / (max - min);
     }
 
-    public static Vec4 starColor(double luminosity, double radius) {
+    public static VecF4 starColor(double luminosity, double radius) {
         luminosity *= SOLAR_LUMINOSITY;
 
         double temperature = starTemperature(luminosity, radius);
@@ -130,21 +130,21 @@ public class Astrophysics {
                 // We normalize to make sure that the stars have the same
                 // brightness. This ensures that even almost completely white
                 // stars retain their color.
-                return VectorMath.normalize(new Vec4(r, g, b, 1f));
+                return VectorFMath.normalize(new VecF4(r, g, b, 1f));
             }
         }
 
-        return new Vec4(r, g, b, 1f);
+        return new VecF4(r, g, b, 1f);
     }
 
-    public static Vec4 gasColor(float density, float total_u_inNode, int membersOfnode) {
+    public static VecF4 gasColor(float density, float total_u_inNode, int membersOfnode) {
         float u = (float) (Math.sqrt(total_u_inNode / membersOfnode) / 5000.0);
         if (Float.isNaN(u))
             u = 0f;
         if (Settings.invertGasColor()) {
-            return new Vec4(0f + u, 0f + u, 1f - u, density);
+            return new VecF4(0f + u, 0f + u, 1f - u, density);
         } else {
-            return new Vec4(1f - u, 0f + u, 0f + u, density);
+            return new VecF4(1f - u, 0f + u, 0f + u, density);
         }
     }
 }

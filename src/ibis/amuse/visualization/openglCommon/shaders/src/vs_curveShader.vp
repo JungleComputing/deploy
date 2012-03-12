@@ -2,8 +2,7 @@
 
 #version 150 
 
-uniform mat4 PMatrix;
-uniform mat4 MVMatrix;
+uniform mat4 PMVMatrix;
 
 in vec4 MCvertex;
 in vec2 MCtexCoord;
@@ -13,5 +12,5 @@ out vec2 tCoordsFS;
 void main(void)
 {
 	tCoordsFS = MCtexCoord;
-	gl_Position = PMatrix * MVMatrix * MCvertex;
+	gl_Position = PMVMatrix * MCvertex;
 }

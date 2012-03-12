@@ -1,6 +1,6 @@
 package ibis.amuse.visualization.openglCommon.math;
 
-public class Point4 extends Vec4 {
+public class Point4 extends VecF4 {
 	/**
 	 * Stand-in for a 4-place vector, where the fourth place is always 1f.
 	 */
@@ -14,7 +14,7 @@ public class Point4 extends Vec4 {
 	 * @param vec
 	 * 		The xyz values of this point.
 	 */
-	public Point4(Vec3 vec) {
+	public Point4(VecF3 vec) {
 		super(vec, 1f);
 	}
 	
@@ -23,7 +23,7 @@ public class Point4 extends Vec4 {
 	 * @param v
 	 * 		A vector of which the fourth place will be discarded and replaced by 1f.
 	 */
-	public Point4(Vec4 v) {
+	public Point4(VecF4 v) {
 		super(v);
 		this.v[3] = 1f;
 	}

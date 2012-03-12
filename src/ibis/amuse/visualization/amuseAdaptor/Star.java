@@ -1,10 +1,10 @@
 package ibis.amuse.visualization.amuseAdaptor;
 
 import ibis.amuse.visualization.openglCommon.exceptions.UninitializedException;
-import ibis.amuse.visualization.openglCommon.math.Mat4;
-import ibis.amuse.visualization.openglCommon.math.MatrixMath;
-import ibis.amuse.visualization.openglCommon.math.Vec3;
-import ibis.amuse.visualization.openglCommon.math.Vec4;
+import ibis.amuse.visualization.openglCommon.math.MatF4;
+import ibis.amuse.visualization.openglCommon.math.MatrixFMath;
+import ibis.amuse.visualization.openglCommon.math.VecF3;
+import ibis.amuse.visualization.openglCommon.math.VecF4;
 import ibis.amuse.visualization.openglCommon.models.Model;
 import ibis.amuse.visualization.openglCommon.shaders.Program;
 
@@ -12,12 +12,12 @@ import javax.media.opengl.GL3;
 
 
 public class Star {
-    private final Vec4 color;
-    private final Vec3 location;
+    private final VecF4 color;
+    private final VecF3 location;
     private final float radius;
     private final Model model;
 
-    public Star(Model baseModel, Vec3 location, double radius, double luminosity) {
+    public Star(Model baseModel, VecF3 location, double radius, double luminosity) {
         this.model = baseModel;
         this.location = location;
 
@@ -29,19 +29,19 @@ public class Star {
         model.init(gl);
     }
 
-    public void draw(GL3 gl, Program program, Mat4 MVMatrix) {
+    public void draw(GL3 gl, Program program, MatF4 MVMatrix) {
         program.setUniformVector("DiffuseMaterial", color);
         program.setUniformVector("AmbientMaterial", color);
         program.setUniformVector("SpecularMaterial", color);
 
-        Vec4 haloColor = new Vec4(color);
+        VecF4 haloColor = new VecF4(color);
         float haloAlpha = (float) (0.5f - (radius / Astrophysics.STAR_RADIUS_AT_1000_SOLAR_RADII));
         haloColor.set(3, haloAlpha);
 
         program.setUniformVector("HaloColor", haloColor);
 
-        MVMatrix = MVMatrix.mul(MatrixMath.translate(location));
-        MVMatrix = MVMatrix.mul(MatrixMath.scale(radius));
+        MVMatrix = MVMatrix.mul(MatrixFMath.translate(location));
+        MVMatrix = MVMatrix.mul(MatrixFMath.scale(radius));
         program.setUniformMatrix("MVMatrix", MVMatrix);
 
         try {

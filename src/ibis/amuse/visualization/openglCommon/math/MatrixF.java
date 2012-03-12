@@ -2,11 +2,11 @@ package ibis.amuse.visualization.openglCommon.math;
 
 import java.nio.FloatBuffer;
 
-public abstract class Matrix {
+public abstract class MatrixF {
 	protected float m[];
 	protected FloatBuffer buf;
 	
-	protected Matrix(int size) {
+	protected MatrixF(int size) {
 		m = new float[size];
     	buf = FloatBuffer.wrap(m);
     	buf.rewind();

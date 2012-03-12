@@ -3,8 +3,8 @@ package ibis.amuse.visualization.openglCommon.shaders;
 
 import ibis.amuse.visualization.openglCommon.GLSLAttrib;
 import ibis.amuse.visualization.openglCommon.exceptions.CompilationFailedException;
-import ibis.amuse.visualization.openglCommon.math.Matrix;
-import ibis.amuse.visualization.openglCommon.math.Vector;
+import ibis.amuse.visualization.openglCommon.math.MatrixF;
+import ibis.amuse.visualization.openglCommon.math.VectorF;
 
 import java.io.FileNotFoundException;
 import java.nio.Buffer;
@@ -122,14 +122,14 @@ public class ProgramLoader {
         }
     }
 
-    public void setUniformVector(String pointerNameInShader, Vector var) {
+    public void setUniformVector(String pointerNameInShader, VectorF var) {
         for (Map.Entry<Integer, Program> e : programs.entrySet()) {
             Program p = e.getValue();
             p.setUniformVector(pointerNameInShader, var);
         }
     }
 
-    public void setUniformMatrix(String pointerNameInShader, Matrix var) {
+    public void setUniformMatrix(String pointerNameInShader, MatrixF var) {
         for (Map.Entry<Integer, Program> e : programs.entrySet()) {
             Program p = e.getValue();
             p.setUniformMatrix(pointerNameInShader, var);

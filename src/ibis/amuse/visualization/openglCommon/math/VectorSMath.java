@@ -1,9 +1,9 @@
 package ibis.amuse.visualization.openglCommon.math;
 
-import java.nio.FloatBuffer;
+import java.nio.ShortBuffer;
 import java.util.List;
 
-public class VectorMath {
+public class VectorSMath {
 
     /**
      * Helper method to calculate the dot product of two vectors
@@ -14,21 +14,8 @@ public class VectorMath {
      *            The second vector.
      * @return The dot product of the two vectors.
      */
-    public static float dot(Vec2 u, Vec2 v) {
-        return u.v[0] * v.v[0] + u.v[1] * v.v[1];
-    }
-
-    /**
-     * Helper method to calculate the dot product of two vectors
-     * 
-     * @param u
-     *            The first vector.
-     * @param v
-     *            The second vector.
-     * @return The dot product of the two vectors.
-     */
-    public static float dot(Vec3 u, Vec3 v) {
-        return u.v[0] * v.v[0] + u.v[1] * v.v[1] + u.v[2] * v.v[2];
+    public static short dot(VecS2 u, VecS2 v) {
+        return (short) (u.v[0] * v.v[0] + u.v[1] * v.v[1]);
     }
 
     /**
@@ -40,9 +27,22 @@ public class VectorMath {
      *            The second vector.
      * @return The dot product of the two vectors.
      */
-    public static float dot(Vec4 u, Vec4 v) {
-        return u.v[0] * v.v[0] + u.v[1] * v.v[1] + u.v[2] * v.v[2] + u.v[3]
-                * v.v[3];
+    public static short dot(VecS3 u, VecS3 v) {
+        return (short) (u.v[0] * v.v[0] + u.v[1] * v.v[1] + u.v[2] * v.v[2]);
+    }
+
+    /**
+     * Helper method to calculate the dot product of two vectors
+     * 
+     * @param u
+     *            The first vector.
+     * @param v
+     *            The second vector.
+     * @return The dot product of the two vectors.
+     */
+    public static short dot(VecS4 u, VecS4 v) {
+        return (short) (u.v[0] * v.v[0] + u.v[1] * v.v[1] + u.v[2] * v.v[2] + u.v[3]
+                * v.v[3]);
     }
 
     /**
@@ -52,8 +52,8 @@ public class VectorMath {
      *            The vector.
      * @return The length of the vector.
      */
-    public static float length(Vec2 v) {
-        return (float) Math.sqrt(dot(v, v));
+    public static short length(VecS2 v) {
+        return (short) Math.sqrt(dot(v, v));
     }
 
     /**
@@ -63,8 +63,8 @@ public class VectorMath {
      *            The vector.
      * @return The length of the vector.
      */
-    public static float length(Vec3 v) {
-        return (float) Math.sqrt(dot(v, v));
+    public static short length(VecS3 v) {
+        return (short) Math.sqrt(dot(v, v));
     }
 
     /**
@@ -74,8 +74,8 @@ public class VectorMath {
      *            The vector.
      * @return The length of the vector.
      */
-    public static float length(Vec4 v) {
-        return (float) Math.sqrt(dot(v, v));
+    public static short length(VecS4 v) {
+        return (short) Math.sqrt(dot(v, v));
     }
 
     /**
@@ -85,7 +85,7 @@ public class VectorMath {
      *            The vector.
      * @return The normal of the vector.
      */
-    public static Vec2 normalize(Vec2 v) {
+    public static VecS2 normalize(VecS2 v) {
         return v.div(length(v));
     }
 
@@ -96,7 +96,7 @@ public class VectorMath {
      *            The vector.
      * @return The normal of the vector.
      */
-    public static Vec3 normalize(Vec3 v) {
+    public static VecS3 normalize(VecS3 v) {
         return v.div(length(v));
     }
 
@@ -107,7 +107,7 @@ public class VectorMath {
      *            The vector.
      * @return The normal of the vector.
      */
-    public static Vec4 normalize(Vec4 v) {
+    public static VecS4 normalize(VecS4 v) {
         return v.div(length(v));
     }
 
@@ -120,9 +120,10 @@ public class VectorMath {
      *            The second vector.
      * @return The new vector, which is the cross product of the two vectors.
      */
-    public static Vec3 cross(Vec3 u, Vec3 v) {
-        return new Vec3(u.v[1] * v.v[2] - u.v[2] * v.v[1], u.v[2] * v.v[0]
-                - u.v[0] * v.v[2], u.v[0] * v.v[1] - u.v[1] * v.v[0]);
+    public static VecS3 cross(VecS3 u, VecS3 v) {
+        return new VecS3((short) (u.v[1] * v.v[2] - u.v[2] * v.v[1]),
+                (short) (u.v[2] * v.v[0] - u.v[0] * v.v[2]), (short) (u.v[0]
+                        * v.v[1] - u.v[1] * v.v[0]));
     }
 
     /**
@@ -134,20 +135,40 @@ public class VectorMath {
      *            The second vector.
      * @return The new vector, which is the cross product of the two vectors.
      */
-    public static Vec4 cross(Vec4 u, Vec4 v) {
-        return new Vec4(u.v[1] * v.v[2] - u.v[2] * v.v[1], u.v[2] * v.v[0]
-                - u.v[0] * v.v[2], u.v[0] * v.v[1] - u.v[1] * v.v[0], 0.0f);
+    public static VecS4 cross(VecS4 u, VecS4 v) {
+        return new VecS4((short) (u.v[1] * v.v[2] - u.v[2] * v.v[1]),
+                (short) (u.v[2] * v.v[0] - u.v[0] * v.v[2]), (short) (u.v[0]
+                        * v.v[1] - u.v[1] * v.v[0]), (short) (0.0f));
     }
 
     /**
-     * Helper method to create a FloatBuffer from an array of vectors.
+     * Helper method to create a ShortBuffer from an array of vectors.
      * 
      * @param array
      *            The array of vectors.
-     * @return The new FloatBuffer
+     * @return The new ShortBuffer
      */
-    public static FloatBuffer toBuffer(Vec2[] array) {
-        FloatBuffer result = FloatBuffer.allocate(array.length * 2);
+    public static ShortBuffer toBuffer(short[] array) {
+        ShortBuffer result = ShortBuffer.allocate(array.length);
+
+        for (int i = 0; i < array.length; i++) {
+            result.put(array[i]);
+        }
+
+        result.rewind();
+
+        return result;
+    }
+
+    /**
+     * Helper method to create a ShortBuffer from an array of vectors.
+     * 
+     * @param array
+     *            The array of vectors.
+     * @return The new ShortBuffer
+     */
+    public static ShortBuffer toBuffer(VecS2[] array) {
+        ShortBuffer result = ShortBuffer.allocate(array.length * 2);
 
         for (int i = 0; i < array.length; i++) {
             result.put(array[i].asBuffer());
@@ -159,14 +180,14 @@ public class VectorMath {
     }
 
     /**
-     * Helper method to create a FloatBuffer from an array of vectors.
+     * Helper method to create a ShortBuffer from an array of vectors.
      * 
      * @param array
      *            The array of vectors.
-     * @return The new FloatBuffer
+     * @return The new ShortBuffer
      */
-    public static FloatBuffer toBuffer(Vec3[] array) {
-        FloatBuffer result = FloatBuffer.allocate(array.length * 3);
+    public static ShortBuffer toBuffer(VecS3[] array) {
+        ShortBuffer result = ShortBuffer.allocate(array.length * 3);
 
         for (int i = 0; i < array.length; i++) {
             result.put(array[i].asBuffer());
@@ -178,14 +199,14 @@ public class VectorMath {
     }
 
     /**
-     * Helper method to create a FloatBuffer from an array of vectors.
+     * Helper method to create a ShortBuffer from an array of vectors.
      * 
      * @param array
      *            The array of vectors.
-     * @return The new FloatBuffer
+     * @return The new ShortBuffer
      */
-    public static FloatBuffer toBuffer(Vec4[] array) {
-        FloatBuffer result = FloatBuffer.allocate(array.length * 4);
+    public static ShortBuffer toBuffer(VecS4[] array) {
+        ShortBuffer result = ShortBuffer.allocate(array.length * 4);
 
         for (int i = 0; i < array.length; i++) {
             result.put(array[i].asBuffer());
@@ -197,16 +218,35 @@ public class VectorMath {
     }
 
     /**
-     * Helper method to create a FloatBuffer from an array of vectors.
+     * Helper method to create a ShortBuffer from an array of vectors.
      * 
      * @param array
      *            The List of vectors.
-     * @return The new FloatBuffer
+     * @return The new ShortBuffer
      */
-    public static FloatBuffer vec2ListToBuffer(List<Vec2> list) {
-        FloatBuffer result = FloatBuffer.allocate(list.size() * 2);
+    public static ShortBuffer listToBuffer(List<Short> list) {
+        ShortBuffer result = ShortBuffer.allocate(list.size());
 
-        for (Vector v : list) {
+        for (Short s : list) {
+            result.put(s);
+        }
+
+        result.rewind();
+
+        return result;
+    }
+
+    /**
+     * Helper method to create a ShortBuffer from an array of vectors.
+     * 
+     * @param array
+     *            The List of vectors.
+     * @return The new ShortBuffer
+     */
+    public static ShortBuffer vec2ListToBuffer(List<VecS2> list) {
+        ShortBuffer result = ShortBuffer.allocate(list.size() * 2);
+
+        for (VectorS v : list) {
             result.put(v.asBuffer());
         }
 
@@ -216,16 +256,16 @@ public class VectorMath {
     }
 
     /**
-     * Helper method to create a FloatBuffer from an array of vectors.
+     * Helper method to create a ShortBuffer from an array of vectors.
      * 
      * @param array
      *            The List of vectors.
-     * @return The new FloatBuffer
+     * @return The new ShortBuffer
      */
-    public static FloatBuffer vec3ListToBuffer(List<Vec3> list) {
-        FloatBuffer result = FloatBuffer.allocate(list.size() * 3);
+    public static ShortBuffer vec3ListToBuffer(List<VecS3> list) {
+        ShortBuffer result = ShortBuffer.allocate(list.size() * 3);
 
-        for (Vector v : list) {
+        for (VectorS v : list) {
             result.put(v.asBuffer());
         }
 
@@ -235,16 +275,16 @@ public class VectorMath {
     }
 
     /**
-     * Helper method to create a FloatBuffer from an array of vectors.
+     * Helper method to create a ShortBuffer from an array of vectors.
      * 
      * @param array
      *            The List of vectors.
-     * @return The new FloatBuffer
+     * @return The new ShortBuffer
      */
-    public static FloatBuffer vec4ListToBuffer(List<Vec4> list) {
-        FloatBuffer result = FloatBuffer.allocate(list.size() * 4);
+    public static ShortBuffer vec4ListToBuffer(List<VecS4> list) {
+        ShortBuffer result = ShortBuffer.allocate(list.size() * 4);
 
-        for (Vector v : list) {
+        for (VectorS v : list) {
             result.put(v.asBuffer());
         }
 

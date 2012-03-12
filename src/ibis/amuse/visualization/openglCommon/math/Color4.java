@@ -1,6 +1,6 @@
 package ibis.amuse.visualization.openglCommon.math;
 
-public class Color4 extends Vec4{
+public class Color4 extends VecF4{
 	public static Color4 black 	= new Color4(0.0f, 0.0f, 0.0f, 1.0f);
 	public static Color4 red 	= new Color4(1.0f, 0.0f, 0.0f, 1.0f);
 	public static Color4 yellow = new Color4(1.0f, 1.0f, 0.0f, 1.0f);
@@ -32,7 +32,7 @@ public class Color4 extends Vec4{
 	 * @param v
 	 * 		A vector to be cloned as a color value.
 	 */
-	public Color4(Vec4 v) {
+	public Color4(VecF4 v) {
 		super(v);
 	}
 	

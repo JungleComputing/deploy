@@ -1,7 +1,7 @@
 package ibis.amuse.visualization.amuseAdaptor;
 
 import ibis.amuse.visualization.openglCommon.exceptions.FileOpeningException;
-import ibis.amuse.visualization.openglCommon.math.Vec3;
+import ibis.amuse.visualization.openglCommon.math.VecF3;
 import ibis.amuse.visualization.openglCommon.models.Model;
 import ibis.amuse.visualization.openglCommon.models.base.Sphere;
 
@@ -36,7 +36,7 @@ public class Hdf5StarReader {
     }
 
     public static ArrayList<Star> read(int subdivision, String evo, String grav) throws FileOpeningException {
-        Model starModelBase = new Sphere(null, subdivision, 1f, new Vec3(0, 0, 0));
+        Model starModelBase = new Sphere(null, subdivision, 1f, new VecF3(0, 0, 0));
         ArrayList<Star> stars = new ArrayList<Star>();
 
         HashMap<String, Dataset> datasets = new HashMap<String, Dataset>();
@@ -61,7 +61,7 @@ public class Hdf5StarReader {
             z = (double[]) datasets.get("grav/particles/0000000001/attributes/z").read();
 
             for (int i = 0; i < numParticles; i++) {
-                Vec3 location = Astrophysics.locationToScreenCoord(x[i], y[i], z[i]);
+                VecF3 location = Astrophysics.locationToScreenCoord(x[i], y[i], z[i]);
                 Star newStar = new Star(starModelBase, location, realRadius[i], luminosity[i]);
                 stars.add(newStar);
 

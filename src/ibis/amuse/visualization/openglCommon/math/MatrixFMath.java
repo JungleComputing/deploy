@@ -1,6 +1,6 @@
 package ibis.amuse.visualization.openglCommon.math;
 
-public class MatrixMath {
+public class MatrixFMath {
 
     public static double degreesToRadians = Math.PI / 180.0;
 
@@ -21,7 +21,7 @@ public class MatrixMath {
      *            The far clipping plane
      * @return An orthogonal matrix
      */
-    public static Mat4 ortho(float left, float right, float bottom, float top, float zNear, float zFar) {
+    public static MatF4 ortho(float left, float right, float bottom, float top, float zNear, float zFar) {
         float dX = right - left;
         float dY = top - bottom;
         float dZ = zFar - zNear;
@@ -32,7 +32,7 @@ public class MatrixMath {
         float r = right;
         float l = left;
 
-        Mat4 m = new Mat4(2 / dX, 0, 0, -(l + r) / dX, 0, 2 / dY, 0, -(t + b) / dY, 0, 0, -2 / (f - n), -(f + n) / dZ,
+        MatF4 m = new MatF4(2 / dX, 0, 0, -(l + r) / dX, 0, 2 / dY, 0, -(t + b) / dY, 0, 0, -2 / (f - n), -(f + n) / dZ,
                 0, 0, 0, 1);
         return m;
     }
@@ -50,7 +50,7 @@ public class MatrixMath {
      *            The top clipping plane
      * @return An orthogonal matrix
      */
-    public static Mat4 ortho2D(float left, float right, float bottom, float top) {
+    public static MatF4 ortho2D(float left, float right, float bottom, float top) {
         return ortho(left, right, bottom, top, -1, 1);
     }
 
@@ -71,7 +71,7 @@ public class MatrixMath {
      *            The far clipping plane
      * @return An frustum matrix
      */
-    public static Mat4 frustum(float left, float right, float bottom, float top, float zNear, float zFar) {
+    public static MatF4 frustum(float left, float right, float bottom, float top, float zNear, float zFar) {
         float dX = right - left;
         float dY = top - bottom;
         float dZ = zFar - zNear;
@@ -82,7 +82,7 @@ public class MatrixMath {
         float r = right;
         float l = left;
 
-        Mat4 m = new Mat4(2 * n / dX, 0, (r + l) / dX, 0, 0, 2 * n / dY, (t + b) / dY, 0, 0, 0, -(f + n) / dZ, -2 * f
+        MatF4 m = new MatF4(2 * n / dX, 0, (r + l) / dX, 0, 0, 2 * n / dY, (t + b) / dY, 0, 0, 0, -(f + n) / dZ, -2 * f
                 * n / dZ, 0, 0, -1, 0);
         return m;
     }
@@ -101,14 +101,14 @@ public class MatrixMath {
      *            The far clipping plane
      * @return A perspective matrix
      */
-    public static Mat4 perspective(float fovy, float aspect, float zNear, float zFar) {
+    public static MatF4 perspective(float fovy, float aspect, float zNear, float zFar) {
         float t = (float) (Math.tan(fovy * degreesToRadians / 2) * zNear);
         float r = t * aspect;
         float n = zNear;
         float f = zFar;
         float dZ = zFar - zNear;
 
-        Mat4 m = new Mat4((n / r), 0, 0, 0, 0, (n / t), 0, 0, 0, 0, -(f + n) / dZ, -2 * f * n / dZ, 0, 0, -1, 0);
+        MatF4 m = new MatF4((n / r), 0, 0, 0, 0, (n / t), 0, 0, 0, 0, -(f + n) / dZ, -2 * f * n / dZ, 0, 0, -1, 0);
 
         return m;
     }
@@ -126,14 +126,14 @@ public class MatrixMath {
      * @return A rotation matrix suitable for multiplication with the
      *         perspective matrix
      */
-    public static Mat4 lookAt(Vec4 eye, Vec4 at, Vec4 up) {
-        Vec4 eyeneg = eye.clone().neg();
+    public static MatF4 lookAt(VecF4 eye, VecF4 at, VecF4 up) {
+        VecF4 eyeneg = eye.clone().neg();
 
-        Vec4 n = VectorMath.normalize(eye.sub(at));
-        Vec4 u = VectorMath.normalize(VectorMath.cross(up, n));
-        Vec4 v = VectorMath.normalize(VectorMath.cross(n, u));
-        Vec4 t = new Vec4(0, 0, 0, 1);
-        Mat4 c = new Mat4(u, v, n, t);
+        VecF4 n = VectorFMath.normalize(eye.sub(at));
+        VecF4 u = VectorFMath.normalize(VectorFMath.cross(up, n));
+        VecF4 v = VectorFMath.normalize(VectorFMath.cross(n, u));
+        VecF4 t = new VecF4(0, 0, 0, 1);
+        MatF4 c = new MatF4(u, v, n, t);
 
         return c.mul(translate(eyeneg));
     }
@@ -149,8 +149,8 @@ public class MatrixMath {
      *            The z translation
      * @return A translation matrix
      */
-    public static Mat4 translate(float x, float y, float z) {
-        Mat4 m = new Mat4(1, 0, 0, x, 0, 1, 0, y, 0, 0, 1, z, 0, 0, 0, 1);
+    public static MatF4 translate(float x, float y, float z) {
+        MatF4 m = new MatF4(1, 0, 0, x, 0, 1, 0, y, 0, 0, 1, z, 0, 0, 0, 1);
         return m;
     }
 
@@ -161,7 +161,7 @@ public class MatrixMath {
      *            The vector with which we want to translate
      * @return A translation matrix
      */
-    public static Mat4 translate(Vec3 vec) {
+    public static MatF4 translate(VecF3 vec) {
         return translate(vec.v[0], vec.v[1], vec.v[2]);
     }
 
@@ -172,7 +172,7 @@ public class MatrixMath {
      *            The vector with which we want to translate
      * @return A translation matrix
      */
-    public static Mat4 translate(Vec4 vec) {
+    public static MatF4 translate(VecF4 vec) {
         return translate(vec.v[0], vec.v[1], vec.v[2]);
     }
 
@@ -187,8 +187,8 @@ public class MatrixMath {
      *            The z scale
      * @return A scaling matrix
      */
-    public static Mat4 scale(float x, float y, float z) {
-        Mat4 m = new Mat4(x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1);
+    public static MatF4 scale(float x, float y, float z) {
+        MatF4 m = new MatF4(x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1);
         return m;
     }
 
@@ -199,7 +199,7 @@ public class MatrixMath {
      *            The new uniform scale.
      * @return A scaling matrix
      */
-    public static Mat4 scale(float newScale) {
+    public static MatF4 scale(float newScale) {
         return scale(newScale, newScale, newScale);
     }
 
@@ -210,7 +210,7 @@ public class MatrixMath {
      *            The vector with which we want to scale
      * @return A scaling matrix
      */
-    public static Mat4 scale(Vec3 vec) {
+    public static MatF4 scale(VecF3 vec) {
         return scale(vec.v[0], vec.v[1], vec.v[2]);
     }
 
@@ -221,7 +221,7 @@ public class MatrixMath {
      *            The vector with which we want to scale
      * @return A scaling matrix
      */
-    public static Mat4 scale(Vec4 vec) {
+    public static MatF4 scale(VecF4 vec) {
         return scale(vec.v[0], vec.v[1], vec.v[2]);
     }
 
@@ -233,12 +233,12 @@ public class MatrixMath {
      *            The rotation angle, in degrees
      * @return The rotation matrix
      */
-    public static Mat4 rotationX(float angleDeg) {
+    public static MatF4 rotationX(float angleDeg) {
         double angleRad = degreesToRadians * angleDeg;
         float ca = (float) Math.cos(angleRad);
         float sa = (float) Math.sin(angleRad);
 
-        Mat4 m = new Mat4(1, 0, 0, 0, 0, ca, -sa, 0, 0, sa, ca, 0, 0, 0, 0, 1);
+        MatF4 m = new MatF4(1, 0, 0, 0, 0, ca, -sa, 0, 0, sa, ca, 0, 0, 0, 0, 1);
         return m;
     }
 
@@ -250,12 +250,12 @@ public class MatrixMath {
      *            The rotation angle, in degrees
      * @return The rotation matrix
      */
-    public static Mat4 rotationY(float angleDeg) {
+    public static MatF4 rotationY(float angleDeg) {
         double angleRad = degreesToRadians * angleDeg;
         float ca = (float) Math.cos(angleRad);
         float sa = (float) Math.sin(angleRad);
 
-        Mat4 m = new Mat4(ca, 0, sa, 0, 0, 1, 0, 0, -sa, 0, ca, 0, 0, 0, 0, 1);
+        MatF4 m = new MatF4(ca, 0, sa, 0, 0, 1, 0, 0, -sa, 0, ca, 0, 0, 0, 0, 1);
 
         return m;
     }
@@ -268,12 +268,12 @@ public class MatrixMath {
      *            The rotation angle, in degrees
      * @return The rotation matrix
      */
-    public static Mat4 rotationZ(float angleDeg) {
+    public static MatF4 rotationZ(float angleDeg) {
         double angleRad = degreesToRadians * angleDeg;
         float ca = (float) Math.cos(angleRad);
         float sa = (float) Math.sin(angleRad);
 
-        Mat4 m = new Mat4(ca, -sa, 0, 0, sa, ca, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+        MatF4 m = new MatF4(ca, -sa, 0, 0, sa, ca, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
 
         return m;
     }
@@ -295,18 +295,18 @@ public class MatrixMath {
      *            rotate around
      * @return The rotation matrix
      */
-    public static Mat4 rotate(float angleDeg, float x, float y, float z) {
+    public static MatF4 rotate(float angleDeg, float x, float y, float z) {
         double angleRad = degreesToRadians * angleDeg;
         float c = (float) Math.cos(angleRad);
         float s = (float) Math.sin(angleRad);
         float t = 1 - c;
 
-        Vec3 n = VectorMath.normalize(new Vec3(x, y, z));
+        VecF3 n = VectorFMath.normalize(new VecF3(x, y, z));
         x = n.v[0];
         y = n.v[1];
         z = n.v[2];
 
-        Mat4 R = new Mat4(t * x * x + c, t * x * y - s * z, t * x * z + s * y, 0f, t * x * y + s * z, t * y * y + c, t
+        MatF4 R = new MatF4(t * x * x + c, t * x * y - s * z, t * x * z + s * y, 0f, t * x * y + s * z, t * y * y + c, t
                 * y * z - s * x, 0f, t * x * z - s * y, t * y * z + s * x, t * z * z + c, 0f, 0f, 0f, 0f, 1f
 
         );
@@ -324,8 +324,8 @@ public class MatrixMath {
      *            The axis to rotate around
      * @return The rotation matrix
      */
-    public static Mat4 rotate(float angleDeg, Vec3 axis) {
-        Mat4 R = rotate(angleDeg, axis.get(0), axis.get(1), axis.get(2));
+    public static MatF4 rotate(float angleDeg, VecF3 axis) {
+        MatF4 R = rotate(angleDeg, axis.get(0), axis.get(1), axis.get(2));
 
         return R;
     }
@@ -340,8 +340,8 @@ public class MatrixMath {
      *            The axis to rotate around
      * @return The rotation matrix
      */
-    public static Mat4 rotate(float angleDeg, Vec4 axis) {
-        Mat4 R = rotate(angleDeg, axis.get(0), axis.get(1), axis.get(2));
+    public static MatF4 rotate(float angleDeg, VecF4 axis) {
+        MatF4 R = rotate(angleDeg, axis.get(0), axis.get(1), axis.get(2));
 
         return R;
     }

@@ -1,7 +1,7 @@
 package ibis.amuse.visualization.openglCommon.models;
 
 import ibis.amuse.visualization.openglCommon.exceptions.UninitializedException;
-import ibis.amuse.visualization.openglCommon.math.Vec3;
+import ibis.amuse.visualization.openglCommon.math.VecF3;
 
 public class BoundingBox {
     private boolean initialized = false;
@@ -16,7 +16,7 @@ public class BoundingBox {
         initialized = false;
     }
 
-    public void resize(Vec3 newEntry) {
+    public void resize(VecF3 newEntry) {
         if (initialized) {
             minX = Math.min(minX, newEntry.get(0));
             minY = Math.min(minY, newEntry.get(1));
@@ -38,16 +38,16 @@ public class BoundingBox {
         initialized = true;
     }
 
-    public Vec3 getMin() throws UninitializedException {
+    public VecF3 getMin() throws UninitializedException {
         if (!initialized)
             throw new UninitializedException("BoundingBox not initialized.");
-        return new Vec3(minX, minY, minZ);
+        return new VecF3(minX, minY, minZ);
     }
 
-    public Vec3 getMax() throws UninitializedException {
+    public VecF3 getMax() throws UninitializedException {
         if (!initialized)
             throw new UninitializedException("BoundingBox not initialized.");
-        return new Vec3(maxX, maxY, maxZ);
+        return new VecF3(maxX, maxY, maxZ);
     }
 
     public float getHeight() {

@@ -2,8 +2,8 @@ package ibis.amuse.visualization.openglCommon.shaders;
 
 import ibis.amuse.visualization.openglCommon.GLSLAttrib;
 import ibis.amuse.visualization.openglCommon.exceptions.UninitializedException;
-import ibis.amuse.visualization.openglCommon.math.Matrix;
-import ibis.amuse.visualization.openglCommon.math.Vector;
+import ibis.amuse.visualization.openglCommon.math.MatrixF;
+import ibis.amuse.visualization.openglCommon.math.VectorF;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 
 import javax.media.opengl.GL3;
-
 
 import com.jogamp.common.nio.Buffers;
 
@@ -121,7 +120,8 @@ public class Program {
         int nextStart = 0;
         for (GLSLAttrib attrib : attribs) {
             int ptr = gl.glGetAttribLocation(pointer, attrib.name);
-            gl.glVertexAttribPointer(ptr, attrib.vectorSize, GL3.GL_FLOAT, false, 0, nextStart);
+            gl.glVertexAttribPointer(ptr, attrib.vectorSize, GL3.GL_FLOAT,
+                    false, 0, nextStart);
             gl.glEnableVertexAttribArray(ptr);
 
             nextStart += attrib.buffer.capacity() * Buffers.SIZEOF_FLOAT;
@@ -138,11 +138,11 @@ public class Program {
         System.err.println(new String(reason.array()));
     }
 
-    public void setUniformVector(String name, Vector var) {
+    public void setUniformVector(String name, VectorF var) {
         uniformFloatVectors.put(name, var.asBuffer());
     }
 
-    public void setUniformMatrix(String name, Matrix var) {
+    public void setUniformMatrix(String name, MatrixF var) {
         uniformFloatMatrices.put(name, var.asBuffer());
     }
 
@@ -154,7 +154,8 @@ public class Program {
         uniformFloats.put(name, var);
     }
 
-    public void passUniformVec(GL3 gl, String pointerNameInShader, FloatBuffer var) {
+    public void passUniformVec(GL3 gl, String pointerNameInShader,
+            FloatBuffer var) {
         int ptr = gl.glGetUniformLocation(pointer, pointerNameInShader);
 
         int vecSize = var.capacity();
@@ -169,7 +170,8 @@ public class Program {
         }
     }
 
-    public void passUniformMat(GL3 gl, String pointerNameInShader, FloatBuffer var) {
+    public void passUniformMat(GL3 gl, String pointerNameInShader,
+            FloatBuffer var) {
         int ptr = gl.glGetUniformLocation(pointer, pointerNameInShader);
 
         int matSize = var.capacity();

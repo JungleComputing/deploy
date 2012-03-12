@@ -11,6 +11,8 @@ uniform vec2    TextureSize;
 
 in vec2    tCoordsFS;
 
+out vec4 fragColor;
+
 //
 // 2-pass shader w/o weight
 //
@@ -86,5 +88,5 @@ void main (void)
         }
     }
 
-    gl_FragColor = vec4(c, alpha);
+    fragColor = vec4(c, alpha);
 }

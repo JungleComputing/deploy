@@ -4,10 +4,10 @@ package ibis.amuse.visualization.openglCommon.scenegraph;
 import ibis.amuse.visualization.GLWindow;
 import ibis.amuse.visualization.Settings;
 import ibis.amuse.visualization.amuseAdaptor.Astrophysics;
-import ibis.amuse.visualization.openglCommon.math.Mat4;
-import ibis.amuse.visualization.openglCommon.math.MatrixMath;
-import ibis.amuse.visualization.openglCommon.math.Vec3;
-import ibis.amuse.visualization.openglCommon.math.Vec4;
+import ibis.amuse.visualization.openglCommon.math.MatF4;
+import ibis.amuse.visualization.openglCommon.math.MatrixFMath;
+import ibis.amuse.visualization.openglCommon.math.VecF3;
+import ibis.amuse.visualization.openglCommon.math.VecF4;
 import ibis.amuse.visualization.openglCommon.models.Model;
 import ibis.amuse.visualization.openglCommon.models.base.Sphere;
 import ibis.amuse.visualization.openglCommon.shaders.Program;
@@ -23,36 +23,36 @@ public class OctreeNode {
     private final int maxElements;
     private OctreeNode ppp, ppn, pnp, pnn, npp, npn, nnp, nnn;
 
-    private final HashMap<Vec3, Double> elements;
+    private final HashMap<VecF3, Double> elements;
     private int childCounter;
 
-    private final Vec3 center;
+    private final VecF3 center;
     private final float cubeSize;
     private boolean subdivided = false;
     private boolean initialized = false;
 
-    private final Mat4 TMatrix;
+    private final MatF4 TMatrix;
 
     private final int depth;
     private final HashMap<Integer, Model> models;
     private final Model model;
-    private Vec4 color;
+    private VecF4 color;
 
     private double total_u;
     private float density;
 
     private int subdivision;
 
-    public OctreeNode(int maxElements, int depth, int subdivision, HashMap<Integer, Model> cloudModels, Vec3 corner,
+    public OctreeNode(int maxElements, int depth, int subdivision, HashMap<Integer, Model> cloudModels, VecF3 corner,
             float halfSize) {
         this.maxElements = maxElements;
         this.cubeSize = halfSize;
         this.subdivision = subdivision;
-        center = corner.add(new Vec3(halfSize, halfSize, halfSize));
+        center = corner.add(new VecF3(halfSize, halfSize, halfSize));
 
-        TMatrix = MatrixMath.translate(center);
+        TMatrix = MatrixFMath.translate(center);
 
-        elements = new HashMap<Vec3, Double>();
+        elements = new HashMap<VecF3, Double>();
 
         childCounter = 0;
 
@@ -61,7 +61,7 @@ public class OctreeNode {
 
         int index = depth + Settings.getMaxExpectedModels() * subdivision;
         if (!models.containsKey(index)) {
-            model = new Sphere(Astrophysics.getGasMaterial(), 0, halfSize * 3f, new Vec3());
+            model = new Sphere(Astrophysics.getGasMaterial(), 0, halfSize * 3f, new VecF3());
             models.put(index, model);
         } else {
             model = models.get(index);
@@ -138,20 +138,20 @@ public class OctreeNode {
 
     private void subDiv() {
         float size = cubeSize / 2f;
-        ppp = new OctreeNode(maxElements, depth + 1, subdivision, models, center.add(new Vec3(0f, 0f, 0f)), size);
-        ppn = new OctreeNode(maxElements, depth + 1, subdivision, models, center.add(new Vec3(0f, 0f, -cubeSize)), size);
-        pnp = new OctreeNode(maxElements, depth + 1, subdivision, models, center.add(new Vec3(0f, -cubeSize, 0f)), size);
+        ppp = new OctreeNode(maxElements, depth + 1, subdivision, models, center.add(new VecF3(0f, 0f, 0f)), size);
+        ppn = new OctreeNode(maxElements, depth + 1, subdivision, models, center.add(new VecF3(0f, 0f, -cubeSize)), size);
+        pnp = new OctreeNode(maxElements, depth + 1, subdivision, models, center.add(new VecF3(0f, -cubeSize, 0f)), size);
         pnn = new OctreeNode(maxElements, depth + 1, subdivision, models,
-                center.add(new Vec3(0f, -cubeSize, -cubeSize)), size);
-        npp = new OctreeNode(maxElements, depth + 1, subdivision, models, center.add(new Vec3(-cubeSize, 0f, 0f)), size);
+                center.add(new VecF3(0f, -cubeSize, -cubeSize)), size);
+        npp = new OctreeNode(maxElements, depth + 1, subdivision, models, center.add(new VecF3(-cubeSize, 0f, 0f)), size);
         npn = new OctreeNode(maxElements, depth + 1, subdivision, models,
-                center.add(new Vec3(-cubeSize, 0f, -cubeSize)), size);
+                center.add(new VecF3(-cubeSize, 0f, -cubeSize)), size);
         nnp = new OctreeNode(maxElements, depth + 1, subdivision, models,
-                center.add(new Vec3(-cubeSize, -cubeSize, 0f)), size);
-        nnn = new OctreeNode(maxElements, depth + 1, subdivision, models, center.add(new Vec3(-cubeSize, -cubeSize,
+                center.add(new VecF3(-cubeSize, -cubeSize, 0f)), size);
+        nnn = new OctreeNode(maxElements, depth + 1, subdivision, models, center.add(new VecF3(-cubeSize, -cubeSize,
                 -cubeSize)), size);
 
-        for (Map.Entry<Vec3, Double> element : elements.entrySet()) {
+        for (Map.Entry<VecF3, Double> element : elements.entrySet()) {
             addSubdivided(element.getKey(), element.getValue());
         }
 
@@ -160,7 +160,7 @@ public class OctreeNode {
         subdivided = true;
     }
 
-    public void addGas(Vec3 location, double u) {
+    public void addGas(VecF3 location, double u) {
         if ((location.get(0) > center.get(0) - cubeSize) && (location.get(1) > center.get(1) - cubeSize)
                 && (location.get(2) > center.get(2) - cubeSize) && (location.get(0) < center.get(0) + cubeSize)
                 && (location.get(1) < center.get(1) + cubeSize) && (location.get(2) < center.get(2) + cubeSize)) {
@@ -200,7 +200,7 @@ public class OctreeNode {
         }
     }
 
-    public void addSubdivided(Vec3 location, double u) {
+    public void addSubdivided(VecF3 location, double u) {
         if (location.get(0) < center.get(0)) {
             if (location.get(1) < center.get(1)) {
                 if (location.get(2) < center.get(2)) {
@@ -232,13 +232,13 @@ public class OctreeNode {
         }
     }
 
-    public void draw(GL3 gl, Mat4 MVMatrix) {
+    public void draw(GL3 gl, MatF4 MVMatrix) {
         if (initialized) {
             if (subdivided) {
                 draw_sorted(gl, MVMatrix);
             } else {
                 if (density > GLWindow.EPSILON) {
-                    Mat4 newM = MVMatrix.mul(TMatrix);
+                    MatF4 newM = MVMatrix.mul(TMatrix);
 
                     model.material.setColor(color);
                     model.material.setTransparency(density * GLWindow.gas_opacity_factor);
@@ -248,13 +248,13 @@ public class OctreeNode {
         }
     }
 
-    public void draw(GL3 gl, Program program, Mat4 MVMatrix) {
+    public void draw(GL3 gl, Program program, MatF4 MVMatrix) {
         if (initialized) {
             if (subdivided) {
                 draw_sorted(gl, program, MVMatrix);
             } else {
                 if (density > GLWindow.EPSILON) {
-                    Mat4 newM = MVMatrix.mul(TMatrix);
+                    MatF4 newM = MVMatrix.mul(TMatrix);
 
                     model.material.setColor(color);
                     model.material.setTransparency(density * GLWindow.gas_opacity_factor);
@@ -264,7 +264,7 @@ public class OctreeNode {
         }
     }
 
-    private void draw_sorted(GL3 gl, Mat4 MVMatrix) {
+    private void draw_sorted(GL3 gl, MatF4 MVMatrix) {
         if (GLWindow.getCurrentOctant() == GLWindow.octants.NNN) {
             ppp.draw(gl, MVMatrix);
 
@@ -364,7 +364,7 @@ public class OctreeNode {
         }
     }
 
-    private void draw_sorted(GL3 gl, Program program, Mat4 MVMatrix) {
+    private void draw_sorted(GL3 gl, Program program, MatF4 MVMatrix) {
         if (GLWindow.getCurrentOctant() == GLWindow.octants.NNN) {
             ppp.draw(gl, program, MVMatrix);
 

@@ -2,11 +2,11 @@ package ibis.amuse.visualization.openglCommon.math;
 
 import java.nio.FloatBuffer;
 
-public abstract class Vector {
+public abstract class VectorF {
 	protected float v[];
 	private FloatBuffer buf;
 	
-	protected Vector(int size) {
+	protected VectorF(int size) {
 		v = new float[size];
 		buf = FloatBuffer.wrap(v);
 		buf.rewind();

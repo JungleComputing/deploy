@@ -2,9 +2,9 @@ package ibis.amuse.visualization.amuseAdaptor;
 
 
 import ibis.amuse.visualization.openglCommon.Material;
-import ibis.amuse.visualization.openglCommon.math.Mat4;
-import ibis.amuse.visualization.openglCommon.math.MatrixMath;
-import ibis.amuse.visualization.openglCommon.math.Vec3;
+import ibis.amuse.visualization.openglCommon.math.MatF4;
+import ibis.amuse.visualization.openglCommon.math.MatrixFMath;
+import ibis.amuse.visualization.openglCommon.math.VecF3;
 import ibis.amuse.visualization.openglCommon.models.Model;
 import ibis.amuse.visualization.openglCommon.models.StarModel;
 import ibis.amuse.visualization.openglCommon.scenegraph.SGNode;
@@ -30,13 +30,13 @@ public class StarSGNode extends SGNode {
     }
 
     @Override
-    public void setTranslation(Vec3 translation) {
-        this.TMatrix = MatrixMath.translate(translation);
+    public void setTranslation(VecF3 translation) {
+        this.TMatrix = MatrixFMath.translate(translation);
     }
 
     @Override
-    public void draw(GL3 gl, Mat4 MVMatrix) {
-        Mat4 newM = MVMatrix.mul(TMatrix);
+    public void draw(GL3 gl, MatF4 MVMatrix) {
+        MatF4 newM = MVMatrix.mul(TMatrix);
 
         for (Model m : models) {
             m.material = materials.get(m);
@@ -49,8 +49,8 @@ public class StarSGNode extends SGNode {
     }
 
     @Override
-    public void draw(GL3 gl, Program program, Mat4 MVMatrix) {
-        Mat4 newM = MVMatrix.mul(TMatrix);
+    public void draw(GL3 gl, Program program, MatF4 MVMatrix) {
+        MatF4 newM = MVMatrix.mul(TMatrix);
 
         for (Model m : models) {
             m.material = materials.get(m);

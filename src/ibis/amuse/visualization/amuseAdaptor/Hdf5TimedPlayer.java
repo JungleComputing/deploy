@@ -4,7 +4,7 @@ import ibis.amuse.visualization.GLOffscreenWindow;
 import ibis.amuse.visualization.GLWindow;
 import ibis.amuse.visualization.Settings;
 import ibis.amuse.visualization.openglCommon.exceptions.FileOpeningException;
-import ibis.amuse.visualization.openglCommon.math.Vec3;
+import ibis.amuse.visualization.openglCommon.math.VecF3;
 import ibis.amuse.visualization.openglCommon.models.Model;
 import ibis.amuse.visualization.openglCommon.scenegraph.OctreeNode;
 
@@ -119,7 +119,7 @@ public class Hdf5TimedPlayer implements Runnable {
         currentFrame = Settings.getInitialSimulationFrame();
 
         if (!cli) {
-            glw.setRotation(new Vec3(Settings.getInitialRotationX(), Settings
+            glw.setRotation(new VecF3(Settings.getInitialRotationX(), Settings
                     .getInitialRotationY(), 0f));
             glw.setViewDist(Settings.getInitialZoom());
 
@@ -137,7 +137,7 @@ public class Hdf5TimedPlayer implements Runnable {
 
             currentState = states.STOPPED;
         } else {
-            glow.setRotation(new Vec3(Settings.getInitialRotationX(), Settings
+            glow.setRotation(new VecF3(Settings.getInitialRotationX(), Settings
                     .getInitialRotationY(), 0f));
             glow.setViewDist(Settings.getInitialZoom());
 
@@ -175,7 +175,7 @@ public class Hdf5TimedPlayer implements Runnable {
                     if (currentState == states.MOVIEMAKING) {
                         if (Settings.getMovieRotate()) {
                             if (!cli) {
-                                Vec3 rotation = glw.getRotation();
+                                VecF3 rotation = glw.getRotation();
                                 System.out.println("Simulation frame: "
                                         + currentFrame + ", Rotation x: "
                                         + rotation.get(0) + " y: "
@@ -201,7 +201,7 @@ public class Hdf5TimedPlayer implements Runnable {
                                 // + Settings.getPerFrameRotation());
                                 // glw.setRotation(rotation);
                             } else {
-                                Vec3 rotation = glow.getRotation();
+                                VecF3 rotation = glow.getRotation();
                                 System.out.println("Simulation frame: "
                                         + currentFrame + ", Rotation x: "
                                         + rotation.get(0) + " y: "

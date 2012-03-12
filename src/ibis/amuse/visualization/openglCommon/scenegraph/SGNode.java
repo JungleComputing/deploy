@@ -1,9 +1,9 @@
 package ibis.amuse.visualization.openglCommon.scenegraph;
 
 
-import ibis.amuse.visualization.openglCommon.math.Mat4;
-import ibis.amuse.visualization.openglCommon.math.MatrixMath;
-import ibis.amuse.visualization.openglCommon.math.Vec3;
+import ibis.amuse.visualization.openglCommon.math.MatF4;
+import ibis.amuse.visualization.openglCommon.math.MatrixFMath;
+import ibis.amuse.visualization.openglCommon.math.VecF3;
 import ibis.amuse.visualization.openglCommon.models.Model;
 import ibis.amuse.visualization.openglCommon.shaders.Program;
 
@@ -13,7 +13,7 @@ import javax.media.opengl.GL3;
 
 
 public class SGNode {
-    protected Mat4 TMatrix;
+    protected MatF4 TMatrix;
     // protected Mat4 RMatrix;
     // protected Mat4 SMatrix;
 
@@ -24,7 +24,7 @@ public class SGNode {
     private boolean initialized = false;
 
     public SGNode() {
-        TMatrix = new Mat4();
+        TMatrix = new MatF4();
         // RMatrix = new Mat4();
         // SMatrix = new Mat4();
 
@@ -64,28 +64,28 @@ public class SGNode {
         models.add(model);
     }
 
-    public synchronized void setTranslation(Vec3 translation) {
-        this.TMatrix = MatrixMath.translate(translation);
+    public synchronized void setTranslation(VecF3 translation) {
+        this.TMatrix = MatrixFMath.translate(translation);
     }
 
-    public void translate(Vec3 translation) {
-        this.TMatrix = TMatrix.mul(MatrixMath.translate(translation));
+    public void translate(VecF3 translation) {
+        this.TMatrix = TMatrix.mul(MatrixFMath.translate(translation));
     }
 
-    public void rotate(float rotation, Vec3 axis) {
-        this.TMatrix = TMatrix.mul(MatrixMath.rotate(rotation, axis));
+    public void rotate(float rotation, VecF3 axis) {
+        this.TMatrix = TMatrix.mul(MatrixFMath.rotate(rotation, axis));
     }
 
-    public void rotate(Vec3 rotation) {
-        this.TMatrix = TMatrix.mul(MatrixMath.rotationX(rotation.get(0)));
-        this.TMatrix = TMatrix.mul(MatrixMath.rotationY(rotation.get(1)));
-        this.TMatrix = TMatrix.mul(MatrixMath.rotationZ(rotation.get(2)));
+    public void rotate(VecF3 rotation) {
+        this.TMatrix = TMatrix.mul(MatrixFMath.rotationX(rotation.get(0)));
+        this.TMatrix = TMatrix.mul(MatrixFMath.rotationY(rotation.get(1)));
+        this.TMatrix = TMatrix.mul(MatrixFMath.rotationZ(rotation.get(2)));
     }
 
-    public synchronized void draw(GL3 gl, Mat4 MVMatrix) {
+    public synchronized void draw(GL3 gl, MatF4 MVMatrix) {
 
         // newM = newM.mul(SMatrix);
-        Mat4 newM = MVMatrix.mul(TMatrix);
+        MatF4 newM = MVMatrix.mul(TMatrix);
         // newM = newM.mul(RMatrix);
 
         for (Model m : models) {
@@ -97,8 +97,8 @@ public class SGNode {
         }
     }
 
-    public synchronized void draw(GL3 gl, Program program, Mat4 MVMatrix) {
-        Mat4 newM = MVMatrix.mul(TMatrix);
+    public synchronized void draw(GL3 gl, Program program, MatF4 MVMatrix) {
+        MatF4 newM = MVMatrix.mul(TMatrix);
 
         for (Model m : models) {
             m.draw(gl, program, newM);

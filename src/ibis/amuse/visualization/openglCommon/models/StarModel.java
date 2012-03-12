@@ -4,9 +4,9 @@ package ibis.amuse.visualization.openglCommon.models;
 import ibis.amuse.visualization.amuseAdaptor.Astrophysics;
 import ibis.amuse.visualization.openglCommon.Material;
 import ibis.amuse.visualization.openglCommon.exceptions.UninitializedException;
-import ibis.amuse.visualization.openglCommon.math.Mat4;
-import ibis.amuse.visualization.openglCommon.math.Vec3;
-import ibis.amuse.visualization.openglCommon.math.Vec4;
+import ibis.amuse.visualization.openglCommon.math.MatF4;
+import ibis.amuse.visualization.openglCommon.math.VecF3;
+import ibis.amuse.visualization.openglCommon.math.VecF4;
 import ibis.amuse.visualization.openglCommon.models.base.Sphere;
 import ibis.amuse.visualization.openglCommon.shaders.Program;
 
@@ -16,24 +16,24 @@ import javax.media.opengl.GL3;
 public class StarModel extends Sphere {
     float radius;
 
-    public StarModel(Program program, Material material, int ndiv, float radius, Vec3 center) {
+    public StarModel(Program program, Material material, int ndiv, float radius, VecF3 center) {
         super(program, material, ndiv, radius, center);
         this.radius = radius;
     }
 
-    public StarModel(Material material, int ndiv, float radius, Vec3 center) {
+    public StarModel(Material material, int ndiv, float radius, VecF3 center) {
         super(material, ndiv, radius, center);
         this.radius = radius;
     }
 
     @Override
-    public void draw(GL3 gl, Program program, Mat4 MVMatrix) {
+    public void draw(GL3 gl, Program program, MatF4 MVMatrix) {
 
         program.setUniformVector("DiffuseMaterial", material.diffuse);
         program.setUniformVector("AmbientMaterial", material.ambient);
         program.setUniformVector("SpecularMaterial", material.specular);
 
-        Vec4 haloColor = new Vec4(material.ambient);
+        VecF4 haloColor = new VecF4(material.ambient);
         float haloAlpha = (float) (0.5f - (radius / Astrophysics.STAR_RADIUS_AT_1000_SOLAR_RADII));
         haloColor.set(3, haloAlpha);
 

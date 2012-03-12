@@ -104,16 +104,6 @@ public class FBO {
         return rboTexture;
     }
 
-    public void useTexture(GL3 gl) {
-        gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
-        try {
-            gl.glEnable(GL3.GL_TEXTURE_2D);
-            gl.glBindTexture(GL3.GL_TEXTURE_2D, rboTexture.getPointer());
-        } catch (UninitializedException e) {
-            e.printStackTrace();
-        }
-    }
-
     public ByteBuffer getPixels(GL3 gl) {
         ByteBuffer buf = ByteBuffer.allocate(width * height * 3);
         try {

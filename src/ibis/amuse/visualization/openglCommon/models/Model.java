@@ -1,17 +1,15 @@
 package ibis.amuse.visualization.openglCommon.models;
 
-
 import ibis.amuse.visualization.openglCommon.GLSLAttrib;
 import ibis.amuse.visualization.openglCommon.Material;
 import ibis.amuse.visualization.openglCommon.VBO;
 import ibis.amuse.visualization.openglCommon.exceptions.UninitializedException;
-import ibis.amuse.visualization.openglCommon.math.Mat4;
+import ibis.amuse.visualization.openglCommon.math.MatF4;
 import ibis.amuse.visualization.openglCommon.shaders.Program;
 
 import java.nio.FloatBuffer;
 
 import javax.media.opengl.GL3;
-
 
 public class Model {
     public static enum vertex_format {
@@ -51,9 +49,12 @@ public class Model {
 
     public void init(GL3 gl) {
         if (!initialized) {
-            GLSLAttrib vAttrib = new GLSLAttrib(vertices, "MCvertex", 4);
-            GLSLAttrib nAttrib = new GLSLAttrib(normals, "MCnormal", 3);
-            GLSLAttrib tAttrib = new GLSLAttrib(texCoords, "MCtexCoord", 3);
+            GLSLAttrib vAttrib = new GLSLAttrib(vertices, "MCvertex",
+                    GLSLAttrib.SIZE_FLOAT, 4);
+            GLSLAttrib nAttrib = new GLSLAttrib(normals, "MCnormal",
+                    GLSLAttrib.SIZE_FLOAT, 3);
+            GLSLAttrib tAttrib = new GLSLAttrib(texCoords, "MCtexCoord",
+                    GLSLAttrib.SIZE_FLOAT, 3);
 
             vbo = new VBO(gl, vAttrib, nAttrib, tAttrib);
         }
@@ -70,7 +71,7 @@ public class Model {
         }
     }
 
-    public void draw(GL3 gl, Mat4 MVMatrix) {
+    public void draw(GL3 gl, MatF4 MVMatrix) {
         vbo.bind(gl);
 
         program.linkAttribs(gl, vbo.getAttribs());
@@ -96,7 +97,7 @@ public class Model {
         }
     }
 
-    public void draw(GL3 gl, Program program, Mat4 MVMatrix) {
+    public void draw(GL3 gl, Program program, MatF4 MVMatrix) {
 
         program.setUniformVector("DiffuseMaterial", material.diffuse);
         program.setUniformVector("AmbientMaterial", material.ambient);

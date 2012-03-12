@@ -5,12 +5,12 @@ import ibis.amuse.visualization.amuseAdaptor.Star;
 import ibis.amuse.visualization.openglCommon.Material;
 import ibis.amuse.visualization.openglCommon.Picture;
 import ibis.amuse.visualization.openglCommon.exceptions.UninitializedException;
-import ibis.amuse.visualization.openglCommon.math.Mat3;
-import ibis.amuse.visualization.openglCommon.math.Mat4;
-import ibis.amuse.visualization.openglCommon.math.MatrixMath;
+import ibis.amuse.visualization.openglCommon.math.MatF3;
+import ibis.amuse.visualization.openglCommon.math.MatF4;
+import ibis.amuse.visualization.openglCommon.math.MatrixFMath;
 import ibis.amuse.visualization.openglCommon.math.Point4;
-import ibis.amuse.visualization.openglCommon.math.Vec3;
-import ibis.amuse.visualization.openglCommon.math.Vec4;
+import ibis.amuse.visualization.openglCommon.math.VecF3;
+import ibis.amuse.visualization.openglCommon.math.VecF4;
 import ibis.amuse.visualization.openglCommon.models.Model;
 import ibis.amuse.visualization.openglCommon.models.base.Quad;
 import ibis.amuse.visualization.openglCommon.scenegraph.OctreeNode;
@@ -54,7 +54,7 @@ public class GLOffscreenWindow {
 
     private Perlin3D noiseTex;
 
-    private final Vec3 lightPos = new Vec3(2f, 2f, 2f);
+    private final VecF3 lightPos = new VecF3(2f, 2f, 2f);
 
     private Hdf5TimedPlayer timer;
 
@@ -69,8 +69,8 @@ public class GLOffscreenWindow {
     private final float fovy = 45.0f;
     private final float zNear = 0.1f, zFar = 3000.0f;
 
-    private Vec3 rotation = new Vec3();
-    private final Vec3 viewDistTranslation = new Vec3(0f, 0f, -150f);
+    private VecF3 rotation = new VecF3();
+    private final VecF3 viewDistTranslation = new VecF3(0f, 0f, -150f);
 
     private Texture2D axesTex4k, starHaloTex4k, gasTex4k, starTex4k, intermediateTex4k;
 
@@ -152,10 +152,10 @@ public class GLOffscreenWindow {
         }
 
         // FULL SCREEN QUADS
-        FSQ_postprocess = new Quad(postprocessShader, Material.random(), 2, 2, new Vec3(0, 0, 0.1f));
+        FSQ_postprocess = new Quad(postprocessShader, Material.random(), 2, 2, new VecF3(0, 0, 0.1f));
         FSQ_postprocess.init(gl);
 
-        FSQ_blur = new Quad(gaussianBlurShader, Material.random(), 2, 2, new Vec3(0, 0, 0.1f));
+        FSQ_blur = new Quad(gaussianBlurShader, Material.random(), 2, 2, new VecF3(0, 0, 0.1f));
         FSQ_blur.init(gl);
 
         // TEXTURES
@@ -210,20 +210,20 @@ public class GLOffscreenWindow {
         Point4 eye = new Point4((float) (radius * Math.sin(ftheta) * Math.cos(phi)),
                 (float) (radius * Math.sin(ftheta) * Math.sin(phi)), (float) (radius * Math.cos(ftheta)), 1.0f);
         Point4 at = new Point4(0.0f, 0.0f, 0.0f, 1.0f);
-        Vec4 up = new Vec4(0.0f, 1.0f, 0.0f, 0.0f);
+        VecF4 up = new VecF4(0.0f, 1.0f, 0.0f, 0.0f);
 
-        Mat4 mv = MatrixMath.lookAt(eye, at, up);
-        mv = mv.mul(MatrixMath.translate(viewDistTranslation));
-        mv = mv.mul(MatrixMath.rotationX(rotation.get(0)));
-        mv = mv.mul(MatrixMath.rotationY(rotation.get(1)));
+        MatF4 mv = MatrixFMath.lookAt(eye, at, up);
+        mv = mv.mul(MatrixFMath.translate(viewDistTranslation));
+        mv = mv.mul(MatrixFMath.rotationX(rotation.get(0)));
+        mv = mv.mul(MatrixFMath.rotationY(rotation.get(1)));
 
-        Mat3 n = new Mat3();
-        Mat4 p = MatrixMath.perspective(fovy, aspect, zNear, zFar);
+        MatF3 n = new MatF3();
+        MatF4 p = MatrixFMath.perspective(fovy, aspect, zNear, zFar);
 
         // Vertex shader variables
         loader.setUniformMatrix("NormalMatrix", n);
         loader.setUniformMatrix("PMatrix", p);
-        loader.setUniformMatrix("SMatrix", MatrixMath.scale(1));
+        loader.setUniformMatrix("SMatrix", MatrixFMath.scale(1));
 
         renderScene(gl, mv, stars, octreeRoot, starHaloTex, starTex, gasTex, axesTex);
 
@@ -233,14 +233,14 @@ public class GLOffscreenWindow {
 
     }
 
-    private void renderScene(GL3 gl, Mat4 mv, ArrayList<Star> stars, OctreeNode octreeRoot, Texture2D starHaloTex,
+    private void renderScene(GL3 gl, MatF4 mv, ArrayList<Star> stars, OctreeNode octreeRoot, Texture2D starHaloTex,
             Texture2D starTex, Texture2D gasTex, Texture2D axesTex) {
         try {
             if (post_process) {
                 pplShader.setUniformVector("LightPos", lightPos);
                 pplShader.setUniform("Shininess", shininess);
 
-                pplShader.setUniformMatrix("SMatrix", MatrixMath.scale(2));
+                pplShader.setUniformMatrix("SMatrix", MatrixFMath.scale(2));
                 pplShader.setUniform("StarDrawMode", 1);
 
                 for (Star s : stars) {
@@ -277,13 +277,13 @@ public class GLOffscreenWindow {
                 noiseTex.use(gl);
                 animatedTurbulenceShader.setUniform("Noise", noiseTex.getMultitexNumber());
 
-                animatedTurbulenceShader.setUniformMatrix("SMatrix", MatrixMath.scale(1));
+                animatedTurbulenceShader.setUniformMatrix("SMatrix", MatrixFMath.scale(1));
                 animatedTurbulenceShader.setUniform("StarDrawMode", 0);
 
                 pplShader.setUniformVector("LightPos", lightPos);
                 pplShader.setUniform("Shininess", shininess);
 
-                pplShader.setUniformMatrix("SMatrix", MatrixMath.scale(1));
+                pplShader.setUniformMatrix("SMatrix", MatrixFMath.scale(1));
                 pplShader.setUniform("StarDrawMode", 0);
 
                 for (Star s : stars) {
@@ -297,7 +297,7 @@ public class GLOffscreenWindow {
                 pplShader.setUniformVector("LightPos", lightPos);
                 pplShader.setUniform("Shininess", shininess);
 
-                pplShader.setUniformMatrix("SMatrix", MatrixMath.scale(1));
+                pplShader.setUniformMatrix("SMatrix", MatrixFMath.scale(1));
                 pplShader.setUniform("StarDrawMode", 0);
 
                 for (Star s : stars) {
@@ -339,13 +339,13 @@ public class GLOffscreenWindow {
         postprocessShader.setUniform("axesBrightness", Settings.getPostprocessingAxesBrightness());
         postprocessShader.setUniform("overallBrightness", Settings.getPostprocessingOverallBrightness());
 
-        postprocessShader.setUniformMatrix("PMatrix", new Mat4());
+        postprocessShader.setUniformMatrix("PMatrix", new MatF4());
         postprocessShader.setUniform("scrWidth", width);
         postprocessShader.setUniform("scrHeight", height);
 
         try {
             postprocessShader.use(gl);
-            FSQ_postprocess.draw(gl, postprocessShader, new Mat4());
+            FSQ_postprocess.draw(gl, postprocessShader, new MatF4());
         } catch (UninitializedException e) {
             e.printStackTrace();
         }
@@ -353,7 +353,7 @@ public class GLOffscreenWindow {
 
     private void blur(GL3 gl, Texture2D target, Model fullScreenQuad, int passes, int blurType, float blurSize) {
         gaussianBlurShader.setUniform("Texture", target.getMultitexNumber());
-        gaussianBlurShader.setUniformMatrix("PMatrix", new Mat4());
+        gaussianBlurShader.setUniformMatrix("PMatrix", new MatF4());
         gaussianBlurShader.setUniform("blurType", blurType);
         gaussianBlurShader.setUniform("blurSize", blurSize);
         gaussianBlurShader.setUniform("scrWidth", target.getWidth());
@@ -365,11 +365,11 @@ public class GLOffscreenWindow {
 
             for (int i = 0; i < passes; i++) {
                 gaussianBlurShader.setUniform("blurDirection", 0);
-                fullScreenQuad.draw(gl, new Mat4());
+                fullScreenQuad.draw(gl, new MatF4());
                 renderToTexture(gl, target);
 
                 gaussianBlurShader.setUniform("blurDirection", 1);
-                fullScreenQuad.draw(gl, new Mat4());
+                fullScreenQuad.draw(gl, new MatF4());
                 renderToTexture(gl, target);
             }
         } catch (UninitializedException e) {
@@ -398,7 +398,7 @@ public class GLOffscreenWindow {
         viewDistTranslation.set(2, viewDist);
     }
 
-    public void setRotation(Vec3 rotation) {
+    public void setRotation(VecF3 rotation) {
         float x = rotation.get(0);
         int qx = (int) Math.floor(x / 90f);
         float y = rotation.get(1);
@@ -444,7 +444,7 @@ public class GLOffscreenWindow {
         this.rotation = rotation;
     }
 
-    public Vec3 getRotation() {
+    public VecF3 getRotation() {
         return rotation;
     }
 
