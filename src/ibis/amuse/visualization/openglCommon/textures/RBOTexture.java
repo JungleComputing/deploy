@@ -2,6 +2,7 @@ package ibis.amuse.visualization.openglCommon.textures;
 
 import ibis.amuse.visualization.openglCommon.exceptions.UninitializedException;
 
+import javax.media.opengl.GL;
 import javax.media.opengl.GL3;
 
 import com.jogamp.common.nio.Buffers;
@@ -14,6 +15,27 @@ public class RBOTexture extends Texture2D {
         this.width = width;
 
         // pixelBuffer = ByteBuffer.allocate(width * height * 4);
+    }
+
+    private boolean checkNoError(GL gl, String exceptionMessage,
+            boolean quietlyRemoveAllPreviousErrors) {
+        int error = gl.glGetError();
+        if (!quietlyRemoveAllPreviousErrors) {
+            if (GL.GL_NO_ERROR != error) {
+                System.err.println("GL ERROR(s) " + exceptionMessage + " : ");
+                while (GL.GL_NO_ERROR != error) {
+                    System.err.println(" GL Error 0x"
+                            + Integer.toHexString(error));
+                    error = gl.glGetError();
+                }
+                return false;
+            }
+        } else {
+            while (GL.GL_NO_ERROR != error) {
+                error = gl.glGetError();
+            }
+        }
+        return true;
     }
 
     @Override

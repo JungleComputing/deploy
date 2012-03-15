@@ -15,10 +15,13 @@ public class FBO {
     private final IntBuffer rboPointer;
     private final RBOTexture rboTexture;
 
-    private int width, height;
+    private final int width, height;
     private boolean initialized = false;
 
     public FBO(int width, int height, int glMultitexUnit) {
+        this.width = width;
+        this.height = height;
+
         fboPointer = IntBuffer.allocate(1);
         rboPointer = IntBuffer.allocate(1);
 
@@ -27,6 +30,12 @@ public class FBO {
 
     public void init(GL3 gl) {
         try {
+            checkNoError(gl, "PRE: ", true);
+
+            // Create and bind frame buffer
+            gl.glGenFramebuffers(1, fboPointer);
+            gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, fboPointer.get(0));
+
             // Setup texture and color buffer
             rboTexture.init(gl);
             rboTexture.use(gl);
@@ -40,11 +49,7 @@ public class FBO {
             gl.glBindRenderbuffer(GL3.GL_RENDERBUFFER, rboPointer.get(0));
             gl.glRenderbufferStorage(GL.GL_RENDERBUFFER,
                     GL3.GL_DEPTH_COMPONENT16, width, height);
-            gl.glBindRenderbuffer(GL.GL_RENDERBUFFER, 0);
-
-            // Create and bind frame buffer
-            gl.glGenFramebuffers(1, fboPointer);
-            gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, fboPointer.get(0));
+            gl.glBindRenderbuffer(GL3.GL_RENDERBUFFER, 0);
 
             // Attach both buffers to the frame buffer
             gl.glFramebufferTexture2D(GL.GL_FRAMEBUFFER,
@@ -54,7 +59,9 @@ public class FBO {
                     GL.GL_DEPTH_ATTACHMENT, GL.GL_RENDERBUFFER, rboPointer
                             .get(0));
 
-            // checkStatus(gl, "Framebuffer error:");
+            checkNoError(gl, "POST: ", false);
+
+            checkStatus(gl, "Framebuffer error:");
         } catch (UninitializedException e) {
             e.printStackTrace();
         }
@@ -63,6 +70,27 @@ public class FBO {
         gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
 
         initialized = true;
+    }
+
+    private boolean checkNoError(GL gl, String exceptionMessage,
+            boolean quietlyRemoveAllPreviousErrors) {
+        int error = gl.glGetError();
+        if (!quietlyRemoveAllPreviousErrors) {
+            if (GL.GL_NO_ERROR != error) {
+                System.err.println("GL ERROR(s) " + exceptionMessage + " : ");
+                while (GL.GL_NO_ERROR != error) {
+                    System.err.println(" GL Error 0x"
+                            + Integer.toHexString(error));
+                    error = gl.glGetError();
+                }
+                return false;
+            }
+        } else {
+            while (GL.GL_NO_ERROR != error) {
+                error = gl.glGetError();
+            }
+        }
+        return true;
     }
 
     private void checkStatus(GL3 gl, String prefix) {
@@ -95,6 +123,7 @@ public class FBO {
         if (initialized) {
             rboTexture.use(gl);
             gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, fboPointer.get(0));
+            gl.glClear(GL3.GL_DEPTH_BUFFER_BIT | GL3.GL_COLOR_BUFFER_BIT);
         } else {
             throw new UninitializedException("FBO not initialized.");
         }

@@ -61,4 +61,12 @@ public class BoundingBox {
     public float getDepth() {
         return maxZ - minZ;
     }
+
+    public VecF3 getCenter() {
+        float x = maxX - (0.5f * getWidth());
+        float y = maxY - (0.5f * getHeight());
+        float z = maxZ - (0.5f * getDepth());
+
+        return new VecF3(x, y, z);
+    }
 }
