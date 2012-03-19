@@ -123,7 +123,6 @@ public class FBO {
         if (initialized) {
             rboTexture.use(gl);
             gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, fboPointer.get(0));
-            gl.glClear(GL3.GL_DEPTH_BUFFER_BIT | GL3.GL_COLOR_BUFFER_BIT);
         } else {
             throw new UninitializedException("FBO not initialized.");
         }

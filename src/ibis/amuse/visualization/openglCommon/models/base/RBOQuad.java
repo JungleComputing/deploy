@@ -5,6 +5,7 @@ import ibis.amuse.visualization.openglCommon.exceptions.UninitializedException;
 import ibis.amuse.visualization.openglCommon.math.MatF4;
 import ibis.amuse.visualization.openglCommon.math.VecF2;
 import ibis.amuse.visualization.openglCommon.math.VecF3;
+import ibis.amuse.visualization.openglCommon.math.VecF4;
 import ibis.amuse.visualization.openglCommon.math.VectorFMath;
 import ibis.amuse.visualization.openglCommon.models.Model;
 import ibis.amuse.visualization.openglCommon.shaders.Program;
@@ -53,13 +54,13 @@ public class RBOQuad extends Model {
         // System.out.println(new VecF3(hX, hY, Z));
         // System.out.println(new VecF3(lX, hY, Z));
 
-        VecF3[] verticesArray = new VecF3[numVertices];
-        verticesArray[0] = new VecF3(lX, lY, Z);
-        verticesArray[1] = new VecF3(hX, lY, Z);
-        verticesArray[2] = new VecF3(hX, hY, Z);
-        verticesArray[3] = new VecF3(lX, lY, Z);
-        verticesArray[4] = new VecF3(hX, hY, Z);
-        verticesArray[5] = new VecF3(lX, hY, Z);
+        VecF4[] verticesArray = new VecF4[numVertices];
+        verticesArray[0] = new VecF4(lX, lY, Z, 1f);
+        verticesArray[1] = new VecF4(hX, lY, Z, 1f);
+        verticesArray[2] = new VecF4(hX, hY, Z, 1f);
+        verticesArray[3] = new VecF4(lX, lY, Z, 1f);
+        verticesArray[4] = new VecF4(hX, hY, Z, 1f);
+        verticesArray[5] = new VecF4(lX, hY, Z, 1f);
 
         // NORMALS
         VecF3[] normalsArray = new VecF3[numVertices];

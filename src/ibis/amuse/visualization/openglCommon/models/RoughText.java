@@ -1,5 +1,6 @@
 package ibis.amuse.visualization.openglCommon.models;
 
+import ibis.amuse.visualization.openglCommon.FBO;
 import ibis.amuse.visualization.openglCommon.GLSLAttrib;
 import ibis.amuse.visualization.openglCommon.Material;
 import ibis.amuse.visualization.openglCommon.VBO;
@@ -11,6 +12,7 @@ import ibis.amuse.visualization.openglCommon.math.VecF2;
 import ibis.amuse.visualization.openglCommon.math.VecF3;
 import ibis.amuse.visualization.openglCommon.math.VecF4;
 import ibis.amuse.visualization.openglCommon.math.VectorFMath;
+import ibis.amuse.visualization.openglCommon.models.base.RBOQuad;
 import ibis.amuse.visualization.openglCommon.shaders.FragmentShader;
 import ibis.amuse.visualization.openglCommon.shaders.Program;
 import ibis.amuse.visualization.openglCommon.shaders.VertexShader;
@@ -36,6 +38,10 @@ public class RoughText extends Model {
     private final BoundingBox bbox;
     private FloatBuffer tCoords;
     private Program textProgram = null;
+
+    private FBO fbo;
+
+    private RBOQuad textureQuad;
 
     public RoughText(Material material) {
         super(material, vertex_format.TRIANGLES);
@@ -138,12 +144,27 @@ public class RoughText extends Model {
             this.numVertices = vertices.size();
             this.cachedString = str;
 
+            // Prepare the FBO for 2 pass rendering
+            int textureWidth = 1024;
+            int textureHeight = (int) (((textureWidth * bbox.getHeight()) / bbox
+                    .getWidth()) + 0.5f);
+            fbo = new FBO(textureWidth, textureHeight, GL3.GL_TEXTURE6);
+            fbo.init(gl);
+
+            // Prepare the quad, to be rendered with texture in case of 2 pass
+            // rendering
+            if (textureQuad != null) {
+                textureQuad.delete(gl);
+            }
+            textureQuad = new RBOQuad(textProgram, material, bbox.getWidth(),
+                    bbox.getHeight(), bbox.getCenter());
+            textureQuad.init(gl);
+
             initialized = true;
         }
     }
 
-    private void renderDirect(GL3 gl, MatF4 MVMatrix, MatF4 PMatrix) {
-        MatF4 PMVMatrix = MVMatrix.mul(PMatrix);
+    private void renderDirect(GL3 gl, MatF4 PMVMatrix) {
         textProgram.setUniformMatrix("PMVMatrix", PMVMatrix);
 
         try {
@@ -159,16 +180,66 @@ public class RoughText extends Model {
         gl.glDrawArrays(GL3.GL_TRIANGLES, 0, numVertices);
     }
 
+    private void render2FBO(GL3 gl) throws UninitializedException {
+        MatF4 PMVMatrix = new MatF4();
+
+        fbo.bind(gl);
+        try {
+            int minX = (int) Math.floor(bbox.getMin().get(0));
+            int minY = (int) Math.floor(bbox.getMin().get(1));
+            int maxX = (int) Math.ceil(bbox.getMax().get(0));
+            int maxY = (int) Math.ceil(bbox.getMax().get(1));
+
+            PMVMatrix = MatrixFMath.ortho(minX, maxX, minY, maxY, -1f, 1f);
+        } catch (UninitializedException e1) {
+            e1.printStackTrace();
+        }
+
+        textProgram.setUniformMatrix("PMVMatrix", PMVMatrix);
+
+        try {
+            textProgram.use(gl);
+        } catch (UninitializedException e) {
+            e.printStackTrace();
+        }
+
+        vbo.bind(gl);
+
+        textProgram.linkAttribs(gl, vbo.getAttribs());
+
+        gl.glDrawArrays(GL3.GL_TRIANGLES, 0, numVertices);
+
+        fbo.unBind(gl);
+    }
+
+    private void renderFBO(GL3 gl, MatF4 PMVMatrix) {
+        textProgram.setUniform("RBOTexture", GL3.GL_TEXTURE6);
+
+        textureQuad.draw(gl, textProgram, PMVMatrix);
+    }
+
     @Override
     public void draw(GL3 gl, Program program, MatF4 MVMatrix) {
         if (initialized) {
-            renderDirect(gl, MVMatrix, new MatF4());
+            renderDirect(gl, MVMatrix);
         }
     }
 
-    public void draw(GL3 gl, MatF4 MVMatrix, MatF4 PMatrix) {
+    @Override
+    public void draw(GL3 gl, MatF4 PMVMatrix) {
         if (initialized) {
-            renderDirect(gl, MVMatrix, PMatrix);
+            renderDirect(gl, PMVMatrix);
+        }
+    }
+
+    public void draw2pass(GL3 gl, MatF4 PMVMatrix) {
+        if (initialized) {
+            try {
+                render2FBO(gl);
+                renderFBO(gl, PMVMatrix);
+            } catch (UninitializedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -184,10 +255,16 @@ public class RoughText extends Model {
         initialized = true;
     }
 
-    public static MatF4 getModelViewForHUD(float RasterPosX, float RasterPosY) {
+    public static MatF4 getPMVForHUD(float canvasWidth, float canvasHeight,
+            float RasterPosX, float RasterPosY) {
+
         MatF4 mv = new MatF4();
-        mv = mv.mul(MatrixFMath.translate(-.55f + RasterPosX, -.35f
-                + RasterPosY, -1f));
+        mv = mv.mul(MatrixFMath.translate((RasterPosX / canvasWidth),
+                (RasterPosY / canvasHeight), 0f));
+
+        MatF4 PMatrix = MatrixFMath.ortho(0f, canvasWidth, 0f, canvasHeight,
+                -1f, 1f);
+        mv = mv.mul(PMatrix);
 
         return mv;
     }

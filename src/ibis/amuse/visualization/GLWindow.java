@@ -17,7 +17,6 @@ import ibis.amuse.visualization.openglCommon.math.VecF4;
 import ibis.amuse.visualization.openglCommon.models.Axis;
 import ibis.amuse.visualization.openglCommon.models.Model;
 import ibis.amuse.visualization.openglCommon.models.RoughText;
-import ibis.amuse.visualization.openglCommon.models.Text;
 import ibis.amuse.visualization.openglCommon.models.base.Quad;
 import ibis.amuse.visualization.openglCommon.scenegraph.OctreeNode;
 import ibis.amuse.visualization.openglCommon.shaders.Program;
@@ -103,7 +102,7 @@ public class GLWindow implements GLEventListener {
 
     int fontSet = FontFactory.UBUNTU;
     TypecastFont font;
-    int fontSize = 1;
+    int fontSize = 40;
     RoughText myText;
     private MatF4 perspectiveMatrix;
 
@@ -364,7 +363,11 @@ public class GLWindow implements GLEventListener {
         renderScene(gl, mv, stars, octreeRoot, starHaloFBO, starFBO, gasFBO,
                 axesFBO);
 
-        renderHUDText(gl, mv, hudFBO);
+        try {
+            renderHUDText(gl, mv, hudFBO);
+        } catch (UninitializedException e) {
+            e.printStackTrace();
+        }
 
         if (post_process) {
             renderTexturesToScreen(gl, width, height, starHaloFBO, starFBO,
@@ -380,71 +383,19 @@ public class GLWindow implements GLEventListener {
         gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 
         try {
-            if (post_process) {
-                pplShader.setUniformVector("LightPos", lightPos);
-                pplShader.setUniform("Shininess", shininess);
-
-                pplShader.setUniformMatrix("SMatrix", MatrixFMath.scale(2));
-                pplShader.setUniform("StarDrawMode", 1);
-
-                for (Star s : stars) {
-                    s.draw(gl, pplShader, mv);
-                }
-
-                renderToTexture(gl, starHaloFBO);
-                // starBlur(gl, starHaloTex, FSQ_blur,
-                // Settings.getStarHaloBlurType(levelOfDetail),
-                // Settings.getStarHaloBlurSize(levelOfDetail));
-
-                blur(gl, starHaloFBO, FSQ_blur, Settings
-                        .getStarHaloBlurPasses(levelOfDetail), Settings
-                        .getStarHaloBlurType(levelOfDetail), Settings
-                        .getStarHaloBlurSize(levelOfDetail));
-            }
-
-            gl.glDisable(GL3.GL_DEPTH_TEST);
-
-            octreeRoot.draw(gl, gasShader, mv);
-
-            if (post_process) {
-                renderToTexture(gl, gasFBO);
-                if (snapshotting) {
-                    blur(gl, gasFBO, FSQ_blur, Settings
-                            .getSnapshotGasBlurPasses(), Settings
-                            .getSnapshotGasBlurType(), Settings
-                            .getSnapshotGasBlurSize());
-                } else {
-                    blur(gl, gasFBO, FSQ_blur, Settings
-                            .getGasBlurPasses(levelOfDetail), Settings
-                            .getGasBlurType(levelOfDetail), Settings
-                            .getGasBlurSize(levelOfDetail));
-                }
-            }
-
-            gl.glEnable(GL3.GL_DEPTH_TEST);
-
-            renderStars(gl, mv, starFBO);
-
-            if (axes) {
-                axesFBO.bind(gl);
-
-                // axesShader.use(gl);
-                xAxis.draw(gl, axesShader, mv);
-                yAxis.draw(gl, axesShader, mv);
-                zAxis.draw(gl, axesShader, mv);
-
-                axesFBO.unBind(gl);
-            } else {
-                gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
-            }
+            renderStarHalos(gl, mv, starHaloFBO, stars);
+            renderGas(gl, mv, gasFBO, octreeRoot);
+            renderStars(gl, mv, starFBO, stars);
+            renderAxes(gl, mv, axesFBO);
         } catch (UninitializedException e) {
             e.printStackTrace();
         }
     }
 
-    private void renderStars(GL3 gl, MatF4 mv, FBO starsFBO)
-            throws UninitializedException {
+    private void renderStars(GL3 gl, MatF4 mv, FBO starsFBO,
+            ArrayList<Star> stars) throws UninitializedException {
         starsFBO.bind(gl);
+        gl.glClear(GL3.GL_DEPTH_BUFFER_BIT | GL3.GL_COLOR_BUFFER_BIT);
         if (snapshotting) {
             noiseTex.use(gl);
             animatedTurbulenceShader.setUniform("Noise", noiseTex
@@ -481,6 +432,70 @@ public class GLWindow implements GLEventListener {
         starsFBO.unBind(gl);
     }
 
+    private void renderStarHalos(GL3 gl, MatF4 mv, FBO starHaloFBO,
+            ArrayList<Star> stars) throws UninitializedException {
+        if (post_process) {
+            starHaloFBO.bind(gl);
+            gl.glClear(GL3.GL_DEPTH_BUFFER_BIT | GL3.GL_COLOR_BUFFER_BIT);
+            pplShader.setUniformVector("LightPos", lightPos);
+            pplShader.setUniform("Shininess", shininess);
+
+            pplShader.setUniformMatrix("SMatrix", MatrixFMath.scale(2));
+            pplShader.setUniform("StarDrawMode", 1);
+
+            for (Star s : stars) {
+                s.draw(gl, pplShader, mv);
+            }
+
+            blur(gl, starHaloFBO, FSQ_blur, Settings
+                    .getStarHaloBlurPasses(levelOfDetail), Settings
+                    .getStarHaloBlurType(levelOfDetail), Settings
+                    .getStarHaloBlurSize(levelOfDetail));
+
+            starHaloFBO.unBind(gl);
+        }
+    }
+
+    private void renderGas(GL3 gl, MatF4 mv, FBO gasFBO, OctreeNode octreeRoot)
+            throws UninitializedException {
+        gl.glDisable(GL3.GL_DEPTH_TEST);
+
+        gasFBO.bind(gl);
+        gl.glClear(GL3.GL_DEPTH_BUFFER_BIT | GL3.GL_COLOR_BUFFER_BIT);
+        octreeRoot.draw(gl, gasShader, mv);
+        gasFBO.unBind(gl);
+
+        if (post_process) {
+            if (snapshotting) {
+                blur(gl, gasFBO, FSQ_blur, Settings.getSnapshotGasBlurPasses(),
+                        Settings.getSnapshotGasBlurType(), Settings
+                                .getSnapshotGasBlurSize());
+            } else {
+                blur(gl, gasFBO, FSQ_blur, Settings
+                        .getGasBlurPasses(levelOfDetail), Settings
+                        .getGasBlurType(levelOfDetail), Settings
+                        .getGasBlurSize(levelOfDetail));
+            }
+        }
+
+        gl.glEnable(GL3.GL_DEPTH_TEST);
+    }
+
+    private void renderAxes(GL3 gl, MatF4 mv, FBO axesFBO)
+            throws UninitializedException {
+        if (axes) {
+            axesFBO.bind(gl);
+            gl.glClear(GL3.GL_DEPTH_BUFFER_BIT | GL3.GL_COLOR_BUFFER_BIT);
+
+            // axesShader.use(gl);
+            xAxis.draw(gl, axesShader, mv);
+            yAxis.draw(gl, axesShader, mv);
+            zAxis.draw(gl, axesShader, mv);
+
+            axesFBO.unBind(gl);
+        }
+    }
+
     private void renderHUDText(GL3 gl, MatF4 mv, FBO hudFBO)
             throws UninitializedException {
         gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -491,22 +506,26 @@ public class GLWindow implements GLEventListener {
             myText.setString(gl, font, text, fontSize);
 
             hudFBO.bind(gl);
-            myText.draw(gl, Text.getModelViewForHUD(0, 0), new MatF4());
+            gl.glClear(GL3.GL_DEPTH_BUFFER_BIT | GL3.GL_COLOR_BUFFER_BIT);
+            myText.draw(gl, RoughText.getPMVForHUD(canvasWidth, canvasHeight,
+                    30f, 30f));
+            // myText.draw(gl, new MatF4());
             hudFBO.unBind(gl);
         }
     }
 
     private void renderTexturesToScreen(GL3 gl, int width, int height,
-            Texture2D starHaloTex, Texture2D starTex, Texture2D gasTex,
-            Texture2D hudTex, FBO axesFBO) {
+            FBO starHaloFBO, FBO starFBO, FBO gasFBO, FBO hudFBO, FBO axesFBO) {
         postprocessShader.setUniform("axesTexture", axesFBO.getTexture()
                 .getMultitexNumber());
-        postprocessShader.setUniform("gasTexture", gasTex.getMultitexNumber());
-        postprocessShader
-                .setUniform("starTexture", starTex.getMultitexNumber());
-        postprocessShader.setUniform("starHaloTexture", starHaloTex
+        postprocessShader.setUniform("gasTexture", gasFBO.getTexture()
                 .getMultitexNumber());
-        postprocessShader.setUniform("hudTexture", hudTex.getMultitexNumber());
+        postprocessShader.setUniform("starTexture", starFBO.getTexture()
+                .getMultitexNumber());
+        postprocessShader.setUniform("starHaloTexture", starHaloFBO
+                .getTexture().getMultitexNumber());
+        postprocessShader.setUniform("hudTexture", hudFBO.getTexture()
+                .getMultitexNumber());
 
         postprocessShader.setUniform("starBrightness", Settings
                 .getPostprocessingStarBrightness());
@@ -527,33 +546,39 @@ public class GLWindow implements GLEventListener {
 
         try {
             postprocessShader.use(gl);
+
+            gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
             FSQ_blur.draw(gl, postprocessShader, new MatF4());
         } catch (UninitializedException e) {
             e.printStackTrace();
         }
     }
 
-    private void blur(GL3 gl, Texture2D target, Model fullScreenQuad,
-            int passes, int blurType, float blurSize) {
-        gaussianBlurShader.setUniform("Texture", target.getMultitexNumber());
+    private void blur(GL3 gl, FBO target, Model fullScreenQuad, int passes,
+            int blurType, float blurSize) {
+        gaussianBlurShader.setUniform("Texture", target.getTexture()
+                .getMultitexNumber());
         gaussianBlurShader.setUniformMatrix("PMatrix", new MatF4());
         gaussianBlurShader.setUniform("blurType", blurType);
         gaussianBlurShader.setUniform("blurSize", blurSize);
-        gaussianBlurShader.setUniform("scrWidth", target.getWidth());
-        gaussianBlurShader.setUniform("scrHeight", target.getHeight());
+        gaussianBlurShader.setUniform("scrWidth", target.getTexture()
+                .getWidth());
+        gaussianBlurShader.setUniform("scrHeight", target.getTexture()
+                .getHeight());
         gaussianBlurShader.setUniform("Alpha", 1f);
 
         try {
             gaussianBlurShader.use(gl);
 
             for (int i = 0; i < passes; i++) {
+                target.bind(gl);
+
                 gaussianBlurShader.setUniform("blurDirection", 0);
-                fullScreenQuad.draw(gl, new MatF4());
-                renderToTexture(gl, target);
+                fullScreenQuad.draw(gl, gaussianBlurShader, new MatF4());
 
                 gaussianBlurShader.setUniform("blurDirection", 1);
-                fullScreenQuad.draw(gl, new MatF4());
-                renderToTexture(gl, target);
+                fullScreenQuad.draw(gl, gaussianBlurShader, new MatF4());
+                target.unBind(gl);
             }
         } catch (UninitializedException e) {
             e.printStackTrace();

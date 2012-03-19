@@ -72,10 +72,6 @@ public class Model {
     }
 
     public void draw(GL3 gl, MatF4 MVMatrix) {
-        vbo.bind(gl);
-
-        program.linkAttribs(gl, vbo.getAttribs());
-
         program.setUniformVector("DiffuseMaterial", material.diffuse);
         program.setUniformVector("AmbientMaterial", material.ambient);
         program.setUniformVector("SpecularMaterial", material.specular);
@@ -88,6 +84,10 @@ public class Model {
             e.printStackTrace();
         }
 
+        vbo.bind(gl);
+
+        program.linkAttribs(gl, vbo.getAttribs());
+
         if (format == vertex_format.TRIANGLES) {
             gl.glDrawArrays(GL3.GL_TRIANGLES, 0, numVertices);
         } else if (format == vertex_format.POINTS) {
@@ -98,7 +98,6 @@ public class Model {
     }
 
     public void draw(GL3 gl, Program program, MatF4 MVMatrix) {
-
         program.setUniformVector("DiffuseMaterial", material.diffuse);
         program.setUniformVector("AmbientMaterial", material.ambient);
         program.setUniformVector("SpecularMaterial", material.specular);

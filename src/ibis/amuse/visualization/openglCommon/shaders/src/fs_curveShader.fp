@@ -87,6 +87,6 @@ void main (void)
             alpha = Alpha * a;
         }
     }
-    //fragColor = vec4(c, alpha);
-    fragColor = vec4(1,1,1,1);
+    fragColor = vec4(c, alpha);
+    //fragColor = vec4(1,1,1,1);
 }
