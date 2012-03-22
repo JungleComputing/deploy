@@ -348,17 +348,34 @@ public class AmuseVisualization extends JPanel {
         visualConfig
                 .add(GoggleSwing.titleBox("Visual Configuration", listener));
 
-        ItemListener checkBoxListener = new ItemListener() {
+        ItemListener cblBeamerMode = new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 Settings.setInvertGasColor(e.getStateChange());
                 timer.redraw();
             }
         };
-        visualConfig.add(GoggleSwing.checkboxBox("",
-                new String[] { "Beamer mode" }, new boolean[] { Settings
-                        .invertGasColor() },
-                new ItemListener[] { checkBoxListener }));
+        ItemListener cblInvertedBackground = new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                Settings.setGasInvertedBackgroundColor(e.getStateChange());
+                timer.redraw();
+            }
+        };
+        ItemListener cblGasColorInfluencedByStars = new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                Settings.setStarInfluencedGasColor(e.getStateChange());
+                timer.redraw();
+            }
+        };
+        visualConfig.add(GoggleSwing.checkboxBox("", new String[] {
+                "Beamer mode", "White background", "Color gas by stars" },
+                new boolean[] { Settings.getGasInvertedColor(),
+                        Settings.getGasInvertedBackgroundColor(),
+                        Settings.getGasStarInfluencedColor() },
+                new ItemListener[] { cblBeamerMode, cblInvertedBackground,
+                        cblGasColorInfluencedByStars }));
 
         ChangeListener overallBrightnessSliderListener = new ChangeListener() {
             @Override
@@ -713,7 +730,7 @@ public class AmuseVisualization extends JPanel {
             public void stateChanged(ChangeEvent e) {
                 JSlider source = (JSlider) e.getSource();
                 if (source.hasFocus()) {
-                    timer.setFrame(timeBar.getValue());
+                    timer.setFrame(timeBar.getValue(), false);
                     playButton.setIcon(playIcon);
                 }
             }
@@ -734,7 +751,7 @@ public class AmuseVisualization extends JPanel {
                     if (source == frameCounter) {
                         if (window.isTimerInitialized())
                             timer.setFrame(((Number) frameCounter.getValue())
-                                    .intValue());
+                                    .intValue(), false);
                         playButton.setIcon(playIcon);
                     }
                 }

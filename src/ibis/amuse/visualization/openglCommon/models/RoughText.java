@@ -41,7 +41,7 @@ public class RoughText extends Model {
 
     private FBO fbo;
 
-    private RBOQuad textureQuad;
+    private RBOQuad quad;
 
     public RoughText(Material material) {
         super(material, vertex_format.TRIANGLES);
@@ -139,7 +139,7 @@ public class RoughText extends Model {
             }
 
             textProgram.setUniformVector("ColorStatic", material.getColor());
-            textProgram.setUniform("Alpha", material.getAlpha());
+            textProgram.setUniform("Alpha", 1f);
 
             this.numVertices = vertices.size();
             this.cachedString = str;
@@ -153,12 +153,13 @@ public class RoughText extends Model {
 
             // Prepare the quad, to be rendered with texture in case of 2 pass
             // rendering
-            if (textureQuad != null) {
-                textureQuad.delete(gl);
+            if (quad != null) {
+                quad.delete(gl);
             }
-            textureQuad = new RBOQuad(textProgram, material, bbox.getWidth(),
-                    bbox.getHeight(), bbox.getCenter());
-            textureQuad.init(gl);
+
+            quad = new RBOQuad(material, bbox.getWidth(), bbox.getHeight(),
+                    bbox.getCenter());
+            quad.init(gl);
 
             initialized = true;
         }
@@ -184,6 +185,7 @@ public class RoughText extends Model {
         MatF4 PMVMatrix = new MatF4();
 
         fbo.bind(gl);
+        gl.glClear(GL3.GL_DEPTH_BUFFER_BIT | GL3.GL_COLOR_BUFFER_BIT);
         try {
             int minX = (int) Math.floor(bbox.getMin().get(0));
             int minY = (int) Math.floor(bbox.getMin().get(1));
@@ -213,9 +215,17 @@ public class RoughText extends Model {
     }
 
     private void renderFBO(GL3 gl, MatF4 PMVMatrix) {
-        textProgram.setUniform("RBOTexture", GL3.GL_TEXTURE6);
+        try {
+            fbo.getTexture().use(gl);
+        } catch (UninitializedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
-        textureQuad.draw(gl, textProgram, PMVMatrix);
+        textProgram.setUniform("RBOTexture", fbo.getTexture()
+                .getGLMultiTexUnit());
+
+        quad.draw(gl, textProgram, PMVMatrix);
     }
 
     @Override

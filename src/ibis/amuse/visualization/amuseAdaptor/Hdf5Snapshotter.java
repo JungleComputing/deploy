@@ -9,39 +9,50 @@ import ibis.amuse.visualization.openglCommon.scenegraph.OctreeNode;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-
 public class Hdf5Snapshotter {
     private static OctreeNode cubeRoot;
-    private static StarSGNode sgRoot;
     private ArrayList<Star> stars;
 
     private final static String evoNamePostfix = ".evo";
     private final static String gravNamePostfix = ".grav";
     private final static String gasNamePostfix = ".gas";
 
+    private int lastDisplayedFrame = -1;
+
     public Hdf5Snapshotter() {
         stars = new ArrayList<Star>();
     }
 
-    public void open(String namePrefix, int currentFrame, int levelOfDetail, HashMap<Integer, Model> cloudModels)
+    public void open(String namePrefix, int currentFrame, int levelOfDetail,
+            HashMap<Integer, Model> cloudModels, boolean overrideUpdate)
             throws FileOpeningException {
 
-        int gasSubdivision = Settings.getGasSubdivision(levelOfDetail);
-        int starSubdivision = Settings.getStarSubdivision(levelOfDetail);
-        int gasParticlesPerOctreeNode = Settings.getGasParticlesPerOctreeNode(levelOfDetail);
+        if (currentFrame != lastDisplayedFrame || overrideUpdate) {
+            int gasSubdivision = Settings.getGasSubdivision(levelOfDetail);
+            int starSubdivision = Settings.getStarSubdivision(levelOfDetail);
+            int gasParticlesPerOctreeNode = Settings
+                    .getGasParticlesPerOctreeNode(levelOfDetail);
 
-        String evoName, gravName, gasName;
+            String evoName, gravName, gasName;
 
-        gasName = namePrefix + intToString(currentFrame) + gasNamePostfix;
-        evoName = namePrefix + intToString(currentFrame) + evoNamePostfix;
-        gravName = namePrefix + intToString(currentFrame) + gravNamePostfix;
+            gasName = namePrefix + intToString(currentFrame) + gasNamePostfix;
+            evoName = namePrefix + intToString(currentFrame) + evoNamePostfix;
+            gravName = namePrefix + intToString(currentFrame) + gravNamePostfix;
 
-        cubeRoot = new OctreeNode(gasParticlesPerOctreeNode, 0, gasSubdivision, cloudModels, new VecF3(
-                -Settings.getGasEdges(), -Settings.getGasEdges(), -Settings.getGasEdges()), Settings.getGasEdges());
-        Hdf5GasCloudReader.read(cubeRoot, gasName);
+            cubeRoot = new OctreeNode(gasParticlesPerOctreeNode, 0,
+                    gasSubdivision, cloudModels, new VecF3(-Settings
+                            .getGasEdges(), -Settings.getGasEdges(), -Settings
+                            .getGasEdges()), Settings.getGasEdges());
+            Hdf5GasCloudReader.read(cubeRoot, gasName);
 
-        sgRoot = new StarSGNode();
-        stars = Hdf5StarReader.read(starSubdivision, evoName, gravName);
+            stars = Hdf5StarReader.read(starSubdivision, evoName, gravName);
+
+            if (Settings.getGasStarInfluencedColor()) {
+                cubeRoot.recolor(stars);
+            }
+
+            lastDisplayedFrame = currentFrame;
+        }
     }
 
     public OctreeNode getOctreeRoot() {

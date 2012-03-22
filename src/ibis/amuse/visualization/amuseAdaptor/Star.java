@@ -10,14 +10,14 @@ import ibis.amuse.visualization.openglCommon.shaders.Program;
 
 import javax.media.opengl.GL3;
 
-
 public class Star {
     private final VecF4 color;
     private final VecF3 location;
     private final float radius;
     private final Model model;
 
-    public Star(Model baseModel, VecF3 location, double radius, double luminosity) {
+    public Star(Model baseModel, VecF3 location, double radius,
+            double luminosity) {
         this.model = baseModel;
         this.location = location;
 
@@ -59,5 +59,13 @@ public class Star {
 
     public float getRadius() {
         return radius;
+    }
+
+    public VecF4 getColor() {
+        return color;
+    }
+
+    public VecF3 getLocation() {
+        return location;
     }
 }

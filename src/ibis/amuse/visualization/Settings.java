@@ -112,6 +112,8 @@ public class Settings {
     private static int SNAPSHOT_STAR_HALO_BLUR_TYPE = 6; // 6
 
     private static boolean GAS_COLOR_INVERTED = false;
+    private static boolean GAS_COLOR_BACKGROUND_INVERTED = false;
+    private static boolean GAS_COLOR_FROM_STARS = false;
 
     static {
         TypedProperties props = new TypedProperties();
@@ -267,8 +269,9 @@ public class Settings {
             SNAPSHOT_STAR_HALO_BLUR_TYPE = props
                     .getIntProperty("SNAPSHOT_STAR_HALO_BLUR_TYPE");
 
-            GAS_COLOR_INVERTED = props
-                    .getBooleanProperty("SNAPSHOT_STAR_HALO_BLUR_TYPE");
+            GAS_COLOR_INVERTED = props.getBooleanProperty("GAS_COLOR_INVERTED");
+            GAS_COLOR_FROM_STARS = props
+                    .getBooleanProperty("GAS_COLOR_FROM_STARS");
 
         } catch (NumberFormatException e) {
             logger
@@ -608,8 +611,16 @@ public class Settings {
         INITIAL_ROTATION_Y = initialRotationY;
     }
 
-    public static boolean invertGasColor() {
+    public static boolean getGasInvertedColor() {
         return GAS_COLOR_INVERTED;
+    }
+
+    public static boolean getGasStarInfluencedColor() {
+        return GAS_COLOR_FROM_STARS;
+    }
+
+    public static boolean getGasInvertedBackgroundColor() {
+        return GAS_COLOR_BACKGROUND_INVERTED;
     }
 
     public static void setInvertGasColor(int stateChange) {
@@ -617,5 +628,19 @@ public class Settings {
             GAS_COLOR_INVERTED = true;
         if (stateChange == 2)
             GAS_COLOR_INVERTED = false;
+    }
+
+    public static void setStarInfluencedGasColor(int stateChange) {
+        if (stateChange == 1)
+            GAS_COLOR_FROM_STARS = true;
+        if (stateChange == 2)
+            GAS_COLOR_FROM_STARS = false;
+    }
+
+    public static void setGasInvertedBackgroundColor(int stateChange) {
+        if (stateChange == 1)
+            GAS_COLOR_BACKGROUND_INVERTED = true;
+        if (stateChange == 2)
+            GAS_COLOR_BACKGROUND_INVERTED = false;
     }
 }

@@ -141,7 +141,7 @@ public class Astrophysics {
         float u = (float) (Math.sqrt(total_u_inNode / membersOfnode) / 5000.0);
         if (Float.isNaN(u))
             u = 0f;
-        if (Settings.invertGasColor()) {
+        if (Settings.getGasInvertedColor()) {
             return new VecF4(0f + u, 0f + u, 1f - u, density);
         } else {
             return new VecF4(1f - u, 0f + u, 0f + u, density);

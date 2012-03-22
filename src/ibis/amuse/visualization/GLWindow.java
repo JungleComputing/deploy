@@ -102,7 +102,7 @@ public class GLWindow implements GLEventListener {
 
     int fontSet = FontFactory.UBUNTU;
     TypecastFont font;
-    int fontSize = 40;
+    int fontSize = 30;
     RoughText myText;
     private MatF4 perspectiveMatrix;
 
@@ -384,7 +384,11 @@ public class GLWindow implements GLEventListener {
 
         try {
             renderStarHalos(gl, mv, starHaloFBO, stars);
+            if (Settings.getGasInvertedBackgroundColor()) {
+                gl.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+            }
             renderGas(gl, mv, gasFBO, octreeRoot);
+            gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
             renderStars(gl, mv, starFBO, stars);
             renderAxes(gl, mv, axesFBO);
         } catch (UninitializedException e) {
@@ -498,7 +502,6 @@ public class GLWindow implements GLEventListener {
 
     private void renderHUDText(GL3 gl, MatF4 mv, FBO hudFBO)
             throws UninitializedException {
-        gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 
         if (text) {
@@ -507,9 +510,10 @@ public class GLWindow implements GLEventListener {
 
             hudFBO.bind(gl);
             gl.glClear(GL3.GL_DEPTH_BUFFER_BIT | GL3.GL_COLOR_BUFFER_BIT);
+            // myText.draw2pass(gl, RoughText.getPMVForHUD(canvasWidth,
+            // canvasHeight, 30f, 30f));
             myText.draw(gl, RoughText.getPMVForHUD(canvasWidth, canvasHeight,
                     30f, 30f));
-            // myText.draw(gl, new MatF4());
             hudFBO.unBind(gl);
         }
     }

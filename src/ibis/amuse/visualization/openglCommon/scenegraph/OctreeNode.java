@@ -1,22 +1,23 @@
 package ibis.amuse.visualization.openglCommon.scenegraph;
 
-
 import ibis.amuse.visualization.GLWindow;
 import ibis.amuse.visualization.Settings;
 import ibis.amuse.visualization.amuseAdaptor.Astrophysics;
+import ibis.amuse.visualization.amuseAdaptor.Star;
 import ibis.amuse.visualization.openglCommon.math.MatF4;
 import ibis.amuse.visualization.openglCommon.math.MatrixFMath;
 import ibis.amuse.visualization.openglCommon.math.VecF3;
 import ibis.amuse.visualization.openglCommon.math.VecF4;
+import ibis.amuse.visualization.openglCommon.math.VectorFMath;
 import ibis.amuse.visualization.openglCommon.models.Model;
 import ibis.amuse.visualization.openglCommon.models.base.Sphere;
 import ibis.amuse.visualization.openglCommon.shaders.Program;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.media.opengl.GL3;
-
 
 public class OctreeNode {
 
@@ -43,8 +44,8 @@ public class OctreeNode {
 
     private int subdivision;
 
-    public OctreeNode(int maxElements, int depth, int subdivision, HashMap<Integer, Model> cloudModels, VecF3 corner,
-            float halfSize) {
+    public OctreeNode(int maxElements, int depth, int subdivision,
+            HashMap<Integer, Model> cloudModels, VecF3 corner, float halfSize) {
         this.maxElements = maxElements;
         this.cubeSize = halfSize;
         this.subdivision = subdivision;
@@ -61,7 +62,8 @@ public class OctreeNode {
 
         int index = depth + Settings.getMaxExpectedModels() * subdivision;
         if (!models.containsKey(index)) {
-            model = new Sphere(Astrophysics.getGasMaterial(), 0, halfSize * 3f, new VecF3());
+            model = new Sphere(Astrophysics.getGasMaterial(), 0, halfSize * 3f,
+                    new VecF3());
             models.put(index, model);
         } else {
             model = models.get(index);
@@ -138,18 +140,22 @@ public class OctreeNode {
 
     private void subDiv() {
         float size = cubeSize / 2f;
-        ppp = new OctreeNode(maxElements, depth + 1, subdivision, models, center.add(new VecF3(0f, 0f, 0f)), size);
-        ppn = new OctreeNode(maxElements, depth + 1, subdivision, models, center.add(new VecF3(0f, 0f, -cubeSize)), size);
-        pnp = new OctreeNode(maxElements, depth + 1, subdivision, models, center.add(new VecF3(0f, -cubeSize, 0f)), size);
+        ppp = new OctreeNode(maxElements, depth + 1, subdivision, models,
+                center.add(new VecF3(0f, 0f, 0f)), size);
+        ppn = new OctreeNode(maxElements, depth + 1, subdivision, models,
+                center.add(new VecF3(0f, 0f, -cubeSize)), size);
+        pnp = new OctreeNode(maxElements, depth + 1, subdivision, models,
+                center.add(new VecF3(0f, -cubeSize, 0f)), size);
         pnn = new OctreeNode(maxElements, depth + 1, subdivision, models,
                 center.add(new VecF3(0f, -cubeSize, -cubeSize)), size);
-        npp = new OctreeNode(maxElements, depth + 1, subdivision, models, center.add(new VecF3(-cubeSize, 0f, 0f)), size);
+        npp = new OctreeNode(maxElements, depth + 1, subdivision, models,
+                center.add(new VecF3(-cubeSize, 0f, 0f)), size);
         npn = new OctreeNode(maxElements, depth + 1, subdivision, models,
                 center.add(new VecF3(-cubeSize, 0f, -cubeSize)), size);
         nnp = new OctreeNode(maxElements, depth + 1, subdivision, models,
                 center.add(new VecF3(-cubeSize, -cubeSize, 0f)), size);
-        nnn = new OctreeNode(maxElements, depth + 1, subdivision, models, center.add(new VecF3(-cubeSize, -cubeSize,
-                -cubeSize)), size);
+        nnn = new OctreeNode(maxElements, depth + 1, subdivision, models,
+                center.add(new VecF3(-cubeSize, -cubeSize, -cubeSize)), size);
 
         for (Map.Entry<VecF3, Double> element : elements.entrySet()) {
             addSubdivided(element.getKey(), element.getValue());
@@ -161,9 +167,12 @@ public class OctreeNode {
     }
 
     public void addGas(VecF3 location, double u) {
-        if ((location.get(0) > center.get(0) - cubeSize) && (location.get(1) > center.get(1) - cubeSize)
-                && (location.get(2) > center.get(2) - cubeSize) && (location.get(0) < center.get(0) + cubeSize)
-                && (location.get(1) < center.get(1) + cubeSize) && (location.get(2) < center.get(2) + cubeSize)) {
+        if ((location.get(0) > center.get(0) - cubeSize)
+                && (location.get(1) > center.get(1) - cubeSize)
+                && (location.get(2) > center.get(2) - cubeSize)
+                && (location.get(0) < center.get(0) + cubeSize)
+                && (location.get(1) < center.get(1) + cubeSize)
+                && (location.get(2) < center.get(2) + cubeSize)) {
             if (childCounter > maxElements && !subdivided) {
                 if (depth < Settings.getMaxCloudDepth()) {
                     subDiv();
@@ -196,7 +205,61 @@ public class OctreeNode {
             nnn.doneAddingGas();
         } else {
             density = (childCounter / (cubeSize * cubeSize * cubeSize * 6));
-            color = Astrophysics.gasColor(density, (float) total_u, childCounter);
+            color = Astrophysics.gasColor(density, (float) total_u,
+                    childCounter);
+        }
+    }
+
+    public void recolor(ArrayList<Star> stars) {
+        if (subdivided) {
+            ppp.recolor(stars);
+            ppn.recolor(stars);
+            pnp.recolor(stars);
+            pnn.recolor(stars);
+            npp.recolor(stars);
+            npn.recolor(stars);
+            nnp.recolor(stars);
+            nnn.recolor(stars);
+        } else {
+            density = (childCounter / (cubeSize * cubeSize * cubeSize * 6));
+
+            VecF3 finalColor = new VecF3();
+            HashMap<VecF3, Float> effectiveColors = new HashMap<VecF3, Float>();
+            float totalEffectiveColor = 0f;
+
+            // System.out.println("New Gas particle ------------------");
+
+            for (Star s : stars) {
+                VecF3 location = s.getLocation();
+                float distance = VectorFMath.length(location.sub(center));
+                float radius = s.getRadius();
+                float effectFactor = radius / distance;
+
+                if (effectFactor > 0.01f) {
+
+                    VecF3 color = s.getColor().stripAlpha();
+                    if (effectiveColors.containsKey(color)) {
+                        float newFactor = effectiveColors.get(color)
+                                + effectFactor;
+                        effectiveColors.put(color, newFactor);
+                    } else {
+                        effectiveColors.put(color, effectFactor);
+                    }
+                    totalEffectiveColor += effectFactor;
+                }
+            }
+
+            for (Map.Entry<VecF3, Float> entry : effectiveColors.entrySet()) {
+                VecF3 color = entry.getKey();
+                float factor = entry.getValue() / totalEffectiveColor;
+                // System.out.println("effective: " + factor);
+
+                color = color.mul(factor);
+
+                finalColor = finalColor.add(color);
+            }
+
+            color = new VecF4(finalColor, density);
         }
     }
 
@@ -241,7 +304,8 @@ public class OctreeNode {
                     MatF4 newM = MVMatrix.mul(TMatrix);
 
                     model.material.setColor(color);
-                    model.material.setTransparency(density * GLWindow.gas_opacity_factor);
+                    model.material.setTransparency(density
+                            * GLWindow.gas_opacity_factor);
                     model.draw(gl, newM);
                 }
             }
@@ -257,7 +321,8 @@ public class OctreeNode {
                     MatF4 newM = MVMatrix.mul(TMatrix);
 
                     model.material.setColor(color);
-                    model.material.setTransparency(density * GLWindow.gas_opacity_factor);
+                    model.material.setTransparency(density
+                            * GLWindow.gas_opacity_factor);
                     model.draw(gl, program, newM);
                 }
             }

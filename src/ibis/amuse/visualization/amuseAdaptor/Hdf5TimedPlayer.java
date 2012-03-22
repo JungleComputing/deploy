@@ -45,6 +45,8 @@ public class Hdf5TimedPlayer implements Runnable {
     private GLWindow glw;
     private GLOffscreenWindow glow;
 
+    private Hdf5Snapshotter snappy;
+
     public Hdf5TimedPlayer(GLWindow glw, JSlider timeBar,
             JFormattedTextField frameCounter) {
         this.glw = glw;
@@ -88,6 +90,8 @@ public class Hdf5TimedPlayer implements Runnable {
             System.exit(1);
         }
 
+        snappy = new Hdf5Snapshotter();
+
         // The star and gas models can be re-used for efficiency, we therefore
         // store them in these central databases
         starModels = new HashMap<Integer, Model>();
@@ -100,7 +104,7 @@ public class Hdf5TimedPlayer implements Runnable {
         }
 
         try {
-            updateFrame();
+            updateFrame(false);
         } catch (FileOpeningException e) {
             System.err.println("Failed to open file.");
             System.exit(1);
@@ -124,7 +128,7 @@ public class Hdf5TimedPlayer implements Runnable {
             glw.setViewDist(Settings.getInitialZoom());
 
             try {
-                updateFrame();
+                updateFrame(false);
             } catch (FileOpeningException e) {
                 System.err.println("Initial file not found");
                 System.exit(1);
@@ -142,7 +146,7 @@ public class Hdf5TimedPlayer implements Runnable {
             glow.setViewDist(Settings.getInitialZoom());
 
             try {
-                updateFrame();
+                updateFrame(false);
             } catch (FileOpeningException e) {
                 System.err.println("Initial file not found");
                 System.exit(1);
@@ -162,9 +166,9 @@ public class Hdf5TimedPlayer implements Runnable {
                     // " clouds: " + cloudModels.size());
 
                     try {
-                        updateFrame();
+                        updateFrame(false);
                     } catch (FileOpeningException e) {
-                        setFrame(currentFrame - 1);
+                        setFrame(currentFrame - 1, false);
                         currentState = states.WAITINGONFRAME;
                         System.err
                                 .println("File not found, retrying from frame "
@@ -278,14 +282,14 @@ public class Hdf5TimedPlayer implements Runnable {
         }
     }
 
-    private void updateFrame() throws FileOpeningException {
-        Hdf5Snapshotter snappy = new Hdf5Snapshotter();
+    private void updateFrame(boolean overrideUpdate)
+            throws FileOpeningException {
         if (!cli) {
             snappy.open(namePrefix, currentFrame, GLWindow.getLOD(),
-                    cloudModels);
+                    cloudModels, overrideUpdate);
         } else {
             snappy.open(namePrefix, currentFrame, GLOffscreenWindow.getLOD(),
-                    cloudModels);
+                    cloudModels, overrideUpdate);
         }
         ArrayList<Star> newStars = snappy.getStars();
         OctreeNode newOctreeRoot = snappy.getOctreeRoot();
@@ -305,10 +309,10 @@ public class Hdf5TimedPlayer implements Runnable {
     }
 
     public void rewind() {
-        setFrame(0);
+        setFrame(0, false);
     }
 
-    public void setFrame(int value) {
+    public void setFrame(int value, boolean overrideUpdate) {
         // System.out.println("setValue?");
         currentState = states.STOPPED;
         currentFrame = value;
@@ -317,12 +321,12 @@ public class Hdf5TimedPlayer implements Runnable {
         frameCounter.setValue(currentFrame);
 
         try {
-            updateFrame();
+            updateFrame(overrideUpdate);
         } catch (FileOpeningException e) {
             System.err.println("File not found, retrying from frame "
                     + currentFrame + ".");
 
-            setFrame(value - 1);
+            setFrame(value - 1, overrideUpdate);
             currentState = states.WAITINGONFRAME;
         } catch (Throwable t) {
             System.err.println("Got error in Hdf5TimedPlayer.setFrame!");
@@ -352,17 +356,17 @@ public class Hdf5TimedPlayer implements Runnable {
 
     public void oneBack() {
         stop();
-        setFrame(currentFrame - 1);
+        setFrame(currentFrame - 1, false);
     }
 
     public void oneForward() {
         stop();
-        setFrame(currentFrame + 1);
+        setFrame(currentFrame + 1, false);
     }
 
     public void redraw() {
         if (initialized) {
-            setFrame(currentFrame);
+            setFrame(currentFrame, true);
             currentState = states.REDRAWING;
         }
     }
