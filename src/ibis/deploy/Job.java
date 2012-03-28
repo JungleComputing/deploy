@@ -214,7 +214,7 @@ public class Job implements Runnable {
      * redefined such that it starts with the name of the job description. TODO:
      * Fix! But how? --Ceriel
      * 
-     * @param Logger if not null, an info message is if the state of the job changed
+     * @param logger if not null, an info message is if the state of the job changed
      * 
      * @throws Exception
      *             in case an error occurs.
