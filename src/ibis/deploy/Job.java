@@ -2,7 +2,6 @@ package ibis.deploy;
 
 import ibis.deploy.Deploy.HubPolicy;
 import ibis.deploy.util.Colors;
-import ibis.deploy.util.OutputPrefixForwarder;
 import ibis.deploy.util.StateForwarder;
 import ibis.ipl.IbisProperties;
 import ibis.ipl.registry.central.RegistryProperties;
@@ -308,8 +307,7 @@ public class Job implements Runnable {
         // make sure files are readable on the other side
         context.addPreference("file.chmod", "0755");
         // make sure non existing files/directories will be created on the fly
-        // during a
-        // copy
+        // during a copy
         context.addPreference("file.create", "true");
         // make ssh jobs stoppable, we lose the difference between stdout and
         // stderr

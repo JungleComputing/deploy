@@ -1,13 +1,12 @@
 package ibis.deploy.cli;
 
 import ibis.deploy.ApplicationSet;
-import ibis.deploy.Resource;
 import ibis.deploy.Deploy;
 import ibis.deploy.Experiment;
-import ibis.deploy.Jungle;
 import ibis.deploy.Job;
 import ibis.deploy.JobDescription;
-import ibis.deploy.StateListener;
+import ibis.deploy.Jungle;
+import ibis.deploy.Resource;
 import ibis.deploy.Workspace;
 
 import java.io.File;
