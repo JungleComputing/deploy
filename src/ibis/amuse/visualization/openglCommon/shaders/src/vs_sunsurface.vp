@@ -10,9 +10,15 @@ in vec3 MCnormal;
 in vec3 MCtexCoord;
 out vec3 MCposition;
 
+uniform int StarDrawMode;
+
 void main()
 {
-    MCposition      = MCtexCoord; 
-    
-    gl_Position     = PMatrix * MVMatrix * SMatrix * MCvertex;
+	if (StarDrawMode == 0) {
+	    gl_Position = PMatrix * MVMatrix * MCvertex;
+	} else {
+		gl_Position = PMatrix * MVMatrix * SMatrix * MCvertex;
+	}
+	
+    MCposition      = MCtexCoord;
 }

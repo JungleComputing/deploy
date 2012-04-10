@@ -8,6 +8,13 @@ import org.slf4j.LoggerFactory;
 public class Settings {
     static Logger          logger                                  = LoggerFactory.getLogger(Settings.class);
 
+    private static boolean STEREO_RENDERING                        = true;
+    private static boolean STEREO_SWITCHED                         = true;
+
+    private static float   STEREO_OCULAR_DISTANCE_MIN              = 0f;
+    private static float   STEREO_OCULAR_DISTANCE_DEF              = .2f;
+    private static float   STEREO_OCULAR_DISTANCE_MAX              = 1f;
+
     // Size settings for default startup and screenshots
     private static int     DEFAULT_SCREEN_WIDTH                    = 1024;
     private static int     DEFAULT_SCREEN_HEIGHT                   = 768;
@@ -121,6 +128,13 @@ public class Settings {
         props.loadFromFile("settings.properties");
 
         try {
+            STEREO_RENDERING = props.getBooleanProperty("STEREO_RENDERING");
+            STEREO_SWITCHED = props.getBooleanProperty("STEREO_SWITCHED");
+
+            STEREO_OCULAR_DISTANCE_MIN = props.getFloatProperty("STEREO_OCULAR_DISTANCE_MIN");
+            STEREO_OCULAR_DISTANCE_MAX = props.getFloatProperty("STEREO_OCULAR_DISTANCE_MAX");
+            STEREO_OCULAR_DISTANCE_DEF = props.getFloatProperty("STEREO_OCULAR_DISTANCE_DEF");
+
             // Size settings for default startup and screenshots
             DEFAULT_SCREEN_WIDTH = props.getIntProperty("DEFAULT_SCREEN_WIDTH");
             DEFAULT_SCREEN_HEIGHT = props.getIntProperty("DEFAULT_SCREEN_HEIGHT");
@@ -232,6 +246,44 @@ public class Settings {
         } catch (NumberFormatException e) {
             logger.info("A settings property was most likely entered incorrectly, " + e.getMessage());
         }
+    }
+
+    public static boolean getStereo() {
+        return STEREO_RENDERING;
+    }
+
+    public static void setStereo(int stateChange) {
+        if (stateChange == 1)
+            STEREO_RENDERING = true;
+        if (stateChange == 2)
+            STEREO_RENDERING = false;
+    }
+
+    public static boolean getStereoSwitched() {
+        return STEREO_SWITCHED;
+    }
+
+    public static void setStereoSwitched(int stateChange) {
+        if (stateChange == 1)
+            STEREO_SWITCHED = true;
+        if (stateChange == 2)
+            STEREO_SWITCHED = false;
+    }
+
+    public static float getStereoOcularDistanceMin() {
+        return STEREO_OCULAR_DISTANCE_MIN;
+    }
+
+    public static float getStereoOcularDistanceMax() {
+        return STEREO_OCULAR_DISTANCE_MAX;
+    }
+
+    public static float getStereoOcularDistance() {
+        return STEREO_OCULAR_DISTANCE_DEF;
+    }
+
+    public static void setStereoOcularDistance(float value) {
+        STEREO_OCULAR_DISTANCE_DEF = value;
     }
 
     public static int getGasBlurPasses(int levelOfDetail) {

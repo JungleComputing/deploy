@@ -19,9 +19,9 @@ void main() {
 	vec3 Color2 = AmbientMaterial.rgb;
 
 	if (StarDrawMode == 0) { 
-	    vec4 noisevecX 		= texture(Noise, .33 * MCposition); //NoiseScale * .33 * MCposition);  + vec3(Offset,        0,        0));
-	    vec4 noisevecY 		= texture(Noise, .50 * MCposition); //NoiseScale * .5  * MCposition);  + vec3(0     , Offset*2,        0));
-	    vec4 noisevecZ 		= texture(Noise,       MCposition); //NoiseScale *       MCposition);  + vec3(0     ,        0, Offset*3));
+	    vec4 noisevecX 		= texture(Noise,       (MCposition  + .33 * vec3(Offset*3,        0,      0)));
+	    vec4 noisevecY 		= texture(Noise, .50 * (MCposition  + .50 * vec3(0       , Offset*2,      0)));
+	    vec4 noisevecZ 		= texture(Noise, .33 * (MCposition  +       vec3(0       ,        0, Offset)));
 	
 	    float intensity = ((noisevecX[0] +
 	                        noisevecX[1] +

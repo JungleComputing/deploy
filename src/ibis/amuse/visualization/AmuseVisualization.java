@@ -117,6 +117,16 @@ public class AmuseVisualization extends JPanel {
         glCapabilities.setAlphaBits(4);
         glCapabilities.setNumSamples(4);
 
+        System.out.println("Evaluating stereo usage.");
+        if (Settings.getStereo()) {
+            glCapabilities.setStereo(true);
+            if (glCapabilities.getStereo()) {
+                System.out.println("Stereo rendering enabled.");
+            } else {
+                System.out.println("Stereo rendering unavailable.");
+            }
+        }
+
         glcanvas = new GLCanvas(glCapabilities, offScreenContext);
 
         // Make the GLEventListener
@@ -350,14 +360,31 @@ public class AmuseVisualization extends JPanel {
                 timer.redraw();
             }
         };
-        visualConfig.add(GoggleSwing.checkboxBox("",
-                new GoggleSwing.CheckBoxItem("Beamer mode", Settings.getGasInvertedColor(), cblBeamerMode),
-                new GoggleSwing.CheckBoxItem("White background", Settings.getGasInvertedBackgroundColor(),
-                        cblInvertedBackground),
-                new GoggleSwing.CheckBoxItem("Color gas by stars", Settings.getGasStarInfluencedColor(),
-                        cblGasColorInfluencedByStars),
-                new GoggleSwing.CheckBoxItem("Exaggerate star colors", Settings.getStarColorsExaggerated(),
-                        cblExaggerateStarColors)));
+        ItemListener cblStereo = new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                Settings.setStereo(e.getStateChange());
+                timer.redraw();
+            }
+        };
+        ItemListener cblStereoSwitch = new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                Settings.setStereoSwitched(e.getStateChange());
+                timer.redraw();
+            }
+        };
+        visualConfig
+                .add(GoggleSwing.checkboxBox("",
+                        new GoggleSwing.CheckBoxItem("Beamer mode", Settings.getGasInvertedColor(), cblBeamerMode),
+                        new GoggleSwing.CheckBoxItem("White background", Settings.getGasInvertedBackgroundColor(),
+                                cblInvertedBackground),
+                        new GoggleSwing.CheckBoxItem("Color gas by stars", Settings.getGasStarInfluencedColor(),
+                                cblGasColorInfluencedByStars), new GoggleSwing.CheckBoxItem("Exaggerate star colors",
+                                Settings.getStarColorsExaggerated(), cblExaggerateStarColors),
+                        new GoggleSwing.CheckBoxItem("Stereo view", Settings.getStereo(), cblStereo),
+                        new GoggleSwing.CheckBoxItem("Stereo left/right switch", Settings.getStereoSwitched(),
+                                cblStereoSwitch)));
 
         ChangeListener overallBrightnessSliderListener = new ChangeListener() {
             @Override
@@ -452,6 +479,19 @@ public class AmuseVisualization extends JPanel {
                 (int) (Settings.getPostprocessingStarBrightnessMin()),
                 (int) (Settings.getPostprocessingStarBrightnessMax()), (int) (0.1f * 10),
                 (int) (Settings.getPostprocessingStarBrightness()), new JLabel("")));
+
+        ChangeListener stereoOcularDistanceListener = new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                JSlider source = (JSlider) e.getSource();
+                if (source.hasFocus()) {
+                    Settings.setStereoOcularDistance((float) source.getValue() / 10f);
+                }
+            }
+        };
+        visualConfig.add(GoggleSwing.sliderBox("Stereo Ocular Distance", stereoOcularDistanceListener,
+                (int) (Settings.getStereoOcularDistanceMin() * 10), (int) (Settings.getStereoOcularDistanceMax() * 10),
+                1, (int) (Settings.getStereoOcularDistance() * 10), new JLabel("")));
 
         visualConfig.add(GoggleSwing.radioBox("Level of Detail", new String[] { "Low", "Medium", "High" },
                 new ActionListener[] { new ActionListener() {

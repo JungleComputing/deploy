@@ -99,11 +99,12 @@ public class GLWindow implements GLEventListener {
     private OctreeNode               octreeRoot;
     private final GLContext          offScreenContext;
 
-    int                              fontSet             = FontFactory.UBUNTU;
-    TypecastFont                     font;
-    int                              fontSize            = 30;
-    RoughText                        myText;
-    private MatF4                    perspectiveMatrix;
+    private int                      fontSet             = FontFactory.UBUNTU;
+    private TypecastFont             font;
+    private int                      fontSize            = 30;
+    private RoughText                myText;
+    private float                    offset              = 0;
+    private boolean                  offsetUp            = true;
 
     public GLWindow(AmuseVisualization panel, GLContext offScreenContext) {
         this.panel = panel;
@@ -222,8 +223,6 @@ public class GLWindow implements GLEventListener {
         zAxis.init(gl);
 
         // TEXT
-        // TODO: DEBUG
-        // myText = new Text(axisMaterial, GL3.GL_TEXTURE13, true);
         myText = new RoughText(axisMaterial);
         myText.init(gl);
 
@@ -318,30 +317,85 @@ public class GLWindow implements GLEventListener {
         Point4 at = new Point4(0.0f, 0.0f, 0.0f, 1.0f);
         VecF4 up = new VecF4(0.0f, 1.0f, 0.0f, 0.0f);
 
-        MatF4 mv = MatrixFMath.lookAt(eye, at, up);
-        mv = mv.mul(MatrixFMath.translate(viewDistTranslation));
-        mv = mv.mul(MatrixFMath.rotationX(rotation.get(0)));
-        mv = mv.mul(MatrixFMath.rotationY(rotation.get(1)));
+        if (Settings.getStereo()) {
+            MatF4 mv = MatrixFMath.lookAt(eye, at, up);
+            mv = mv.mul(MatrixFMath.translate(viewDistTranslation));
+            MatF4 mv2 = mv.clone();
 
-        MatF3 n = new MatF3();
-        MatF4 p = MatrixFMath.perspective(fovy, aspect, zNear, zFar);
-        this.perspectiveMatrix = p;
+            MatF3 n = new MatF3();
+            MatF4 p = MatrixFMath.perspective(fovy, aspect, zNear, zFar);
 
-        // Vertex shader variables
-        loader.setUniformMatrix("NormalMatrix", n);
-        loader.setUniformMatrix("PMatrix", p);
-        loader.setUniformMatrix("SMatrix", MatrixFMath.scale(1));
+            // Vertex shader variables
+            loader.setUniformMatrix("NormalMatrix", n);
+            loader.setUniformMatrix("PMatrix", p);
+            loader.setUniformMatrix("SMatrix", MatrixFMath.scale(1));
 
-        renderScene(gl, mv, stars, octreeRoot, starHaloFBO, starFBO, gasFBO, axesFBO);
+            if (!Settings.getStereoSwitched()) {
+                gl.glDrawBuffer(GL3.GL_BACK_LEFT);
+            } else {
+                gl.glDrawBuffer(GL3.GL_BACK_RIGHT);
+            }
+            mv = mv.mul(MatrixFMath.translate(new VecF3(-.5f * Settings.getStereoOcularDistance(), 0f, 0f)));
+            mv = mv.mul(MatrixFMath.rotationX(rotation.get(0)));
+            mv = mv.mul(MatrixFMath.rotationY(rotation.get(1)));
 
-        try {
-            renderHUDText(gl, mv, hudFBO);
-        } catch (UninitializedException e) {
-            e.printStackTrace();
-        }
+            renderScene(gl, mv, stars, octreeRoot, starHaloFBO, starFBO, gasFBO, axesFBO);
 
-        if (post_process) {
-            renderTexturesToScreen(gl, width, height, starHaloFBO, starFBO, gasFBO, hudFBO, axesFBO);
+            try {
+                renderHUDText(gl, mv, hudFBO);
+            } catch (UninitializedException e) {
+                e.printStackTrace();
+            }
+
+            if (post_process) {
+                renderTexturesToScreen(gl, width, height, starHaloFBO, starFBO, gasFBO, hudFBO, axesFBO);
+            }
+
+            if (!Settings.getStereoSwitched()) {
+                gl.glDrawBuffer(GL3.GL_BACK_RIGHT);
+            } else {
+                gl.glDrawBuffer(GL3.GL_BACK_LEFT);
+            }
+            mv2 = mv2.mul(MatrixFMath.translate(new VecF3(.5f * Settings.getStereoOcularDistance(), 0f, 0f)));
+            mv2 = mv2.mul(MatrixFMath.rotationX(rotation.get(0)));
+            mv2 = mv2.mul(MatrixFMath.rotationY(rotation.get(1)));
+
+            renderScene(gl, mv2, stars, octreeRoot, starHaloFBO, starFBO, gasFBO, axesFBO);
+
+            try {
+                renderHUDText(gl, mv2, hudFBO);
+            } catch (UninitializedException e) {
+                e.printStackTrace();
+            }
+
+            if (post_process) {
+                renderTexturesToScreen(gl, width, height, starHaloFBO, starFBO, gasFBO, hudFBO, axesFBO);
+            }
+        } else {
+            MatF4 mv = MatrixFMath.lookAt(eye, at, up);
+            mv = mv.mul(MatrixFMath.translate(viewDistTranslation));
+            mv = mv.mul(MatrixFMath.rotationX(rotation.get(0)));
+            mv = mv.mul(MatrixFMath.rotationY(rotation.get(1)));
+
+            MatF3 n = new MatF3();
+            MatF4 p = MatrixFMath.perspective(fovy, aspect, zNear, zFar);
+
+            // Vertex shader variables
+            loader.setUniformMatrix("NormalMatrix", n);
+            loader.setUniformMatrix("PMatrix", p);
+            loader.setUniformMatrix("SMatrix", MatrixFMath.scale(1));
+
+            renderScene(gl, mv, stars, octreeRoot, starHaloFBO, starFBO, gasFBO, axesFBO);
+
+            try {
+                renderHUDText(gl, mv, hudFBO);
+            } catch (UninitializedException e) {
+                e.printStackTrace();
+            }
+
+            if (post_process) {
+                renderTexturesToScreen(gl, width, height, starHaloFBO, starFBO, gasFBO, hudFBO, axesFBO);
+            }
         }
 
     }
@@ -368,36 +422,29 @@ public class GLWindow implements GLEventListener {
     private void renderStars(GL3 gl, MatF4 mv, FBO starsFBO, ArrayList<Star> stars) throws UninitializedException {
         starsFBO.bind(gl);
         gl.glClear(GL3.GL_DEPTH_BUFFER_BIT | GL3.GL_COLOR_BUFFER_BIT);
-        if (snapshotting) {
-            noiseTex.use(gl);
-            animatedTurbulenceShader.setUniform("Noise", noiseTex.getMultitexNumber());
 
-            animatedTurbulenceShader.setUniformMatrix("SMatrix", MatrixFMath.scale(1));
-            animatedTurbulenceShader.setUniform("StarDrawMode", 0);
+        noiseTex.use(gl);
+        animatedTurbulenceShader.setUniform("Noise", noiseTex.getMultitexNumber());
 
-            pplShader.setUniformVector("LightPos", lightPos);
-            pplShader.setUniform("Shininess", shininess);
+        animatedTurbulenceShader.setUniformMatrix("SMatrix", MatrixFMath.scale(1));
+        animatedTurbulenceShader.setUniform("Offset", offset);
 
-            pplShader.setUniformMatrix("SMatrix", MatrixFMath.scale(1));
-            pplShader.setUniform("StarDrawMode", 0);
+        if (offset > 1f) {
+            offsetUp = false;
+        } else if (offset < 0f) {
+            offsetUp = true;
+        }
 
-            for (Star s : stars) {
-                if (s.getRadius() > 1f) {
-                    s.draw(gl, animatedTurbulenceShader, mv);
-                } else {
-                    s.draw(gl, pplShader, mv);
-                }
-            }
+        if (offsetUp) {
+            this.offset += .001f;
         } else {
-            pplShader.setUniformVector("LightPos", lightPos);
-            pplShader.setUniform("Shininess", shininess);
+            this.offset -= .001f;
+        }
 
-            pplShader.setUniformMatrix("SMatrix", MatrixFMath.scale(1));
-            pplShader.setUniform("StarDrawMode", 0);
+        animatedTurbulenceShader.setUniform("StarDrawMode", 0);
 
-            for (Star s : stars) {
-                s.draw(gl, pplShader, mv);
-            }
+        for (Star s : stars) {
+            s.draw(gl, animatedTurbulenceShader, mv);
         }
         starsFBO.unBind(gl);
     }
