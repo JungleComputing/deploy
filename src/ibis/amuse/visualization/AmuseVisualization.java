@@ -53,33 +53,21 @@ public class AmuseVisualization extends JPanel {
         NONE, VISUAL, MOVIE
     };
 
-    private TweakState currentConfigState = TweakState.VISUAL;
+    private TweakState         currentConfigState = TweakState.VISUAL;
 
-    private static String cmdlnfileName;
-    private GLWindow window;
-    private GLCanvas glcanvas;
-    private GLContext offScreenContext;
+    private static String      cmdlnfileName;
+    private GLWindow           window;
+    private GLCanvas           glcanvas;
+    private GLContext          offScreenContext;
 
-    public Hdf5TimedPlayer timer;
-    public JSlider timeBar;
+    public Hdf5TimedPlayer     timer;
+    public JSlider             timeBar;
     public JFormattedTextField frameCounter;
 
-    private JPanel configPanel;
-    private JPanel visualConfig, movieConfig;
+    private JPanel             configPanel;
+    private JPanel             visualConfig, movieConfig;
 
-    private String path, prefix;
-
-    // public OutputVizPanel(final GUI gui) {
-    // final JButton initButton = new JButton("Initialize 3D Visualization");
-    // add(initButton);
-    //
-    // initButton.addActionListener(new ActionListener() {
-    // @Override
-    // public void actionPerformed(ActionEvent e) {
-    // removeAll();
-    // }
-    // });
-    // }
+    private String             path, prefix;
 
     public AmuseVisualization() {
         initialize();
@@ -103,11 +91,9 @@ public class AmuseVisualization extends JPanel {
             offScreenCapabilities.setSampleBuffers(true);
             offScreenCapabilities.setNumSamples(4);
 
-            GLPbuffer pbuffer = factory.createGLPbuffer(factory
-                    .getDefaultDevice(), offScreenCapabilities,
-                    new DefaultGLCapabilitiesChooser(), Settings
-                            .getScreenshotScreenWidth(), Settings
-                            .getScreenshotScreenHeight(), null);
+            GLPbuffer pbuffer = factory.createGLPbuffer(factory.getDefaultDevice(), offScreenCapabilities,
+                    new DefaultGLCapabilitiesChooser(), Settings.getScreenshotScreenWidth(),
+                    Settings.getScreenshotScreenHeight(), null);
 
             offScreenContext = pbuffer.createContext(null);
             offScreenContext.setSynchronized(true);
@@ -170,17 +156,13 @@ public class AmuseVisualization extends JPanel {
             public void actionPerformed(ActionEvent arg0) {
                 File file = openFile();
                 if (file != null) {
-                    path = file.getPath().substring(0,
-                            file.getPath().length() - file.getName().length());
+                    path = file.getPath().substring(0, file.getPath().length() - file.getName().length());
 
                     String name = file.getName();
                     String fullPath = path + name;
                     String[] ext = fullPath.split("[.]");
-                    if (!(ext[1].compareTo("evo") == 0
-                            || ext[1].compareTo("grav") == 0
-                            || ext[1].compareTo("add") == 0
-                            || ext[1].compareTo("gas") == 0 || ext[1]
-                            .compareTo("data") == 0)) {
+                    if (!(ext[1].compareTo("evo") == 0 || ext[1].compareTo("grav") == 0 || ext[1].compareTo("add") == 0
+                            || ext[1].compareTo("gas") == 0 || ext[1].compareTo("data") == 0)) {
                         JOptionPane pane = new JOptionPane();
                         pane.setMessage("Tried to open invalid file type.");
                         JDialog dialog = pane.createDialog("Alert");
@@ -188,8 +170,7 @@ public class AmuseVisualization extends JPanel {
                     } else {
                         prefix = ext[0].substring(0, ext[0].length() - 6);
                         window.stopAnimation();
-                        timer = new Hdf5TimedPlayer(window, timeBar,
-                                frameCounter);
+                        timer = new Hdf5TimedPlayer(window, timeBar, frameCounter);
                         timer.open(path, prefix);
                         window.startAnimation(timer);
                     }
@@ -293,18 +274,12 @@ public class AmuseVisualization extends JPanel {
         if (cmdlnfileName != null) {
             File cmdlnfile = new File(cmdlnfileName);
             if (cmdlnfile != null) {
-                path = cmdlnfile.getPath().substring(
-                        0,
-                        cmdlnfile.getPath().length()
-                                - cmdlnfile.getName().length());
+                path = cmdlnfile.getPath().substring(0, cmdlnfile.getPath().length() - cmdlnfile.getName().length());
                 String name = cmdlnfile.getName();
                 String fullPath = path + name;
                 String[] ext = fullPath.split("[.]");
-                if (!(ext[1].compareTo("evo") == 0
-                        || ext[1].compareTo("grav") == 0
-                        || ext[1].compareTo("add") == 0
-                        || ext[1].compareTo("gas") == 0 || ext[1]
-                        .compareTo("data") == 0)) {
+                if (!(ext[1].compareTo("evo") == 0 || ext[1].compareTo("grav") == 0 || ext[1].compareTo("add") == 0
+                        || ext[1].compareTo("gas") == 0 || ext[1].compareTo("data") == 0)) {
                     JOptionPane pane = new JOptionPane();
                     pane.setMessage("Tried to open invalid file type.");
                     JDialog dialog = pane.createDialog("Alert");
@@ -345,8 +320,7 @@ public class AmuseVisualization extends JPanel {
                 setTweakState(TweakState.NONE);
             }
         };
-        visualConfig
-                .add(GoggleSwing.titleBox("Visual Configuration", listener));
+        visualConfig.add(GoggleSwing.titleBox("Visual Configuration", listener));
 
         ItemListener cblBeamerMode = new ItemListener() {
             @Override
@@ -369,36 +343,35 @@ public class AmuseVisualization extends JPanel {
                 timer.redraw();
             }
         };
-        visualConfig.add(GoggleSwing.checkboxBox("", new String[] {
-                "Beamer mode", "White background", "Color gas by stars" },
-                new boolean[] { Settings.getGasInvertedColor(),
-                        Settings.getGasInvertedBackgroundColor(),
-                        Settings.getGasStarInfluencedColor() },
-                new ItemListener[] { cblBeamerMode, cblInvertedBackground,
-                        cblGasColorInfluencedByStars }));
+        ItemListener cblExaggerateStarColors = new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                Settings.setStarColorsExaggerated(e.getStateChange());
+                timer.redraw();
+            }
+        };
+        visualConfig.add(GoggleSwing.checkboxBox("",
+                new GoggleSwing.CheckBoxItem("Beamer mode", Settings.getGasInvertedColor(), cblBeamerMode),
+                new GoggleSwing.CheckBoxItem("White background", Settings.getGasInvertedBackgroundColor(),
+                        cblInvertedBackground),
+                new GoggleSwing.CheckBoxItem("Color gas by stars", Settings.getGasStarInfluencedColor(),
+                        cblGasColorInfluencedByStars),
+                new GoggleSwing.CheckBoxItem("Exaggerate star colors", Settings.getStarColorsExaggerated(),
+                        cblExaggerateStarColors)));
 
         ChangeListener overallBrightnessSliderListener = new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
                 JSlider source = (JSlider) e.getSource();
                 if (source.hasFocus()) {
-                    Settings.setPostprocessingOverallBrightness(source
-                            .getValue());
+                    Settings.setPostprocessingOverallBrightness(source.getValue());
                 }
             }
         };
-        visualConfig
-                .add(GoggleSwing
-                        .sliderBox(
-                                "Overall Brightness",
-                                overallBrightnessSliderListener,
-                                (int) (Settings
-                                        .getPostprocessingOverallBrightnessMin()),
-                                (int) (Settings
-                                        .getPostprocessingOverallBrightnessMax()),
-                                (int) (0.1f * 10), (int) (Settings
-                                        .getPostprocessingOverallBrightness()),
-                                new JLabel("")));
+        visualConfig.add(GoggleSwing.sliderBox("Overall Brightness", overallBrightnessSliderListener,
+                (int) (Settings.getPostprocessingOverallBrightnessMin()),
+                (int) (Settings.getPostprocessingOverallBrightnessMax()), (int) (0.1f * 10),
+                (int) (Settings.getPostprocessingOverallBrightness()), new JLabel("")));
 
         visualConfig.add(GoggleSwing.verticalStrut(5));
 
@@ -411,12 +384,10 @@ public class AmuseVisualization extends JPanel {
                 }
             }
         };
-        visualConfig.add(GoggleSwing.sliderBox("Axes Brightness",
-                axesBrightnessSliderListener, (int) (Settings
-                        .getPostprocessingAxesBrightnessMin()), (int) (Settings
-                        .getPostprocessingAxesBrightnessMax()),
-                (int) (0.1f * 10), (int) (Settings
-                        .getPostprocessingAxesBrightness()), new JLabel("")));
+        visualConfig.add(GoggleSwing.sliderBox("Axes Brightness", axesBrightnessSliderListener,
+                (int) (Settings.getPostprocessingAxesBrightnessMin()),
+                (int) (Settings.getPostprocessingAxesBrightnessMax()), (int) (0.1f * 10),
+                (int) (Settings.getPostprocessingAxesBrightness()), new JLabel("")));
 
         visualConfig.add(GoggleSwing.verticalStrut(5));
 
@@ -429,12 +400,10 @@ public class AmuseVisualization extends JPanel {
                 }
             }
         };
-        visualConfig.add(GoggleSwing.sliderBox("HUD Brightness",
-                hudBrightnessSliderListener, (int) (Settings
-                        .getPostprocessingHudBrightnessMin()), (int) (Settings
-                        .getPostprocessingHudBrightnessMax()),
-                (int) (0.1f * 10), (int) (Settings
-                        .getPostprocessingHudBrightness()), new JLabel("")));
+        visualConfig.add(GoggleSwing.sliderBox("HUD Brightness", hudBrightnessSliderListener,
+                (int) (Settings.getPostprocessingHudBrightnessMin()),
+                (int) (Settings.getPostprocessingHudBrightnessMax()), (int) (0.1f * 10),
+                (int) (Settings.getPostprocessingHudBrightness()), new JLabel("")));
 
         visualConfig.add(GoggleSwing.verticalStrut(5));
 
@@ -447,12 +416,10 @@ public class AmuseVisualization extends JPanel {
                 }
             }
         };
-        visualConfig.add(GoggleSwing.sliderBox("Gas Brightness",
-                gasBrightnessSliderListener, (int) (Settings
-                        .getPostprocessingGasBrightnessMin()), (int) (Settings
-                        .getPostprocessingGasBrightnessMax()),
-                (int) (0.1f * 10), (int) (Settings
-                        .getPostprocessingGasBrightness()), new JLabel("")));
+        visualConfig.add(GoggleSwing.sliderBox("Gas Brightness", gasBrightnessSliderListener,
+                (int) (Settings.getPostprocessingGasBrightnessMin()),
+                (int) (Settings.getPostprocessingGasBrightnessMax()), (int) (0.1f * 10),
+                (int) (Settings.getPostprocessingGasBrightness()), new JLabel("")));
 
         visualConfig.add(GoggleSwing.verticalStrut(5));
 
@@ -461,20 +428,14 @@ public class AmuseVisualization extends JPanel {
             public void stateChanged(ChangeEvent e) {
                 JSlider source = (JSlider) e.getSource();
                 if (source.hasFocus()) {
-                    Settings.setPostprocessingStarHaloBrightness(source
-                            .getValue());
+                    Settings.setPostprocessingStarHaloBrightness(source.getValue());
                 }
             }
         };
-        visualConfig.add(GoggleSwing
-                .sliderBox("Star Halo Brightness",
-                        starHaloBrightnessSliderListener, (int) (Settings
-                                .getPostprocessingStarHaloBrightnessMin()),
-                        (int) (Settings
-                                .getPostprocessingStarHaloBrightnessMax()),
-                        (int) (0.1f * 10), (int) (Settings
-                                .getPostprocessingStarHaloBrightness()),
-                        new JLabel("")));
+        visualConfig.add(GoggleSwing.sliderBox("Star Halo Brightness", starHaloBrightnessSliderListener,
+                (int) (Settings.getPostprocessingStarHaloBrightnessMin()),
+                (int) (Settings.getPostprocessingStarHaloBrightnessMax()), (int) (0.1f * 10),
+                (int) (Settings.getPostprocessingStarHaloBrightness()), new JLabel("")));
 
         visualConfig.add(GoggleSwing.verticalStrut(5));
 
@@ -487,16 +448,13 @@ public class AmuseVisualization extends JPanel {
                 }
             }
         };
-        visualConfig.add(GoggleSwing.sliderBox("Star Brightness",
-                starBrightnessSliderListener, (int) (Settings
-                        .getPostprocessingStarBrightnessMin()), (int) (Settings
-                        .getPostprocessingStarBrightnessMax()),
-                (int) (0.1f * 10), (int) (Settings
-                        .getPostprocessingStarBrightness()), new JLabel("")));
+        visualConfig.add(GoggleSwing.sliderBox("Star Brightness", starBrightnessSliderListener,
+                (int) (Settings.getPostprocessingStarBrightnessMin()),
+                (int) (Settings.getPostprocessingStarBrightnessMax()), (int) (0.1f * 10),
+                (int) (Settings.getPostprocessingStarBrightness()), new JLabel("")));
 
-        visualConfig.add(GoggleSwing.radioBox("Level of Detail", new String[] {
-                "Low", "Medium", "High" }, new ActionListener[] {
-                new ActionListener() {
+        visualConfig.add(GoggleSwing.radioBox("Level of Detail", new String[] { "Low", "Medium", "High" },
+                new ActionListener[] { new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent arg0) {
                         GLWindow.setLOD(0);
@@ -533,32 +491,25 @@ public class AmuseVisualization extends JPanel {
                 timer.redraw();
             }
         };
-        movieConfig.add(GoggleSwing.checkboxBox("",
-                new String[] { "Rotation" }, new boolean[] { Settings
-                        .getMovieRotate() },
-                new ItemListener[] { checkBoxListener }));
+        movieConfig.add(GoggleSwing.checkboxBox("", new GoggleSwing.CheckBoxItem("Rotation", Settings.getMovieRotate(),
+                checkBoxListener)));
 
-        final JLabel rotationSetting = new JLabel(""
-                + Settings.getMovieRotationSpeedDef());
+        final JLabel rotationSetting = new JLabel("" + Settings.getMovieRotationSpeedDef());
         ChangeListener movieRotationSpeedListener = new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
                 JSlider source = (JSlider) e.getSource();
                 if (source.hasFocus()) {
                     Settings.setMovieRotationSpeed(source.getValue() * .25f);
-                    rotationSetting.setText(""
-                            + Settings.getMovieRotationSpeedDef());
+                    rotationSetting.setText("" + Settings.getMovieRotationSpeedDef());
                 }
             }
         };
-        movieConfig.add(GoggleSwing.sliderBox("Rotation Speed",
-                movieRotationSpeedListener, (int) (Settings
-                        .getMovieRotationSpeedMin() * 4f), (int) (Settings
-                        .getMovieRotationSpeedMax() * 4f), 1, (int) (Settings
-                        .getMovieRotationSpeedDef() * 4f), rotationSetting));
+        movieConfig.add(GoggleSwing.sliderBox("Rotation Speed", movieRotationSpeedListener,
+                (int) (Settings.getMovieRotationSpeedMin() * 4f), (int) (Settings.getMovieRotationSpeedMax() * 4f), 1,
+                (int) (Settings.getMovieRotationSpeedDef() * 4f), rotationSetting));
 
-        movieConfig.add(GoggleSwing.buttonBox("",
-                new String[] { "Start Recording" },
+        movieConfig.add(GoggleSwing.buttonBox("", new String[] { "Start Recording" },
                 new ActionListener[] { new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
@@ -574,8 +525,7 @@ public class AmuseVisualization extends JPanel {
                 cmdlnfileName = arguments[i];
             } else if (arguments[i].equals("-resume")) {
                 i++;
-                Settings.setInitial_simulation_frame(Integer
-                        .parseInt(arguments[i]));
+                Settings.setInitial_simulation_frame(Integer.parseInt(arguments[i]));
                 i++;
                 Settings.setInitial_rotation_x(Float.parseFloat(arguments[i]));
                 i++;
@@ -586,8 +536,7 @@ public class AmuseVisualization extends JPanel {
         }
 
         final JFrame frame = new JFrame("Amuse Visualization");
-        frame.setPreferredSize(new Dimension(Settings.getDefaultScreenWidth(),
-                Settings.getDefaultScreenHeight()));
+        frame.setPreferredSize(new Dimension(Settings.getDefaultScreenWidth(), Settings.getDefaultScreenHeight()));
 
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -642,32 +591,25 @@ public class AmuseVisualization extends JPanel {
             }
 
             @Override
-            public Component getComponentBefore(Container aContainer,
-                    Component aComponent) {
+            public Component getComponentBefore(Container aContainer, Component aComponent) {
                 return null;
             }
 
             @Override
-            public Component getComponentAfter(Container aContainer,
-                    Component aComponent) {
+            public Component getComponentAfter(Container aContainer, Component aComponent) {
                 return null;
             }
         });
 
-        final JButton oneForwardButton = GoggleSwing.createImageButton(
-                "images/media-playback-oneforward.png", "Next", null);
-        final JButton oneBackButton = GoggleSwing.createImageButton(
-                "images/media-playback-onebackward.png", "Previous", null);
-        final JButton rewindButton = GoggleSwing.createImageButton(
-                "images/media-playback-rewind.png", "Rewind", null);
-        final JButton screenshotButton = GoggleSwing.createImageButton(
-                "images/camera.png", "Screenshot", null);
-        final JButton playButton = GoggleSwing.createImageButton(
-                "images/media-playback-start.png", "Start", null);
-        final ImageIcon playIcon = GoggleSwing.createImageIcon(
-                "images/media-playback-start.png", "Start");
-        final ImageIcon stopIcon = GoggleSwing.createImageIcon(
-                "images/media-playback-stop.png", "Start");
+        final JButton oneForwardButton = GoggleSwing.createImageButton("images/media-playback-oneforward.png", "Next",
+                null);
+        final JButton oneBackButton = GoggleSwing.createImageButton("images/media-playback-onebackward.png",
+                "Previous", null);
+        final JButton rewindButton = GoggleSwing.createImageButton("images/media-playback-rewind.png", "Rewind", null);
+        final JButton screenshotButton = GoggleSwing.createImageButton("images/camera.png", "Screenshot", null);
+        final JButton playButton = GoggleSwing.createImageButton("images/media-playback-start.png", "Start", null);
+        final ImageIcon playIcon = GoggleSwing.createImageIcon("images/media-playback-start.png", "Start");
+        final ImageIcon stopIcon = GoggleSwing.createImageIcon("images/media-playback-stop.png", "Start");
 
         bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
 
@@ -675,10 +617,8 @@ public class AmuseVisualization extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // timer.stop();
-                String fileName = "" + timer.getFrame() + " {"
-                        + window.getRotation().get(0) + ","
-                        + window.getRotation().get(1) + " - "
-                        + window.getViewDist() + "} ";
+                String fileName = "" + timer.getFrame() + " {" + window.getRotation().get(0) + ","
+                        + window.getRotation().get(1) + " - " + window.getViewDist() + "} ";
                 window.makeSnapshot(fileName);
             }
         });
@@ -745,13 +685,11 @@ public class AmuseVisualization extends JPanel {
         frameCounter.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent e) {
-                JFormattedTextField source = (JFormattedTextField) e
-                        .getSource();
+                JFormattedTextField source = (JFormattedTextField) e.getSource();
                 if (source.hasFocus()) {
                     if (source == frameCounter) {
                         if (window.isTimerInitialized())
-                            timer.setFrame(((Number) frameCounter.getValue())
-                                    .intValue(), false);
+                            timer.setFrame(((Number) frameCounter.getValue()).intValue(), false);
                         playButton.setIcon(playIcon);
                     }
                 }

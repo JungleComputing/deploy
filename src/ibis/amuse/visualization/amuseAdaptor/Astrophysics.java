@@ -1,6 +1,5 @@
 package ibis.amuse.visualization.amuseAdaptor;
 
-import ibis.amuse.visualization.GLWindow;
 import ibis.amuse.visualization.Settings;
 import ibis.amuse.visualization.openglCommon.Material;
 import ibis.amuse.visualization.openglCommon.math.VecF3;
@@ -10,23 +9,24 @@ import ibis.amuse.visualization.openglCommon.math.VectorFMath;
 import java.util.HashMap;
 
 public class Astrophysics {
-    public final static double SIGMA = 5.67037321E-8;
-    public final static double WIEN = 2.8977685E-3;
+    public final static double    SIGMA                           = 5.67037321E-8;
+    public final static double    WIEN                            = 2.8977685E-3;
 
-    public final static double SOLAR_LUMINOSITY = 3.839E26;
-    public final static double SOLAR_RADIUS = 6.955E8;
-    public final static double EARTH_RADIUS = 6371;
+    public final static double    SOLAR_LUMINOSITY                = 3.839E26;
+    public final static double    SOLAR_RADIUS                    = 6.955E8;
+    public final static double    EARTH_RADIUS                    = 6371;
 
-    public final static double PARSEC = 3.08568025E16;
-    public final static double DISTANCE_FACTOR = 25.0;
-    public final static double STAR_RADIUS_FACTOR_SMALL = 0.25;
-    public final static double STAR_RADIUS_AT_1000_SOLAR_RADII = 8.0;
+    public final static double    PARSEC                          = 3.08568025E16;
+    public final static double    DISTANCE_FACTOR                 = 25.0;
+    public final static double    STAR_RADIUS_FACTOR_SMALL        = 0.25;
+    public final static double    STAR_RADIUS_AT_1000_SOLAR_RADII = 8.0;
 
-    public final static double STAR_FORMULAE_INTERSECTION = find_intersection();
+    public final static double    STAR_FORMULAE_INTERSECTION      = find_intersection();
 
-    private final static VecF4 INITIAL_GAS_COLOR = new VecF4(.6f, .3f, .3f, 0f);
-    private final static VecF4 transparent = new VecF4(0, 0, 0, 0);
-    private final static Material gasMaterial = new Material(INITIAL_GAS_COLOR, transparent, transparent);
+    private final static VecF4    INITIAL_GAS_COLOR               = new VecF4(.6f, .3f, .3f, 0f);
+    private final static VecF4    transparent                     = new VecF4(0, 0, 0, 0);
+    private final static Material gasMaterial                     = new Material(INITIAL_GAS_COLOR, transparent,
+                                                                          transparent);
 
     public static Material getGasMaterial() {
         return gasMaterial;
@@ -121,7 +121,7 @@ public class Astrophysics {
 
                 // Color components are a fraction of 1, so multiplying them
                 // with themselves makes the prevalent one more distinct.
-                if (GLWindow.isExaggerate_colors()) {
+                if (Settings.getStarColorsExaggerated()) {
                     r *= r;
                     g *= g;
                     b *= b;

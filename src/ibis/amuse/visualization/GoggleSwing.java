@@ -24,6 +24,17 @@ import javax.swing.border.BevelBorder;
 import javax.swing.event.ChangeListener;
 
 public class GoggleSwing {
+    public static class CheckBoxItem {
+        public CheckBoxItem(String label, boolean selection, ItemListener listener) {
+            this.label = label;
+            this.selection = selection;
+            this.listener = listener;
+        }
+
+        String       label;
+        boolean      selection;
+        ItemListener listener;
+    }
 
     public GoggleSwing() {
     }
@@ -55,20 +66,20 @@ public class GoggleSwing {
         return vBoxedComponents(vcomponents, false);
     }
 
-    public static Box checkboxBox(String name, String[] labels, boolean[] selections, ItemListener[] listeners) {
+    public static Box checkboxBox(String name, CheckBoxItem... items) {
         ArrayList<Component> vcomponents = new ArrayList<Component>();
         vcomponents.add(new JLabel(name));
         vcomponents.add(Box.createHorizontalGlue());
 
-        for (int i = 0; i < labels.length; i++) {
+        for (CheckBoxItem item : items) {
             ArrayList<Component> hcomponents = new ArrayList<Component>();
 
             JCheckBox btn = new JCheckBox();
-            btn.setSelected(selections[i]);
-            btn.addItemListener(listeners[i]);
+            btn.setSelected(item.selection);
+            btn.addItemListener(item.listener);
             hcomponents.add(btn);
 
-            JLabel label = new JLabel(labels[i]);
+            JLabel label = new JLabel(item.label);
             label.setFont(new Font("Arial", Font.PLAIN, 10));
             hcomponents.add(label);
 
