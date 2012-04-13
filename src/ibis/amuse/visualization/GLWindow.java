@@ -271,7 +271,7 @@ public class GLWindow implements GLEventListener {
     }
 
     @Override
-    public synchronized void display(GLAutoDrawable drawable) {
+    public void display(GLAutoDrawable drawable) {
         if (isTimerInitialized()) {
             try {
                 int status = drawable.getContext().makeCurrent();
@@ -299,8 +299,8 @@ public class GLWindow implements GLEventListener {
         }
     }
 
-    private void displayContext(ArrayList<Star> stars, OctreeNode octreeRoot, FBO starFBO, FBO starHaloFBO, FBO gasFBO,
-            FBO hudFBO, FBO axesFBO) {
+    private synchronized void displayContext(ArrayList<Star> stars, OctreeNode octreeRoot, FBO starFBO,
+            FBO starHaloFBO, FBO gasFBO, FBO hudFBO, FBO axesFBO) {
         GL3 gl = GLContext.getCurrentGL().getGL3();
 
         stars.get(0).init(gl);
@@ -763,7 +763,7 @@ public class GLWindow implements GLEventListener {
         axes = newSetting;
     }
 
-    public synchronized void makeSnapshot(String fileName) {
+    public void makeSnapshot(String fileName) {
         snapshotting = true;
         // Hdf5TimedPlayer.setState(states.SNAPSHOTTING);
 
