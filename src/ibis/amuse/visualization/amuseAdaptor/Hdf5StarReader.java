@@ -81,7 +81,7 @@ public class Hdf5StarReader {
         return stars;
     }
 
-    protected static int getNumFiles(String path, String namePostfix) {
+    public static int getNumFiles(String path, String namePostfix) {
         String[] ls = new File(path).list(new ExtFilter(namePostfix));
 
         return ls.length;

@@ -108,7 +108,6 @@ public class AmuseVisualization extends JPanel {
         // Standard GL3 capabilities
         GLCapabilities glCapabilities = new GLCapabilities(glp);
 
-        // glCapabilities.setDoubleBuffered(true);
         // glCapabilities.setHardwareAccelerated(true);
         // glCapabilities.setDoubleBuffered(true);
 
