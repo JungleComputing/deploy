@@ -33,6 +33,7 @@ public class Application {
         out.println("# input.files        Input files copied to root of sandbox(*)");
         out.println("# output.files       Output files copied from root of sandbox(*)");
         out.println("# system.properties  Additional system properties in the form of name=value(*)");
+        out.println("# environment        Environment variables in the form of name=value(*)");
         out.println("# jvm.options        Additional JVM options, for instance memory options(*)");
         out.println("# log4j.file         Log4j properties file used for the application.");
         out.println("#                    Defaults to log4j of ibis-deploy itself.");
@@ -63,6 +64,9 @@ public class Application {
     // <NAME, VALUE> additional system properties
     private Map<String, String> systemProperties;
 
+    // <NAME, VALUE> additional system properties
+    private Map<String, String> environment;
+
     // additional JVM options
     private List<String> jvmOptions;
 
@@ -81,6 +85,7 @@ public class Application {
         inputFiles = null;
         outputFiles = null;
         systemProperties = null;
+        environment = null;
         jvmOptions = null;
         log4jFile = null;
         memorySize = 0;
@@ -128,6 +133,11 @@ public class Application {
             this.systemProperties = new HashMap<String, String>(
                     original.systemProperties);
         }
+        
+        if (original.environment != null) {
+            this.environment = new HashMap<String, String>(
+                    original.environment);
+        }
 
         if (original.jvmOptions != null) {
             this.jvmOptions = new ArrayList<String>(original.jvmOptions);
@@ -170,6 +180,10 @@ public class Application {
         if (properties.getStringMapProperty(prefix + "system.properties") != null) {
             systemProperties = properties.getStringMapProperty(prefix
                     + "system.properties");
+        }
+        if (properties.getStringMapProperty(prefix + "environment") != null) {
+            environment = properties.getStringMapProperty(prefix
+                    + "environment");
         }
         if (properties.getStringListProperty(prefix + "jvm.options") != null) {
             jvmOptions = properties.getStringListProperty(prefix
@@ -226,6 +240,13 @@ public class Application {
             for (Map.Entry<String, String> entry : other.systemProperties
                     .entrySet()) {
                 setSystemProperty(entry.getKey(), entry.getValue());
+            }
+        }
+        
+        if (other.environment != null && environment == null) {
+            for (Map.Entry<String, String> entry : other.environment
+                    .entrySet()) {
+                setEnvironmentVar(entry.getKey(), entry.getValue());
             }
         }
 
@@ -514,6 +535,49 @@ public class Application {
         }
         systemProperties.put(name, value);
     }
+    
+
+    /**
+     * Returns (copy of) map of all environment variables.
+     * 
+     * @return all environment variables, or null if unset.
+     */
+    public Map<String, String> getEnvironment() {
+        if (environment == null) {
+            return null;
+        }
+        return new HashMap<String, String>(environment);
+    }
+
+    /**
+     * Sets map of all environment variables.
+     * 
+     * @param environment
+     *            new environment variables, or null to unset.
+     */
+    public void setEnvironment(Map<String, String> environment) {
+        if (environment == null) {
+            this.environment = null;
+        } else {
+            this.environment = new HashMap<String, String>(
+        	    environment);
+        }
+    }
+    
+    /**
+     * Sets a single environment variable. Map will be created if needed.
+     * 
+     * @param name
+     *            name of new environment variable
+     * @param value
+     *            value of new environment variable.
+     */
+    public void setEnvironmentVar(String name, String value) {
+        if (environment == null) {
+            environment = new HashMap<String, String>();
+        }
+        environment.put(name, value);
+    }
 
     /**
      * Returns any additional JVM options needed for this application (usually
@@ -706,6 +770,15 @@ public class Application {
         } else if (printComments) {
             out.println("#" + dotPrefix + "system.properties =");
         }
+        
+
+        if (environment != null) {
+            out.println(dotPrefix + "environment = "
+                    + DeployProperties.toCSString(environment));
+            empty = false;
+        } else if (printComments) {
+            out.println("#" + dotPrefix + "environment =");
+        }
 
         if (jvmOptions != null) {
             out.println(dotPrefix + "jvm.options = "
@@ -758,6 +831,8 @@ public class Application {
                 + "\n";
         result += " System properties = "
                 + DeployProperties.toCSString(getSystemProperties()) + "\n";
+        result += " Environment = "
+                + DeployProperties.toCSString(getEnvironment()) + "\n";
         result += " JVM Options = " + DeployProperties.strings2SSS(jvmOptions)
                 + "\n";
         result += " Log4j File = " + getLog4jFile() + "\n";

@@ -9,6 +9,7 @@
 # input.files        Input files copied to root of sandbox(*)
 # output.files       Output files copied from root of sandbox(*)
 # system.properties  Additional system properties in the form of name=value(*)
+# environment        Environment variables in the form of name=value(*)
 # jvm.options        Additional JVM options, for instance memory options(*)
 # log4j.file         Log4j properties file used for the application.
 #                    Defaults to log4j of ibis-deploy itself.

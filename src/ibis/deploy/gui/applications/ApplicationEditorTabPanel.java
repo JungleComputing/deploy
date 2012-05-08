@@ -95,6 +95,11 @@ public class ApplicationEditorTabPanel extends JPanel {
                 this, formPanel, "JVM System Properties: ", source
                         .getSystemProperties());
         fields.add(systemPropertiesEditor);
+        
+        final TextMapArrayEditor environmentEditor = new TextMapArrayEditor(
+                this, formPanel, "Environment Variables: ", source
+                        .getEnvironment());
+        fields.add(environmentEditor);
 
         formPanel.add(Box.createRigidArea(new Dimension(0, Utils.gapHeight)));
 
@@ -148,6 +153,7 @@ public class ApplicationEditorTabPanel extends JPanel {
                 source.setMainClass(mainEditor.getText());
                 source.setArguments(argumentsEditor.getTextArray());
                 source.setSystemProperties(systemPropertiesEditor.getTextMap());
+                source.setEnvironment(environmentEditor.getTextMap());
                 source.setJVMOptions(jvmOptionsEditor.getTextArray());
                 source.setLibs(libsEditor.getFileArray());
                 source.setInputFiles(inputFilesEditor.getFileArray());
@@ -178,6 +184,8 @@ public class ApplicationEditorTabPanel extends JPanel {
                 argumentsEditor.setTextArray(source.getArguments());
 
                 systemPropertiesEditor.setTextMap(source.getSystemProperties());
+                
+                environmentEditor.setTextMap(source.getEnvironment());
 
                 jvmOptionsEditor.setTextArray(source.getJVMOptions());
 

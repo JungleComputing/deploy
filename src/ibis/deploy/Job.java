@@ -10,6 +10,7 @@ import ibis.util.ThreadPool;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -430,6 +431,18 @@ public class Job implements Runnable {
         // and all settings made by ibis-deploy
         if (application.getSystemProperties() != null) {
             sd.getJavaSystemProperties().putAll(application.getSystemProperties());
+        }
+        
+        Map<String, String> env = application.getEnvironment();
+        if (env != null) {
+            Map<String, Object> environment = sd.getEnvironment();
+            if (environment == null) {
+        	environment = new HashMap<String, Object>();
+            }
+            for (String s : env.keySet()) {
+        	environment.put(s, env.get(s));
+            }
+            sd.setEnvironment(environment);
         }
 
         if (application.getLibs() == null) {
