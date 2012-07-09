@@ -129,9 +129,10 @@ public class RemoteServer implements Runnable, Server {
             for(Map.Entry<String, String> option: resource.getSupportOptions().entrySet()) {
                 context.addPreference(option.getKey(), option.getValue());
                 //System.err.println("option! \"" + option.getKey() + "\" equals now \"" + option.getValue() + "\"");
+                
             }
         }
-
+        
         context.addPreference("file.adaptor.name",
                 DeployProperties.strings2CSS(resource.getFileAdaptors()));
 
@@ -219,6 +220,11 @@ public class RemoteServer implements Runnable, Server {
 
         if (keepSandbox) {
             sd.getAttributes().put("sandbox.delete", "false");
+        }
+        
+        if (resource.getSupportOptions() != null && resource.getSupportOptions().containsKey("sandbox.root")) {
+            //copy sandbox root from options
+            sd.getAttributes().put("sandbox.root", resource.getSupportOptions().get("sandbox.root"));
         }
 
         sd.enableStreamingStdout(true);

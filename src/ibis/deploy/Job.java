@@ -490,6 +490,11 @@ public class Job implements Runnable {
         if (keepSandbox) {
             sd.getAttributes().put("sandbox.delete", "false");
         }
+        
+        if (resource.getJobOptions() != null && resource.getJobOptions().containsKey("sandbox.root")) {
+            //copy sandbox root from options
+            sd.getAttributes().put("sandbox.root", resource.getJobOptions().get("sandbox.root"));
+        }
 
         if (description.getRuntime() != 0) {
             sd.addAttribute("walltime.max", "" + description.getRuntime());
