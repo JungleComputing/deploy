@@ -90,7 +90,7 @@ public class CommandLine {
                 } else if (arguments[i].equals("-p")) {
                     i++;
                     port = Integer.parseInt(arguments[i]);
-                } else if (arguments[i].equals("-h") || arguments[i].equals("--help")) {
+                } else if (arguments[i].equals("--help")) {
                     printUsage();
                     System.exit(0);
                 } else {

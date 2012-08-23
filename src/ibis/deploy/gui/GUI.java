@@ -285,6 +285,7 @@ public class GUI {
                 .println("Usage: ibis-deploy-gui [OPTIONS] [JUNGLE_FILE] [APP_FILE] [EXPERIMENT_FILE] [WORKSPACE_DIR]");
         System.err.println("Options:");
         System.err.println("-s RESOURCE\tRun server on specified resource");
+        System.err.println("-h RESOURCE\tStart hub on specified resource. Can be used multiple times");
         System.err.println("-k\t\tKeep sandboxes");
         System.err.println("-r\t\tRead only mode");
         System.err.println("-v\t\tVerbose mode");
