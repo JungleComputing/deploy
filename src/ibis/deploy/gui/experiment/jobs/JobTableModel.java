@@ -147,7 +147,7 @@ public class JobTableModel extends AbstractTableModel {
         for (JobRow row : rows) {
             row.start();
         }
-        fireTableRowsUpdated(0, rows.size());
+        fireTableRowsUpdated(0, rows.size()-1);
     }
 
     public void stop(int... selection) {
